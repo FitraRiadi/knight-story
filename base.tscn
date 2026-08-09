@@ -1,0 +1,98 @@
+[gd_scene format=3 uid="uid://hfftddt5j55h"]
+
+[ext_resource type="Script" uid="uid://bqqvra5yr7lw3" path="res://main_menu.gd" id="1_21bcp"]
+[ext_resource type="Texture2D" uid="uid://cejr7auuyx666" path="res://assets/MainBg1.png" id="1_rpg24"]
+[ext_resource type="FontFile" uid="uid://dx6ognpbk586" path="res://assets/fonts/alagard.ttf" id="2_3vi8l"]
+[ext_resource type="Script" uid="uid://j378iall3er1" path="res://menu_option_play_button.gd" id="3_8rhti"]
+[ext_resource type="Script" uid="uid://dede5mu3ade16" path="res://menu_option.gd" id="3_tpea4"]
+[ext_resource type="AudioStream" uid="uid://c0hq2nuv5efsi" path="res://assets/sounds/bgm/MainBgm2.ogg" id="5_tpea4"]
+
+[sub_resource type="FontVariation" id="FontVariation_moojr"]
+base_font = ExtResource("2_3vi8l")
+
+[node name="Base" type="Control" unique_id=389190473]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="mainMenu" type="Control" parent="." unique_id=280389962]
+anchors_preset = 0
+offset_top = -4.0
+offset_right = 40.0
+offset_bottom = 36.0
+script = ExtResource("1_21bcp")
+
+[node name="BgUI" type="TextureRect" parent="mainMenu" unique_id=907086558]
+layout_mode = 0
+offset_right = 1151.0
+offset_bottom = 654.0
+texture = ExtResource("1_rpg24")
+expand_mode = 1
+
+[node name="MenuOption" type="Control" parent="mainMenu/BgUI" unique_id=742869095]
+anchors_preset = 0
+offset_left = -298.0
+offset_top = 8.0
+offset_right = 859.0
+offset_bottom = 660.0
+script = ExtResource("3_tpea4")
+
+[node name="PlayButton" type="Button" parent="mainMenu/BgUI/MenuOption" unique_id=1060179977]
+layout_mode = 0
+offset_left = 490.0
+offset_top = 351.0
+offset_right = 691.0
+offset_bottom = 400.0
+theme_override_colors/font_color = Color(0.9984776, 0.9984776, 0.9984776, 1)
+theme_override_fonts/font = SubResource("FontVariation_moojr")
+theme_override_font_sizes/font_size = 32
+text = "PLAY"
+script = ExtResource("3_8rhti")
+
+[node name="AchievmentButton" type="Button" parent="mainMenu/BgUI/MenuOption" unique_id=251800814]
+layout_mode = 0
+offset_left = 490.0
+offset_top = 412.0
+offset_right = 691.0
+offset_bottom = 461.0
+theme_override_colors/font_color = Color(0.9984776, 0.9984776, 0.9984776, 1)
+theme_override_fonts/font = SubResource("FontVariation_moojr")
+theme_override_font_sizes/font_size = 25
+text = "ACHIEVMENT"
+
+[node name="Title" type="Label" parent="mainMenu/BgUI/MenuOption" unique_id=137217633]
+layout_mode = 0
+offset_left = 353.0
+offset_top = 229.0
+offset_right = 823.0
+offset_bottom = 304.0
+theme_override_colors/font_color = Color(0.8392157, 0.79607844, 0.27058825, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0.11505515, 0.11663171, 0.10154415, 1)
+theme_override_constants/outline_size = 2
+theme_override_constants/shadow_outline_size = 10
+theme_override_fonts/font = ExtResource("2_3vi8l")
+theme_override_font_sizes/font_size = 80
+text = "Knight Story"
+
+[node name="Subtitle" type="Label" parent="mainMenu/BgUI/MenuOption/Title" unique_id=1398455714]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 72.0
+offset_right = 1085.0
+offset_bottom = 147.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(0.11505515, 0.11663171, 0.10154415, 1)
+theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("2_3vi8l")
+theme_override_font_sizes/font_size = 30
+text = "The Knight Adventure Story"
+
+[node name="mainBgm" type="AudioStreamPlayer" parent="mainMenu" unique_id=491038347]
+stream = ExtResource("5_tpea4")
+parameters/looping = false
+
+[node name="game" type="Node2D" parent="." unique_id=1857175456]
