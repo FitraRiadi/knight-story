@@ -1,0 +1,15 @@
+extends TextureButton
+
+# Send to label
+@onready var perkLabel = $"../../../createCharacterPopup/bgPopup/perkColumn/perkLabel"
+
+@onready var popup = $"../../../createCharacterPopup"
+
+func _pressed() -> void:
+	print('PERK 3')
+	perkLabel.perkCurrent = "Stone Skin"
+	popup._popupRestore()
+	popup.popupHide = false
+	var parent = get_parent().get_parent()
+	parent.visible = false
+	parent.popupIntro = false

@@ -1,0 +1,206 @@
+[gd_scene format=3 uid="uid://c5byov4h7ngd6"]
+
+[ext_resource type="Texture2D" uid="uid://bvipvwo83qw7n" path="res://assets/cutscenes/prologue/1.jpg" id="1_r5bln"]
+[ext_resource type="Texture2D" uid="uid://bdnw04n8auftt" path="res://assets/cutscenes/prologue/3.jpg" id="2_3cox3"]
+[ext_resource type="Texture2D" uid="uid://dmxf0f2fwu1nx" path="res://assets/cutscenes/prologue/4.jpg" id="3_3x0b1"]
+[ext_resource type="Texture2D" uid="uid://umrolwwl0rgk" path="res://assets/cutscenes/prologue/5.jpg" id="4_iq8t4"]
+[ext_resource type="Texture2D" uid="uid://cls6rakus845d" path="res://assets/cutscenes/prologue/6.jpg" id="5_ljylq"]
+[ext_resource type="Texture2D" uid="uid://cjuyvwy06c2dl" path="res://assets/cutscenes/prologue/7.jpg" id="6_2eiut"]
+[ext_resource type="Texture2D" uid="uid://nxhjrq3vb4tx" path="res://assets/cutscenes/prologue/8.jpg" id="7_4ynaf"]
+[ext_resource type="Texture2D" uid="uid://hoborpj535yu" path="res://assets/cutscenes/prologue/9.jpg" id="8_48f1d"]
+[ext_resource type="Texture2D" uid="uid://c48skxte5w065" path="res://assets/cutscenes/prologue/10.jpg" id="9_v2pvl"]
+[ext_resource type="Texture2D" uid="uid://conkqr7ij7wuq" path="res://assets/cutscenes/prologue/11.jpg" id="10_fm50u"]
+[ext_resource type="Texture2D" uid="uid://dsrypxljtynib" path="res://assets/cutscenes/prologue/12.jpg" id="11_fjona"]
+[ext_resource type="Texture2D" uid="uid://dvmmsr65ws5bj" path="res://assets/cutscenes/prologue/13.jpg" id="12_lnj66"]
+[ext_resource type="Texture2D" uid="uid://ctceok727mye" path="res://assets/cutscenes/prologue/14.jpg" id="13_84tk4"]
+[ext_resource type="Texture2D" uid="uid://c3tpyjy8cxrud" path="res://assets/cutscenes/prologue/15.jpg" id="14_pk058"]
+[ext_resource type="Texture2D" uid="uid://bkn57j6p7aowo" path="res://assets/cutscenes/prologue/16.jpg" id="15_0f28o"]
+[ext_resource type="Texture2D" uid="uid://bnbughlct0lpd" path="res://assets/cutscenes/prologue/17.jpg" id="16_w0qna"]
+[ext_resource type="Texture2D" uid="uid://ohhbdx5l0ks4" path="res://assets/cutscenes/prologue/18.jpg" id="17_qwa7i"]
+[ext_resource type="Texture2D" uid="uid://bhe5ew1hqorsu" path="res://assets/cutscenes/prologue/19.jpg" id="18_g6wxr"]
+[ext_resource type="Texture2D" uid="uid://cpflmnxl5itg7" path="res://assets/cutscenes/prologue/20.jpg" id="19_3wgbw"]
+[ext_resource type="Texture2D" uid="uid://csiplxtk4kyl5" path="res://assets/cutscenes/prologue/21.jpg" id="20_4pdei"]
+[ext_resource type="Texture2D" uid="uid://dr2eyhaaj6js1" path="res://assets/cutscenes/prologue/22.jpg" id="21_yllx0"]
+[ext_resource type="Texture2D" uid="uid://bujnt4w5wxw3t" path="res://assets/cutscenes/prologue/23.jpg" id="22_b2l5r"]
+[ext_resource type="Script" uid="uid://ceghv4t41joux" path="res://scripts/local/cutscene/prologue/scene_prologue.gd" id="23_n4mt2"]
+[ext_resource type="Script" uid="uid://b0bvg44gii1tb" path="res://scripts/local/cutscene/prologue/scene_prologue_interface.gd" id="24_8c7ml"]
+[ext_resource type="Script" uid="uid://dsp0a3kit2r0f" path="res://scripts/local/cutscene/prologue/prolugue_dialog.gd" id="24_n4mt2"]
+[ext_resource type="Script" uid="uid://dkf1c43p0i8hj" path="res://scripts/local/cutscene/prologue/prologue_dialogue_choosen_1.gd" id="26_8h7v1"]
+[ext_resource type="Script" uid="uid://cspb7a3rv74hb" path="res://scripts/local/cutscene/prologue/scene_prologue_chapter_init_start_btn.gd" id="27_04wx8"]
+[ext_resource type="FontFile" uid="uid://dx6ognpbk586" path="res://assets/ui/fonts/alagard.ttf" id="28_r5bln"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_moojr"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_r5bln")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_3cox3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_3x0b1")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_iq8t4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_ljylq")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_2eiut")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_4ynaf")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_48f1d")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_v2pvl")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_fm50u")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_fjona")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_lnj66")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_84tk4")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_pk058")
+}, {
+"duration": 1.0,
+"texture": ExtResource("15_0f28o")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_w0qna")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_qwa7i")
+}, {
+"duration": 1.0,
+"texture": ExtResource("18_g6wxr")
+}, {
+"duration": 1.0,
+"texture": ExtResource("19_3wgbw")
+}, {
+"duration": 1.0,
+"texture": ExtResource("20_4pdei")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_yllx0")
+}, {
+"duration": 1.0,
+"texture": ExtResource("22_b2l5r")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 20.0
+}]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_26ers"]
+bg_color = Color(0, 0, 0, 0.36078432)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_moojr"]
+bg_color = Color(0.13319641, 0.13319641, 0.13319635, 0.6862745)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[node name="scene_prologue" type="Node" unique_id=1057061224]
+
+[node name="control_scene" type="Control" parent="." unique_id=1129545714]
+texture_filter = 1
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="scene" type="Node2D" parent="control_scene" unique_id=1119198811]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="control_scene/scene" unique_id=169306063]
+position = Vector2(370, 159.99998)
+scale = Vector2(0.57812494, 0.4450626)
+sprite_frames = SubResource("SpriteFrames_moojr")
+autoplay = "default"
+frame_progress = 0.26759312
+script = ExtResource("23_n4mt2")
+
+[node name="interface" type="Control" parent="control_scene" unique_id=1750146859]
+anchors_preset = 0
+offset_right = 1153.0
+offset_bottom = 647.0
+scale = Vector2(0.640931, 0.49396184)
+script = ExtResource("24_8c7ml")
+
+[node name="choosePath" type="Control" parent="control_scene/interface" unique_id=109664017]
+visible = false
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="choosen1" type="Button" parent="control_scene/interface/choosePath" unique_id=1080141273]
+layout_mode = 0
+offset_left = 869.0
+offset_top = 281.0
+offset_right = 1027.0
+offset_bottom = 318.0
+theme_override_fonts/font = ExtResource("28_r5bln")
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_26ers")
+text = "Go To Sleep"
+script = ExtResource("26_8h7v1")
+
+[node name="chapterInit" type="Control" parent="control_scene/interface" unique_id=1306430100]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="title" type="Label" parent="control_scene/interface/chapterInit" unique_id=1375442706]
+visible = false
+layout_mode = 0
+offset_left = 226.0
+offset_top = 281.0
+offset_right = 472.0
+offset_bottom = 360.0
+scale = Vector2(0.957587, 1.1047277)
+theme_override_fonts/font = ExtResource("28_r5bln")
+theme_override_font_sizes/font_size = 39
+text = "Knight Story Chapter 1"
+autowrap_mode = 1
+
+[node name="startBtn" type="Button" parent="control_scene/interface/chapterInit" unique_id=1723149362]
+visible = false
+layout_mode = 0
+offset_left = 232.0
+offset_top = 376.0
+offset_right = 398.0
+offset_bottom = 424.0
+scale = Vector2(1.0149164, 1.1414235)
+theme_override_fonts/font = ExtResource("28_r5bln")
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
+text = "Start Chapter"
+script = ExtResource("27_04wx8")
+
+[node name="dialog" type="Label" parent="control_scene/interface" unique_id=1135880231]
+layout_mode = 0
+offset_left = 70.210365
+offset_top = 78.95346
+offset_right = 211.21036
+offset_bottom = 101.95346
+scale = Vector2(1.1001993, 1.3882272)
+theme_override_fonts/font = ExtResource("28_r5bln")
+theme_override_font_sizes/font_size = 21
+text = "- Dialogue -"
+script = ExtResource("24_n4mt2")

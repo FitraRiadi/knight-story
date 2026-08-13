@@ -10,23 +10,26 @@ config_version=5
 
 [application]
 
-config/name="Knight Story"
-run/main_scene="res://base.tscn"
+config/name="KnightStory"
+run/main_scene="uid://hfftddt5j55h"
 config/features=PackedStringArray("4.7", "Mobile")
 config/icon="res://icon.svg"
 
 [autoload]
 
-_mcp_game_helper="*res://addons/godot_ai/runtime/game_helper.gd"
+Typewritter="*uid://bcmoq521ew43f"
+TypewriterPlayer="*uid://6bdeots4mbp5"
 
 [display]
 
+window/size/viewport_width=740
+window/size/viewport_height=320
 window/stretch/mode="canvas_items"
 window/stretch/aspect="expand"
 
-[editor_plugins]
+[gui]
 
-enabled=PackedStringArray("res://addons/godot_ai/plugin.cfg")
+theme/custom_font="uid://dx6ognpbk586"
 
 [physics]
 
@@ -36,3 +39,4 @@ enabled=PackedStringArray("res://addons/godot_ai/plugin.cfg")
 
 rendering_device/driver.windows="d3d12"
 renderer/rendering_method="mobile"
+textures/vram_compression/import_etc2_astc=true
