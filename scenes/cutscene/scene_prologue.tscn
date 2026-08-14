@@ -129,8 +129,9 @@ offset_bottom = 40.0
 [node name="scene" type="Node2D" parent="control_scene" unique_id=1119198811]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="control_scene/scene" unique_id=169306063]
-position = Vector2(370, 159.99998)
-scale = Vector2(0.57812494, 0.4450626)
+texture_filter = 1
+position = Vector2(370, 169.99998)
+scale = Vector2(0.57812494, 0.472879)
 sprite_frames = SubResource("SpriteFrames_moojr")
 autoplay = "default"
 frame_progress = 0.26759312

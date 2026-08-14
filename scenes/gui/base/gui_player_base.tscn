@@ -1,0 +1,123 @@
+[gd_scene format=3 uid="uid://dhs37m24etxjf"]
+
+[ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="1_2cotu"]
+
+[node name="gui-player-base" type="Control" unique_id=962594343]
+layout_mode = 3
+anchors_preset = 0
+
+[node name="base-title" type="Label" parent="." unique_id=1176209426]
+layout_mode = 0
+offset_left = 474.0
+offset_top = 15.0
+offset_right = 802.0
+offset_bottom = 38.0
+theme_override_font_sizes/font_size = 24
+text = "Vilagge Title"
+horizontal_alignment = 1
+
+[node name="base-subtitle" type="Label" parent="base-title" unique_id=1393368100]
+layout_mode = 0
+offset_left = 59.0
+offset_top = 20.0
+offset_right = 276.0
+offset_bottom = 43.0
+theme_override_font_sizes/font_size = 11
+text = "The Village Of Kindness"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 1
+
+[node name="bar-information" type="Control" parent="." unique_id=825928901]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="information" type="TextureRect" parent="bar-information" unique_id=399475891]
+layout_mode = 0
+offset_top = 1.0
+offset_right = 40.0
+offset_bottom = 41.0
+scale = Vector2(5.9184318, 1.017209)
+texture = ExtResource("1_2cotu")
+expand_mode = 1
+
+[node name="profile" type="TextureRect" parent="bar-information" unique_id=996398364]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 42.0
+offset_bottom = 42.0
+scale = Vector2(1.1496692, 0.98153913)
+texture = ExtResource("1_2cotu")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="bar-information" unique_id=343019655]
+layout_mode = 0
+offset_left = 50.0
+offset_top = 7.0
+offset_right = 133.0
+offset_bottom = 22.0
+text = "The Knight"
+
+[node name="bar-features" type="Control" parent="." unique_id=996796828]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="mapBtn" type="TextureButton" parent="bar-features" unique_id=1441154778]
+layout_mode = 0
+offset_left = 630.0
+offset_top = 310.0
+offset_right = 1799.0
+offset_bottom = 648.0
+scale = Vector2(0.092020474, 0.07695869)
+texture_normal = ExtResource("1_2cotu")
+
+[node name="Label" type="Label" parent="bar-features/mapBtn" unique_id=1426007618]
+layout_mode = 0
+offset_left = 43.468933
+offset_top = 77.9639
+offset_right = 1119.3157
+offset_bottom = 265.9639
+theme_override_font_sizes/font_size = 200
+text = "Maps"
+horizontal_alignment = 1
+
+[node name="inventoryBtn" type="TextureButton" parent="bar-features" unique_id=1883077124]
+layout_mode = 0
+offset_left = 520.0
+offset_top = 310.0
+offset_right = 1689.0
+offset_bottom = 648.0
+scale = Vector2(0.092020474, 0.07695869)
+texture_normal = ExtResource("1_2cotu")
+
+[node name="Label" type="Label" parent="bar-features/inventoryBtn" unique_id=635907628]
+layout_mode = 0
+offset_left = 43.468933
+offset_top = 77.9639
+offset_right = 1119.3157
+offset_bottom = 265.9639
+theme_override_font_sizes/font_size = 200
+text = "Inventory"
+horizontal_alignment = 1
+
+[node name="inventoryBtn2" type="TextureButton" parent="bar-features" unique_id=192332052]
+layout_mode = 0
+offset_left = 410.99997
+offset_top = 310.0
+offset_right = 1580.0
+offset_bottom = 648.0
+scale = Vector2(0.092020474, 0.07695869)
+texture_normal = ExtResource("1_2cotu")
+
+[node name="Label" type="Label" parent="bar-features/inventoryBtn2" unique_id=828310388]
+layout_mode = 0
+offset_left = 43.468933
+offset_top = 77.9639
+offset_right = 1119.3157
+offset_bottom = 265.9639
+theme_override_font_sizes/font_size = 200
+text = "Crafting"
+horizontal_alignment = 1

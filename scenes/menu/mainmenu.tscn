@@ -168,6 +168,7 @@ corner_radius_bottom_left = 20
 [node name="mainmenu" type="Node" unique_id=1109444388]
 
 [node name="MAINMENU" type="Control" parent="." unique_id=286024908]
+texture_filter = 1
 layout_mode = 3
 anchors_preset = 0
 offset_right = 740.0
@@ -184,8 +185,9 @@ script = ExtResource("1_vjcvu")
 position = Vector2(0, 4)
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="MAINMENU/menu/bg_scene" unique_id=540544957]
-position = Vector2(370, 160)
-scale = Vector2(0.578125, 0.44506258)
+texture_filter = 1
+position = Vector2(370, 170)
+scale = Vector2(0.578125, 0.472879)
 sprite_frames = SubResource("SpriteFrames_kylmi")
 animation = &"cutscene_prologue"
 autoplay = "cutscene_prologue"
@@ -263,10 +265,10 @@ offset_right = 470.0
 offset_bottom = 106.0
 
 [node name="information" type="Label" parent="MAINMENU/menu/bg_scene" unique_id=1977111762]
-offset_left = 6.0
-offset_top = 304.0
-offset_right = 334.0
-offset_bottom = 327.0
+offset_left = 5.0
+offset_top = 325.0
+offset_right = 333.0
+offset_bottom = 348.0
 theme_override_colors/font_color = Color(1, 1, 1, 0.49411765)
 theme_override_font_sizes/font_size = 10
 text = "IamFit Craft - Knight Story BETA Version 0.1"
@@ -285,10 +287,11 @@ script = ExtResource("25_pj0va")
 
 [node name="bgPopup" type="TextureRect" parent="MAINMENU/createCharacterPopup" unique_id=697097620]
 layout_mode = 0
-offset_left = -2.0
-offset_top = 69.0
-offset_right = 579.0
-offset_bottom = 615.0
+offset_left = -1.9306949
+offset_top = 54.697594
+offset_right = 579.0693
+offset_bottom = 600.6976
+scale = Vector2(1.114294, 1.1326752)
 texture = ExtResource("23_4xhob")
 expand_mode = 1
 
@@ -458,11 +461,11 @@ script = ExtResource("31_pqskf")
 [node name="selectPerkPopup" type="Control" parent="MAINMENU" unique_id=880810026]
 visible = false
 anchors_preset = 0
-offset_left = 76.0
-offset_top = -3.0
-offset_right = 1251.7327
-offset_bottom = 639.92163
-scale = Vector2(0.50946957, 0.49654192)
+offset_left = 6.000004
+offset_top = -52.999996
+offset_right = 1181.7327
+offset_bottom = 589.92163
+scale = Vector2(0.61452854, 0.62595373)
 script = ExtResource("29_dcpuq")
 
 [node name="perk1" type="TextureRect" parent="MAINMENU/selectPerkPopup" unique_id=532342968]

@@ -23,9 +23,9 @@ TypewriterPlayer="*uid://6bdeots4mbp5"
 [display]
 
 window/size/viewport_width=740
-window/size/viewport_height=320
+window/size/viewport_height=340
 window/stretch/mode="canvas_items"
-window/stretch/aspect="expand"
+window/stretch/aspect="ignore"
 
 [gui]
 

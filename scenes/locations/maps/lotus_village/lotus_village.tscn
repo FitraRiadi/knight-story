@@ -1,0 +1,179 @@
+[gd_scene format=3 uid="uid://dh5p57n31a8yx"]
+
+[ext_resource type="Texture2D" uid="uid://ip1fsfhyr7yv" path="res://assets/art/backgrounds/location/map/lotus_village/base/lotusVillage-day.jpg" id="1_8e2mh"]
+[ext_resource type="Script" uid="uid://def3lyy0apkjn" path="res://scripts/local/particles/village.gd" id="2_mh77y"]
+[ext_resource type="PackedScene" uid="uid://dhs37m24etxjf" path="res://scenes/gui/base/gui_player_base.tscn" id="2_vq0s2"]
+[ext_resource type="Texture2D" uid="uid://nwvidu1orhm2" path="res://assets/art/particles/smoke/Smoke2.png" id="3_8e2mh"]
+
+[sub_resource type="Gradient" id="Gradient_6nqwu"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_1x87e"]
+gradient = SubResource("Gradient_6nqwu")
+width = 16
+height = 16
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_k4ul1"]
+emission_shape = 3
+emission_box_extents = Vector3(1200, 600, 1)
+initial_velocity_min = 5.0
+initial_velocity_max = 15.0
+gravity = Vector3(10, -5, 0)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6nqwu"]
+atlas = ExtResource("3_8e2mh")
+region = Rect2(0, 0, 96, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_1x87e"]
+atlas = ExtResource("3_8e2mh")
+region = Rect2(96, 0, 96, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_k4ul1"]
+atlas = ExtResource("3_8e2mh")
+region = Rect2(192, 0, 96, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_876jf"]
+atlas = ExtResource("3_8e2mh")
+region = Rect2(288, 0, 96, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dx5u3"]
+atlas = ExtResource("3_8e2mh")
+region = Rect2(384, 0, 96, 96)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_eevpj"]
+atlas = ExtResource("3_8e2mh")
+region = Rect2(480, 0, 96, 96)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_xncs8"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6nqwu")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_1x87e")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_k4ul1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_876jf")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_dx5u3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_eevpj")
+}],
+"loop": 1,
+"name": &"smoke",
+"speed": 8.0
+}]
+
+[node name="lotus_village" type="Control" unique_id=1394436137]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="bg" type="TextureRect" parent="." unique_id=630668485]
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_8e2mh")
+expand_mode = 1
+
+[node name="fog" type="GPUParticles2D" parent="bg" unique_id=1901301898]
+modulate = Color(0.95, 0.85, 0.6, 0.2)
+position = Vector2(352, 173)
+scale = Vector2(2.8207958, 1.5643944)
+amount = 500
+texture = SubResource("GradientTexture2D_1x87e")
+lifetime = 8.0
+preprocess = 6.0
+process_material = SubResource("ParticleProcessMaterial_k4ul1")
+script = ExtResource("2_mh77y")
+tipe_atmosfer = 0
+
+[node name="particles" type="Node2D" parent="bg" unique_id=1778466776]
+
+[node name="smoke" type="AnimatedSprite2D" parent="bg/particles" unique_id=774655535]
+modulate = Color(1, 0.5372549, 1, 0.3137255)
+position = Vector2(192, 107)
+scale = Vector2(0.3714341, 0.45107457)
+sprite_frames = SubResource("SpriteFrames_xncs8")
+animation = &"smoke"
+autoplay = "smoke"
+frame_progress = 0.25690097
+
+[node name="smoke2" type="AnimatedSprite2D" parent="bg/particles" unique_id=2027210095]
+modulate = Color(1, 1, 1, 0.3372549)
+position = Vector2(665, 88.999985)
+scale = Vector2(0.75276476, 0.64392525)
+sprite_frames = SubResource("SpriteFrames_xncs8")
+animation = &"smoke"
+autoplay = "smoke"
+frame_progress = 0.7033388
+
+[node name="smoke3" type="AnimatedSprite2D" parent="bg/particles" unique_id=1765630409]
+modulate = Color(1, 1, 1, 0.36078432)
+position = Vector2(625.00006, 59.000004)
+scale = Vector2(0.4286789, 0.64392525)
+sprite_frames = SubResource("SpriteFrames_xncs8")
+animation = &"smoke"
+autoplay = "smoke"
+frame_progress = 0.5634839
+
+[node name="goBlackSmith" type="Button" parent="bg" unique_id=1411817861]
+layout_mode = 0
+offset_left = 609.0
+offset_top = 225.0
+offset_right = 700.0
+offset_bottom = 248.0
+text = "BlackSmith"
+
+[node name="goQuestBoard" type="Button" parent="bg" unique_id=715537000]
+layout_mode = 0
+offset_left = 60.0
+offset_top = 218.0
+offset_right = 151.0
+offset_bottom = 241.0
+text = "Quest Board"
+
+[node name="goTavern" type="Button" parent="bg" unique_id=908539571]
+layout_mode = 0
+offset_left = 501.0
+offset_top = 203.0
+offset_right = 592.0
+offset_bottom = 226.0
+text = "Tavern"
+
+[node name="prev1" type="Button" parent="bg" unique_id=1316886365]
+visible = false
+layout_mode = 0
+offset_left = 3.0
+offset_top = 291.0
+offset_right = 128.0
+offset_bottom = 314.0
+text = "<< The SandMon"
+alignment = 0
+
+[node name="prev2" type="Button" parent="bg" unique_id=1027069395]
+visible = false
+layout_mode = 0
+offset_left = 3.0
+offset_top = 315.0
+offset_right = 128.0
+offset_bottom = 338.0
+text = "Basalt >>"
+
+[node name="gui-player-base" parent="." unique_id=962594343 instance=ExtResource("2_vq0s2")]
+layout_mode = 0
