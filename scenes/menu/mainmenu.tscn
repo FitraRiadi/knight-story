@@ -24,27 +24,15 @@
 [ext_resource type="Texture2D" uid="uid://dr2eyhaaj6js1" path="res://assets/cutscenes/prologue/22.jpg" id="21_vjcvu"]
 [ext_resource type="Texture2D" uid="uid://bujnt4w5wxw3t" path="res://assets/cutscenes/prologue/23.jpg" id="22_tu318"]
 [ext_resource type="Texture2D" uid="uid://bsnuspbst0wj5" path="res://assets/ui/popup/basic/UI-Wood1.png" id="23_4xhob"]
-[ext_resource type="Script" uid="uid://dede5mu3ade16" path="res://scripts/local/mainmenu/menu_option.gd" id="23_psgtp"]
 [ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="24_06xgw"]
-[ext_resource type="Script" uid="uid://j378iall3er1" path="res://scripts/local/mainmenu/menu_option_play_button.gd" id="24_pj0va"]
 [ext_resource type="Script" uid="uid://th50hlbuf0b3" path="res://scripts/local/mainmenu/create_character_popup.gd" id="25_pj0va"]
 [ext_resource type="Texture2D" uid="uid://boqc5sesqvj8w" path="res://assets/art/items/materials/inkwell_01.png" id="25_psgtp"]
 [ext_resource type="AudioStream" uid="uid://ckkvltir2b01h" path="res://assets/audio/bgm/SongScene1.ogg" id="26_tu318"]
-[ext_resource type="Script" uid="uid://b50kwh0xmq8hg" path="res://scripts/local/mainmenu/create_character_texture_button.gd" id="29_8xriv"]
 [ext_resource type="Script" uid="uid://33eivjs0hsy5" path="res://scripts/local/mainmenu/select_perk_popup.gd" id="29_dcpuq"]
 [ext_resource type="Texture2D" uid="uid://k2trotkj4tgi" path="res://assets/ui/popup/basic/Ui - 1.png" id="29_pj0va"]
-[ext_resource type="Script" uid="uid://len5fpd4gkdp" path="res://scripts/local/mainmenu/create_character_confirm.gd" id="29_pymtt"]
-[ext_resource type="Script" uid="uid://7s1l4gstvpel" path="res://scripts/local/mainmenu/create_character_ability_label.gd" id="29_qpk67"]
-[ext_resource type="Script" uid="uid://6xktoa4n78xl" path="res://scripts/local/mainmenu/create_character_cancel.gd" id="30_pqskf"]
-[ext_resource type="Script" uid="uid://bysgv5tjm7bwc" path="res://scripts/local/mainmenu/create_character_information.gd" id="31_pqskf"]
 [ext_resource type="Script" uid="uid://b4qn38vt0dk02" path="res://scripts/local/mainmenu/main_menu_confirm_popup.gd" id="35_ua7i4"]
-[ext_resource type="Script" uid="uid://dhxbt321reiuh" path="res://scripts/local/mainmenu/select_perk_popup_click1.gd" id="36_yeja7"]
-[ext_resource type="Script" uid="uid://bm5yh12hbu8sk" path="res://scripts/local/mainmenu/select_perk_popup_click2.gd" id="38_xux51"]
-[ext_resource type="Script" uid="uid://diquybnswb5qx" path="res://scripts/local/mainmenu/select_perk_popup_click3.gd" id="40_vjcvu"]
 [ext_resource type="Texture2D" uid="uid://bdlsfc6rsxrqn" path="res://assets/ui/perks/ui-Arcane.png" id="41_1ymof"]
 [ext_resource type="Texture2D" uid="uid://b586ro8cdtio6" path="res://assets/ui/perks/ui-Blade.png" id="43_o77u3"]
-[ext_resource type="Script" uid="uid://cfjam3snfxy83" path="res://scripts/local/mainmenu/create-character-yes.gd" id="43_xux51"]
-[ext_resource type="Script" uid="uid://bqpe68a5caiwx" path="res://scripts/local/mainmenu/create-character-no.gd" id="44_vjcvu"]
 [ext_resource type="Texture2D" uid="uid://dkq6hmrhad4g7" path="res://assets/ui/perks/Ui-Stone.png" id="45_uqx6y"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_kylmi"]
@@ -200,7 +188,6 @@ offset_top = -72.0
 offset_right = 880.0
 offset_bottom = 524.0
 scale = Vector2(0.6633926, 0.71249604)
-script = ExtResource("23_psgtp")
 
 [node name="PlayButton" type="Button" parent="MAINMENU/menu/bg_scene/MenuOption" unique_id=1060179977]
 layout_mode = 0
@@ -216,7 +203,6 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_f7hpq")
 theme_override_styles/hover = SubResource("StyleBoxFlat_d5d72")
 text = "PLAY"
 icon_alignment = 2
-script = ExtResource("24_pj0va")
 
 [node name="AchievmentButton" type="Button" parent="MAINMENU/menu/bg_scene/MenuOption" unique_id=251800814]
 layout_mode = 0
@@ -380,7 +366,6 @@ offset_bottom = 53.0
 theme_override_font_sizes/font_size = 17
 text = "None"
 horizontal_alignment = 1
-script = ExtResource("29_qpk67")
 
 [node name="TextureButton" type="TextureButton" parent="MAINMENU/createCharacterPopup/bgPopup/perkColumn" unique_id=1960682576]
 layout_mode = 0
@@ -388,7 +373,6 @@ offset_left = -8.0
 offset_top = 28.0
 offset_right = 222.0
 offset_bottom = 60.0
-script = ExtResource("29_8xriv")
 
 [node name="confirm" type="TextureRect" parent="MAINMENU/createCharacterPopup/bgPopup" unique_id=109577209]
 layout_mode = 1
@@ -417,7 +401,6 @@ vertical_alignment = 1
 layout_mode = 0
 offset_right = 111.0
 offset_bottom = 37.0
-script = ExtResource("29_pymtt")
 
 [node name="cancel" type="TextureRect" parent="MAINMENU/createCharacterPopup/bgPopup" unique_id=741118912]
 layout_mode = 1
@@ -445,7 +428,6 @@ vertical_alignment = 1
 layout_mode = 0
 offset_right = 111.0
 offset_bottom = 40.0
-script = ExtResource("30_pqskf")
 
 [node name="information" type="Label" parent="MAINMENU/createCharacterPopup/bgPopup" unique_id=1697257309]
 layout_mode = 0
@@ -456,7 +438,6 @@ offset_bottom = 338.0
 theme_override_colors/font_color = Color(1, 1, 1, 0.58431375)
 text = "Information"
 horizontal_alignment = 1
-script = ExtResource("31_pqskf")
 
 [node name="selectPerkPopup" type="Control" parent="MAINMENU" unique_id=880810026]
 visible = false
@@ -488,7 +469,6 @@ offset_left = 257.5
 offset_top = 452.97
 offset_right = 398.5
 offset_bottom = 489.97
-script = ExtResource("36_yeja7")
 
 [node name="perk2" type="TextureRect" parent="MAINMENU/selectPerkPopup" unique_id=675676634]
 layout_mode = 0
@@ -510,7 +490,6 @@ offset_left = 253.5
 offset_top = 455.97
 offset_right = 394.5
 offset_bottom = 492.97
-script = ExtResource("38_xux51")
 
 [node name="perk3" type="TextureRect" parent="MAINMENU/selectPerkPopup" unique_id=1429529768]
 layout_mode = 0
@@ -532,7 +511,6 @@ offset_left = 758.00006
 offset_top = 460.48
 offset_right = 896.19995
 offset_bottom = 497.48
-script = ExtResource("40_vjcvu")
 
 [node name="confirmPopup" type="Control" parent="MAINMENU" unique_id=918240365]
 visible = false
@@ -560,7 +538,6 @@ offset_top = 206.0
 offset_right = 217.0
 offset_bottom = 252.0
 text = "yes"
-script = ExtResource("43_xux51")
 
 [node name="no" type="Button" parent="MAINMENU/confirmPopup/bg" unique_id=564898965]
 layout_mode = 0
@@ -569,7 +546,6 @@ offset_top = 206.0
 offset_right = 404.0
 offset_bottom = 252.0
 text = "no"
-script = ExtResource("44_vjcvu")
 
 [node name="information" type="Label" parent="MAINMENU/confirmPopup/bg" unique_id=103819610]
 layout_mode = 0
