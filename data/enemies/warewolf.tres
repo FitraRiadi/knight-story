@@ -10,6 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://78ehk66ybvq4" path="res://assets/art/sprites/enemy/warewolf/hit2-removebg-preview.png" id="7_5eh5s"]
 [ext_resource type="Texture2D" uid="uid://bfewyxnupacp4" path="res://assets/art/sprites/enemy/warewolf/death1-removebg-preview.png" id="8_7slcr"]
 [ext_resource type="Texture2D" uid="uid://bbmugqtg2fsnv" path="res://assets/art/sprites/enemy/warewolf/defend1-removebg-preview.png" id="9_oa1ji"]
+[ext_resource type="Resource" uid="uid://xf6noadq87vm" path="res://data/items/attack_potion.tres" id="11_akbxh"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_8puy6"]
 animations = [{
@@ -78,6 +79,7 @@ animations = [{
 [resource]
 script = ExtResource("1_n2612")
 ai_type = 1
+starting_inventory = Array[ExtResource("2_t7j65")]([ExtResource("11_akbxh")])
 enemy_id = "warewolf"
 enemy_name = "Warewolf"
 min_level = 3

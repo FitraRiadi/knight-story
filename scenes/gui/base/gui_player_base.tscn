@@ -2,6 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="1_2cotu"]
 [ext_resource type="Script" uid="uid://biq0j4ve867kr" path="res://scripts/local/gui/base/gui_player_base.gd" id="2_8xriv"]
+[ext_resource type="FontFile" uid="uid://dx6ognpbk586" path="res://assets/ui/fonts/alagard.ttf" id="2_mi53y"]
 [ext_resource type="Texture2D" uid="uid://ubgv1comvtdg" path="res://assets/art/profile/player/Icon4.png" id="3_c2cj2"]
 [ext_resource type="Script" uid="uid://cvl34fqp2un1c" path="res://test.gd" id="4_lxysw"]
 
@@ -35,6 +36,7 @@ offset_left = 474.0
 offset_top = 15.0
 offset_right = 802.0
 offset_bottom = 38.0
+theme_override_fonts/font = ExtResource("2_mi53y")
 theme_override_font_sizes/font_size = 24
 text = "Vilagge Title"
 horizontal_alignment = 1
@@ -45,6 +47,7 @@ offset_left = 59.0
 offset_top = 20.0
 offset_right = 276.0
 offset_bottom = 43.0
+theme_override_fonts/font = ExtResource("2_mi53y")
 theme_override_font_sizes/font_size = 11
 text = "The Village Of Kindness"
 horizontal_alignment = 1
@@ -86,6 +89,7 @@ offset_left = 32.0
 offset_top = -1.0
 offset_right = 90.0
 offset_bottom = 14.0
+theme_override_fonts/font = ExtResource("2_mi53y")
 theme_override_font_sizes/font_size = 8
 text = "100 / 200"
 horizontal_alignment = 1
@@ -121,6 +125,7 @@ offset_left = 32.0
 offset_top = -1.0
 offset_right = 90.0
 offset_bottom = 14.0
+theme_override_fonts/font = ExtResource("2_mi53y")
 theme_override_font_sizes/font_size = 8
 text = "100 / 200"
 horizontal_alignment = 1
@@ -156,6 +161,7 @@ offset_left = 32.0
 offset_top = -1.0
 offset_right = 90.0
 offset_bottom = 14.0
+theme_override_fonts/font = ExtResource("2_mi53y")
 theme_override_font_sizes/font_size = 8
 text = "100 / 200"
 horizontal_alignment = 1
@@ -177,6 +183,7 @@ offset_top = 5.898492
 offset_right = 230.12643
 offset_bottom = 25.89849
 scale = Vector2(0.12509653, 0.74070823)
+theme_override_fonts/font = ExtResource("2_mi53y")
 theme_override_font_sizes/font_size = 21
 text = "The Knight"
 
@@ -230,6 +237,7 @@ offset_top = 1.0
 offset_right = 156.91653
 offset_bottom = 16.0
 scale = Vector2(0.49369207, 0.5356497)
+theme_override_fonts/font = ExtResource("2_mi53y")
 text = "Noble"
 horizontal_alignment = 1
 autowrap_mode = 3
@@ -251,6 +259,7 @@ offset_right = 53.0
 offset_bottom = 16.0
 scale = Vector2(0.56919855, 0.55448294)
 theme_override_colors/font_color = Color(1, 1, 0.17254902, 1)
+theme_override_fonts/font = ExtResource("2_mi53y")
 text = "LV"
 
 [node name="level" type="Label" parent="bar-information/level" unique_id=952213037]
@@ -260,6 +269,7 @@ offset_top = 1.0
 offset_right = 62.657448
 offset_bottom = 16.0
 scale = Vector2(0.53110355, 0.5542145)
+theme_override_fonts/font = ExtResource("2_mi53y")
 text = "5"
 vertical_alignment = 1
 
@@ -308,6 +318,7 @@ offset_left = 43.468933
 offset_top = 77.9639
 offset_right = 1119.3157
 offset_bottom = 265.9639
+theme_override_fonts/font = ExtResource("2_mi53y")
 theme_override_font_sizes/font_size = 200
 text = "Maps"
 horizontal_alignment = 1
@@ -328,6 +339,7 @@ offset_left = 43.468933
 offset_top = 77.9639
 offset_right = 1119.3157
 offset_bottom = 265.9639
+theme_override_fonts/font = ExtResource("2_mi53y")
 theme_override_font_sizes/font_size = 200
 text = "Play"
 horizontal_alignment = 1
@@ -347,6 +359,7 @@ offset_left = 43.468933
 offset_top = 77.9639
 offset_right = 1119.3157
 offset_bottom = 265.9639
+theme_override_fonts/font = ExtResource("2_mi53y")
 theme_override_font_sizes/font_size = 200
 text = "Inventory"
 horizontal_alignment = 1
@@ -366,6 +379,7 @@ offset_left = 43.468933
 offset_top = 77.9639
 offset_right = 1119.3157
 offset_bottom = 265.9639
+theme_override_fonts/font = ExtResource("2_mi53y")
 theme_override_font_sizes/font_size = 200
 text = "Crafting"
 horizontal_alignment = 1

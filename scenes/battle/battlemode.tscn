@@ -4,6 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://33aykbqtqcrw" path="res://assets/art/backgrounds/location/map/forest_of_shadow/forest_of_shadow1.jpg" id="1_ksrse"]
 [ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="3_g2c4h"]
 [ext_resource type="Texture2D" uid="uid://crxculdvm3mw0" path="res://assets/ui/buttons/Gemini_Generated_Image_w9mpvzw9mpvzw9mp-removebg-preview.png" id="3_h8kyn"]
+[ext_resource type="FontFile" uid="uid://dx6ognpbk586" path="res://assets/ui/fonts/alagard.ttf" id="3_i268m"]
 [ext_resource type="Texture2D" uid="uid://ubgv1comvtdg" path="res://assets/art/profile/player/Icon4.png" id="4_o6x6a"]
 [ext_resource type="Texture2D" uid="uid://eeh1qrcceu17" path="res://assets/art/profile/enemy/grimward.jpg" id="5_o6x6a"]
 [ext_resource type="Texture2D" uid="uid://dukpxgco0stkj" path="res://assets/ui/icons/target_icon.png" id="6_ymp2q"]
@@ -14,8 +15,6 @@ texture = ExtResource("3_g2c4h")
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_i268m"]
 texture = ExtResource("3_g2c4h")
-
-[sub_resource type="GDScript" id="GDScript_h8kyn"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ymp2q"]
 bg_color = Color(0.54, 0.052650016, 0.027000008, 1)
@@ -73,6 +72,7 @@ offset_top = 257.0
 offset_right = 1717.133
 offset_bottom = 725.0
 scale = Vector2(0.082459405, 0.084952995)
+theme_override_fonts/font = ExtResource("3_i268m")
 theme_override_font_sizes/font_size = 250
 theme_override_styles/normal = SubResource("StyleBoxTexture_h8kyn")
 theme_override_styles/hover = SubResource("StyleBoxTexture_i268m")
@@ -106,6 +106,7 @@ offset_top = 298.0
 offset_right = 1719.133
 offset_bottom = 766.0
 scale = Vector2(0.07269282, 0.07886729)
+theme_override_fonts/font = ExtResource("3_i268m")
 theme_override_font_sizes/font_size = 250
 theme_override_styles/normal = SubResource("StyleBoxTexture_h8kyn")
 theme_override_styles/hover = SubResource("StyleBoxTexture_i268m")
@@ -133,9 +134,6 @@ expand_mode = 1
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=2106517464]
 position = Vector2(370, 170)
-
-[node name="AbilitySystem" type="Node" parent="." unique_id=-346757173]
-script = SubResource("GDScript_h8kyn")
 
 [node name="player-information" type="Control" parent="." unique_id=791426165]
 anchors_preset = 0
@@ -168,6 +166,7 @@ offset_left = 3.0352879
 offset_top = 0.8846972
 offset_right = 89.03507
 offset_bottom = 8.884697
+theme_override_fonts/font = ExtResource("3_i268m")
 theme_override_font_sizes/font_size = 7
 text = "100 / 200"
 horizontal_alignment = 1
@@ -197,6 +196,7 @@ offset_left = 15.176435
 offset_top = 0.88469315
 offset_right = 104.21152
 offset_bottom = 8.884693
+theme_override_fonts/font = ExtResource("3_i268m")
 theme_override_font_sizes/font_size = 7
 text = "100 / 200"
 horizontal_alignment = 1
@@ -226,6 +226,7 @@ offset_left = 85.9998
 offset_top = 4.1193943
 offset_right = 143.99982
 offset_bottom = 12.119394
+theme_override_fonts/font = ExtResource("3_i268m")
 theme_override_font_sizes/font_size = 7
 text = "100 / 200"
 horizontal_alignment = 1
@@ -247,6 +248,7 @@ offset_top = 5.898492
 offset_right = 230.12643
 offset_bottom = 25.89849
 scale = Vector2(0.12509653, 0.74070823)
+theme_override_fonts/font = ExtResource("3_i268m")
 theme_override_font_sizes/font_size = 21
 text = "The Knight"
 
@@ -301,6 +303,7 @@ offset_top = 1.0
 offset_right = 156.91653
 offset_bottom = 16.0
 scale = Vector2(0.49369207, 0.5356497)
+theme_override_fonts/font = ExtResource("3_i268m")
 text = "Noble"
 horizontal_alignment = 1
 autowrap_mode = 3
@@ -322,6 +325,7 @@ offset_right = 53.0
 offset_bottom = 16.0
 scale = Vector2(0.56919855, 0.55448294)
 theme_override_colors/font_color = Color(1, 1, 0.17254902, 1)
+theme_override_fonts/font = ExtResource("3_i268m")
 text = "LV"
 
 [node name="level" type="Label" parent="player-information/level" unique_id=1504367049]
@@ -331,6 +335,7 @@ offset_top = 1.0
 offset_right = 62.657448
 offset_bottom = 16.0
 scale = Vector2(0.53110355, 0.5542145)
+theme_override_fonts/font = ExtResource("3_i268m")
 text = "5"
 vertical_alignment = 1
 
@@ -389,6 +394,7 @@ offset_left = 72.0
 offset_top = 5.0
 offset_right = 130.0
 offset_bottom = 14.0
+theme_override_fonts/font = ExtResource("3_i268m")
 theme_override_font_sizes/font_size = 8
 text = "100 / 200"
 horizontal_alignment = 1
@@ -419,6 +425,7 @@ offset_right = 32.32544
 offset_bottom = 16.0
 scale = Vector2(0.56919855, 0.55448294)
 theme_override_colors/font_color = Color(1, 1, 0.17254902, 1)
+theme_override_fonts/font = ExtResource("3_i268m")
 text = "LV"
 
 [node name="level" type="Label" parent="enemy-information/level" unique_id=2112502254]
@@ -428,6 +435,7 @@ offset_top = 1.0
 offset_right = 62.657448
 offset_bottom = 16.0
 scale = Vector2(0.53110355, 0.5542145)
+theme_override_fonts/font = ExtResource("3_i268m")
 text = "5"
 vertical_alignment = 1
 
@@ -463,6 +471,7 @@ offset_left = -123.0
 offset_top = 5.0
 offset_right = -51.0
 offset_bottom = 20.0
+theme_override_fonts/font = ExtResource("3_i268m")
 text = "Grimward"
 
 [node name="TextureRect" type="TextureRect" parent="enemy-information" unique_id=850490874]
@@ -506,6 +515,7 @@ offset_top = 4.0
 offset_right = 457.0
 offset_bottom = 17.0
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.49411765)
+theme_override_fonts/font = ExtResource("3_i268m")
 theme_override_font_sizes/font_size = 10
 text = "Forest Of Shadow"
 horizontal_alignment = 1

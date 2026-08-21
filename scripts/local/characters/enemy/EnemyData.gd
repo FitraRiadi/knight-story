@@ -1,67 +1,165 @@
 extends Resource
 class_name EnemyData
 
-enum AIType { BASIC, AGGRESSIVE, TACTICAL, BOSS }
+
+# ============================================================
+# AI
+# ============================================================
+
+enum AIType {
+	BASIC,
+	AGGRESSIVE,
+	TACTICAL,
+	BOSS
+}
+
 
 @export_group("AI Strategy")
+
 @export var ai_type: AIType = AIType.BASIC
-@export var heal_threshold: float = 0.35
+
+
+# ============================================================
+# INVENTORY & LOOT
+# ============================================================
 
 @export_group("Inventory & Loot")
+
 @export var starting_inventory: Array[ItemData] = []
 
+
+# ============================================================
+# BASIC INFO
+# ============================================================
+
 @export_group("Basic Info")
+
 @export var enemy_id: String = ""
+
 @export var enemy_name: String = ""
+
 @export var min_level: int = 1
 
+
+# ============================================================
+# VISUAL & ANIMATIONS
+# ============================================================
+
 @export_group("Visual & Animations")
+
 @export var icon_enemy: Texture2D
+
 @export var sprite_frames: SpriteFrames
+
 @export var sprite_scale: Vector2 = Vector2(0.8, 0.8)
 
+
+# ============================================================
+# STATS
+# ============================================================
+
 @export_group("Stats (Base at Minimum Level)")
+
 @export var max_hp: float = 100.0
+
 @export var damage_to_player: float = 15.0
+
 @export var defense: float = 0.0
 
-@export_group("Rewards & Drops")
-@export var exp_reward: int = 20
-@export var gold_reward: int = 10
-@export var drop_table: Array[String] = []
-@export var drop_chance: float = 0.5 
 
-# Helper function untuk mendapatkan tekstur profil UI (Icon / Fallback ke Sprite Frame)
+# ============================================================
+# REWARDS & DROPS
+# ============================================================
+
+@export_group("Rewards & Drops")
+
+@export var exp_reward: int = 20
+
+@export var gold_reward: int = 10
+
+@export var drop_table: Array[String] = []
+
+@export var drop_chance: float = 0.5
+
+
+# ============================================================
+# PROFILE ICON
+# ============================================================
+
 func get_profile_icon() -> Texture2D:
+
 	if icon_enemy != null:
 		return icon_enemy
-	
-	if sprite_frames and sprite_frames.has_animation("idle"):
-		return sprite_frames.get_frame_texture("idle", 0)
-		
+
+
+	if sprite_frames:
+		if sprite_frames.has_animation("idle"):
+			return sprite_frames.get_frame_texture(
+				"idle",
+				0
+			)
+
+
 	return null
 
-func get_scaled_stats(target_level: int) -> Dictionary:
+
+# ============================================================
+# SCALED STATS
+# ============================================================
+
+func get_scaled_stats(
+	target_level: int
+) -> Dictionary:
+
 	var final_hp: float = max_hp
+
 	var final_dmg: float = damage_to_player
+
 	var final_def: float = defense
+
 	var final_exp: int = exp_reward
+
 	var final_gold: int = gold_reward
-	
+
+
 	if target_level > min_level:
-		var level_diff: int = target_level - min_level
+
+		var level_diff: int = (
+			target_level - min_level
+		)
+
 		var stat_bonus: float = 0.0
-		
+
+
 		for step in range(level_diff):
+
 			var tier = step / 10
-			stat_bonus += 10.0 + (tier * 5.0)
-		
-		final_hp += stat_bonus * 2.0  # HP mendapatkan porsi skaling lebih besar
+
+			stat_bonus += (
+				10.0 +
+				(tier * 5.0)
+			)
+
+
+		final_hp += (
+			stat_bonus * 2.0
+		)
+
 		final_dmg += stat_bonus
-		final_def += level_diff * 0.5 # Defense tumbuh lebih lambat agar game tetap seimbang
-		
-		final_exp += level_diff * 5
-		final_gold += level_diff * 5
+
+		final_def += (
+			level_diff * 0.5
+		)
+
+
+		final_exp += (
+			level_diff * 5
+		)
+
+		final_gold += (
+			level_diff * 5
+		)
+
 
 	return {
 		"max_hp": final_hp,

@@ -25,6 +25,7 @@
 [ext_resource type="Texture2D" uid="uid://bujnt4w5wxw3t" path="res://assets/cutscenes/prologue/23.jpg" id="22_tu318"]
 [ext_resource type="Texture2D" uid="uid://bsnuspbst0wj5" path="res://assets/ui/popup/basic/UI-Wood1.png" id="23_4xhob"]
 [ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="24_06xgw"]
+[ext_resource type="FontFile" uid="uid://dx6ognpbk586" path="res://assets/ui/fonts/alagard.ttf" id="24_pqskf"]
 [ext_resource type="Script" uid="uid://th50hlbuf0b3" path="res://scripts/local/mainmenu/create_character_popup.gd" id="25_pj0va"]
 [ext_resource type="Texture2D" uid="uid://boqc5sesqvj8w" path="res://assets/art/items/materials/inkwell_01.png" id="25_psgtp"]
 [ext_resource type="AudioStream" uid="uid://ckkvltir2b01h" path="res://assets/audio/bgm/SongScene1.ogg" id="26_tu318"]
@@ -108,8 +109,6 @@ animations = [{
 "name": &"cutscene_prologue",
 "speed": 20.0
 }]
-
-[sub_resource type="FontVariation" id="FontVariation_moojr"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2btif"]
 bg_color = Color(0, 0, 0, 0.3372549)
@@ -196,7 +195,7 @@ offset_top = 351.0
 offset_right = 691.0
 offset_bottom = 400.0
 theme_override_colors/font_color = Color(0.9984776, 0.9984776, 0.9984776, 1)
-theme_override_fonts/font = SubResource("FontVariation_moojr")
+theme_override_fonts/font = ExtResource("24_pqskf")
 theme_override_font_sizes/font_size = 32
 theme_override_styles/normal = SubResource("StyleBoxFlat_2btif")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_f7hpq")
@@ -211,7 +210,7 @@ offset_top = 412.0
 offset_right = 691.0
 offset_bottom = 461.0
 theme_override_colors/font_color = Color(0.9984776, 0.9984776, 0.9984776, 1)
-theme_override_fonts/font = SubResource("FontVariation_moojr")
+theme_override_fonts/font = ExtResource("24_pqskf")
 theme_override_font_sizes/font_size = 25
 theme_override_styles/normal = SubResource("StyleBoxFlat_n0uqe")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_aggb6")
@@ -229,6 +228,7 @@ theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_colors/font_outline_color = Color(0.11505515, 0.11663171, 0.10154415, 1)
 theme_override_constants/outline_size = 2
 theme_override_constants/shadow_outline_size = 10
+theme_override_fonts/font = ExtResource("24_pqskf")
 theme_override_font_sizes/font_size = 80
 text = "Knight Story"
 
@@ -241,6 +241,7 @@ offset_bottom = 147.0
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_colors/font_outline_color = Color(0.11505515, 0.11663171, 0.10154415, 1)
 theme_override_constants/outline_size = 2
+theme_override_fonts/font = ExtResource("24_pqskf")
 theme_override_font_sizes/font_size = 30
 text = "The Knight Adventure Story"
 
