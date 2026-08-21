@@ -1,0 +1,180 @@
+[gd_scene format=3 uid="uid://kc1e0n34mmy3"]
+
+[ext_resource type="Texture2D" uid="uid://babnlghrmqvsm" path="res://assets/art/sprites/enemy/grimward/idle1-removebg-preview.png" id="1_72liy"]
+[ext_resource type="Texture2D" uid="uid://xpfvadqs4lpj" path="res://assets/art/sprites/enemy/grimward/idle2-removebg-preview.png" id="2_icfsp"]
+[ext_resource type="Texture2D" uid="uid://i208trw5gtud" path="res://assets/art/sprites/enemy/grimward/attack1-removebg-preview.png" id="3_ubuwf"]
+[ext_resource type="Texture2D" uid="uid://bfk8r607vwxap" path="res://assets/art/sprites/enemy/grimward/attack2-removebg-preview.png" id="4_8kmfi"]
+[ext_resource type="Texture2D" uid="uid://bq4guv0sqn8dp" path="res://assets/art/sprites/enemy/grimward/hit1-removebg-preview.png" id="5_vkenx"]
+[ext_resource type="Texture2D" uid="uid://d1r4psmgu73iu" path="res://assets/art/sprites/enemy/grimward/hit2-removebg-preview.png" id="6_cql51"]
+[ext_resource type="Texture2D" uid="uid://e3q04pvucu10" path="res://assets/art/sprites/enemy/grimward/death1-removebg-preview.png" id="7_weo17"]
+[ext_resource type="Texture2D" uid="uid://6488p8v54jf" path="res://assets/art/sprites/enemy/grimward/defend1-removebg-preview.png" id="8_2sc0v"]
+[ext_resource type="Script" uid="uid://c22n5t7mdh7ui" path="res://scripts/local/characters/enemy/Enemy.gd" id="9_7v1ds"]
+[ext_resource type="Texture2D" uid="uid://dukpxgco0stkj" path="res://assets/ui/icons/target_icon.png" id="10_qvr0l"]
+[ext_resource type="Texture2D" uid="uid://bvn6tvox2at5e" path="res://assets/art/items/weapons/dagger_01.png" id="11_icfsp"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_moojr"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_72liy")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_icfsp")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_ubuwf")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_8kmfi")
+}],
+"loop": 0,
+"name": &"attack",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("5_vkenx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_cql51")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_weo17")
+}],
+"loop": 0,
+"name": &"death",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_72liy")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_icfsp")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_2sc0v")
+}],
+"loop": 1,
+"name": &"defend",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("5_vkenx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_cql51")
+}],
+"loop": 0,
+"name": &"hurt",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("1_72liy")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_icfsp")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 2.0
+}]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_moojr"]
+bg_color = Color(0.0035191663, 0.003519169, 0.0035191642, 0.64705884)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kylmi"]
+bg_color = Color(0.6, 0.017999984, 0.017999984, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[node name="Enemy" type="AnimatedSprite2D" unique_id=249455329]
+texture_filter = 1
+scale = Vector2(0.9, 0.9)
+sprite_frames = SubResource("SpriteFrames_moojr")
+animation = &"idle"
+autoplay = "idle"
+script = ExtResource("9_7v1ds")
+
+[node name="enemyStats" type="Control" parent="." unique_id=369807274]
+layout_mode = 3
+anchors_preset = 0
+offset_left = -44.444443
+offset_top = -117.77779
+offset_right = 58.055527
+offset_bottom = -77.77779
+
+[node name="name" type="Label" parent="enemyStats" unique_id=1774231093]
+layout_mode = 0
+offset_left = -40.0
+offset_top = 6.25
+offset_right = 140.0
+offset_bottom = 21.25
+text = "Ipin"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="level" type="Label" parent="enemyStats" unique_id=1998663788]
+layout_mode = 0
+offset_left = 8.75
+offset_top = 20.0
+offset_right = 133.50653
+offset_bottom = 35.0
+scale = Vector2(0.69134635, 0.69112873)
+theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
+text = "Level 5"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="bar-hp" type="Panel" parent="enemyStats" unique_id=921374560]
+layout_mode = 0
+offset_top = 32.5
+offset_right = 106.24997
+offset_bottom = 40.0
+
+[node name="bar-hp-progress" type="Panel" parent="enemyStats/bar-hp" unique_id=532313685]
+layout_mode = 0
+offset_right = 106.24997
+offset_bottom = 7.5
+theme_override_styles/panel = SubResource("StyleBoxFlat_kylmi")
+
+[node name="enemyTarget" type="TextureRect" parent="." unique_id=1480684603]
+offset_left = -5.555556
+offset_top = -138.8889
+offset_right = 34.444443
+offset_bottom = -98.8889
+scale = Vector2(0.5437715, 0.5073433)
+texture = ExtResource("10_qvr0l")
+expand_mode = 1
+
+[node name="enemyCollision" type="TextureButton" parent="." unique_id=863689585]
+offset_left = -44.44448
+offset_top = -64.44444
+offset_right = 68.88886
+offset_bottom = 102.22223
+
+[node name="enemyHitIcon" type="TextureRect" parent="." unique_id=1984015418]
+offset_left = -40.0
+offset_top = -30.0
+offset_right = 24.0
+offset_bottom = 34.0
+rotation = -0.08710879
+texture = ExtResource("11_icfsp")
+
+[node name="Label" type="Label" parent="." unique_id=857976771]
+offset_left = 9.4444065
+offset_top = -6.6666417
+offset_right = 24.444407
+offset_bottom = 8.333359
+mouse_behavior_recursive = 1
+text = "20"
+horizontal_alignment = 1
+vertical_alignment = 1

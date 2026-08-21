@@ -4,6 +4,9 @@
 [ext_resource type="FontFile" uid="uid://dx6ognpbk586" path="res://assets/ui/fonts/alagard.ttf" id="2_krio3"]
 [ext_resource type="Script" uid="uid://cdwb8o4wb3vfh" path="res://scripts/local/location/room/blacksmith/intro.gd" id="3_o4wxa"]
 [ext_resource type="Script" uid="uid://2ir37c6h540n" path="res://scripts/local/location/room/blacksmith/feature.gd" id="4_krio3"]
+[ext_resource type="Texture2D" uid="uid://8cepjqc2ko63" path="res://assets/art/items/weapons/mace_01.png" id="5_o4wxa"]
+[ext_resource type="Texture2D" uid="uid://c3wjbqxsjgaga" path="res://assets/art/items/weapons/short_sword_01.png" id="6_awg12"]
+[ext_resource type="Texture2D" uid="uid://d0onxdco3dyx1" path="res://assets/art/items/materials/tome_01.png" id="7_yawai"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_moojr"]
 bg_color = Color(1, 1, 1, 0.42745098)
@@ -13,6 +16,64 @@ bg_color = Color(1, 1, 1, 0.5882353)
 corner_radius_top_left = 10
 corner_radius_top_right = 10
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_o4wxa"]
+bg_color = Color(0.056291588, 0.05629161, 0.05629155, 0.69411767)
+shadow_color = Color(0.9243102, 0.8963412, 0.98523813, 0.6)
+shadow_size = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_awg12"]
+bg_color = Color(0.05490196, 0.05490196, 0.05490196, 0.69411767)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.18898153, 0.8131725, 0.9295919, 0.61960787)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dt4my"]
+bg_color = Color(0.9607843, 0.9607843, 0.9607843, 0.4745098)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1seyk"]
+bg_color = Color(1, 1, 1, 0.24705882)
+corner_radius_top_left = 1
+corner_radius_top_right = 1
+corner_radius_bottom_right = 1
+corner_radius_bottom_left = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jncy7"]
+bg_color = Color(1, 1, 1, 0.17254902)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_iiu5v"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vtwk0"]
+bg_color = Color(0.6, 0.6, 0.6, 0.24705882)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_v6qx5"]
+bg_color = Color(1, 1, 1, 0.16078432)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kylmi"]
+bg_color = Color(1, 0.99215686, 0.9647059, 0.5294118)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_avtb8"]
+bg_color = Color(0.27387273, 0.27387273, 0.27387273, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_myyus"]
+bg_color = Color(0.39215687, 0.6666667, 0.5019608, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_fhdai"]
+bg_color = Color(0.8666667, 0.13333334, 0.17254902, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1qqxr"]
 bg_color = Color(0.46293062, 0.42736354, 0.48976684, 0.61960787)
 corner_radius_top_left = 10
@@ -20,7 +81,7 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
-[node name="Control" type="Control" unique_id=440507155]
+[node name="blacksmith" type="Control" unique_id=440507155]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -93,9 +154,9 @@ text = "Jack"
 
 [node name="feature" type="Control" parent="TextureRect" unique_id=1474548230]
 anchors_preset = 0
-offset_left = 2.0
+offset_left = 22.0
 offset_top = 294.0
-offset_right = 42.0
+offset_right = 62.0
 offset_bottom = 334.0
 script = ExtResource("4_krio3")
 
@@ -117,6 +178,18 @@ mouse_default_cursor_shape = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
 text = "Weapon"
+
+[node name="closeBtn" type="Button" parent="TextureRect/feature/mainTab" unique_id=1071397130]
+layout_mode = 0
+offset_left = -23.0
+offset_top = 76.0
+offset_right = 40.0
+offset_bottom = 99.0
+rotation = -1.579074
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
+text = "Exit"
 
 [node name="armorBtn" type="Button" parent="TextureRect/feature/mainTab" unique_id=219127992]
 layout_mode = 0
@@ -196,7 +269,20 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="weaponStats" type="ColorRect" parent="TextureRect/feature/weaponTab" unique_id=759567749]
+[node name="weapon" type="Button" parent="TextureRect/feature/weaponTab/weaponSelection/weaponGrid" unique_id=978426372]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 11.0
+offset_right = 68.0
+offset_bottom = 75.0
+scale = Vector2(0.545, 0.55)
+mouse_default_cursor_shape = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_o4wxa")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_awg12")
+icon = ExtResource("5_o4wxa")
+icon_alignment = 1
+
+[node name="weaponMaterials" type="ColorRect" parent="TextureRect/feature/weaponTab" unique_id=759567749]
 layout_mode = 0
 offset_top = 203.0
 offset_right = 40.666603
@@ -204,14 +290,465 @@ offset_bottom = 244.84146
 scale = Vector2(8.360669, 1.7446806)
 color = Color(0, 0, 0, 0.33333334)
 
+[node name="Panel" type="Panel" parent="TextureRect/feature/weaponTab/weaponMaterials" unique_id=83485046]
+layout_mode = 0
+offset_top = 1.7195129
+offset_right = 40.0
+offset_bottom = 2.2926788
+theme_override_styles/panel = SubResource("StyleBoxFlat_dt4my")
+
+[node name="Label" type="Label" parent="TextureRect/feature/weaponTab/weaponMaterials" unique_id=981406213]
+layout_mode = 0
+offset_left = 16.027426
+offset_top = 3.4390259
+offset_right = 135.0179
+offset_bottom = 20.439026
+scale = Vector2(0.07940938, 0.35262752)
+theme_override_font_sizes/font_size = 17
+theme_override_styles/normal = SubResource("StyleBoxFlat_1seyk")
+text = "Material"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="materials" type="Control" parent="TextureRect/feature/weaponTab/weaponMaterials" unique_id=1284783674]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="material1" type="Panel" parent="TextureRect/feature/weaponTab/weaponMaterials/materials" unique_id=1307873774]
+layout_mode = 0
+offset_left = 1.3156843
+offset_top = 10.890259
+offset_right = 41.315685
+offset_bottom = 50.89026
+scale = Vector2(0.47102946, 0.19443893)
+theme_override_styles/panel = SubResource("StyleBoxFlat_jncy7")
+
+[node name="icon" type="Button" parent="TextureRect/feature/weaponTab/weaponMaterials/materials/material1" unique_id=1616953713]
+texture_filter = 1
+layout_mode = 0
+offset_left = -1.0157127
+offset_top = -8.996029e-05
+offset_right = 62.984287
+offset_bottom = 63.99991
+scale = Vector2(0.061445616, 0.622968)
+theme_override_styles/normal = SubResource("StyleBoxFlat_iiu5v")
+icon = ExtResource("7_yawai")
+icon_alignment = 1
+
+[node name="Label" type="Label" parent="TextureRect/feature/weaponTab/weaponMaterials/materials/material1" unique_id=1089874400]
+layout_mode = 0
+offset_left = 3.5550003
+offset_top = 5.895548
+offset_right = 284.94537
+offset_bottom = 38.32157
+scale = Vector2(0.110995896, 1)
+theme_override_font_sizes/font_size = 19
+text = "The Bone of Dragon Style"
+vertical_alignment = 1
+
+[node name="Label2" type="Label" parent="TextureRect/feature/weaponTab/weaponMaterials/materials/material1" unique_id=5558751]
+layout_mode = 0
+offset_left = 33.01066
+offset_top = 2.9477353
+offset_right = 88.26753
+offset_bottom = 26.491562
+scale = Vector2(0.119480744, 1.3801036)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_vtwk0")
+text = "1 / 2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="material2" type="Panel" parent="TextureRect/feature/weaponTab/weaponMaterials/materials" unique_id=1107381198]
+layout_mode = 0
+offset_left = 1.316
+offset_top = 20.89
+offset_right = 41.316
+offset_bottom = 60.89
+scale = Vector2(0.47102946, 0.19443893)
+theme_override_styles/panel = SubResource("StyleBoxFlat_jncy7")
+
+[node name="icon" type="Button" parent="TextureRect/feature/weaponTab/weaponMaterials/materials/material2" unique_id=1789896805]
+texture_filter = 1
+layout_mode = 0
+offset_left = -1.0157127
+offset_top = -8.996029e-05
+offset_right = 62.984287
+offset_bottom = 63.99991
+scale = Vector2(0.061445616, 0.622968)
+theme_override_styles/normal = SubResource("StyleBoxFlat_iiu5v")
+icon = ExtResource("7_yawai")
+icon_alignment = 1
+
+[node name="Label" type="Label" parent="TextureRect/feature/weaponTab/weaponMaterials/materials/material2" unique_id=1599216847]
+layout_mode = 0
+offset_left = 3.5550003
+offset_top = 5.895548
+offset_right = 284.94537
+offset_bottom = 38.32157
+scale = Vector2(0.110995896, 1)
+theme_override_font_sizes/font_size = 19
+text = "The Bone of Dragon Style"
+vertical_alignment = 1
+
+[node name="Label2" type="Label" parent="TextureRect/feature/weaponTab/weaponMaterials/materials/material2" unique_id=1374116392]
+layout_mode = 0
+offset_left = 33.01066
+offset_top = 2.9477353
+offset_right = 88.26753
+offset_bottom = 26.491562
+scale = Vector2(0.119480744, 1.3801036)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_vtwk0")
+text = "1 / 2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="material3" type="Panel" parent="TextureRect/feature/weaponTab/weaponMaterials/materials" unique_id=1459293308]
+layout_mode = 0
+offset_left = 1.316
+offset_top = 30.89
+offset_right = 41.316
+offset_bottom = 70.89
+scale = Vector2(0.47102946, 0.19443893)
+theme_override_styles/panel = SubResource("StyleBoxFlat_jncy7")
+
+[node name="icon" type="Button" parent="TextureRect/feature/weaponTab/weaponMaterials/materials/material3" unique_id=1440362136]
+texture_filter = 1
+layout_mode = 0
+offset_left = -1.0157127
+offset_top = -8.996029e-05
+offset_right = 62.984287
+offset_bottom = 63.99991
+scale = Vector2(0.061445616, 0.622968)
+theme_override_styles/normal = SubResource("StyleBoxFlat_iiu5v")
+icon = ExtResource("7_yawai")
+icon_alignment = 1
+
+[node name="Label" type="Label" parent="TextureRect/feature/weaponTab/weaponMaterials/materials/material3" unique_id=1178596652]
+layout_mode = 0
+offset_left = 3.5550003
+offset_top = 5.895548
+offset_right = 284.94537
+offset_bottom = 38.32157
+scale = Vector2(0.110995896, 1)
+theme_override_font_sizes/font_size = 19
+text = "The Bone of Dragon Style"
+vertical_alignment = 1
+
+[node name="Label2" type="Label" parent="TextureRect/feature/weaponTab/weaponMaterials/materials/material3" unique_id=248389459]
+layout_mode = 0
+offset_left = 33.01066
+offset_top = 2.9477353
+offset_right = 88.26753
+offset_bottom = 26.491562
+scale = Vector2(0.119480744, 1.3801036)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_vtwk0")
+text = "1 / 2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="material4" type="Panel" parent="TextureRect/feature/weaponTab/weaponMaterials/materials" unique_id=1793213048]
+layout_mode = 0
+offset_left = 21.316
+offset_top = 10.890259
+offset_right = 61.316
+offset_bottom = 50.89026
+scale = Vector2(0.47102946, 0.19443893)
+theme_override_styles/panel = SubResource("StyleBoxFlat_jncy7")
+
+[node name="icon" type="Button" parent="TextureRect/feature/weaponTab/weaponMaterials/materials/material4" unique_id=221909953]
+texture_filter = 1
+layout_mode = 0
+offset_left = -1.0157127
+offset_top = -8.996029e-05
+offset_right = 62.984287
+offset_bottom = 63.99991
+scale = Vector2(0.061445616, 0.622968)
+theme_override_styles/normal = SubResource("StyleBoxFlat_iiu5v")
+icon = ExtResource("7_yawai")
+icon_alignment = 1
+
+[node name="Label" type="Label" parent="TextureRect/feature/weaponTab/weaponMaterials/materials/material4" unique_id=1131653188]
+layout_mode = 0
+offset_left = 3.5549927
+offset_top = 5.895548
+offset_right = 284.94537
+offset_bottom = 38.32157
+scale = Vector2(0.110995896, 1)
+theme_override_font_sizes/font_size = 19
+text = "The Bone of Dragon Style"
+vertical_alignment = 1
+
+[node name="Label2" type="Label" parent="TextureRect/feature/weaponTab/weaponMaterials/materials/material4" unique_id=1095570400]
+layout_mode = 0
+offset_left = 33.01066
+offset_top = 2.9477353
+offset_right = 88.26753
+offset_bottom = 26.491562
+scale = Vector2(0.119480744, 1.3801036)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_vtwk0")
+text = "1 / 2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="material5" type="Panel" parent="TextureRect/feature/weaponTab/weaponMaterials/materials" unique_id=1706653990]
+layout_mode = 0
+offset_left = 21.316
+offset_top = 20.89
+offset_right = 61.316
+offset_bottom = 60.89
+scale = Vector2(0.47102946, 0.19443893)
+theme_override_styles/panel = SubResource("StyleBoxFlat_jncy7")
+
+[node name="icon" type="Button" parent="TextureRect/feature/weaponTab/weaponMaterials/materials/material5" unique_id=2080148505]
+texture_filter = 1
+layout_mode = 0
+offset_left = -1.0157127
+offset_top = -8.996029e-05
+offset_right = 62.984287
+offset_bottom = 63.99991
+scale = Vector2(0.061445616, 0.622968)
+theme_override_styles/normal = SubResource("StyleBoxFlat_iiu5v")
+icon = ExtResource("7_yawai")
+icon_alignment = 1
+
+[node name="Label" type="Label" parent="TextureRect/feature/weaponTab/weaponMaterials/materials/material5" unique_id=747494737]
+layout_mode = 0
+offset_left = 3.5549927
+offset_top = 5.895548
+offset_right = 284.94537
+offset_bottom = 38.32157
+scale = Vector2(0.110995896, 1)
+theme_override_font_sizes/font_size = 19
+text = "The Bone of Dragon Style"
+vertical_alignment = 1
+
+[node name="Label2" type="Label" parent="TextureRect/feature/weaponTab/weaponMaterials/materials/material5" unique_id=564145883]
+layout_mode = 0
+offset_left = 33.01066
+offset_top = 2.9477353
+offset_right = 88.26753
+offset_bottom = 26.491562
+scale = Vector2(0.119480744, 1.3801036)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_vtwk0")
+text = "1 / 2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="material6" type="Panel" parent="TextureRect/feature/weaponTab/weaponMaterials/materials" unique_id=900819954]
+layout_mode = 0
+offset_left = 21.316
+offset_top = 30.89
+offset_right = 61.316
+offset_bottom = 70.89
+scale = Vector2(0.47102946, 0.19443893)
+theme_override_styles/panel = SubResource("StyleBoxFlat_jncy7")
+
+[node name="icon" type="Button" parent="TextureRect/feature/weaponTab/weaponMaterials/materials/material6" unique_id=1378570001]
+texture_filter = 1
+layout_mode = 0
+offset_left = -1.0157127
+offset_top = -8.996029e-05
+offset_right = 62.984287
+offset_bottom = 63.99991
+scale = Vector2(0.061445616, 0.622968)
+theme_override_styles/normal = SubResource("StyleBoxFlat_iiu5v")
+icon = ExtResource("7_yawai")
+icon_alignment = 1
+
+[node name="Label" type="Label" parent="TextureRect/feature/weaponTab/weaponMaterials/materials/material6" unique_id=872992734]
+layout_mode = 0
+offset_left = 3.5549927
+offset_top = 5.895548
+offset_right = 284.94537
+offset_bottom = 38.32157
+scale = Vector2(0.110995896, 1)
+theme_override_font_sizes/font_size = 19
+text = "The Bone of Dragon Style"
+vertical_alignment = 1
+
+[node name="Label2" type="Label" parent="TextureRect/feature/weaponTab/weaponMaterials/materials/material6" unique_id=2074463264]
+layout_mode = 0
+offset_left = 33.01066
+offset_top = 2.9477353
+offset_right = 88.26753
+offset_bottom = 26.491562
+scale = Vector2(0.119480744, 1.3801036)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_vtwk0")
+text = "1 / 2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="weaponDisplay" type="ColorRect" parent="TextureRect/feature/weaponTab" unique_id=1767276955]
 layout_mode = 0
-offset_left = 118.0
+offset_left = 18.0
 offset_top = 15.000004
-offset_right = 158.0
+offset_right = 58.0
 offset_bottom = 55.000004
 scale = Vector2(2.7083957, 2.5836802)
-color = Color(0.011764706, 0.07450981, 0.02745098, 0.6862745)
+color = Color(0.00026876753, 0.0014415839, 0, 0.14901961)
+
+[node name="texture" type="TextureRect" parent="TextureRect/feature/weaponTab/weaponDisplay" unique_id=88640557]
+texture_filter = 1
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("6_awg12")
+expand_mode = 1
+
+[node name="color" type="Panel" parent="TextureRect/feature/weaponTab/weaponDisplay" unique_id=1408915627]
+layout_mode = 0
+offset_left = 39.876003
+offset_top = 0.38704333
+offset_right = 111.87436
+offset_bottom = 40.387043
+theme_override_styles/panel = SubResource("StyleBoxFlat_v6qx5")
+
+[node name="color2" type="Panel" parent="TextureRect/feature/weaponTab/weaponDisplay" unique_id=2006841879]
+layout_mode = 0
+offset_left = 39.876003
+offset_top = 0.38704333
+offset_right = 111.87436
+offset_bottom = 5.4186273
+theme_override_styles/panel = SubResource("StyleBoxFlat_v6qx5")
+
+[node name="hr" type="Panel" parent="TextureRect/feature/weaponTab/weaponDisplay" unique_id=2024697060]
+layout_mode = 0
+offset_left = 39.137558
+offset_right = 39.876003
+offset_bottom = 39.865623
+theme_override_styles/panel = SubResource("StyleBoxFlat_kylmi")
+
+[node name="weaponStatus" type="Control" parent="TextureRect/feature/weaponTab/weaponDisplay" unique_id=30089428]
+anchors_preset = 0
+offset_left = 40.245224
+offset_top = 26.319048
+offset_right = 112.24357
+offset_bottom = 40.6397
+
+[node name="color" type="Panel" parent="TextureRect/feature/weaponTab/weaponDisplay/weaponStatus" unique_id=1043023666]
+layout_mode = 0
+offset_left = -0.36922455
+offset_top = -0.7740898
+offset_right = 71.62913
+offset_bottom = 14.067995
+theme_override_styles/panel = SubResource("StyleBoxFlat_v6qx5")
+
+[node name="critical" type="Label" parent="TextureRect/feature/weaponTab/weaponDisplay/weaponStatus" unique_id=1615470588]
+layout_mode = 0
+offset_left = 25.845543
+offset_top = 5.031582
+offset_right = 70.84556
+offset_bottom = 17.031582
+scale = Vector2(0.4574497, 0.5199553)
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_avtb8")
+text = "50"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label" type="Label" parent="TextureRect/feature/weaponTab/weaponDisplay/weaponStatus/critical" unique_id=599141090]
+layout_mode = 0
+offset_left = 9.685596
+offset_top = -8.18819
+offset_right = 33.685596
+offset_bottom = -0.18819046
+theme_override_font_sizes/font_size = 7
+text = "Critical"
+vertical_alignment = 1
+
+[node name="hitrate" type="Label" parent="TextureRect/feature/weaponTab/weaponDisplay/weaponStatus" unique_id=1102915776]
+layout_mode = 0
+offset_left = 47.62967
+offset_top = 5.031582
+offset_right = 92.62971
+offset_bottom = 17.031582
+scale = Vector2(0.4574497, 0.5199553)
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_myyus")
+text = "90"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label" type="Label" parent="TextureRect/feature/weaponTab/weaponDisplay/weaponStatus/hitrate" unique_id=250878435]
+layout_mode = 0
+offset_left = 9.685596
+offset_top = -8.18819
+offset_right = 33.685596
+offset_bottom = -0.18819046
+theme_override_font_sizes/font_size = 7
+text = "Hit rate"
+
+[node name="damage" type="Label" parent="TextureRect/feature/weaponTab/weaponDisplay/weaponStatus" unique_id=556976714]
+layout_mode = 0
+offset_left = 3.6922226
+offset_top = 4.644535
+offset_right = 48.692234
+offset_bottom = 16.644535
+scale = Vector2(0.4574497, 0.5199553)
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBoxFlat_fhdai")
+text = "90"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label" type="Label" parent="TextureRect/feature/weaponTab/weaponDisplay/weaponStatus/damage" unique_id=1152692609]
+layout_mode = 0
+offset_left = 9.685596
+offset_top = -8.18819
+offset_right = 33.685596
+offset_bottom = -0.18819046
+theme_override_font_sizes/font_size = 7
+text = "Damage"
+
+[node name="Label" type="Label" parent="TextureRect/feature/weaponTab/weaponDisplay" unique_id=597592112]
+layout_mode = 0
+offset_left = 40.61445
+offset_top = 0.77408814
+offset_right = 139.61444
+offset_bottom = 15.774088
+scale = Vector2(0.18913884, 0.2007026)
+theme_override_colors/font_color = Color(0.8186951, 0.7931346, 0.8049209, 1)
+text = "Enchantment"
+
+[node name="TextureRect" type="TextureRect" parent="TextureRect/feature/weaponTab/weaponDisplay" unique_id=1924157088]
+layout_mode = 0
+offset_left = 45.783558
+offset_top = 7.3538504
+offset_right = 85.78357
+offset_bottom = 47.35385
+scale = Vector2(0.36431903, 0.38319662)
+texture = ExtResource("7_yawai")
+expand_mode = 1
+
+[node name="TextureRect2" type="TextureRect" parent="TextureRect/feature/weaponTab/weaponDisplay" unique_id=1431438778]
+layout_mode = 0
+offset_left = 68.306114
+offset_top = 7.3538504
+offset_right = 108.30612
+offset_bottom = 47.35385
+scale = Vector2(0.36431903, 0.38319662)
+texture = ExtResource("7_yawai")
+expand_mode = 1
+
+[node name="TextureRect3" type="TextureRect" parent="TextureRect/feature/weaponTab/weaponDisplay" unique_id=1082627082]
+layout_mode = 0
+offset_left = 90.09023
+offset_top = 6.579761
+offset_right = 130.09024
+offset_bottom = 46.57976
+scale = Vector2(0.36431903, 0.38319662)
+texture = ExtResource("7_yawai")
+expand_mode = 1
 
 [node name="createBtn" type="Button" parent="TextureRect/feature/weaponTab" unique_id=17191398]
 layout_mode = 0

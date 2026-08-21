@@ -1,10 +1,33 @@
 [gd_scene format=3 uid="uid://dhs37m24etxjf"]
 
 [ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="1_2cotu"]
+[ext_resource type="Script" uid="uid://biq0j4ve867kr" path="res://scripts/local/gui/base/gui_player_base.gd" id="2_8xriv"]
+[ext_resource type="Texture2D" uid="uid://ubgv1comvtdg" path="res://assets/art/profile/player/Icon4.png" id="3_c2cj2"]
+[ext_resource type="Script" uid="uid://cvl34fqp2un1c" path="res://test.gd" id="4_lxysw"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dt4my"]
+bg_color = Color(0.08066759, 0.35231295, 0.20111734, 1)
+corner_radius_top_right = 4
+corner_radius_bottom_right = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_moojr"]
+bg_color = Color(0.84313726, 0.8901961, 0.9647059, 0.44313726)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kylmi"]
+bg_color = Color(1, 1, 0, 0.36078432)
+corner_radius_top_right = 1
+corner_radius_bottom_right = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xncs8"]
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
 
 [node name="gui-player-base" type="Control" unique_id=962594343]
 layout_mode = 3
 anchors_preset = 0
+script = ExtResource("2_8xriv")
 
 [node name="base-title" type="Label" parent="." unique_id=1176209426]
 layout_mode = 0
@@ -33,6 +56,111 @@ anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
+[node name="HPstatus" type="TextureRect" parent="bar-information" unique_id=1871637762]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 41.0
+offset_right = 156.0
+offset_bottom = 51.0
+texture = ExtResource("1_2cotu")
+expand_mode = 1
+
+[node name="bar" type="Panel" parent="bar-information/HPstatus" unique_id=1018829949]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 1.0
+offset_right = 148.0
+offset_bottom = 9.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_dt4my")
+
+[node name="TextureRect2" type="TextureRect" parent="bar-information/HPstatus" unique_id=2012351305]
+layout_mode = 0
+offset_right = 16.0
+offset_bottom = 10.0
+texture = ExtResource("1_2cotu")
+expand_mode = 1
+
+[node name="number" type="Label" parent="bar-information/HPstatus" unique_id=1189972497]
+layout_mode = 0
+offset_left = 32.0
+offset_top = -1.0
+offset_right = 90.0
+offset_bottom = 14.0
+theme_override_font_sizes/font_size = 8
+text = "100 / 200"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="STAMINAstatus" type="TextureRect" parent="bar-information" unique_id=760150470]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 50.0
+offset_right = 145.0
+offset_bottom = 60.0
+texture = ExtResource("1_2cotu")
+expand_mode = 1
+
+[node name="bar" type="Panel" parent="bar-information/STAMINAstatus" unique_id=1822206289]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 1.0
+offset_right = 138.0
+offset_bottom = 9.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_dt4my")
+
+[node name="TextureRect2" type="TextureRect" parent="bar-information/STAMINAstatus" unique_id=1535142744]
+layout_mode = 0
+offset_right = 16.0
+offset_bottom = 10.0
+texture = ExtResource("1_2cotu")
+expand_mode = 1
+
+[node name="number" type="Label" parent="bar-information/STAMINAstatus" unique_id=1367966595]
+layout_mode = 0
+offset_left = 32.0
+offset_top = -1.0
+offset_right = 90.0
+offset_bottom = 14.0
+theme_override_font_sizes/font_size = 8
+text = "100 / 200"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MORALstatus" type="TextureRect" parent="bar-information" unique_id=1973052057]
+layout_mode = 0
+offset_left = 3.0
+offset_top = 59.0
+offset_right = 132.0
+offset_bottom = 69.0
+texture = ExtResource("1_2cotu")
+expand_mode = 1
+
+[node name="bar" type="Panel" parent="bar-information/MORALstatus" unique_id=1114615833]
+layout_mode = 0
+offset_left = 15.0
+offset_top = 1.0
+offset_right = 125.0
+offset_bottom = 9.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_dt4my")
+
+[node name="TextureRect2" type="TextureRect" parent="bar-information/MORALstatus" unique_id=949291068]
+layout_mode = 0
+offset_right = 16.0
+offset_bottom = 10.0
+texture = ExtResource("1_2cotu")
+expand_mode = 1
+
+[node name="number" type="Label" parent="bar-information/MORALstatus" unique_id=2022812290]
+layout_mode = 0
+offset_left = 32.0
+offset_top = -1.0
+offset_right = 90.0
+offset_bottom = 14.0
+theme_override_font_sizes/font_size = 8
+text = "100 / 200"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="information" type="TextureRect" parent="bar-information" unique_id=399475891]
 layout_mode = 0
 offset_top = 1.0
@@ -41,6 +169,99 @@ offset_bottom = 41.0
 scale = Vector2(5.9184318, 1.017209)
 texture = ExtResource("1_2cotu")
 expand_mode = 1
+
+[node name="name" type="Label" parent="bar-information/information" unique_id=343019655]
+layout_mode = 0
+offset_left = 8.617149
+offset_top = 5.898492
+offset_right = 230.12643
+offset_bottom = 25.89849
+scale = Vector2(0.12509653, 0.74070823)
+theme_override_font_sizes/font_size = 21
+text = "The Knight"
+
+[node name="Panel" type="Panel" parent="bar-information/information" unique_id=1889881783]
+layout_mode = 0
+offset_left = 7.941293
+offset_top = 36.374035
+offset_right = 38.01683
+offset_bottom = 39.323284
+theme_override_styles/panel = SubResource("StyleBoxFlat_moojr")
+
+[node name="exp-bar" type="TextureRect" parent="bar-information/information" unique_id=632750543]
+layout_mode = 0
+offset_left = 7.096474
+offset_top = 33.42479
+offset_right = 38.86165
+offset_bottom = 39.323284
+texture = ExtResource("1_2cotu")
+expand_mode = 1
+
+[node name="exp-progress" type="Panel" parent="bar-information/information/exp-bar" unique_id=1311828911]
+layout_mode = 0
+offset_left = -0.16896369
+offset_top = 0.9830812
+offset_right = 30.413462
+offset_bottom = 4.9154086
+theme_override_styles/panel = SubResource("StyleBoxFlat_kylmi")
+
+[node name="exp-bar2" type="TextureRect" parent="bar-information/information" unique_id=746797984]
+layout_mode = 0
+offset_left = 7.096474
+offset_top = 33.42479
+offset_right = 9.968857
+offset_bottom = 39.323284
+texture = ExtResource("1_2cotu")
+expand_mode = 1
+
+[node name="badge" type="TextureRect" parent="bar-information" unique_id=1293006527]
+layout_mode = 0
+offset_left = 74.0
+offset_top = 25.0
+offset_right = 155.0
+offset_bottom = 35.0
+texture = ExtResource("1_2cotu")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="bar-information/badge" unique_id=1147641883]
+layout_mode = 0
+offset_left = 5.0000076
+offset_top = 1.0
+offset_right = 156.91653
+offset_bottom = 16.0
+scale = Vector2(0.49369207, 0.5356497)
+text = "Noble"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="level" type="TextureRect" parent="bar-information" unique_id=2010468260]
+layout_mode = 0
+offset_left = 37.0
+offset_top = 25.0
+offset_right = 85.0
+offset_bottom = 35.0
+texture = ExtResource("1_2cotu")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="bar-information/level" unique_id=685557901]
+layout_mode = 0
+offset_left = 13.0
+offset_top = 1.0
+offset_right = 53.0
+offset_bottom = 16.0
+scale = Vector2(0.56919855, 0.55448294)
+theme_override_colors/font_color = Color(1, 1, 0.17254902, 1)
+text = "LV"
+
+[node name="level" type="Label" parent="bar-information/level" unique_id=952213037]
+layout_mode = 0
+offset_left = 25.0
+offset_top = 1.0
+offset_right = 62.657448
+offset_bottom = 16.0
+scale = Vector2(0.53110355, 0.5542145)
+text = "5"
+vertical_alignment = 1
 
 [node name="profile" type="TextureRect" parent="bar-information" unique_id=996398364]
 layout_mode = 0
@@ -52,13 +273,20 @@ scale = Vector2(1.1496692, 0.98153913)
 texture = ExtResource("1_2cotu")
 expand_mode = 1
 
-[node name="Label" type="Label" parent="bar-information" unique_id=343019655]
+[node name="Panel" type="Panel" parent="bar-information/profile" unique_id=732008482]
+clip_children = 1
 layout_mode = 0
-offset_left = 50.0
-offset_top = 7.0
-offset_right = 133.0
-offset_bottom = 22.0
-text = "The Knight"
+offset_left = 0.8698156
+offset_top = 3.0564246
+offset_right = 38.27188
+offset_bottom = 37.6959
+theme_override_styles/panel = SubResource("StyleBoxFlat_xncs8")
+
+[node name="img" type="TextureRect" parent="bar-information/profile/Panel" unique_id=1366985453]
+layout_mode = 0
+offset_right = 40.01151
+offset_bottom = 35.658287
+texture = ExtResource("3_c2cj2")
 
 [node name="bar-features" type="Control" parent="." unique_id=996796828]
 anchors_preset = 0
@@ -84,11 +312,31 @@ theme_override_font_sizes/font_size = 200
 text = "Maps"
 horizontal_alignment = 1
 
+[node name="playBtn" type="TextureButton" parent="bar-features" unique_id=1822062271]
+layout_mode = 0
+offset_left = 629.0
+offset_top = 278.0
+offset_right = 1798.0
+offset_bottom = 616.0
+scale = Vector2(0.092020474, 0.07695869)
+texture_normal = ExtResource("1_2cotu")
+script = ExtResource("4_lxysw")
+
+[node name="Label" type="Label" parent="bar-features/playBtn" unique_id=591676330]
+layout_mode = 0
+offset_left = 43.468933
+offset_top = 77.9639
+offset_right = 1119.3157
+offset_bottom = 265.9639
+theme_override_font_sizes/font_size = 200
+text = "Play"
+horizontal_alignment = 1
+
 [node name="inventoryBtn" type="TextureButton" parent="bar-features" unique_id=1883077124]
 layout_mode = 0
-offset_left = 520.0
+offset_left = 521.0
 offset_top = 310.0
-offset_right = 1689.0
+offset_right = 1690.0
 offset_bottom = 648.0
 scale = Vector2(0.092020474, 0.07695869)
 texture_normal = ExtResource("1_2cotu")

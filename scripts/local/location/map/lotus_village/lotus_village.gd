@@ -1,0 +1,45 @@
+extends Control
+
+# Path ke file scene quest menu
+const QUEST_MENU_SCENE: PackedScene = preload("res://scenes/gui/popup/quest/quest_menu.tscn")
+
+# Ambil referensi node dari scene tree lotus_village
+@onready var go_black_smith: Button = $bg/goBlackSmith
+@onready var go_quest_board: Button = $bg/goQuestBoard
+@onready var lotus_village_music: AudioStreamPlayer = $"lotus_village-music"
+
+# Variabel untuk menyimpan instansiasi popup quest aktif
+var active_quest_popup: Node = null
+
+func _ready() -> void:
+	# Hubungkan sinyal pressed tombol goBlackSmith dan goQuestBoard
+	if go_black_smith:
+		go_black_smith.pressed.connect(_on_go_black_smith_pressed)
+		
+	if go_quest_board:
+		go_quest_board.pressed.connect(show_quest_popup)
+
+	if lotus_village_music:
+		lotus_village_music.play()
+
+# Fungsi untuk memunculkan pop-up Quest Menu (sejajar dengan gui-player-base)
+func show_quest_popup() -> void:
+	# Cegah pembuatan instansi ganda jika pop-up sudah terbuka
+	if active_quest_popup != null and is_instance_valid(active_quest_popup):
+		return
+		
+	# Instantiate scene quest menu
+	active_quest_popup = QUEST_MENU_SCENE.instantiate()
+	
+	# Tambahkan sebagai child dari lotus_village (sejajar dengan gui-player-base & bg)
+	add_child(active_quest_popup)
+
+# Fungsi untuk menutup/menghapus pop-up Quest Menu
+func hide_quest_popup() -> void:
+	if active_quest_popup != null and is_instance_valid(active_quest_popup):
+		active_quest_popup.queue_free()
+		active_quest_popup = null
+
+# Fungsi yang berjalan otomatis saat tombol goBlackSmith ditekan
+func _on_go_black_smith_pressed() -> void:
+	TransitionManager.pindah_scene("res://scenes/locations/room/blacksmith/blacksmith.tscn")

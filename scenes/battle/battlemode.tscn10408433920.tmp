@@ -1,0 +1,597 @@
+[gd_scene format=3 uid="uid://bu5hkr727us0p"]
+
+[ext_resource type="Script" uid="uid://bm15klo0yfmnk" path="res://scripts/local/battle/BattleManager.gd" id="1_i268m"]
+[ext_resource type="Texture2D" uid="uid://33aykbqtqcrw" path="res://assets/art/backgrounds/location/map/forest_of_shadow/forest_of_shadow1.jpg" id="1_ksrse"]
+[ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="3_g2c4h"]
+[ext_resource type="Texture2D" uid="uid://crxculdvm3mw0" path="res://assets/ui/buttons/Gemini_Generated_Image_w9mpvzw9mpvzw9mp-removebg-preview.png" id="3_h8kyn"]
+[ext_resource type="Texture2D" uid="uid://ubgv1comvtdg" path="res://assets/art/profile/player/Icon4.png" id="4_o6x6a"]
+[ext_resource type="Texture2D" uid="uid://eeh1qrcceu17" path="res://assets/art/profile/enemy/grimward.jpg" id="5_o6x6a"]
+[ext_resource type="Texture2D" uid="uid://dukpxgco0stkj" path="res://assets/ui/icons/target_icon.png" id="6_ymp2q"]
+[ext_resource type="Texture2D" uid="uid://osri2skp6y4m" path="res://assets/art/ability/active/battlecry.jpg" id="7_abymu"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_h8kyn"]
+texture = ExtResource("3_g2c4h")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_i268m"]
+texture = ExtResource("3_g2c4h")
+
+[sub_resource type="GDScript" id="GDScript_h8kyn"]
+script/source = "class_name AbilitySystem
+extends Node
+
+signal ability_executed(caster: Node, ability: AbilityData)
+
+func use_ability(state: ActorAbilityState, caster: Node, target: Node) -> bool:
+	if not state or not state.is_ready():
+		print(\"[ABILITY] %s sedang cooldown! (remaining: %d)\" % [state.data.ability_name, state.cooldown_remaining])
+		return false
+	
+	var data = state.data
+	if not data or not data.logic_script:
+		print(\"[ABILITY] Data ability atau logic_script kosong!\")
+		return false
+	
+	var context = AbilityContext.new(caster, target, data, state.level, get_parent())
+	var logic: AbilityLogic = data.logic_script.new()
+	
+	if not logic.can_use(context):
+		print(\"[ABILITY] Logic can_use() mengembalikan false!\")
+		return false
+	
+	# 1. Eksekusi Logika Gameplay (Mendukung Async jika logika skill butuh waktu/animasi)
+	if logic.has_method(\"execute\"):
+		await logic.execute(context)
+	
+	# 2. Spawn Efek Visual jika ada - child of caster dengan z_index tinggi
+	if data.effect_scene:
+		var effect_instance = data.effect_scene.instantiate()
+		caster.add_child(effect_instance)
+		if effect_instance is CanvasItem:
+			effect_instance.z_index = 200
+			# Position at caster's center (local position)
+			effect_instance.position = Vector2.ZERO
+	
+	# 3. Trigger Active Phase (bukan cooldown langsung)
+	state.start_active(data.active_duration)
+	print(\"[ABILITY] %s active started: %d turns\" % [data.ability_name, state.active_remaining])
+	ability_executed.emit(caster, data)
+	return true
+
+func tick_actor_abilities(ability_states: Array[ActorAbilityState], caster: Node) -> void:
+	# Handle buff expiration once per caster per turn
+	_handle_buff_expiration(caster)
+	
+	for state in ability_states:
+		if state:
+			# Tick active/cooldown
+			state.tick_turn()
+			if state.active_remaining > 0:
+				print(\"[ABILITY] %s active: %d turns left\" % [state.data.ability_name, state.active_remaining])
+			elif state.cooldown_remaining > 0:
+				print(\"[ABILITY] %s cooldown: %d turns left\" % [state.data.ability_name, state.cooldown_remaining])
+
+func _handle_buff_expiration(caster: Node) -> void:
+	# Check and expire battle_cry buff
+	if caster.has_meta(\"battle_cry_buff\"):
+		var buff = caster.get_meta(\"battle_cry_buff\")
+		buff.turns_left -= 1
+		if buff.turns_left <= 0:
+			# Restore base value
+			var stat_name = buff.stat_name
+			var base_value = buff.base_value
+			# Use direct property access for script member variables
+			if caster.has(stat_name):
+				caster.set(stat_name, base_value)
+				print(\"[BUFF EXPIRED] %s %s restored to base: %d\" % [caster.name, stat_name, base_value])
+			caster.remove_meta(\"battle_cry_buff\")
+		else:
+			# Refresh buff value
+			var stat_name = buff.stat_name
+			var new_value = buff.base_value + buff.bonus_value
+			if caster.has(stat_name):
+				caster.set(stat_name, new_value)
+			caster.set_meta(\"battle_cry_buff\", buff)
+			print(\"[BUFF TICK] %s %s: %d turns left, value: %d\" % [caster.name, buff.stat_name, buff.turns_left, new_value])
+
+func reduce_actor_cooldowns(ability_states: Array[ActorAbilityState]) -> void:
+	for state in ability_states:
+		if state:
+			var before = state.cooldown_remaining
+			state.reduce_cooldown()
+			if before > 0:
+				print(\"[COOLDOWN] %s reduced: %d -> %d\" % [state.data.ability_name, before, state.cooldown_remaining])
+"
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ymp2q"]
+bg_color = Color(0.54, 0.052650016, 0.027000008, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3b2kv"]
+bg_color = Color(0.5785529, 0.49115562, 0.4189473, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_abymu"]
+bg_color = Color(0.84313726, 0.8901961, 0.9647059, 0.44313726)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h8kyn"]
+bg_color = Color(1, 1, 0, 0.36078432)
+corner_radius_top_right = 1
+corner_radius_bottom_right = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i268m"]
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[node name="battlemode" type="Control" unique_id=184345478]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_i268m")
+
+[node name="bg" type="TextureRect" parent="." unique_id=287304962]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_ksrse")
+expand_mode = 1
+
+[node name="atkBtn" type="Button" parent="." unique_id=1136254172]
+clip_children = 2
+texture_filter = 1
+layout_mode = 0
+offset_left = 4.000001
+offset_top = 257.0
+offset_right = 1717.133
+offset_bottom = 725.0
+scale = Vector2(0.082459405, 0.084952995)
+theme_override_font_sizes/font_size = 250
+theme_override_styles/normal = SubResource("StyleBoxTexture_h8kyn")
+theme_override_styles/hover = SubResource("StyleBoxTexture_i268m")
+text = "Attack"
+icon = ExtResource("3_h8kyn")
+
+[node name="TextureRect" type="TextureRect" parent="atkBtn" unique_id=765793808]
+layout_mode = 0
+offset_left = 9.464824
+offset_top = 9.406222
+offset_right = 511.10043
+offset_bottom = 451.4985
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="TextureRect2" type="TextureRect" parent="atkBtn" unique_id=454526195]
+layout_mode = 0
+offset_left = 9.464824
+offset_top = 9.406222
+offset_right = 511.10043
+offset_bottom = 451.4985
+texture = ExtResource("3_h8kyn")
+expand_mode = 1
+
+[node name="defendBtn" type="Button" parent="." unique_id=1102411159]
+clip_children = 2
+texture_filter = 1
+layout_mode = 0
+offset_left = 6.0
+offset_top = 298.0
+offset_right = 1719.133
+offset_bottom = 766.0
+scale = Vector2(0.07269282, 0.07886729)
+theme_override_font_sizes/font_size = 250
+theme_override_styles/normal = SubResource("StyleBoxTexture_h8kyn")
+theme_override_styles/hover = SubResource("StyleBoxTexture_i268m")
+text = "Defense"
+icon = ExtResource("3_h8kyn")
+
+[node name="TextureRect" type="TextureRect" parent="defendBtn" unique_id=256679440]
+layout_mode = 0
+offset_left = 9.464824
+offset_top = 9.406222
+offset_right = 511.10043
+offset_bottom = 451.4985
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="TextureRect2" type="TextureRect" parent="defendBtn" unique_id=1825532677]
+clip_children = 2
+layout_mode = 0
+offset_left = 9.464824
+offset_top = 9.406222
+offset_right = 511.10043
+offset_bottom = 451.4985
+texture = ExtResource("3_h8kyn")
+expand_mode = 1
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=2106517464]
+position = Vector2(370, 170)
+
+[node name="AbilitySystem" type="Node" parent="." unique_id=-346757173]
+script = SubResource("GDScript_h8kyn")
+
+[node name="player-information" type="Control" parent="." unique_id=791426165]
+anchors_preset = 0
+offset_left = 2.0000002
+offset_right = 42.0
+offset_bottom = 40.0
+scale = Vector2(0.9075752, 1.0272249)
+
+[node name="MORALstatus" type="TextureRect" parent="player-information" unique_id=1592777693]
+texture_filter = 1
+layout_mode = 0
+offset_left = 4.0470486
+offset_top = 61.043903
+offset_right = 96.11742
+offset_bottom = 71.0439
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="bar" type="Panel" parent="player-information/MORALstatus" unique_id=428414601]
+layout_mode = 0
+offset_left = 3.035287
+offset_top = 1.0
+offset_right = 90.04684
+offset_bottom = 9.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_ymp2q")
+
+[node name="number" type="Label" parent="player-information/MORALstatus" unique_id=1917815711]
+layout_mode = 0
+offset_left = 3.0352879
+offset_top = 0.8846972
+offset_right = 89.03507
+offset_bottom = 8.884697
+theme_override_font_sizes/font_size = 7
+text = "100 / 200"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="STAMINAstatus" type="TextureRect" parent="player-information" unique_id=1214071008]
+texture_filter = 1
+layout_mode = 0
+offset_left = 3.035287
+offset_top = 50.427574
+offset_right = 126.47028
+offset_bottom = 60.427574
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="bar" type="Panel" parent="player-information/STAMINAstatus" unique_id=137732337]
+layout_mode = 0
+offset_left = 2.0235252
+offset_top = 1.0
+offset_right = 120.39972
+offset_bottom = 9.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_3b2kv")
+
+[node name="number" type="Label" parent="player-information/STAMINAstatus" unique_id=1568088863]
+layout_mode = 0
+offset_left = 15.176435
+offset_top = 0.88469315
+offset_right = 104.21152
+offset_bottom = 8.884693
+theme_override_font_sizes/font_size = 7
+text = "100 / 200"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HPstatus" type="TextureRect" parent="player-information" unique_id=431529670]
+texture_filter = 1
+layout_mode = 0
+offset_left = 2.0235248
+offset_top = 36.57654
+offset_right = 229.67003
+offset_bottom = 49.542877
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="bar" type="Panel" parent="player-information/HPstatus" unique_id=280728470]
+layout_mode = 0
+offset_left = 3.0705729
+offset_top = 1.0
+offset_right = 222.5877
+offset_bottom = 12.081642
+theme_override_styles/panel = SubResource("StyleBoxFlat_ymp2q")
+
+[node name="number" type="Label" parent="player-information/HPstatus" unique_id=2007439472]
+layout_mode = 0
+offset_left = 85.9998
+offset_top = 4.1193943
+offset_right = 143.99982
+offset_bottom = 12.119394
+theme_override_font_sizes/font_size = 7
+text = "100 / 200"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="information" type="TextureRect" parent="player-information" unique_id=1248532417]
+layout_mode = 0
+offset_top = 1.0
+offset_right = 40.0
+offset_bottom = 41.0
+scale = Vector2(5.9184318, 1.017209)
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="name" type="Label" parent="player-information/information" unique_id=256579851]
+layout_mode = 0
+offset_left = 8.617149
+offset_top = 5.898492
+offset_right = 230.12643
+offset_bottom = 25.89849
+scale = Vector2(0.12509653, 0.74070823)
+theme_override_font_sizes/font_size = 21
+text = "The Knight"
+
+[node name="Panel" type="Panel" parent="player-information/information" unique_id=861071921]
+layout_mode = 0
+offset_left = 7.941293
+offset_top = 36.374035
+offset_right = 38.01683
+offset_bottom = 39.323284
+theme_override_styles/panel = SubResource("StyleBoxFlat_abymu")
+
+[node name="exp-bar" type="TextureRect" parent="player-information/information" unique_id=1100861589]
+texture_filter = 1
+layout_mode = 0
+offset_left = 7.096474
+offset_top = 33.42479
+offset_right = 38.86165
+offset_bottom = 39.323284
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="exp-progress" type="Panel" parent="player-information/information/exp-bar" unique_id=927585805]
+layout_mode = 0
+offset_left = -0.16896369
+offset_top = 0.9830812
+offset_right = 31.068466
+offset_bottom = 4.9154086
+theme_override_styles/panel = SubResource("StyleBoxFlat_h8kyn")
+
+[node name="exp-bar2" type="TextureRect" parent="player-information/information" unique_id=679167286]
+layout_mode = 0
+offset_left = 7.096474
+offset_top = 33.42479
+offset_right = 9.968857
+offset_bottom = 39.323284
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="badge" type="TextureRect" parent="player-information" unique_id=1780701172]
+layout_mode = 0
+offset_left = 74.0
+offset_top = 25.0
+offset_right = 155.0
+offset_bottom = 35.0
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="player-information/badge" unique_id=1981086554]
+layout_mode = 0
+offset_left = 5.0000076
+offset_top = 1.0
+offset_right = 156.91653
+offset_bottom = 16.0
+scale = Vector2(0.49369207, 0.5356497)
+text = "Noble"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="level" type="TextureRect" parent="player-information" unique_id=1884026842]
+layout_mode = 0
+offset_left = 37.0
+offset_top = 25.0
+offset_right = 85.0
+offset_bottom = 35.0
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="player-information/level" unique_id=1406974030]
+layout_mode = 0
+offset_left = 13.0
+offset_top = 1.0
+offset_right = 53.0
+offset_bottom = 16.0
+scale = Vector2(0.56919855, 0.55448294)
+theme_override_colors/font_color = Color(1, 1, 0.17254902, 1)
+text = "LV"
+
+[node name="level" type="Label" parent="player-information/level" unique_id=1504367049]
+layout_mode = 0
+offset_left = 25.0
+offset_top = 1.0
+offset_right = 62.657448
+offset_bottom = 16.0
+scale = Vector2(0.53110355, 0.5542145)
+text = "5"
+vertical_alignment = 1
+
+[node name="profile" type="TextureRect" parent="player-information" unique_id=960627779]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 42.0
+offset_bottom = 42.0
+scale = Vector2(1.1496692, 0.98153913)
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="Panel" type="Panel" parent="player-information/profile" unique_id=1330693931]
+clip_children = 1
+layout_mode = 0
+offset_left = 0.8698156
+offset_top = 3.0564246
+offset_right = 38.27188
+offset_bottom = 37.6959
+theme_override_styles/panel = SubResource("StyleBoxFlat_i268m")
+
+[node name="img" type="TextureRect" parent="player-information/profile/Panel" unique_id=2056504528]
+layout_mode = 0
+offset_right = 40.01151
+offset_bottom = 35.658287
+texture = ExtResource("4_o6x6a")
+
+[node name="enemy-information" type="Control" parent="." unique_id=1830293488]
+anchors_preset = 0
+offset_left = 700.0
+offset_top = -1.0
+offset_right = 740.0
+offset_bottom = 39.0
+
+[node name="HPstatus" type="TextureRect" parent="enemy-information" unique_id=905484975]
+layout_mode = 0
+offset_left = -169.0
+offset_top = 35.0
+offset_right = 33.0
+offset_bottom = 48.0
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="bar" type="Panel" parent="enemy-information/HPstatus" unique_id=1573537350]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 1.0
+offset_right = 197.0
+offset_bottom = 12.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_ymp2q")
+
+[node name="number" type="Label" parent="enemy-information/HPstatus" unique_id=2074158634]
+layout_mode = 0
+offset_left = 72.0
+offset_top = 5.0
+offset_right = 130.0
+offset_bottom = 14.0
+theme_override_font_sizes/font_size = 8
+text = "100 / 200"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="bg" type="TextureRect" parent="enemy-information" unique_id=1108733344]
+layout_mode = 0
+offset_left = -169.0
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="level" type="TextureRect" parent="enemy-information" unique_id=980037473]
+layout_mode = 0
+offset_left = -123.0
+offset_top = 22.0
+offset_right = -75.0
+offset_bottom = 32.0
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="enemy-information/level" unique_id=1945223495]
+layout_mode = 0
+offset_left = 13.0
+offset_top = 1.0
+offset_right = 32.32544
+offset_bottom = 16.0
+scale = Vector2(0.56919855, 0.55448294)
+theme_override_colors/font_color = Color(1, 1, 0.17254902, 1)
+text = "LV"
+
+[node name="level" type="Label" parent="enemy-information/level" unique_id=2112502254]
+layout_mode = 0
+offset_left = 25.0
+offset_top = 1.0
+offset_right = 62.657448
+offset_bottom = 16.0
+scale = Vector2(0.53110355, 0.5542145)
+text = "5"
+vertical_alignment = 1
+
+[node name="profile" type="TextureRect" parent="enemy-information" unique_id=2030950383]
+layout_mode = 0
+offset_left = -171.0
+offset_right = -131.0
+offset_bottom = 40.0
+scale = Vector2(1.1496692, 0.98153913)
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="Panel" type="Panel" parent="enemy-information/profile" unique_id=22419894]
+clip_children = 1
+layout_mode = 0
+offset_left = 0.8698156
+offset_top = 3.0564246
+offset_right = 38.27188
+offset_bottom = 37.6959
+theme_override_styles/panel = SubResource("StyleBoxFlat_i268m")
+
+[node name="img" type="TextureRect" parent="enemy-information/profile/Panel" unique_id=1755783118]
+layout_mode = 0
+offset_top = -3.0564249
+offset_right = 38.27191
+offset_bottom = 35.658283
+texture = ExtResource("5_o6x6a")
+expand_mode = 1
+
+[node name="enemyName" type="Label" parent="enemy-information" unique_id=2101815532]
+layout_mode = 0
+offset_left = -123.0
+offset_top = 5.0
+offset_right = -51.0
+offset_bottom = 20.0
+text = "Grimward"
+
+[node name="TextureRect" type="TextureRect" parent="enemy-information" unique_id=850490874]
+layout_mode = 0
+offset_left = -203.0
+offset_top = 6.0
+offset_right = -172.0
+offset_bottom = 35.0
+texture = ExtResource("6_ymp2q")
+expand_mode = 1
+
+[node name="enemy-skils" type="Control" parent="enemy-information" unique_id=925220412]
+visible = false
+anchors_preset = 0
+offset_left = -168.0
+offset_top = 52.0
+offset_right = 37.0
+offset_bottom = 81.0
+
+[node name="TextureRect" type="TextureRect" parent="enemy-information/enemy-skils" unique_id=1882011669]
+layout_mode = 0
+offset_left = 174.99998
+offset_right = 214.99998
+offset_bottom = 40.0
+scale = Vector2(0.7, 0.7)
+texture = ExtResource("7_abymu")
+expand_mode = 1
+
+[node name="TextureRect2" type="TextureRect" parent="." unique_id=1657768735]
+layout_mode = 0
+offset_left = 294.0
+offset_right = 443.0
+offset_bottom = 20.0
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="." unique_id=691397388]
+layout_mode = 0
+offset_left = 280.0
+offset_top = 4.0
+offset_right = 457.0
+offset_bottom = 17.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.49411765)
+theme_override_font_sizes/font_size = 10
+text = "Forest Of Shadow"
+horizontal_alignment = 1
+vertical_alignment = 1

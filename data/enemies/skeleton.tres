@@ -1,0 +1,90 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://cqwk7w724mc2s"]
+
+[ext_resource type="Script" uid="uid://d1jtt6i0k5g0g" path="res://scripts/local/characters/enemy/EnemyData.gd" id="1_0ypgr"]
+[ext_resource type="Script" uid="uid://d0dkl545fvyqa" path="res://scripts/data/ability/AbilityData.gd" id="1_ok8xq"]
+[ext_resource type="Texture2D" uid="uid://qoytqlh3n2md" path="res://assets/art/sprites/enemy/skeleton/idle1.png" id="2_f6q1b"]
+[ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="2_wrqo5"]
+[ext_resource type="Texture2D" uid="uid://ivu2jvm1egjd" path="res://assets/art/sprites/enemy/skeleton/idle2.png" id="3_br6mt"]
+[ext_resource type="Texture2D" uid="uid://clol5dvdn1ug6" path="res://assets/art/sprites/enemy/skeleton/attack1.png" id="4_ok8xq"]
+[ext_resource type="Texture2D" uid="uid://updy5gw07008" path="res://assets/art/sprites/enemy/skeleton/attack2.png" id="5_a4t8e"]
+[ext_resource type="Texture2D" uid="uid://c6365g2q6wtf4" path="res://assets/art/sprites/enemy/skeleton/hit1.png" id="6_jan5e"]
+[ext_resource type="Texture2D" uid="uid://e5ex7fxhnf5n" path="res://assets/art/sprites/enemy/skeleton/death1.png" id="7_ee2du"]
+[ext_resource type="Texture2D" uid="uid://ddcnhtwwhuf6n" path="res://assets/art/sprites/enemy/skeleton/death2.png" id="8_684md"]
+[ext_resource type="Texture2D" uid="uid://d4nc7ra86mlcy" path="res://assets/art/sprites/enemy/skeleton/defend1.png" id="9_ik7xt"]
+[ext_resource type="Resource" uid="uid://dmfc6tb72muxj" path="res://data/items/health_potion.tres" id="11_br6mt"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_or5ns"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_f6q1b")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_br6mt")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_ok8xq")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_a4t8e")
+}],
+"loop": 0,
+"name": &"attack",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("6_jan5e")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_ee2du")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_684md")
+}],
+"loop": 0,
+"name": &"death",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("9_ik7xt")
+}],
+"loop": 1,
+"name": &"defend",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("6_jan5e")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_ee2du")
+}],
+"loop": 0,
+"name": &"hurt",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_f6q1b")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_br6mt")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 3.0
+}]
+
+[resource]
+script = ExtResource("1_0ypgr")
+ai_type = 2
+starting_inventory = Array[ExtResource("2_wrqo5")]([ExtResource("11_br6mt")])
+enemy_id = "skeleton"
+enemy_name = "Skeleton"
+sprite_frames = SubResource("SpriteFrames_or5ns")
+max_hp = 50.0
+damage_to_player = 8.0
+abilities = Array[ExtResource("1_ok8xq")]([null])
+metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"

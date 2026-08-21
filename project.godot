@@ -19,6 +19,10 @@ config/icon="res://icon.svg"
 
 Typewritter="*uid://bcmoq521ew43f"
 TypewriterPlayer="*uid://6bdeots4mbp5"
+TransitionManager="*uid://c07jt1x8rs7rk"
+SoundManager="*uid://j5kyiwd6d022"
+EnemyDatabase="*uid://ooyavnxqxx7j"
+AbilitySystem="*res://scripts/global/ability/AbilitySystem.gd"
 
 [display]
 

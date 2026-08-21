@@ -1,21 +1,25 @@
 [gd_scene format=3 uid="uid://dh5p57n31a8yx"]
 
+[ext_resource type="Script" uid="uid://ciiglo1aqda0f" path="res://scripts/local/location/map/lotus_village/lotus_village.gd" id="1_6nqwu"]
 [ext_resource type="Texture2D" uid="uid://ip1fsfhyr7yv" path="res://assets/art/backgrounds/location/map/lotus_village/base/lotusVillage-day.jpg" id="1_8e2mh"]
 [ext_resource type="Script" uid="uid://def3lyy0apkjn" path="res://scripts/local/particles/village.gd" id="2_mh77y"]
 [ext_resource type="PackedScene" uid="uid://dhs37m24etxjf" path="res://scenes/gui/base/gui_player_base.tscn" id="2_vq0s2"]
 [ext_resource type="Texture2D" uid="uid://nwvidu1orhm2" path="res://assets/art/particles/smoke/Smoke2.png" id="3_8e2mh"]
+[ext_resource type="Texture2D" uid="uid://bi0q3e5o774s1" path="res://assets/art/sprites/Trader_3/Idle_3.png" id="5_876jf"]
+[ext_resource type="Texture2D" uid="uid://kneognevst8j" path="res://assets/art/sprites/npc/6 Girl/Girl_idle.png" id="6_k4ul1"]
+[ext_resource type="AudioStream" uid="uid://dwt4c8ycgkxbl" path="res://assets/audio/bgm/Medieval Music – Cobblestone Village_1730978799949.wav" id="8_876jf"]
 
-[sub_resource type="Gradient" id="Gradient_6nqwu"]
+[sub_resource type="Gradient" id="Gradient_876jf"]
 colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
 
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_1x87e"]
-gradient = SubResource("Gradient_6nqwu")
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_dx5u3"]
+gradient = SubResource("Gradient_876jf")
 width = 16
 height = 16
 fill = 1
 fill_from = Vector2(0.5, 0.5)
 
-[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_k4ul1"]
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_eevpj"]
 emission_shape = 3
 emission_box_extents = Vector3(1200, 600, 1)
 initial_velocity_min = 5.0
@@ -72,6 +76,155 @@ animations = [{
 "speed": 8.0
 }]
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_ve7wr"]
+atlas = ExtResource("5_876jf")
+region = Rect2(0, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tomku"]
+atlas = ExtResource("5_876jf")
+region = Rect2(128, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_mp1cr"]
+atlas = ExtResource("5_876jf")
+region = Rect2(256, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_clqby"]
+atlas = ExtResource("5_876jf")
+region = Rect2(384, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_lf8v2"]
+atlas = ExtResource("5_876jf")
+region = Rect2(512, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_vvr45"]
+atlas = ExtResource("5_876jf")
+region = Rect2(640, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wjfak"]
+atlas = ExtResource("5_876jf")
+region = Rect2(768, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_deh7x"]
+atlas = ExtResource("5_876jf")
+region = Rect2(896, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_au5w3"]
+atlas = ExtResource("5_876jf")
+region = Rect2(1024, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_rm6g5"]
+atlas = ExtResource("5_876jf")
+region = Rect2(1152, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_6icn6"]
+atlas = ExtResource("5_876jf")
+region = Rect2(1280, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_16qlq"]
+atlas = ExtResource("5_876jf")
+region = Rect2(1408, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_bbx7d"]
+atlas = ExtResource("5_876jf")
+region = Rect2(1536, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_qf4hn"]
+atlas = ExtResource("5_876jf")
+region = Rect2(1664, 0, 128, 128)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_m1o2x"]
+atlas = ExtResource("5_876jf")
+region = Rect2(1792, 0, 128, 128)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_moojr"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ve7wr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tomku")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_mp1cr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_clqby")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_lf8v2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_vvr45")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wjfak")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_deh7x")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_au5w3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_rm6g5")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_6icn6")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_16qlq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_bbx7d")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_qf4hn")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_m1o2x")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 5.0
+}]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_e1kjw"]
+atlas = ExtResource("6_k4ul1")
+region = Rect2(0, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_a1s74"]
+atlas = ExtResource("6_k4ul1")
+region = Rect2(48, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_wqcvg"]
+atlas = ExtResource("6_k4ul1")
+region = Rect2(96, 0, 48, 48)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_hiyw0"]
+atlas = ExtResource("6_k4ul1")
+region = Rect2(144, 0, 48, 48)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_1x87e"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_e1kjw")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_a1s74")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_wqcvg")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_hiyw0")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 5.0
+}]
+
 [node name="lotus_village" type="Control" unique_id=1394436137]
 layout_mode = 3
 anchors_preset = 15
@@ -79,6 +232,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_6nqwu")
 
 [node name="bg" type="TextureRect" parent="." unique_id=630668485]
 texture_filter = 1
@@ -96,10 +250,10 @@ modulate = Color(0.95, 0.85, 0.6, 0.2)
 position = Vector2(352, 173)
 scale = Vector2(2.8207958, 1.5643944)
 amount = 500
-texture = SubResource("GradientTexture2D_1x87e")
+texture = SubResource("GradientTexture2D_dx5u3")
 lifetime = 8.0
 preprocess = 6.0
-process_material = SubResource("ParticleProcessMaterial_k4ul1")
+process_material = SubResource("ParticleProcessMaterial_eevpj")
 script = ExtResource("2_mh77y")
 tipe_atmosfer = 0
 
@@ -112,7 +266,7 @@ scale = Vector2(0.3714341, 0.45107457)
 sprite_frames = SubResource("SpriteFrames_xncs8")
 animation = &"smoke"
 autoplay = "smoke"
-frame_progress = 0.25690097
+frame_progress = 0.30874172
 
 [node name="smoke2" type="AnimatedSprite2D" parent="bg/particles" unique_id=2027210095]
 modulate = Color(1, 1, 1, 0.3372549)
@@ -121,7 +275,7 @@ scale = Vector2(0.75276476, 0.64392525)
 sprite_frames = SubResource("SpriteFrames_xncs8")
 animation = &"smoke"
 autoplay = "smoke"
-frame_progress = 0.7033388
+frame_progress = 0.31732342
 
 [node name="smoke3" type="AnimatedSprite2D" parent="bg/particles" unique_id=1765630409]
 modulate = Color(1, 1, 1, 0.36078432)
@@ -130,7 +284,44 @@ scale = Vector2(0.4286789, 0.64392525)
 sprite_frames = SubResource("SpriteFrames_xncs8")
 animation = &"smoke"
 autoplay = "smoke"
-frame_progress = 0.5634839
+frame_progress = 0.16046445
+
+[node name="npc" type="AnimatedSprite2D" parent="bg/particles" unique_id=243993922]
+position = Vector2(191, 205)
+scale = Vector2(0.7847604, 0.89389116)
+sprite_frames = SubResource("SpriteFrames_moojr")
+animation = &"idle"
+autoplay = "idle"
+frame_progress = 0.81051654
+
+[node name="Button" type="Button" parent="bg/particles/npc" unique_id=1886266246]
+visible = false
+offset_left = -16.619669
+offset_top = -24.19924
+offset_right = -0.61966896
+offset_bottom = -1.1992397
+scale = Vector2(0.66577226, 0.66414464)
+text = "!"
+
+[node name="npc2" type="AnimatedSprite2D" parent="bg/particles" unique_id=1446294567]
+visible = false
+position = Vector2(486.00003, 211.00002)
+rotation = 0.016949505
+scale = Vector2(0.9088887, 0.8679483)
+sprite_frames = SubResource("SpriteFrames_1x87e")
+animation = &"idle"
+autoplay = "idle"
+frame_progress = 0.4137228
+flip_h = true
+
+[node name="Button" type="Button" parent="bg/particles/npc2" unique_id=493526155]
+visible = false
+offset_left = -16.619669
+offset_top = -24.19924
+offset_right = -0.61966896
+offset_bottom = -1.1992397
+scale = Vector2(0.66577226, 0.66414464)
+text = "!"
 
 [node name="goBlackSmith" type="Button" parent="bg" unique_id=1411817861]
 layout_mode = 0
@@ -177,3 +368,6 @@ text = "Basalt >>"
 
 [node name="gui-player-base" parent="." unique_id=962594343 instance=ExtResource("2_vq0s2")]
 layout_mode = 0
+
+[node name="lotus_village-music" type="AudioStreamPlayer" parent="." unique_id=454742692]
+stream = ExtResource("8_876jf")

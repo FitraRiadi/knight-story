@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://drkfrul8d7f5"]
+
+[ext_resource type="Script" uid="uid://dckh0a458tt54" path="res://scripts/local/gui/enchantment/enchantment_display.gd" id="1_a1wg8"]
+
+[node name="enchantmentDisplay" type="Control" unique_id=903084262]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_a1wg8")
+
+[node name="iconTexture" type="TextureRect" parent="." unique_id=634330688]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="enchantmentAnimation" type="AnimatedSprite2D" parent="." unique_id=2016733667]

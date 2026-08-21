@@ -1,0 +1,464 @@
+[gd_scene format=3 uid="uid://b2e1ie5074fce"]
+
+[ext_resource type="Script" uid="uid://duwfx346cusy0" path="res://scripts/local/gui/popup/quest/quest_menu.gd" id="1_qstvw"]
+[ext_resource type="Texture2D" uid="uid://q1e7hbeqot6h" path="res://assets/ui/popup/basic/paper.png" id="1_rsuwj"]
+[ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="3_cirwj"]
+[ext_resource type="Texture2D" uid="uid://d0onxdco3dyx1" path="res://assets/art/items/materials/tome_01.png" id="3_qstvw"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2fkx4"]
+bg_color = Color(0.2665752, 0.26657522, 0.26657507, 0.4509804)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cirwj"]
+bg_color = Color(0, 0, 0, 0.38039216)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dt4my"]
+bg_color = Color(0, 0, 0, 0.69803923)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_moojr"]
+texture = ExtResource("3_cirwj")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_qstvw"]
+texture = ExtResource("3_cirwj")
+
+[node name="quest_menu" type="Control" unique_id=1729228932]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_qstvw")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=1830678346]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.42745098)
+
+[node name="quest1" type="TextureRect" parent="." unique_id=1564944083]
+texture_filter = 1
+clip_contents = true
+layout_mode = 0
+offset_left = 87.0
+offset_top = 48.0
+offset_right = 364.2965
+offset_bottom = 497.48828
+scale = Vector2(0.6238809, 0.5717613)
+texture = ExtResource("1_rsuwj")
+
+[node name="typeQuest" type="Label" parent="quest1" unique_id=1217387320]
+layout_mode = 0
+offset_left = 36.866013
+offset_top = 15.740835
+offset_right = 240.43051
+offset_bottom = 44.740837
+theme_override_colors/font_color = Color(0.056345686, 0.07434628, 1.504086e-08, 1)
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_2fkx4")
+text = "Kill Quest"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="questTitle" type="Label" parent="quest1" unique_id=1264200011]
+layout_mode = 0
+offset_left = 41.67462
+offset_top = 85.70009
+offset_right = 242.03336
+offset_bottom = 138.7001
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 26
+text = "The Battleborn
+Subordinate"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="hr" type="Panel" parent="quest1" unique_id=530945628]
+layout_mode = 0
+offset_left = 40.07174
+offset_top = 143.41649
+offset_right = 240.43051
+offset_bottom = 146.91444
+
+[node name="questInfo" type="Panel" parent="quest1" unique_id=706863373]
+layout_mode = 0
+offset_left = 41.67462
+offset_top = 150.41243
+offset_right = 83.18648
+offset_bottom = 187.78284
+scale = Vector2(4.594869, 4.8673296)
+
+[node name="Label" type="Label" parent="quest1/questInfo" unique_id=1708322200]
+layout_mode = 0
+offset_left = 2.0930328
+offset_top = 1.0779915
+offset_right = 187.24408
+offset_bottom = 152.07799
+scale = Vector2(0.20156914, 0.17541412)
+theme_override_font_sizes/font_size = 20
+text = "The Battle Born Shoud No born sdgfe gerg sgeweg"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="questPurpose" type="Panel" parent="quest1" unique_id=172629344]
+layout_mode = 0
+offset_left = 49.688965
+offset_top = 285.08398
+offset_right = 224.4018
+offset_bottom = 323.56158
+theme_override_styles/panel = SubResource("StyleBoxFlat_cirwj")
+
+[node name="Label" type="Label" parent="quest1/questPurpose" unique_id=967148179]
+texture_filter = 1
+layout_mode = 0
+offset_right = 176.3157
+offset_bottom = 38.4776
+theme_override_font_sizes/font_size = 16
+text = "Kill 5 Skeleton"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="rewardPanel" type="Panel" parent="quest1" unique_id=2054553798]
+layout_mode = 0
+offset_left = 43.27749
+offset_top = 344.54935
+offset_right = 84.78934
+offset_bottom = 354.2513
+scale = Vector2(4.594869, 4.8673296)
+
+[node name="Label" type="Label" parent="quest1/rewardPanel" unique_id=1459633546]
+layout_mode = 0
+offset_left = 1.7441921
+offset_top = -2.1559904
+offset_right = 209.4869
+offset_bottom = 12.844009
+scale = Vector2(0.17967317, 0.16456547)
+theme_override_colors/font_color = Color(0.54211897, 0.78417, 3.85046e-07, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_dt4my")
+text = "Reward"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="reward" type="TextureRect" parent="quest1/rewardPanel" unique_id=961990969]
+layout_mode = 0
+offset_left = 13.953564
+offset_top = 1.0779982
+offset_right = 77.95357
+offset_bottom = 65.077995
+scale = Vector2(0.123087674, 0.10676275)
+texture = ExtResource("3_qstvw")
+
+[node name="Label" type="Label" parent="quest1/rewardPanel/reward" unique_id=71017898]
+layout_mode = 0
+offset_left = 39.67697
+offset_top = 20.194191
+offset_right = 122.67697
+offset_bottom = 47.19419
+theme_override_font_sizes/font_size = 28
+text = "x4"
+horizontal_alignment = 1
+
+[node name="Button" type="Button" parent="quest1" unique_id=1342065172]
+layout_mode = 0
+offset_left = 52.894714
+offset_top = 397.01904
+offset_right = 227.60754
+offset_bottom = 432.01904
+theme_override_font_sizes/font_size = 27
+theme_override_styles/normal = SubResource("StyleBoxTexture_moojr")
+theme_override_styles/hover = SubResource("StyleBoxTexture_qstvw")
+text = "Accept"
+
+[node name="quest2" type="TextureRect" parent="." unique_id=1655514154]
+texture_filter = 1
+clip_contents = true
+layout_mode = 0
+offset_left = 287.0
+offset_top = 48.0
+offset_right = 564.2965
+offset_bottom = 497.48828
+scale = Vector2(0.6238809, 0.5717613)
+texture = ExtResource("1_rsuwj")
+
+[node name="typeQuest" type="Label" parent="quest2" unique_id=590090267]
+layout_mode = 0
+offset_left = 36.866013
+offset_top = 15.740835
+offset_right = 240.43051
+offset_bottom = 44.740837
+theme_override_colors/font_color = Color(0.056345686, 0.07434628, 1.504086e-08, 1)
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_2fkx4")
+text = "Kill Quest"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="questTitle" type="Label" parent="quest2" unique_id=1190597820]
+layout_mode = 0
+offset_left = 41.67462
+offset_top = 85.70009
+offset_right = 242.03336
+offset_bottom = 138.7001
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 26
+text = "The Battleborn
+Subordinate"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="hr" type="Panel" parent="quest2" unique_id=1845349443]
+layout_mode = 0
+offset_left = 40.07174
+offset_top = 143.41649
+offset_right = 240.43051
+offset_bottom = 146.91444
+
+[node name="questInfo" type="Panel" parent="quest2" unique_id=791476824]
+layout_mode = 0
+offset_left = 41.67462
+offset_top = 150.41243
+offset_right = 83.18648
+offset_bottom = 187.78284
+scale = Vector2(4.594869, 4.8673296)
+
+[node name="Label" type="Label" parent="quest2/questInfo" unique_id=198906701]
+layout_mode = 0
+offset_left = 2.0930328
+offset_top = 1.0779915
+offset_right = 187.24408
+offset_bottom = 152.07799
+scale = Vector2(0.20156914, 0.17541412)
+theme_override_font_sizes/font_size = 20
+text = "The Battle Born Shoud No born sdgfe gerg sgeweg"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="questPurpose" type="Panel" parent="quest2" unique_id=482552474]
+layout_mode = 0
+offset_left = 49.688965
+offset_top = 285.08398
+offset_right = 224.4018
+offset_bottom = 323.56158
+theme_override_styles/panel = SubResource("StyleBoxFlat_cirwj")
+
+[node name="Label" type="Label" parent="quest2/questPurpose" unique_id=1202136]
+texture_filter = 1
+layout_mode = 0
+offset_right = 176.3157
+offset_bottom = 38.4776
+theme_override_font_sizes/font_size = 16
+text = "Kill 5 Skeleton"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="rewardPanel" type="Panel" parent="quest2" unique_id=40792267]
+layout_mode = 0
+offset_left = 43.27749
+offset_top = 344.54935
+offset_right = 84.78934
+offset_bottom = 354.2513
+scale = Vector2(4.594869, 4.8673296)
+
+[node name="Label" type="Label" parent="quest2/rewardPanel" unique_id=95999259]
+layout_mode = 0
+offset_left = 1.7441921
+offset_top = -2.1559904
+offset_right = 209.4869
+offset_bottom = 12.844009
+scale = Vector2(0.17967317, 0.16456547)
+theme_override_colors/font_color = Color(0.54211897, 0.78417, 3.85046e-07, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_dt4my")
+text = "Reward"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="reward" type="TextureRect" parent="quest2/rewardPanel" unique_id=675417606]
+layout_mode = 0
+offset_left = 13.953564
+offset_top = 1.0779982
+offset_right = 77.95357
+offset_bottom = 65.077995
+scale = Vector2(0.123087674, 0.10676275)
+texture = ExtResource("3_qstvw")
+
+[node name="Label" type="Label" parent="quest2/rewardPanel/reward" unique_id=251041208]
+layout_mode = 0
+offset_left = 39.67697
+offset_top = 20.194191
+offset_right = 122.67697
+offset_bottom = 47.19419
+theme_override_font_sizes/font_size = 28
+text = "x4"
+horizontal_alignment = 1
+
+[node name="Button" type="Button" parent="quest2" unique_id=1694616183]
+layout_mode = 0
+offset_left = 52.894714
+offset_top = 397.01904
+offset_right = 227.60754
+offset_bottom = 432.01904
+theme_override_font_sizes/font_size = 27
+theme_override_styles/normal = SubResource("StyleBoxTexture_moojr")
+theme_override_styles/hover = SubResource("StyleBoxTexture_qstvw")
+text = "Accept"
+
+[node name="quest3" type="TextureRect" parent="." unique_id=1404848482]
+texture_filter = 1
+clip_contents = true
+layout_mode = 0
+offset_left = 487.0
+offset_top = 48.0
+offset_right = 764.2965
+offset_bottom = 497.48828
+scale = Vector2(0.6238809, 0.5717613)
+texture = ExtResource("1_rsuwj")
+
+[node name="typeQuest" type="Label" parent="quest3" unique_id=1917099298]
+layout_mode = 0
+offset_left = 36.866013
+offset_top = 15.740835
+offset_right = 240.43051
+offset_bottom = 44.740837
+theme_override_colors/font_color = Color(0.056345686, 0.07434628, 1.504086e-08, 1)
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_2fkx4")
+text = "Kill Quest"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="questTitle" type="Label" parent="quest3" unique_id=137540986]
+layout_mode = 0
+offset_left = 41.67462
+offset_top = 85.70009
+offset_right = 242.03336
+offset_bottom = 138.7001
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 26
+text = "The Battleborn
+Subordinate"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="hr" type="Panel" parent="quest3" unique_id=383761745]
+layout_mode = 0
+offset_left = 40.07174
+offset_top = 143.41649
+offset_right = 240.43051
+offset_bottom = 146.91444
+
+[node name="questInfo" type="Panel" parent="quest3" unique_id=1624535531]
+layout_mode = 0
+offset_left = 41.67462
+offset_top = 150.41243
+offset_right = 83.18648
+offset_bottom = 187.78284
+scale = Vector2(4.594869, 4.8673296)
+
+[node name="Label" type="Label" parent="quest3/questInfo" unique_id=696291816]
+layout_mode = 0
+offset_left = 2.0930328
+offset_top = 1.0779915
+offset_right = 187.24408
+offset_bottom = 152.07799
+scale = Vector2(0.20156914, 0.17541412)
+theme_override_font_sizes/font_size = 20
+text = "The Battle Born Shoud No born sdgfe gerg sgeweg"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="questPurpose" type="Panel" parent="quest3" unique_id=1322212028]
+layout_mode = 0
+offset_left = 49.688965
+offset_top = 285.08398
+offset_right = 224.4018
+offset_bottom = 323.56158
+theme_override_styles/panel = SubResource("StyleBoxFlat_cirwj")
+
+[node name="Label" type="Label" parent="quest3/questPurpose" unique_id=1640530985]
+texture_filter = 1
+layout_mode = 0
+offset_right = 176.3157
+offset_bottom = 38.4776
+theme_override_font_sizes/font_size = 16
+text = "Kill 5 Skeleton"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="rewardPanel" type="Panel" parent="quest3" unique_id=1027275613]
+layout_mode = 0
+offset_left = 43.27749
+offset_top = 344.54935
+offset_right = 84.78934
+offset_bottom = 354.2513
+scale = Vector2(4.594869, 4.8673296)
+
+[node name="Label" type="Label" parent="quest3/rewardPanel" unique_id=1682352182]
+layout_mode = 0
+offset_left = 1.7441921
+offset_top = -2.1559904
+offset_right = 209.4869
+offset_bottom = 12.844009
+scale = Vector2(0.17967317, 0.16456547)
+theme_override_colors/font_color = Color(0.54211897, 0.78417, 3.85046e-07, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_dt4my")
+text = "Reward"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="reward" type="TextureRect" parent="quest3/rewardPanel" unique_id=583479265]
+layout_mode = 0
+offset_left = 13.953564
+offset_top = 1.0779982
+offset_right = 77.95357
+offset_bottom = 65.077995
+scale = Vector2(0.123087674, 0.10676275)
+texture = ExtResource("3_qstvw")
+
+[node name="Label" type="Label" parent="quest3/rewardPanel/reward" unique_id=688935913]
+layout_mode = 0
+offset_left = 39.67697
+offset_top = 20.194191
+offset_right = 122.67697
+offset_bottom = 47.19419
+theme_override_font_sizes/font_size = 28
+text = "x4"
+horizontal_alignment = 1
+
+[node name="Button" type="Button" parent="quest3" unique_id=138899344]
+layout_mode = 0
+offset_left = 52.894714
+offset_top = 397.01904
+offset_right = 227.60754
+offset_bottom = 432.01904
+theme_override_font_sizes/font_size = 27
+theme_override_styles/normal = SubResource("StyleBoxTexture_moojr")
+theme_override_styles/hover = SubResource("StyleBoxTexture_qstvw")
+text = "Accept"
+
+[node name="backBtn" type="Button" parent="." unique_id=422323941]
+texture_filter = 1
+layout_mode = 0
+offset_left = 19.0
+offset_top = 8.0
+offset_right = 70.0
+offset_bottom = 47.0
+theme_override_font_sizes/font_size = 33
+text = "<<"

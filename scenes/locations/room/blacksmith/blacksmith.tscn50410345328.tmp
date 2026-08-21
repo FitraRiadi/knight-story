@@ -1,0 +1,265 @@
+[gd_scene format=3 uid="uid://bc1ptnxvvk5gl"]
+
+[ext_resource type="Texture2D" uid="uid://do84xjmuyippb" path="res://assets/art/backgrounds/location/map/lotus_village/blacksmith/day.jpg" id="1_7ac76"]
+[ext_resource type="FontFile" uid="uid://dx6ognpbk586" path="res://assets/ui/fonts/alagard.ttf" id="2_krio3"]
+[ext_resource type="Script" uid="uid://cdwb8o4wb3vfh" path="res://scripts/local/location/room/blacksmith/intro.gd" id="3_o4wxa"]
+[ext_resource type="Script" uid="uid://2ir37c6h540n" path="res://scripts/local/location/room/blacksmith/feature.gd" id="4_krio3"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_moojr"]
+bg_color = Color(1, 1, 1, 0.42745098)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xncs8"]
+bg_color = Color(1, 1, 1, 0.5882353)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1qqxr"]
+bg_color = Color(0.46293062, 0.42736354, 0.48976684, 0.61960787)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="blacksmith" type="Control" unique_id=440507155]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=1247982417]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_7ac76")
+expand_mode = 1
+
+[node name="base-title" type="Label" parent="TextureRect" unique_id=781691067]
+layout_mode = 0
+offset_left = 498.0
+offset_top = 13.0
+offset_right = 826.0
+offset_bottom = 36.0
+theme_override_font_sizes/font_size = 24
+text = "Jack's
+BlackSmith"
+horizontal_alignment = 1
+
+[node name="introDialog" type="Control" parent="TextureRect" unique_id=1032009872]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -1.0
+offset_right = 59.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="TextureRect/introDialog" unique_id=836879631]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 283.0
+offset_right = 741.0
+offset_bottom = 340.0
+color = Color(0.16462399, 0.16462399, 0.16462399, 0.80784315)
+
+[node name="dialog" type="Label" parent="TextureRect/introDialog" unique_id=1028435057]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 284.0
+offset_right = 735.48615
+offset_bottom = 335.47693
+scale = Vector2(1.0034226, 1.0684395)
+offset_transform_enabled = true
+offset_transform_position = Vector2(20, 10)
+theme_override_fonts/font = ExtResource("2_krio3")
+theme_override_font_sizes/font_size = 15
+autowrap_mode = 1
+script = ExtResource("3_o4wxa")
+
+[node name="nameSpeaking" type="Label" parent="TextureRect/introDialog" unique_id=2008304729]
+layout_mode = 0
+offset_left = 7.0
+offset_top = 269.0
+offset_right = 123.0
+offset_bottom = 292.0
+theme_override_colors/font_color = Color(1, 1, 0.2, 1)
+theme_override_font_sizes/font_size = 23
+text = "Jack"
+
+[node name="feature" type="Control" parent="TextureRect" unique_id=1474548230]
+anchors_preset = 0
+offset_left = 22.0
+offset_top = 294.0
+offset_right = 62.0
+offset_bottom = 334.0
+script = ExtResource("4_krio3")
+
+[node name="mainTab" type="ColorRect" parent="TextureRect/feature" unique_id=1017084513]
+layout_mode = 0
+offset_left = 19.0
+offset_top = -250.0
+offset_right = 363.0
+offset_bottom = 28.0
+color = Color(0, 0, 0, 0.6627451)
+
+[node name="weaponBtn" type="Button" parent="TextureRect/feature/mainTab" unique_id=1699360139]
+layout_mode = 0
+offset_left = 15.0
+offset_top = -24.0
+offset_right = 78.0
+offset_bottom = -1.0
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
+text = "Weapon"
+
+[node name="closeBtn" type="Button" parent="TextureRect/feature/mainTab" unique_id=1071397130]
+layout_mode = 0
+offset_left = -23.0
+offset_top = 76.0
+offset_right = 40.0
+offset_bottom = 99.0
+rotation = -1.579074
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
+text = "Exit"
+
+[node name="armorBtn" type="Button" parent="TextureRect/feature/mainTab" unique_id=219127992]
+layout_mode = 0
+offset_left = 79.0
+offset_top = -24.0
+offset_right = 142.0
+offset_bottom = -1.0
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
+text = "Armor"
+
+[node name="toolBtn" type="Button" parent="TextureRect/feature/mainTab" unique_id=1392742893]
+layout_mode = 0
+offset_left = 143.0
+offset_top = -24.0
+offset_right = 206.0
+offset_bottom = -1.0
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
+text = "Tools"
+
+[node name="ringBtn" type="Button" parent="TextureRect/feature/mainTab" unique_id=1312356285]
+layout_mode = 0
+offset_left = 207.0
+offset_top = -24.0
+offset_right = 270.0
+offset_bottom = -1.0
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
+text = "Ring"
+
+[node name="questBtn" type="Button" parent="TextureRect/feature/mainTab" unique_id=855998784]
+layout_mode = 0
+offset_left = 271.0
+offset_top = -24.0
+offset_right = 334.0
+offset_bottom = -1.0
+mouse_default_cursor_shape = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
+text = "Quest"
+
+[node name="weaponTab" type="Control" parent="TextureRect/feature" unique_id=1795386154]
+anchors_preset = 0
+offset_left = 21.0
+offset_top = -250.0
+offset_right = 363.0
+offset_bottom = 30.0
+
+[node name="weaponSelection" type="ColorRect" parent="TextureRect/feature/weaponTab" unique_id=1493706567]
+layout_mode = 0
+offset_left = 347.0
+offset_right = 541.0
+offset_bottom = 278.0
+color = Color(0, 0, 0, 0.6627451)
+
+[node name="title" type="Label" parent="TextureRect/feature/weaponTab/weaponSelection" unique_id=78281782]
+layout_mode = 0
+offset_left = 30.0
+offset_top = -16.0
+offset_right = 157.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("StyleBoxFlat_xncs8")
+text = "Weapon Selection"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="weaponGrid" type="Control" parent="TextureRect/feature/weaponTab/weaponSelection" unique_id=586083546]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="weaponStats" type="ColorRect" parent="TextureRect/feature/weaponTab" unique_id=759567749]
+layout_mode = 0
+offset_top = 203.0
+offset_right = 40.666603
+offset_bottom = 244.84146
+scale = Vector2(8.360669, 1.7446806)
+color = Color(0, 0, 0, 0.33333334)
+
+[node name="weaponDisplay" type="ColorRect" parent="TextureRect/feature/weaponTab" unique_id=1767276955]
+layout_mode = 0
+offset_left = 118.0
+offset_top = 15.000004
+offset_right = 158.0
+offset_bottom = 55.000004
+scale = Vector2(2.7083957, 2.5836802)
+color = Color(0.011764706, 0.07450981, 0.02745098, 0.6862745)
+
+[node name="createBtn" type="Button" parent="TextureRect/feature/weaponTab" unique_id=17191398]
+layout_mode = 0
+offset_left = 127.0
+offset_top = 176.0
+offset_right = 218.0
+offset_bottom = 197.0
+theme_override_colors/font_color = Color(0.81915134, 0.85154337, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_1qqxr")
+text = "Craft"
+
+[node name="weaponTitle" type="Label" parent="TextureRect/feature/weaponTab" unique_id=1935241015]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 126.0
+offset_right = 340.0
+offset_bottom = 145.0
+theme_override_colors/font_color = Color(1, 1, 0.24705882, 1)
+theme_override_font_sizes/font_size = 20
+text = "Levinant Sword"
+horizontal_alignment = 1
+autowrap_mode = 1
+
+[node name="weaponDesc" type="Label" parent="TextureRect/feature/weaponTab" unique_id=522204409]
+layout_mode = 0
+offset_left = 46.0
+offset_top = 148.0
+offset_right = 303.0
+offset_bottom = 160.0
+theme_override_font_sizes/font_size = 9
+text = "Sword Of Tyrant wind ruin"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[connection signal="pressed" from="TextureRect/feature/mainTab/weaponBtn" to="TextureRect/feature" method="_on_weapon_btn_pressed"]
+[connection signal="pressed" from="TextureRect/feature/mainTab/armorBtn" to="TextureRect/feature" method="_on_armor_btn_pressed"]
+[connection signal="pressed" from="TextureRect/feature/mainTab/toolBtn" to="TextureRect/feature" method="_on_tool_btn_pressed"]
+[connection signal="pressed" from="TextureRect/feature/mainTab/ringBtn" to="TextureRect/feature" method="_on_ring_btn_pressed"]
+[connection signal="pressed" from="TextureRect/feature/mainTab/questBtn" to="TextureRect/feature" method="_on_quest_btn_pressed"]

@@ -1,0 +1,87 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://c60fficmw2t6s"]
+
+[ext_resource type="Script" uid="uid://d1jtt6i0k5g0g" path="res://scripts/local/characters/enemy/EnemyData.gd" id="1_n2612"]
+[ext_resource type="Texture2D" uid="uid://d2altnflbpbe3" path="res://assets/art/sprites/enemy/warewolf/idle1-removebg-preview (1).png" id="2_8o2hm"]
+[ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="2_t7j65"]
+[ext_resource type="Texture2D" uid="uid://dprj4c65ff6jj" path="res://assets/art/sprites/enemy/warewolf/idle2-removebg-preview (1).png" id="3_akbxh"]
+[ext_resource type="Texture2D" uid="uid://c0fy4ed3vlpvi" path="res://assets/art/sprites/enemy/warewolf/attack1.png" id="4_7fsbw"]
+[ext_resource type="Texture2D" uid="uid://cmogtqcyr6ts3" path="res://assets/art/sprites/enemy/warewolf/attack2-removebg-preview.png" id="5_0gqwf"]
+[ext_resource type="Texture2D" uid="uid://b33407mwpmjgg" path="res://assets/art/sprites/enemy/warewolf/hit1-removebg-preview.png" id="6_6qdrg"]
+[ext_resource type="Texture2D" uid="uid://78ehk66ybvq4" path="res://assets/art/sprites/enemy/warewolf/hit2-removebg-preview.png" id="7_5eh5s"]
+[ext_resource type="Texture2D" uid="uid://bfewyxnupacp4" path="res://assets/art/sprites/enemy/warewolf/death1-removebg-preview.png" id="8_7slcr"]
+[ext_resource type="Texture2D" uid="uid://bbmugqtg2fsnv" path="res://assets/art/sprites/enemy/warewolf/defend1-removebg-preview.png" id="9_oa1ji"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_8puy6"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_8o2hm")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_akbxh")
+}, {
+"duration": 1.0,
+"texture": ExtResource("4_7fsbw")
+}, {
+"duration": 1.0,
+"texture": ExtResource("5_0gqwf")
+}],
+"loop": 0,
+"name": &"attack",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("6_6qdrg")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_5eh5s")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_7slcr")
+}],
+"loop": 0,
+"name": &"death",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("9_oa1ji")
+}],
+"loop": 1,
+"name": &"defend",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("6_6qdrg")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_5eh5s")
+}],
+"loop": 0,
+"name": &"hurt",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_8o2hm")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_akbxh")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 3.0
+}]
+
+[resource]
+script = ExtResource("1_n2612")
+ai_type = 1
+enemy_id = "warewolf"
+enemy_name = "Warewolf"
+min_level = 3
+sprite_frames = SubResource("SpriteFrames_8puy6")
+max_hp = 90.0
+damage_to_player = 25.0
+metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"

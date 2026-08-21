@@ -1,0 +1,48 @@
+[gd_scene format=3 uid="uid://bu5hkr727us0p"]
+
+[ext_resource type="Script" uid="uid://bm15klo0yfmnk" path="res://scripts/local/battle/battlemode.gd" id="1_i268m"]
+[ext_resource type="Texture2D" uid="uid://33aykbqtqcrw" path="res://assets/art/backgrounds/location/map/forest_of_shadow/forest_of_shadow1.jpg" id="1_ksrse"]
+[ext_resource type="PackedScene" uid="uid://kc1e0n34mmy3" path="res://scenes/characters/enemy/enemy.tscn" id="3_ksrse"]
+
+[node name="battlemode" type="Control" unique_id=184345478]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_i268m")
+
+[node name="bg" type="TextureRect" parent="." unique_id=287304962]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_ksrse")
+expand_mode = 1
+
+[node name="Enemy" parent="." unique_id=249455329 instance=ExtResource("3_ksrse")]
+position = Vector2(371, 168.00002)
+
+[node name="atkBtn" type="Button" parent="." unique_id=1136254172]
+layout_mode = 0
+offset_left = 244.0
+offset_top = 299.0
+offset_right = 382.0
+offset_bottom = 336.0
+theme_override_font_sizes/font_size = 28
+text = "Attack"
+
+[node name="defendBtn" type="Button" parent="." unique_id=1852579]
+layout_mode = 0
+offset_left = 388.0
+offset_top = 299.0
+offset_right = 526.0
+offset_bottom = 336.0
+theme_override_font_sizes/font_size = 28
+text = "Defend"
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=2106517464]
+position = Vector2(370, 170)

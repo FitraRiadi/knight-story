@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://dmfc6tb72muxj"]
+
+[ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="1_8kas0"]
+[ext_resource type="Texture2D" uid="uid://bg21j2ka6at8m" path="res://assets/art/items/consumable/potion/Icon31.png" id="1_dvv3t"]
+
+[resource]
+script = ExtResource("1_8kas0")
+item_id = "health_potion"
+item_name = "Health Potion"
+description = "Heal +50 Hp"
+icon = ExtResource("1_dvv3t")
+metadata/_custom_type_script = "uid://d1chgapjpv2yu"
