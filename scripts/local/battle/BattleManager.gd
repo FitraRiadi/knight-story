@@ -1,8 +1,23 @@
 extends Control
 
 @onready var camera: Camera2D = $Camera2D
-@onready var atk_btn: Button = $atkBtn
-@onready var defend_btn: Button = $defendBtn
+@onready var hand_right: TextureRect = $"Camera2D/hand-right"
+@onready var hand_left: TextureRect = $"Camera2D/hand-left"
+
+@onready var atk_btn: Button = $interaction/atkBtn
+@onready var defend_btn: Button = $interaction/defendBtn
+@onready var parry_btn: Button = $parryBtn
+@onready var parry_timing_bar: Panel = $parryBtn/timing
+
+# --- NODE UI QTE ATTACK ---
+@onready var attack_qte_node: Control = $attackQte
+@onready var attack_qte_bg: TextureRect = $"attackQte/bg"
+@onready var attack_bar_container: Panel = $"attackQte/bg/bar-container"
+@onready var attack_bar_low: Panel = $"attackQte/bg/bar-container/bar-low"
+@onready var attack_bar_mid: Panel = $"attackQte/bg/bar-container/bar-mid"
+@onready var attack_bar_success: Panel = $"attackQte/bg/bar-container/bar-success"
+@onready var attack_bar_running: Panel = $"attackQte/bg/bar-container/bar-running"
+@onready var reset_target_btn: Button = $"attackQte/resetTarget"
 
 # --- NODE UI STATUS PLAYER ---
 @onready var hp_bar: Panel = $"player-information/HPstatus/bar"
@@ -14,18 +29,10 @@ extends Control
 @onready var morale_bar: Panel = $"player-information/MORALstatus/bar"
 @onready var morale_label: Label = $"player-information/MORALstatus/number"
 
-# --- NODE UI STATUS ENEMY (SELECTED TARGET) ---
-@onready var enemy_info_container: Control = $"enemy-information"
-@onready var enemy_hp_bar: Panel = $"enemy-information/HPstatus/bar"
-@onready var enemy_hp_label: Label = $"enemy-information/HPstatus/number"
-@onready var enemy_level_label: Label = $"enemy-information/level/level"
-@onready var enemy_profile_img: TextureRect = $"enemy-information/profile/Panel/img"
-@onready var enemy_name_label: Label = $"enemy-information/enemyName"
 
-# Memuat scene musuh secara dinamis untuk mencegah Cyclic Dependency
+
 var enemy_scene: PackedScene
 
-# --- PATH FOLDER RESOURCE MUSUH (.tres) ---
 @export_dir var enemy_resources_folder: String = "res://data/enemies/"
 
 # --- STATISTIK PLAYER ---
@@ -39,11 +46,14 @@ var attack_stamina_cost: float = 15.0
 var max_morale: float = 200.0
 var current_morale: float = 100.0
 
-# Stat Bertarung
-var player_damage: float = 20.0
+var player_damage: float = 80.0
 var player_crit_damage: float = 50.0
 var player_critical_chance: float = 50.0
 var player_hit_rate: float = 100.0
+var defense_flat_reduction: float = 20.0 
+var parry_flat_reduction: float = 10.0 
+
+var is_defending: bool = false
 
 var max_hp_bar_width: float = 0.0
 var max_stamina_bar_width: float = 0.0
@@ -60,17 +70,62 @@ var default_camera_pos: Vector2 = Vector2.ZERO
 
 @export var center_spawn_position: Vector2 = Vector2(380, 180)
 
-# Array ini akan terisi otomatis dengan mendeteksi file .tres
 var available_enemy_pool: Array[String] = []
 
-# --- NODE VFX DARAH MERAH SISI KAMERA ---
 var blood_vignette_rect: TextureRect
 var blood_vignette_tween: Tween
 
-# --- ENEMY UI ANIMATION STATE ---
 var original_enemy_info_pos: Vector2
 var enemy_info_tween: Tween
 var is_enemy_info_visible: bool = true
+
+var hand_layer: CanvasLayer
+var hand_breath_tween: Tween
+var hand_move_tween: Tween
+var original_hand_pos: Vector2
+
+@export var hand_corner_offset: Vector2 = Vector2(120, 200)
+
+var hand_left_breath_tween: Tween
+var hand_left_move_tween: Tween
+var original_hand_left_pos: Vector2
+
+@export var hand_left_corner_offset: Vector2 = Vector2(-120, 200)
+
+# ============================================================
+# BGM AUDIO SYSTEM
+# ============================================================
+var bgm_player: AudioStreamPlayer
+
+# ============================================================
+# COMBO SYSTEM
+# ============================================================
+var current_combo: int = 0
+var combo_canvas_layer: CanvasLayer
+var combo_popup_label: Label
+var combo_tween: Tween
+
+# ============================================================
+# INTERACTIVE PARRY QTE SYSTEM
+# ============================================================
+var parry_timer: SceneTreeTimer
+var is_parry_window_active: bool = false
+var parry_success_this_turn: bool = false
+var parry_canvas_layer: CanvasLayer
+var parry_timing_tween: Tween
+var original_timing_width: float = 0.0
+var parry_extra_reduction: float = 0.0 # Variable penampung bonus pengurangan damage parry
+
+# ============================================================
+# INTERACTIVE ATTACK QTE SYSTEM
+# ============================================================
+enum AttackResult { MISS, LOW, MID, CRITICAL }
+
+var is_attack_qte_active: bool = false
+var can_input_attack_qte: bool = false 
+var attack_qte_canvas_layer: CanvasLayer
+var attack_running_tween: Tween
+var target_attack_qte_pos: Vector2
 
 # ============================================================
 # PLAYER HP CAMERA OVERLAY
@@ -96,8 +151,13 @@ func _ready() -> void:
 	original_atk_pos = atk_btn.position
 	original_def_pos = defend_btn.position
 	
-	if enemy_info_container:
-		original_enemy_info_pos = enemy_info_container.position
+	_setup_bgm()
+	_setup_hand_layer()
+	_setup_parry_qte_ui()
+	_setup_attack_qte_ui()
+	_setup_combo_ui()
+	
+	
 	
 	if camera:
 		default_camera_pos = camera.global_position
@@ -111,8 +171,7 @@ func _ready() -> void:
 	if morale_bar:
 		max_morale_bar_width = morale_bar.size.x
 		
-	if enemy_hp_bar:
-		max_enemy_hp_bar_width = enemy_hp_bar.size.x
+	
 	
 	_setup_blood_vignette()
 	_setup_player_hp_camera_overlay()
@@ -121,16 +180,806 @@ func _ready() -> void:
 	atk_btn.pressed.connect(_on_attack_pressed)
 	defend_btn.pressed.connect(_on_defend_pressed)
 	
-	# Deteksi otomatis semua file musuh .tres di folder
+	if reset_target_btn and not reset_target_btn.pressed.is_connected(_on_reset_target_pressed):
+		reset_target_btn.pressed.connect(_on_reset_target_pressed)
+		
 	_auto_detect_enemy_pool()
-	
-	# Spawn awal
 	spawn_random_enemies(1, 3, 1, 5)
 
 
 # ============================================================
-# PLAYER HP CAMERA OVERLAY SETUP
+# SETUP BGM SYSTEM
 # ============================================================
+func _setup_bgm() -> void:
+	var bgm_stream: AudioStream = load("uid://c42peweo18yvn")
+	if bgm_stream:
+		bgm_player = AudioStreamPlayer.new()
+		bgm_player.stream = bgm_stream
+		bgm_player.volume_db = -20.0 # Atur desibel di sini (semakin minus semakin kecil, misal: -10.0 s/d -20.0 dB)
+		# Atau jika ingin pakai persentase (misal 30%):
+		# bgm_player.volume_db = linear_to_db(0.3)
+		bgm_player.autoplay = true
+		add_child(bgm_player)
+		bgm_player.play()
+
+
+# ============================================================
+# COMBO SYSTEM UI & LOGIC
+# ============================================================
+func _setup_combo_ui() -> void:
+	combo_canvas_layer = CanvasLayer.new()
+	combo_canvas_layer.layer = 180
+	add_child(combo_canvas_layer)
+	
+	combo_popup_label = Label.new()
+	combo_popup_label.text = ""
+	combo_popup_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	combo_popup_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	combo_popup_label.add_theme_font_size_override("font_size", 24)
+	combo_popup_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2, 1.0))
+	
+	combo_canvas_layer.add_child(combo_popup_label)
+	combo_popup_label.hide()
+
+
+func _add_combo(amount: int = 1) -> void:
+	current_combo += amount
+	if current_combo >= 3:
+		_show_combo_popup()
+
+
+func _reset_combo() -> void:
+	current_combo = 0
+	if combo_popup_label and combo_popup_label.visible:
+		var hide_tw = create_tween().set_parallel(true)
+		hide_tw.tween_property(combo_popup_label, "modulate:a", 0.0, 0.4)
+		hide_tw.tween_property(combo_popup_label, "scale", Vector2(0.8, 0.8), 0.4)
+		hide_tw.chain().tween_callback(combo_popup_label.hide)
+
+
+func _show_combo_popup() -> void:
+	if not combo_popup_label:
+		return
+		
+	if combo_tween and combo_tween.is_running():
+		combo_tween.kill()
+		
+	combo_popup_label.text = str(current_combo) + "x Combo!"
+	combo_popup_label.show()
+	
+	# Play Sound Effect Audio Combo Label Pop
+	var combo_sfx: AudioStream = load("res://assets/audio/effects/battle/ui/comboLabel-pop.mp3")
+	if combo_sfx:
+		var sfx_player: AudioStreamPlayer = AudioStreamPlayer.new()
+		add_child(sfx_player)
+		sfx_player.stream = combo_sfx
+		sfx_player.play()
+		sfx_player.finished.connect(sfx_player.queue_free)
+	
+	var viewport_size = get_viewport().get_visible_rect().size
+	combo_popup_label.reset_size()
+	var actual_size = combo_popup_label.get_combined_minimum_size()
+	combo_popup_label.pivot_offset = actual_size * 0.5
+	
+	var right_x = viewport_size.x - actual_size.x - 550.0
+	var bottom_y = viewport_size.y - actual_size.y - 250.0
+	
+	combo_popup_label.position = Vector2(right_x, bottom_y)
+	combo_popup_label.scale = Vector2(0.3, 0.3)
+	combo_popup_label.modulate.a = 0.0
+	
+	combo_tween = create_tween()
+	combo_tween.set_parallel(true)
+	combo_tween.tween_property(combo_popup_label, "scale", Vector2(1.2, 1.2), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	combo_tween.tween_property(combo_popup_label, "modulate:a", 1.0, 0.15)
+	
+	combo_tween.chain().set_parallel(false)
+	combo_tween.tween_property(combo_popup_label, "scale", Vector2.ONE, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	combo_tween.tween_interval(4.5)
+	
+	combo_tween.chain().set_parallel(true)
+	combo_tween.tween_property(combo_popup_label, "modulate:a", 0.0, 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	combo_tween.chain().tween_callback(combo_popup_label.hide)
+
+
+func _setup_attack_qte_ui() -> void:
+	if attack_qte_node:
+		attack_qte_canvas_layer = CanvasLayer.new()
+		attack_qte_canvas_layer.layer = 155
+		add_child(attack_qte_canvas_layer)
+		
+		var current_parent = attack_qte_node.get_parent()
+		if current_parent:
+			current_parent.remove_child(attack_qte_node)
+		attack_qte_canvas_layer.add_child(attack_qte_node)
+		
+		attack_qte_node.hide()
+		attack_qte_node.modulate.a = 0.0
+
+
+func _start_attack_qte() -> void:
+	if not attack_qte_node or not attack_bar_container or not attack_bar_success or not attack_bar_running:
+		_execute_actual_attack(AttackResult.MID)
+		return
+	
+	is_attack_qte_active = true
+	can_input_attack_qte = false
+	attack_qte_node.show()
+	
+	# Play Sound Effect Audio Attack QTE Open
+	var qte_open_sfx: AudioStream = load("res://assets/audio/effects/battle/ui/attackQte-open.mp3")
+	if qte_open_sfx:
+		var sfx_player: AudioStreamPlayer = AudioStreamPlayer.new()
+		add_child(sfx_player)
+		sfx_player.stream = qte_open_sfx
+		sfx_player.play()
+		sfx_player.finished.connect(sfx_player.queue_free)
+	
+	var viewport_size = get_viewport().get_visible_rect().size
+	target_attack_qte_pos = (viewport_size - attack_qte_node.size) * 0.5
+	
+	attack_qte_node.position = target_attack_qte_pos
+	attack_qte_node.modulate.a = 0.0
+	attack_qte_node.scale = Vector2(0.5, 0.5)
+	
+	var pop_tw = create_tween().set_parallel(true)
+	pop_tw.tween_property(attack_qte_node, "modulate:a", 1.0, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	pop_tw.tween_property(attack_qte_node, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	
+	if camera:
+		var target_focus_pos = default_camera_pos
+		var target_zoom = Vector2(1.25, 1.25)
+		
+		if enemies.size() > 0 and selected_enemy_index < enemies.size():
+			var active_enemy = enemies[selected_enemy_index]
+			if is_instance_valid(active_enemy):
+				var half_width: float = viewport_size.x / target_zoom.x * 0.5
+				var half_height: float = viewport_size.y / target_zoom.y * 0.5
+				
+				var clamped_x: float = clampf(active_enemy.global_position.x, half_width, viewport_size.x - half_width)
+				var clamped_y: float = clampf(active_enemy.global_position.y, half_height, viewport_size.y - half_height)
+				
+				target_focus_pos = Vector2(clamped_x, clamped_y)
+
+		var cam_zoom_tw = create_tween().set_parallel(true)
+		cam_zoom_tw.tween_property(camera, "global_position", target_focus_pos, 0.35).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		cam_zoom_tw.tween_property(camera, "zoom", target_zoom, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		cam_zoom_tw.set_ignore_time_scale(true)
+	
+	var container_width = attack_bar_container.size.x
+	
+	if attack_bar_low:
+		var low_max_x = max(0.0, container_width - attack_bar_low.size.x)
+		attack_bar_low.position.x = randf_range(0.0, low_max_x)
+		
+	if attack_bar_mid:
+		var mid_max_x = max(0.0, container_width - attack_bar_mid.size.x)
+		if attack_bar_low:
+			var center_low = attack_bar_low.position.x + (attack_bar_low.size.x * 0.5)
+			attack_bar_mid.position.x = clampf(center_low - (attack_bar_mid.size.x * 0.5), 0.0, mid_max_x)
+		else:
+			attack_bar_mid.position.x = randf_range(0.0, mid_max_x)
+			
+	if attack_bar_success:
+		var success_max_x = max(0.0, container_width - attack_bar_success.size.x)
+		if attack_bar_mid:
+			var center_mid = attack_bar_mid.position.x + (attack_bar_mid.size.x * 0.5)
+			attack_bar_success.position.x = clampf(center_mid - (attack_bar_success.size.x * 0.5), 0.0, success_max_x)
+		else:
+			attack_bar_success.position.x = randf_range(0.0, success_max_x)
+	
+	var running_width = attack_bar_running.size.x
+	var run_min_x = 0.0
+	var run_max_x = max(0.0, container_width - running_width)
+	
+	attack_bar_running.position.x = run_min_x
+	
+	if attack_running_tween and attack_running_tween.is_running():
+		attack_running_tween.kill()
+		
+	attack_running_tween = create_tween().set_loops()
+	attack_running_tween.tween_property(attack_bar_running, "position:x", run_max_x, 0.6).set_trans(Tween.TRANS_LINEAR)
+	attack_running_tween.tween_property(attack_bar_running, "position:x", run_min_x, 0.6).set_trans(Tween.TRANS_LINEAR)
+	
+	await get_tree().create_timer(0.2).timeout
+	if is_attack_qte_active:
+		can_input_attack_qte = true
+
+
+func _on_reset_target_pressed() -> void:
+	const ATTACK_QTE_CLOSE = preload("uid://cvo7g7uksf6dc")
+	if ATTACK_QTE_CLOSE:
+		var sfx_player: AudioStreamPlayer = AudioStreamPlayer.new()
+		add_child(sfx_player)
+		sfx_player.stream = ATTACK_QTE_CLOSE
+		sfx_player.play()
+		sfx_player.finished.connect(sfx_player.queue_free)
+	if not is_attack_qte_active:
+		return
+		
+	is_attack_qte_active = false
+	can_input_attack_qte = false
+	
+	if attack_running_tween and attack_running_tween.is_running():
+		attack_running_tween.kill()
+		
+	if camera:
+		var cam_reset_tw = create_tween().set_parallel(true)
+		cam_reset_tw.tween_property(camera, "zoom", Vector2(1.0, 1.0), 0.3).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN_OUT)
+		cam_reset_tw.tween_property(camera, "global_position", default_camera_pos, 0.3).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN_OUT)
+		cam_reset_tw.set_ignore_time_scale(true)
+		
+	var hide_tw = create_tween().set_parallel(true)
+	hide_tw.tween_property(attack_qte_node, "scale", Vector2(0.5, 0.5), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+	hide_tw.tween_property(attack_qte_node, "modulate:a", 0.0, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	hide_tw.chain().tween_callback(attack_qte_node.hide)
+	
+	_set_buttons_active(true)
+
+
+func _check_is_overlapping(runner: Panel, target: Panel) -> bool:
+	if not runner or not target:
+		return false
+	var r_x = runner.position.x
+	var r_right = r_x + runner.size.x
+	var t_x = target.position.x
+	var t_right = t_x + target.size.x
+	return (r_x <= t_right) and (r_right >= t_x)
+
+
+func _check_attack_qte_result() -> void:
+	if not is_attack_qte_active:
+		return
+	
+	is_attack_qte_active = false
+	can_input_attack_qte = false
+	
+	if attack_running_tween and attack_running_tween.is_running():
+		attack_running_tween.kill()
+	
+	if camera:
+		var cam_reset_tw = create_tween().set_parallel(true)
+		cam_reset_tw.tween_property(camera, "zoom", Vector2(1.0, 1.0), 0.3).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN_OUT)
+		cam_reset_tw.tween_property(camera, "global_position", default_camera_pos, 0.3).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN_OUT)
+		cam_reset_tw.set_ignore_time_scale(true)
+	
+	var qte_result: AttackResult = AttackResult.MISS
+	
+	if _check_is_overlapping(attack_bar_running, attack_bar_success):
+		qte_result = AttackResult.CRITICAL
+	elif _check_is_overlapping(attack_bar_running, attack_bar_mid):
+		qte_result = AttackResult.MID
+	elif _check_is_overlapping(attack_bar_running, attack_bar_low):
+		qte_result = AttackResult.LOW
+	
+	if qte_result != AttackResult.MISS:
+		_add_combo(1)
+	else:
+		_reset_combo()
+	
+	_spawn_attack_qte_particles()
+	_spawn_qte_popup_text(qte_result)
+	
+	var hide_tw = create_tween().set_parallel(true)
+	hide_tw.tween_property(attack_qte_node, "scale", Vector2(0.5, 0.5), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+	hide_tw.tween_property(attack_qte_node, "modulate:a", 0.0, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	hide_tw.chain().tween_callback(attack_qte_node.hide)
+	
+	_execute_actual_attack(qte_result)
+
+
+func _spawn_attack_qte_particles() -> void:
+	var particles = CPUParticles2D.new()
+	attack_bar_container.add_child(particles)
+	
+	particles.position = attack_bar_container.size * 0.5
+	particles.emitting = false
+	particles.one_shot = true
+	particles.explosiveness = 1.0
+	particles.amount = 24
+	particles.lifetime = 0.4
+	particles.speed_scale = 1.5
+	
+	particles.direction = Vector2(1, 0)
+	particles.spread = 180.0
+	particles.initial_velocity_min = 220.0
+	particles.initial_velocity_max = 380.0
+	particles.gravity = Vector2.ZERO
+	
+	particles.scale_amount_min = 3.0
+	particles.scale_amount_max = 6.0
+	particles.color = Color(1.0, 1.0, 1.0, 1.0)
+		
+	particles.emitting = true
+	
+	var cleanup_tween = create_tween()
+	cleanup_tween.tween_interval(0.6)
+	cleanup_tween.tween_callback(particles.queue_free)
+
+
+func _spawn_qte_popup_text(result: AttackResult) -> void:
+	var text_msg: String = ""
+	match result:
+		AttackResult.CRITICAL:
+			text_msg = "Perfect Timing!"
+		AttackResult.MID:
+			text_msg = "Nice Timing!"
+		AttackResult.LOW:
+			text_msg = "Weak Hit!"
+		AttackResult.MISS:
+			text_msg = "Try Again.."
+
+	var label = Label.new()
+	label.text = text_msg
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	
+	label.add_theme_font_size_override("font_size", 22)
+	label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
+	
+	if attack_qte_canvas_layer:
+		attack_qte_canvas_layer.add_child(label)
+	else:
+		add_child(label)
+		
+	var viewport_size = get_viewport().get_visible_rect().size
+	label.reset_size()
+	var actual_size = label.get_combined_minimum_size()
+	label.pivot_offset = actual_size * 0.5
+	
+	var top_y = 40.0
+	var center_x = (viewport_size.x * 0.5) - (actual_size.x * 0.5)
+	
+	label.position = Vector2(center_x, top_y)
+	label.scale = Vector2(0.2, 0.2)
+	label.modulate.a = 0.0
+	
+	var tw = create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(label, "scale", Vector2(1.15, 1.15), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(label, "modulate:a", 1.0, 0.12)
+	
+	tw.chain().set_parallel(false)
+	tw.tween_property(label, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tw.tween_interval(3.5)
+	
+	tw.chain().set_parallel(true)
+	tw.tween_property(label, "position:y", top_y - 20.0, 0.6).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(label, "modulate:a", 0.0, 3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	
+	tw.chain().tween_callback(label.queue_free)
+
+
+func _apply_hit_stop(duration: float) -> void:
+	Engine.time_scale = 0.0
+	await get_tree().create_timer(duration, true, false, true).timeout
+	Engine.time_scale = 1.0
+
+
+func _execute_actual_attack(result: AttackResult) -> void:
+	_play_juicy_hand_attack_animation()
+	
+	current_stamina = max(0.0, current_stamina - attack_stamina_cost)
+	_animate_stamina_change()
+	
+	for enemy in enemies:
+		if enemy.enemy_collision:
+			enemy.enemy_collision.disabled = true
+	
+	var target_enemy = enemies[selected_enemy_index]
+	
+	match result:
+		AttackResult.MISS:
+			target_enemy.receive_damage(0.0, false, true)
+		AttackResult.LOW:
+			var low_damage = player_damage * 0.4
+			target_enemy.receive_damage(low_damage, false, false)
+		AttackResult.MID:
+			var mid_damage = player_damage
+			target_enemy.receive_damage(mid_damage, false, false)
+		AttackResult.CRITICAL:
+			var crit_damage = player_damage + player_crit_damage
+			target_enemy.receive_damage(crit_damage, true, false)
+	
+	
+	await get_tree().create_timer(0.8).timeout
+	_start_enemies_turn()
+
+
+func _setup_parry_qte_ui() -> void:
+	if parry_btn:
+		parry_canvas_layer = CanvasLayer.new()
+		parry_canvas_layer.layer = 150
+		add_child(parry_canvas_layer)
+		
+		var current_parent = parry_btn.get_parent()
+		if current_parent:
+			current_parent.remove_child(parry_btn)
+		parry_canvas_layer.add_child(parry_btn)
+		
+		if parry_timing_bar:
+			original_timing_width = parry_timing_bar.size.x
+		
+		parry_btn.hide()
+		if not parry_btn.pressed.is_connected(_on_parry_button_clicked):
+			parry_btn.pressed.connect(_on_parry_button_clicked)
+
+
+func _show_parry_window(duration: float = 1.0) -> void:
+	if not parry_btn:
+		return
+		
+	parry_success_this_turn = false
+	is_parry_window_active = true
+	parry_extra_reduction = 0.0 # Reset bonus ekstra parry tiap window terbuka
+	
+	var viewport_size = get_viewport().get_visible_rect().size
+	var min_x = 120.0
+	var max_x = viewport_size.x - 220.0
+	var min_y = 150.0
+	var max_y = viewport_size.y - 250.0
+	
+	var random_x = randf_range(min_x, max_x)
+	var random_y = randf_range(min_y, max_y)
+	
+	parry_btn.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	parry_btn.position = Vector2(random_x, random_y)
+	
+	parry_btn.modulate = Color(1, 1, 1, 0)
+	parry_btn.scale = Vector2(0.01, 0.01)
+	parry_btn.show()
+	
+	if parry_timing_bar:
+		parry_timing_bar.size.x = original_timing_width
+		if parry_timing_tween and parry_timing_tween.is_running():
+			parry_timing_tween.kill()
+		parry_timing_tween = create_tween()
+		parry_timing_tween.tween_property(parry_timing_bar, "size:x", 0.0, duration).set_trans(Tween.TRANS_LINEAR)
+	
+	var tw = create_tween().set_parallel(true)
+	tw.tween_property(parry_btn, "modulate:a", 1.0, 0.15)
+	tw.tween_property(parry_btn, "scale", Vector2(0.053, 0.053), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	
+	if parry_timer != null:
+		parry_timer = null
+		
+	parry_timer = get_tree().create_timer(duration)
+	await parry_timer.timeout
+	
+	if parry_btn.visible and not parry_success_this_turn:
+		var visual_center = parry_btn.position + Vector2(40, 40)
+		_spawn_missed_popup_text(visual_center)
+		_hide_parry_window()
+
+
+func _hide_parry_window() -> void:
+	is_parry_window_active = false
+	if parry_timing_tween and parry_timing_tween.is_running():
+		parry_timing_tween.kill()
+		
+	if parry_btn and parry_btn.visible:
+		var tw = create_tween().set_parallel(true)
+		tw.tween_property(parry_btn, "modulate:a", 0.0, 0.25)
+		tw.tween_property(parry_btn, "scale", Vector2(0.01, 0.01), 0.25).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
+		
+		await tw.finished
+		parry_btn.hide()
+
+
+func _spawn_parry_particles(spawn_pos: Vector2) -> void:
+	for dir in [-1, 1]:
+		var particles = CPUParticles2D.new()
+		if parry_canvas_layer:
+			parry_canvas_layer.add_child(particles)
+		else:
+			add_child(particles)
+			
+		particles.position = spawn_pos
+		particles.emitting = false
+		particles.one_shot = true
+		particles.explosiveness = 0.95
+		particles.amount = 25
+		particles.lifetime = 0.4
+		particles.speed_scale = 1.8
+		
+		particles.direction = Vector2(dir, 0)
+		particles.spread = 25.0
+		particles.initial_velocity_min = 350.0
+		particles.initial_velocity_max = 600.0
+		
+		particles.gravity = Vector2.ZERO
+		particles.damping_min = 400.0
+		particles.damping_max = 600.0
+		
+		particles.scale_amount_min = 4.0
+		particles.scale_amount_max = 9.0
+		particles.color = Color(1.0, 1.0, 1.0, 1.0)
+		
+		particles.emitting = true
+		
+		var cleanup_tween = create_tween()
+		cleanup_tween.tween_interval(1.0)
+		cleanup_tween.tween_callback(particles.queue_free)
+
+
+func _spawn_parry_popup_text(spawn_pos: Vector2, text_msg: String = "Parry!") -> void:
+	var popup_label = Label.new()
+	popup_label.text = text_msg
+	popup_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	popup_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	
+	popup_label.add_theme_font_size_override("font_size", 22)
+	popup_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
+	
+	if parry_canvas_layer:
+		parry_canvas_layer.add_child(popup_label)
+	else:
+		add_child(popup_label)
+	
+	popup_label.position = spawn_pos - Vector2(100, 35)
+	popup_label.custom_minimum_size = Vector2(200, 60)
+	
+	popup_label.scale = Vector2(0.1, 0.1)
+	popup_label.modulate.a = 0.0
+	
+	var tw = create_tween().set_parallel(true)
+	tw.tween_property(popup_label, "scale", Vector2(1.25, 1.25), 0.15).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(popup_label, "modulate:a", 1.0, 0.08)
+	
+	tw.chain().tween_property(popup_label, "scale", Vector2(1.0, 1.0), 0.12).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN_OUT)
+	
+	var fade_tw = create_tween()
+	fade_tw.tween_interval(1.5)
+	fade_tw.tween_property(popup_label, "modulate:a", 0.0, 0.25).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	fade_tw.tween_callback(popup_label.queue_free)
+
+
+func _spawn_missed_popup_text(spawn_pos: Vector2) -> void:
+	_reset_combo()
+	
+	var missed_label = Label.new()
+	missed_label.text = ""
+	missed_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	missed_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	
+	missed_label.add_theme_font_size_override("font_size", 22)
+	missed_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
+	
+	if parry_canvas_layer:
+		parry_canvas_layer.add_child(missed_label)
+	else:
+		add_child(missed_label)
+	
+	missed_label.position = spawn_pos - Vector2(100, 35)
+	missed_label.custom_minimum_size = Vector2(200, 60)
+	
+	missed_label.scale = Vector2(0.1, 0.1)
+	missed_label.modulate.a = 0.0
+	
+	var tw = create_tween().set_parallel(true)
+	tw.tween_property(missed_label, "scale", Vector2(1.25, 1.25), 0.15).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(missed_label, "modulate:a", 1.0, 0.08)
+	
+	tw.chain().tween_property(missed_label, "scale", Vector2(1.0, 1.0), 0.12).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN_OUT)
+	
+	var fade_tw = create_tween()
+	fade_tw.tween_interval(1.5)
+	fade_tw.tween_property(missed_label, "modulate:a", 0.0, 0.25).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	fade_tw.tween_callback(missed_label.queue_free)
+
+
+func _on_parry_button_clicked() -> void:
+	if not is_parry_window_active:
+		return
+	
+	parry_success_this_turn = true
+	is_parry_window_active = false
+	
+	# Hitung rasio sisa waktu parry bar (0.0 sampai 1.0)
+	var remaining_ratio: float = 0.0
+	if original_timing_width > 0.0 and parry_timing_bar:
+		remaining_ratio = clampf(parry_timing_bar.size.x / original_timing_width, 0.0, 1.0)
+	
+	# Kalkulasi Bonus Berdasarkan Persentase Timing
+	var stamina_bonus: float = 0.0
+	var popup_msg: String = "Parry!"
+	
+	if remaining_ratio >= 0.75:
+		stamina_bonus = 30.0
+		parry_extra_reduction = 30.0 # Pengurangan damage ekstra
+		popup_msg = "Perfect Parry!"
+		current_morale = min(max_morale, current_morale + 10.0) # Bonus Morale
+	elif remaining_ratio >= 0.30:
+		stamina_bonus = 10.0
+		parry_extra_reduction = 15.0
+		popup_msg = "Great Parry!"
+		current_morale = min(max_morale, current_morale + 5.0)
+	else:
+		stamina_bonus = 5.0
+		parry_extra_reduction = 0.0
+		popup_msg = "Parry!"
+		
+	# Play Sound Parry
+	var parry_sfx: AudioStream = preload("res://assets/audio/effects/battle/parry/parry-base.mp3")
+	if parry_sfx:
+		var sfx_player: AudioStreamPlayer = AudioStreamPlayer.new()
+		add_child(sfx_player)
+		sfx_player.stream = parry_sfx
+		sfx_player.play()
+		sfx_player.finished.connect(sfx_player.queue_free)
+	
+	_add_combo(1)
+	
+	var visual_center: Vector2 = parry_btn.position + Vector2(40, 40)
+	_spawn_parry_particles(visual_center)
+	_spawn_parry_popup_text(visual_center, popup_msg)
+	
+	if hand_left:
+		if hand_left_move_tween and hand_left_move_tween.is_running():
+			hand_left_move_tween.kill()
+		
+		var base_x: float = (original_hand_left_pos.x + 150.0) if is_defending else original_hand_left_pos.x
+		var base_y: float = original_hand_left_pos.y
+		
+		var parry_shield_tw: Tween = create_tween()
+		parry_shield_tw.tween_property(hand_left, "position", Vector2(base_x + 30.0, base_y - 45.0), 0.08)\
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		parry_shield_tw.tween_property(hand_left, "position", Vector2(base_x + 25.0, base_y - 35.0), 0.06)\
+			.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		parry_shield_tw.tween_property(hand_left, "position", Vector2(base_x, base_y), 0.22)\
+			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
+	var break_tw: Tween = create_tween().set_parallel(true)
+	break_tw.tween_property(parry_btn, "scale", Vector2(0.07, 0.07), 0.1).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+	break_tw.tween_property(parry_btn, "modulate:a", 0.0, 0.1)
+	break_tw.chain().tween_callback(parry_btn.hide)
+	
+	current_stamina = min(max_stamina, current_stamina + stamina_bonus)
+	_animate_stamina_change()
+	_animate_hp_change()
+
+func _setup_hand_layer() -> void:
+	if not hand_right and not hand_left:
+		return
+		
+	hand_layer = CanvasLayer.new()
+	hand_layer.layer = 120
+	add_child(hand_layer)
+	
+	if hand_right:
+		var global_pos_right = hand_right.global_position
+		hand_right.get_parent().remove_child(hand_right)
+		hand_layer.add_child(hand_right)
+		hand_right.global_position = global_pos_right
+		original_hand_pos = hand_right.position
+	
+	if hand_left:
+		var global_pos_left = hand_left.global_position
+		hand_left.get_parent().remove_child(hand_left)
+		hand_layer.add_child(hand_left)
+		hand_left.global_position = global_pos_left
+		original_hand_left_pos = hand_left.position
+		
+	_start_hand_breathing()
+
+
+func _start_hand_breathing() -> void:
+	if is_defending:
+		if hand_right:
+			hand_breath_tween = create_tween().set_loops()
+			hand_breath_tween.tween_property(hand_right, "position:y", original_hand_pos.y + 6.0, 1.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+			hand_breath_tween.tween_property(hand_right, "position:y", original_hand_pos.y, 1.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		return
+
+	_stop_hand_breathing()
+	
+	if hand_right:
+		hand_breath_tween = create_tween().set_loops()
+		hand_breath_tween.tween_property(hand_right, "position:y", original_hand_pos.y + 6.0, 1.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		hand_breath_tween.tween_property(hand_right, "position:y", original_hand_pos.y, 1.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+	if hand_left:
+		hand_left_breath_tween = create_tween().set_loops()
+		hand_left_breath_tween.tween_property(hand_left, "position:y", original_hand_left_pos.y + 5.0, 1.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		hand_left_breath_tween.tween_property(hand_left, "position:y", original_hand_left_pos.y, 1.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _stop_hand_breathing() -> void:
+	if hand_breath_tween and hand_breath_tween.is_running():
+		hand_breath_tween.kill()
+	if hand_left_breath_tween and hand_left_breath_tween.is_running():
+		hand_left_breath_tween.kill()
+
+
+func _play_juicy_hand_attack_animation() -> void:
+	_stop_hand_breathing()
+	
+	# Play Sound Effect (One-shot Audio Player)
+	var attack_sfx_player = AudioStreamPlayer.new()
+	attack_sfx_player.stream = load("res://assets/audio/effects/battle/sword/sword-attack.mp3")
+	add_child(attack_sfx_player)
+	attack_sfx_player.play()
+	attack_sfx_player.finished.connect(attack_sfx_player.queue_free)
+	
+	if hand_right:
+		var right_tween = create_tween()
+		
+		right_tween.tween_property(hand_right, "position", original_hand_pos + Vector2(25.0, -10.0), 0.07)\
+			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+			
+		right_tween.tween_property(hand_right, "position", original_hand_pos + Vector2(-160.0, 15.0), 0.08)\
+			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+			
+		right_tween.tween_callback(func():
+			trigger_camera_shake_and_blood(14.0, 0.3, 0.8)
+			_apply_hit_stop(0.06)
+		)
+		
+		right_tween.tween_interval(0.04)
+		
+		right_tween.tween_property(hand_right, "position", original_hand_pos, 0.28)\
+			.set_trans(Tween.TRANS_SPRING).set_ease(Tween.EASE_OUT)
+
+	if hand_left and not is_defending:
+		var left_tween = create_tween().set_parallel(true)
+		left_tween.tween_property(hand_left, "position:y", original_hand_left_pos.y + 25.0, 0.15)\
+			.set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+		left_tween.chain().tween_property(hand_left, "position:y", original_hand_left_pos.y, 0.22)\
+			.set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN_OUT)
+	
+	var callback_node = create_tween()
+	callback_node.tween_interval(0.45)
+	callback_node.tween_callback(_start_hand_breathing)
+
+
+func _pull_hand_to_corner(duration: float = 0.4) -> void:
+	_stop_hand_breathing()
+	
+	if hand_move_tween and hand_move_tween.is_running():
+		hand_move_tween.kill()
+	if hand_left_move_tween and hand_left_move_tween.is_running():
+		hand_left_move_tween.kill()
+		
+	var target_pos_right = original_hand_pos + hand_corner_offset
+	var target_pos_left = original_hand_left_pos + hand_left_corner_offset
+	if is_defending:
+		target_pos_left = original_hand_left_pos + Vector2(150.0, 0.0)
+	
+	if hand_right:
+		hand_move_tween = create_tween()
+		hand_move_tween.tween_property(hand_right, "position", target_pos_right, duration)\
+			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+			
+	if hand_left and not is_defending:
+		hand_left_move_tween = create_tween()
+		hand_left_move_tween.tween_property(hand_left, "position", target_pos_left, duration)\
+			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+
+
+func _reset_hand_to_original(duration: float = 0.4) -> void:
+	if hand_move_tween and hand_move_tween.is_running():
+		hand_move_tween.kill()
+	if hand_left_move_tween and hand_left_move_tween.is_running():
+		hand_left_move_tween.kill()
+		
+	if hand_right:
+		hand_move_tween = create_tween()
+		hand_move_tween.tween_property(hand_right, "position", original_hand_pos, duration)\
+			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		
+	if hand_left:
+		hand_left_move_tween = create_tween()
+		var target_reset_pos = original_hand_left_pos
+		if is_defending:
+			target_reset_pos = original_hand_left_pos + Vector2(150.0, 0.0)
+		
+		hand_left_move_tween.tween_property(hand_left, "position", target_reset_pos, duration)\
+			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		
+	var callback_node = create_tween()
+	callback_node.tween_interval(duration)
+	callback_node.tween_callback(_start_hand_breathing)
+
 
 func _setup_player_hp_camera_overlay() -> void:
 	player_hp_overlay_layer = CanvasLayer.new()
@@ -164,9 +1013,6 @@ func _setup_player_hp_camera_overlay() -> void:
 	player_hp_overlay_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	player_hp_overlay_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	player_hp_overlay_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
-	player_hp_overlay_label.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.8))
-	player_hp_overlay_label.add_theme_constant_override("shadow_offset_x", 1)
-	player_hp_overlay_label.add_theme_constant_override("shadow_offset_y", 1)
 	player_hp_overlay_background.add_child(player_hp_overlay_label)
 	
 	player_hp_overlay_damage_label = Label.new()
@@ -178,9 +1024,6 @@ func _setup_player_hp_camera_overlay() -> void:
 	player_hp_overlay_damage_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	player_hp_overlay_damage_label.modulate.a = 0.0
 	player_hp_overlay_damage_label.add_theme_color_override("font_color", Color(1.0, 0.846, 0.819, 1.0))
-	player_hp_overlay_damage_label.add_theme_color_override("font_shadow_color", Color(0.0, 0.0, 0.0, 0.8))
-	player_hp_overlay_damage_label.add_theme_constant_override("shadow_offset_x", 1)
-	player_hp_overlay_damage_label.add_theme_constant_override("shadow_offset_y", 1)
 	player_hp_overlay_damage_label.add_theme_font_size_override("font_size", 22)
 	player_hp_overlay_background.add_child(player_hp_overlay_damage_label)
 	
@@ -275,9 +1118,11 @@ func _animate_player_hp_overlay_damage(damage_amount: float) -> void:
 
 
 func _on_enemy_attack_preparing() -> void:
+	_pull_hand_to_corner(0.35)
 	player_hp_overlay_visual_hp = current_hp
 	_update_player_hp_overlay_visual(player_hp_overlay_visual_hp)
 	_show_player_hp_camera_overlay()
+	_show_parry_window(0.9)
 
 
 func _auto_detect_enemy_pool() -> void:
@@ -287,7 +1132,6 @@ func _auto_detect_enemy_pool() -> void:
 		if db and "enemy_dict" in db and db.enemy_dict is Dictionary:
 			for enemy_id in db.enemy_dict.keys():
 				available_enemy_pool.append(str(enemy_id))
-			print_rich("[color=green][POOL AUTO-DETECT][/color] Terdeteksi dari EnemyDatabase: ", available_enemy_pool)
 			return
 	
 	var dir = DirAccess.open(enemy_resources_folder)
@@ -302,9 +1146,6 @@ func _auto_detect_enemy_pool() -> void:
 						available_enemy_pool.append(clean_id)
 			file_name = dir.get_next()
 		dir.list_dir_end()
-		print_rich("[color=green][POOL AUTO-DETECT][/color] Terdeteksi dari Folder '%s': %s" % [enemy_resources_folder, str(available_enemy_pool)])
-	else:
-		push_error("[ERROR] Gagal membuka folder musuh: " + enemy_resources_folder)
 
 
 func _setup_blood_vignette() -> void:
@@ -337,21 +1178,30 @@ func _setup_blood_vignette() -> void:
 	canvas_layer.add_child(blood_vignette_rect)
 
 
-func trigger_camera_shake_and_blood(intensity: float = 12.0, duration: float = 0.35, alpha_intensity: float = 0.8) -> void:
+func trigger_camera_shake_and_blood(intensity: float = 6.0, duration: float = 0.3, alpha_intensity: float = 0.6) -> void:
+	intensity = min(intensity, 6.0) 
+	
 	if camera:
 		var original_offset = camera.offset
 		var shake_tween = create_tween()
+		shake_tween.set_ignore_time_scale(true)
+		
 		var steps = 8
 		for i in range(steps):
-			var offset = Vector2(randf_range(-intensity, intensity), randf_range(-intensity, intensity))
-			shake_tween.tween_property(camera, "offset", offset, duration / float(steps))
-		shake_tween.tween_property(camera, "offset", original_offset, 0.05)
+			var offset = Vector2(
+				randf_range(-intensity * 0.3, intensity * 0.1), 
+				randf_range(-intensity * 0.1, intensity * 0.3)
+			)
+			shake_tween.tween_property(camera, "offset", original_offset + offset, duration / float(steps))
+		
+		shake_tween.tween_property(camera, "offset", original_offset, 0.05).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	
 	if blood_vignette_rect:
 		if blood_vignette_tween and blood_vignette_tween.is_running():
 			blood_vignette_tween.kill()
 		
 		blood_vignette_tween = create_tween()
+		blood_vignette_tween.set_ignore_time_scale(true)
 		blood_vignette_tween.tween_property(blood_vignette_rect, "modulate:a", alpha_intensity, duration * 0.25).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 		blood_vignette_tween.tween_property(blood_vignette_rect, "modulate:a", 0.0, duration * 0.75).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
@@ -361,7 +1211,7 @@ func _spawn_enemies(enemy_ids: Array[String], custom_levels: Array[int] = []) ->
 		enemy_scene = load("res://scenes/characters/enemy/enemy.tscn") as PackedScene
 	
 	if enemy_scene == null:
-		push_error("[ERROR] Gagal memuat scene musuh! Periksa path 'res://scenes/characters/enemy/enemy.tscn'")
+		push_error("[ERROR] Gagal memuat scene musuh!")
 		return
 	
 	for e in enemies:
@@ -380,7 +1230,6 @@ func _spawn_enemies(enemy_ids: Array[String], custom_levels: Array[int] = []) ->
 		var raw_instance = enemy_scene.instantiate()
 		var enemy_instance = raw_instance as BattleEnemy
 		if enemy_instance == null:
-			push_error("[ERROR] Root node 'enemy.tscn' tidak menggunakan script BattleEnemy!")
 			raw_instance.queue_free()
 			return
 		
@@ -390,15 +1239,12 @@ func _spawn_enemies(enemy_ids: Array[String], custom_levels: Array[int] = []) ->
 		
 		enemies.append(enemy_instance)
 		
-		# Hubungkan Signal
 		enemy_instance.clicked.connect(_on_enemy_clicked)
-		enemy_instance.attack_hit.connect(player_receive_damage)
+		enemy_instance.attack_hit.connect(player_receive_damage_custom)
 		enemy_instance.attack_preparing.connect(_on_enemy_attack_preparing)
 		enemy_instance.enemy_defeated.connect(_on_enemy_defeated)
 		
-		# Signal opsional jika musuh menerima damage/heal, langsung sync UI
-		if enemy_instance.has_signal("hp_changed"):
-			enemy_instance.hp_changed.connect(_on_selected_enemy_hp_changed)
+		
 	
 	_position_enemies(total_enemies)
 	_update_target_selection()
@@ -410,7 +1256,6 @@ func spawn_custom_enemies(enemy_ids: Array[String], levels: Array[int] = []) -> 
 
 func spawn_random_enemies(min_count: int = 1, max_count: int = 3, min_level: int = 1, max_level: int = 5) -> void:
 	if available_enemy_pool.is_empty():
-		push_error("[ERROR] Pool musuh kosong! Pastikan folder resource musuh terisi file .tres atau terdaftar di EnemyDatabase.")
 		return
 	
 	var count: int = randi_range(clampi(min_count, 1, 3), clampi(max_count, 1, 3))
@@ -418,16 +1263,13 @@ func spawn_random_enemies(min_count: int = 1, max_count: int = 3, min_level: int
 	var random_levels: Array[int] = []
 	
 	for i in range(count):
-		var random_id = available_enemy_pool.pick_random()
-		var random_lvl = randi_range(min_level, max_level)
-		random_ids.append(random_id)
-		random_levels.append(random_lvl)
+		random_ids.append(available_enemy_pool.pick_random())
+		random_levels.append(randi_range(min_level, max_level))
 	
 	_spawn_enemies(random_ids, random_levels)
 
 
 func respawn_test_enemies() -> void:
-	print("[TEST] Semua enemy mati. Spawn enemy baru...")
 	selected_enemy_index = 0
 	is_player_turn = true
 	spawn_random_enemies(1, 3, 1, 5)
@@ -479,22 +1321,40 @@ func _animate_stamina_change() -> void:
 		tw.tween_property(stamina_bar, "size:x", target_w, 0.35).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 
-func player_receive_damage(amount: float) -> void:
-	current_hp = max(0.0, current_hp - amount)
+func player_receive_damage_custom(amount: float) -> void:
+	_hide_parry_window()
+	
+	var final_damage = amount
+	
+	# Memperhitungkan parry_extra_reduction dari bonus timing
+	if parry_success_this_turn and is_defending:
+		final_damage = max(0.0, amount - (parry_flat_reduction + parry_extra_reduction + (defense_flat_reduction * 0.9)))
+	elif parry_success_this_turn:
+		final_damage = max(0.0, amount - (parry_flat_reduction + parry_extra_reduction))
+	elif is_defending:
+		final_damage = max(0.0, amount - defense_flat_reduction)
+	
+	# Play Sound Shield jika Player dalam mode defend saat terkena damage
+	if is_defending:
+		var shield_sfx: AudioStream = load("res://assets/audio/effects/battle/shield/shield-base.mp3")
+		if shield_sfx:
+			var sfx_player: AudioStreamPlayer = AudioStreamPlayer.new()
+			add_child(sfx_player)
+			sfx_player.stream = shield_sfx
+			sfx_player.play()
+			sfx_player.finished.connect(sfx_player.queue_free)
+	
+	current_hp = max(0.0, current_hp - final_damage)
 	_animate_hp_change()
-	_animate_player_hp_overlay_damage(amount)
+	_animate_player_hp_overlay_damage(final_damage)
 	trigger_camera_shake_and_blood(14.0, 0.4, 0.85)
-	if current_hp <= 0:
-		print("Player Kalah!")
 
 
-func _on_enemy_defeated(exp_amount: int, gold_amount: int, _dropped_items: Array[String]) -> void:
-	print("Musuh dikalahkan! EXP: ", exp_amount, " | Gold: ", gold_amount)
+func _on_enemy_defeated(_exp_amount: int, _gold_amount: int, _dropped_items: Array[String]) -> void:
 	await get_tree().create_timer(1.0).timeout
 	_update_target_selection()
 	
 	if enemies.is_empty():
-		print("[TEST] SEMUA ENEMY MATI!")
 		await get_tree().create_timer(0.5).timeout
 		respawn_test_enemies()
 
@@ -508,14 +1368,37 @@ func _on_enemy_clicked(clicked_enemy: BattleEnemy) -> void:
 		_update_target_selection()
 
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
+	if is_attack_qte_active and can_input_attack_qte:
+		var is_mouse_click = (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT)
+		var is_screen_touch = (event is InputEventScreenTouch and event.pressed)
+		var is_action_key = (event is InputEventKey and event.pressed and (event.is_action("ui_accept") or event.is_action("ui_select")))
+		
+		if is_mouse_click or is_screen_touch:
+			if reset_target_btn and reset_target_btn.is_visible_in_tree() and reset_target_btn.get_global_rect().has_point(event.position):
+				return
+		
+		if is_mouse_click or is_screen_touch or is_action_key:
+			_check_attack_qte_result()
+			get_viewport().set_input_as_handled()
+			return
+
 	if not is_player_turn:
 		return
+		
+	if is_parry_window_active and event.is_action_pressed("ui_accept"):
+		_on_parry_button_clicked()
+		return
+		
 	if enemies.size() > 1:
 		if event.is_action_pressed("ui_right"):
 			_change_target(1)
 		elif event.is_action_pressed("ui_left"):
 			_change_target(-1)
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	pass
 
 
 func _change_target(dir: int) -> void:
@@ -525,56 +1408,16 @@ func _change_target(dir: int) -> void:
 	_update_target_selection()
 
 
-# ============================================================
-# ANIMASI UI ENEMY INFORMATION (CIRC PULL-UP & SHOW)
-# ============================================================
-
-func _hide_enemy_info_animated() -> void:
-	if not enemy_info_container or not is_enemy_info_visible:
-		return
-	
-	is_enemy_info_visible = false
-	if enemy_info_tween and enemy_info_tween.is_running():
-		enemy_info_tween.kill()
-	
-	var hide_target_y = original_enemy_info_pos.y - 200.0
-	
-	enemy_info_tween = create_tween().set_parallel(true)
-	enemy_info_tween.tween_property(enemy_info_container, "position:y", hide_target_y, 0.45).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
-	enemy_info_tween.tween_property(enemy_info_container, "modulate:a", 0.0, 0.35).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	enemy_info_tween.chain().tween_callback(enemy_info_container.hide)
 
 
-func _show_enemy_info_animated() -> void:
-	if not enemy_info_container:
-		return
-	
-	if not is_enemy_info_visible:
-		is_enemy_info_visible = true
-		if enemy_info_tween and enemy_info_tween.is_running():
-			enemy_info_tween.kill()
-		
-		enemy_info_container.show()
-		enemy_info_container.position.y = original_enemy_info_pos.y - 200.0
-		enemy_info_container.modulate.a = 0.0
-		
-		enemy_info_tween = create_tween().set_parallel(true)
-		enemy_info_tween.tween_property(enemy_info_container, "position:y", original_enemy_info_pos.y, 0.4).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
-		enemy_info_tween.tween_property(enemy_info_container, "modulate:a", 1.0, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
-
-# ============================================================
-# UPDATE TARGET & MEMPERBARUI UI ENEMY-INFORMATION
-# ============================================================
 
 func _update_target_selection() -> void:
 	enemies = enemies.filter(func(e): return is_instance_valid(e) and e.current_hp > 0)
 	
 	if enemies.size() == 0:
-		_hide_enemy_info_animated()
 		return
 	
-	_show_enemy_info_animated()
 	
 	if selected_enemy_index >= enemies.size():
 		selected_enemy_index = max(0, enemies.size() - 1)
@@ -582,81 +1425,9 @@ func _update_target_selection() -> void:
 	for i in range(enemies.size()):
 		enemies[i].set_highlight(i == selected_enemy_index)
 	
-	# Update UI enemy-information dengan musuh yang aktif terpilih
-	_update_selected_enemy_ui()
 
 
-func _update_selected_enemy_ui() -> void:
-	if enemies.is_empty() or selected_enemy_index >= enemies.size():
-		return
-	
-	var active_enemy: BattleEnemy = enemies[selected_enemy_index]
-	if not is_instance_valid(active_enemy):
-		return
-	
-	# Nama
-	if enemy_name_label:
-		if active_enemy.stats and active_enemy.stats.enemy_name != "":
-			enemy_name_label.text = active_enemy.stats.enemy_name
-		else:
-			enemy_name_label.text = active_enemy.enemy_id.capitalize()
-	
-	# Level
-	if enemy_level_label:
-		enemy_level_label.text = str(active_enemy.level)
-	
-	# HP Text & Bar
-	_update_selected_enemy_hp_bar(active_enemy)
-	
-	# Profile Image / Portrait
-	if enemy_profile_img and active_enemy.stats:
-		var profile_tex: Texture2D = null
-		
-		# Prioritas 1: Panggil method helper get_profile_icon() jika ada di EnemyData
-		if active_enemy.stats.has_method("get_profile_icon"):
-			profile_tex = active_enemy.stats.get_profile_icon()
-		# Prioritas 2: Cek langsung variabel icon_enemy / profile_texture
-		elif "icon_enemy" in active_enemy.stats and active_enemy.stats.icon_enemy != null:
-			profile_tex = active_enemy.stats.icon_enemy
-		elif "profile_texture" in active_enemy.stats and active_enemy.stats.profile_texture != null:
-			profile_tex = active_enemy.stats.profile_texture
-		
-		# Fallback 1: Ambil dari SpriteFrames milik enemy instance
-		if profile_tex == null and active_enemy.sprite_frames and active_enemy.sprite_frames.has_animation("idle"):
-			profile_tex = active_enemy.sprite_frames.get_frame_texture("idle", 0)
-			
-		# Fallback 2: Ambil dari SpriteFrames milik stats (Resource)
-		if profile_tex == null and active_enemy.stats.sprite_frames and active_enemy.stats.sprite_frames.has_animation("idle"):
-			profile_tex = active_enemy.stats.sprite_frames.get_frame_texture("idle", 0)
-			
-		enemy_profile_img.texture = profile_tex
 
-
-func _update_selected_enemy_hp_bar(active_enemy: BattleEnemy) -> void:
-	if not active_enemy:
-		return
-		
-	if enemy_hp_label:
-		enemy_hp_label.text = str(int(active_enemy.current_hp)) + " / " + str(int(active_enemy.scaled_max_hp))
-	
-	if enemy_hp_bar:
-		var ratio = clampf(active_enemy.current_hp / active_enemy.scaled_max_hp, 0.0, 1.0)
-		var target_w = ratio * max_enemy_hp_bar_width
-		
-		var tw = create_tween()
-		tw.tween_property(enemy_hp_bar, "size:x", target_w, 0.25).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-
-
-func _on_selected_enemy_hp_changed() -> void:
-	if enemies.size() > 0 and selected_enemy_index < enemies.size():
-		var active_enemy = enemies[selected_enemy_index]
-		if is_instance_valid(active_enemy):
-			_update_selected_enemy_hp_bar(active_enemy)
-
-
-# ============================================================
-# AKSI PLAYER - ATTACK
-# ============================================================
 
 func _on_attack_pressed() -> void:
 	if not is_player_turn or enemies.size() == 0:
@@ -667,40 +1438,38 @@ func _on_attack_pressed() -> void:
 	is_player_turn = false
 	_set_buttons_active(false)
 	
-	current_stamina = max(0.0, current_stamina - attack_stamina_cost)
-	_animate_stamina_change()
-	
-	for enemy in enemies:
-		if enemy.enemy_collision:
-			enemy.enemy_collision.disabled = true
-	
-	var target_enemy = enemies[selected_enemy_index]
-	var hit_roll = randf_range(0.0, 100.0)
-	var is_hit = (hit_roll <= player_hit_rate)
-	
-	if not is_hit:
-		target_enemy.receive_damage(0.0, false, true)
-	else:
-		var crit_roll = randf_range(0.0, 100.0)
-		var is_crit = (crit_roll <= player_critical_chance)
-		var final_damage = player_damage + (player_crit_damage if is_crit else 0.0)
-		target_enemy.receive_damage(final_damage, is_crit, false)
-	
-	# Update UI Enemy langsung jika diserang
-	_update_selected_enemy_hp_bar(target_enemy)
-	
-	await get_tree().create_timer(0.6).timeout
-	_start_enemies_turn()
+	get_viewport().set_input_as_handled()
+	_start_attack_qte()
 
 
 func _on_defend_pressed() -> void:
 	if not is_player_turn:
 		return
 	
+	# Play Sound Shield Open
+	var shield_open_sfx: AudioStream = load("res://assets/audio/effects/battle/shield/shield_open.mp3")
+	if shield_open_sfx:
+		var sfx_player: AudioStreamPlayer = AudioStreamPlayer.new()
+		add_child(sfx_player)
+		sfx_player.stream = shield_open_sfx
+		sfx_player.play()
+		sfx_player.finished.connect(sfx_player.queue_free)
+	
 	is_player_turn = false
 	_set_buttons_active(false)
 	current_stamina = min(max_stamina, current_stamina + 20.0)
 	_animate_stamina_change()
+	
+	is_defending = true
+	_stop_hand_breathing()
+	
+	if hand_left_move_tween and hand_left_move_tween.is_running():
+		hand_left_move_tween.kill()
+		
+	if hand_left:
+		hand_left_move_tween = create_tween()
+		hand_left_move_tween.tween_property(hand_left, "position:x", original_hand_left_pos.x + 150.0, 0.3)\
+			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	
 	for enemy in enemies:
 		if enemy.enemy_collision:
@@ -715,14 +1484,26 @@ func _start_enemies_turn() -> void:
 	
 	for enemy in enemies:
 		if enemy.current_hp > 0:
+			_pull_hand_to_corner(0.4)
+			
 			await enemy.take_turn(camera, default_camera_pos)
 			_hide_player_hp_camera_overlay()
+			
+			_reset_hand_to_original(0.4)
+			
 			await get_tree().create_timer(0.4).timeout
 			await get_tree().create_timer(0.2).timeout
 	
 	for enemy in enemies:
 		if enemy.current_hp > 0 and enemy.enemy_collision:
 			enemy.enemy_collision.disabled = false
+			
+	if is_defending:
+		is_defending = false
+		if hand_left:
+			var reset_tw = create_tween()
+			reset_tw.tween_property(hand_left, "position:x", original_hand_left_pos.x, 0.4)\
+				.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	
 	_update_target_selection()
 	
@@ -738,15 +1519,15 @@ func _set_buttons_active(show_buttons: bool) -> void:
 	var target_atk_y: float = (original_atk_pos.y if show_buttons else original_atk_pos.y + hide_offset_y)
 	var target_def_y: float = (original_def_pos.y if show_buttons else original_def_pos.y + hide_offset_y)
 	
-	var tween = create_tween().set_parallel(true)
 	var trans_type = (Tween.TRANS_BACK if show_buttons else Tween.TRANS_CUBIC)
 	var ease_type = (Tween.EASE_OUT if show_buttons else Tween.EASE_IN)
 	
-	tween.tween_property(atk_btn, "position:y", target_atk_y, 0.4).set_trans(trans_type).set_ease(ease_type)
-	tween.tween_property(defend_btn, "position:y", target_def_y, 0.4).set_trans(trans_type).set_ease(ease_type)
+	var tw = create_tween().set_parallel(true)
+	tw.tween_property(atk_btn, "position:y", target_atk_y, 0.4).set_trans(trans_type).set_ease(ease_type)
+	tw.tween_property(defend_btn, "position:y", target_def_y, 0.4).set_trans(trans_type).set_ease(ease_type)
 	
 	if show_buttons:
-		tween.chain().tween_callback(_set_player_turn_true)
+		tw.chain().tween_callback(_set_player_turn_true)
 
 
 func _set_player_turn_true() -> void:

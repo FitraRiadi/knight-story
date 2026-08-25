@@ -5,7 +5,7 @@
 [ext_resource type="Script" uid="uid://cdwb8o4wb3vfh" path="res://scripts/local/location/room/blacksmith/intro.gd" id="3_o4wxa"]
 [ext_resource type="Script" uid="uid://2ir37c6h540n" path="res://scripts/local/location/room/blacksmith/feature.gd" id="4_krio3"]
 [ext_resource type="Texture2D" uid="uid://8cepjqc2ko63" path="res://assets/art/items/weapons/mace_01.png" id="5_o4wxa"]
-[ext_resource type="Texture2D" uid="uid://c3wjbqxsjgaga" path="res://assets/art/items/weapons/short_sword_01.png" id="6_awg12"]
+[ext_resource type="Texture2D" uid="uid://c3wjbqxsjgaga" path="res://assets/art/items/weapons/iron_sword.png" id="6_awg12"]
 [ext_resource type="Texture2D" uid="uid://d0onxdco3dyx1" path="res://assets/art/items/materials/tome_01.png" id="7_yawai"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_moojr"]

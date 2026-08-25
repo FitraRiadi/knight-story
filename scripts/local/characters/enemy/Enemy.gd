@@ -11,12 +11,35 @@ signal clicked(enemy: BattleEnemy)
 signal attack_preparing
 signal attack_hit(damage_amount: float)
 signal hp_changed
+signal sound_requested(sound_name: String)
 
 signal enemy_defeated(
 	exp_amount: int,
 	gold_amount: int,
 	dropped_items: Array[String]
 )
+
+
+# ============================================================
+# SOUND EFFECT DEFAULT (FALLBACK)
+# ============================================================
+
+const DEFAULT_SFX_DEATH = preload("res://assets/audio/effects/enemies/death-base.mp3")
+const DEFAULT_ATTACK = preload("res://assets/audio/effects/enemies/attack-base.mp3")
+const DEFAULT_SFX_HIT = preload("res://assets/audio/effects/enemies/hit-base.mp3")
+const SFX_USE_ITEM = preload("uid://d3jo784jvhvnu")
+
+
+# ============================================================
+# STATUS EFFECT ICONS DICTIONARY
+# ============================================================
+
+const STATUS_ICONS: Dictionary = {
+	"attack_up": preload("res://assets/ui/icons/statusEffect/attackUp.png"),
+	"health_up": preload("res://assets/ui/icons/statusEffect/healthUp.png"),
+	"poison": preload("res://assets/ui/icons/statusEffect/poison.png"),
+	"stun": preload("res://assets/ui/icons/statusEffect/stun.png")
+}
 
 
 # ============================================================
@@ -46,21 +69,19 @@ var scaled_gold: int = 10
 
 
 # ============================================================
-# ITEM INVENTORY & ACTIVE BUFFS
+# ITEM INVENTORY & BUFF MANAGER
 # ============================================================
 
 var enemy_inventory: Array[ItemData] = []
-var active_buffs: Array[Dictionary] = []
+var buff_manager: BuffManager = BuffManager.new()
+const BuffManagerConst = preload("uid://bwa4caym3ruqt") 
 
 
 # ============================================================
 # COMBAT MODIFIERS
 # ============================================================
 
-var bonus_damage: float = 0.0
-var bonus_defense: float = 0.0
 var shield_value: float = 0.0
-var damage_reduction: float = 0.0
 
 
 # ============================================================
@@ -74,7 +95,7 @@ const DEFEND_DAMAGE_REDUCTION: float = 0.40
 
 
 # ============================================================
-# NODES
+# NODES & AUDIO
 # ============================================================
 
 @onready var enemy_name_label: Label = $"enemyStats/name"
@@ -83,11 +104,19 @@ const DEFEND_DAMAGE_REDUCTION: float = 0.40
 @onready var bar_hp_progress: Panel = (
 	$"enemyStats/bar-hp/bar-hp-progress"
 )
+@onready var enemy_hp_label: Label = $"enemyStats/bar-hp/hp-label"
+@onready var enemy_effect_container: Control = $"enemyStats/enemyEffect"
+
+# Node TextureRect Profile Enemy
+@onready var enemy_profile_img: TextureRect = $"enemyStats/profile/img"
 
 @onready var enemy_target: TextureRect = $enemyTarget
 @onready var enemy_collision: TextureButton = $enemyCollision
 @onready var enemy_hit_icon: TextureRect = $enemyHitIcon
 @onready var label_template: Label = $Label
+
+var audio_player: AudioStreamPlayer = null
+var effect_center_position: Vector2 = Vector2.ZERO
 
 
 # ============================================================
@@ -117,16 +146,27 @@ var last_spawn_offset: Vector2 = Vector2.ZERO
 func _ready() -> void:
 	enemy_ai = EnemyAI.new()
 
+	if not is_instance_valid(audio_player):
+		audio_player = AudioStreamPlayer.new()
+		add_child(audio_player)
+
 	if enemy_id != "" and stats == null:
 		setup_enemy(enemy_id)
 	elif stats == null:
 		current_hp = 100.0
+		_update_profile_icon()
 
 	original_z_index = z_index
 
 	if bar_hp_progress:
 		max_hp_bar_width = bar_hp_progress.size.x
 		_update_hp_bar()
+
+	if enemy_effect_container and enemy_effect_container.has_node("effect"):
+		var effect_node: Control = enemy_effect_container.get_node("effect") as Control
+		if effect_node:
+			effect_center_position = effect_node.position + (effect_node.size / 2.0)
+			effect_node.hide()
 
 	_setup_blood_particles()
 	_setup_soul_particles()
@@ -162,12 +202,53 @@ func _ready() -> void:
 	if not animation_finished.is_connected(_on_animation_finished):
 		animation_finished.connect(_on_animation_finished)
 
+	_update_status_effects()
 	_play_idle_if_allowed()
 
 
 func _on_animation_finished() -> void:
 	if animation == &"hurt":
 		_play_idle_if_allowed()
+
+
+# ============================================================
+# HELPER SOUND WITH FALLBACK LOGIC
+# ============================================================
+
+func _play_sound(sound_type: String) -> void:
+	if not is_instance_valid(audio_player):
+		audio_player = AudioStreamPlayer.new()
+		add_child(audio_player)
+
+	var stream: AudioStream = null
+
+	match sound_type:
+		"use_item":
+			stream = SFX_USE_ITEM
+
+		"attack":
+			if stats and stats.get("sfx_attack") != null:
+				stream = stats.get("sfx_attack")
+			else:
+				stream = DEFAULT_ATTACK
+
+		"hit", "hurt", "hurt_crit":
+			if stats and stats.get("sfx_hit") != null:
+				stream = stats.get("sfx_hit")
+			else:
+				stream = DEFAULT_SFX_HIT
+
+		"death":
+			if stats and stats.get("sfx_death") != null:
+				stream = stats.get("sfx_death")
+			else:
+				stream = DEFAULT_SFX_DEATH
+
+	if stream:
+		audio_player.stream = stream
+		audio_player.play()
+
+	sound_requested.emit(sound_type)
 
 
 # ============================================================
@@ -209,6 +290,7 @@ func setup_enemy(new_id: String, custom_level: int = 0) -> void:
 		scaled_exp = 20
 		scaled_gold = 10
 
+	_update_profile_icon()
 	_reset_combat_modifiers()
 
 	if enemy_ai:
@@ -221,7 +303,22 @@ func setup_enemy(new_id: String, custom_level: int = 0) -> void:
 	is_defending = false
 	is_defense_animation_locked = false
 
+	_update_status_effects()
 	_play_idle_if_allowed()
+
+
+# ============================================================
+# UPDATE PROFILE ICON
+# ============================================================
+
+func _update_profile_icon() -> void:
+	if not enemy_profile_img:
+		return
+
+	if stats != null and stats.has_method("get_profile_icon"):
+		enemy_profile_img.texture = stats.get_profile_icon()
+	else:
+		enemy_profile_img.texture = null
 
 
 # ============================================================
@@ -229,14 +326,13 @@ func setup_enemy(new_id: String, custom_level: int = 0) -> void:
 # ============================================================
 
 func _reset_combat_modifiers() -> void:
-	bonus_damage = 0.0
-	bonus_defense = 0.0
 	shield_value = 0.0
-	damage_reduction = 0.0
-	active_buffs.clear()
+	buff_manager.clear()
 
 	is_defending = false
 	is_defense_animation_locked = false
+
+	_update_status_effects()
 
 
 # ============================================================
@@ -244,24 +340,120 @@ func _reset_combat_modifiers() -> void:
 # ============================================================
 
 func _process_buff_durations() -> void:
-	var expired_buffs: Array[Dictionary] = []
+	var expired_buff_names: Array[String] = buff_manager.process_turn_start()
 
-	for buff in active_buffs:
-		if buff.get("is_new", false):
-			buff["is_new"] = false
-			continue
+	for buff_name in expired_buff_names:
+		show_reaction_text(buff_name + " Expired!", Color(0.8, 0.8, 0.8), false)
 
-		buff["duration"] -= 1
-		if buff["duration"] <= 0:
-			expired_buffs.append(buff)
+	_update_status_effects()
 
-	for buff in expired_buffs:
-		bonus_damage -= buff.get("attack_bonus", 0.0)
-		bonus_defense -= buff.get("defense_bonus", 0.0)
-		damage_reduction = maxf(0.0, damage_reduction - buff.get("damage_reduction", 0.0))
-		
-		show_reaction_text(buff["name"] + " Expired!", Color(0.8, 0.8, 0.8), false)
-		active_buffs.erase(buff)
+
+# ============================================================
+# STATUS EFFECT HELPER & DISPLAY MANAGER
+# ============================================================
+
+func _check_has_buff(buff_type: String) -> bool:
+	if buff_manager.has_method("has_buff"):
+		return buff_manager.call("has_buff", buff_type)
+	elif buff_manager.has_method("has_status"):
+		return buff_manager.call("has_status", buff_type)
+	elif "active_buffs" in buff_manager:
+		for buff in buff_manager.active_buffs:
+			if buff.get("name", "").to_lower() == buff_type.to_lower():
+				return true
+	return false
+
+
+func _update_status_effects() -> void:
+	if not enemy_effect_container:
+		return
+
+	# 1. Bersihkan efek lama (kecuali yang temporary)
+	for child in enemy_effect_container.get_children():
+		if child.name != "effect" and not child.has_meta("is_temporary"):
+			child.queue_free()
+
+	var active_types: Array[String] = []
+
+	if buff_manager.has_method("get_active_buff_types"):
+		active_types = buff_manager.get_active_buff_types()
+	
+	if current_hp > scaled_max_hp and not active_types.has("health_up"):
+		active_types.append("health_up")
+	if buff_manager.get_total_attack_bonus() > 0.0 and not active_types.has("attack_up"):
+		active_types.append("attack_up")
+	
+	var status_to_check = ["poison", "stun"]
+	for status in status_to_check:
+		if _check_has_buff(status) and not active_types.has(status):
+			active_types.append(status)
+
+	var icon_width: float = 20.0
+
+	# 2. Tambahkan efek baru ke dalam container
+	for type in active_types:
+		if STATUS_ICONS.has(type):
+			var icon_rect: TextureRect = TextureRect.new()
+			icon_rect.texture = STATUS_ICONS[type]
+			icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			icon_rect.custom_minimum_size = Vector2(icon_width, icon_width)
+			icon_rect.size = Vector2(icon_width, icon_width)
+			icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			enemy_effect_container.add_child(icon_rect)
+			
+	# 3. Rapihkan semua ikon yang ada di container
+	_rearrange_status_icons()
+
+
+func _show_temporary_status_icon(icon_texture: Texture2D, duration: float = 1.5) -> void:
+	if not enemy_effect_container:
+		return
+
+	var icon_width: float = 20.0
+	var icon_rect: TextureRect = TextureRect.new()
+	icon_rect.set_meta("is_temporary", true)
+	icon_rect.texture = icon_texture
+	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon_rect.custom_minimum_size = Vector2(icon_width, icon_width)
+	icon_rect.size = Vector2(icon_width, icon_width)
+	icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	enemy_effect_container.add_child(icon_rect)
+	
+	_rearrange_status_icons()
+
+	var tween: Tween = create_tween()
+	tween.tween_interval(duration)
+	tween.tween_property(icon_rect, "modulate:a", 0.0, 0.4)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(icon_rect):
+			icon_rect.queue_free()
+			_rearrange_status_icons()
+	)
+
+
+func _rearrange_status_icons() -> void:
+	if not is_instance_valid(enemy_effect_container): return
+
+	var valid_icons: Array[Control] = []
+	for child in enemy_effect_container.get_children():
+		if child.name != "effect" and not child.is_queued_for_deletion():
+			valid_icons.append(child as Control)
+
+	var count: int = valid_icons.size()
+	if count == 0: return
+
+	var icon_width: float = 20.0
+	var spacing: float = 4.0
+	var step: float = icon_width + spacing
+	var total_width: float = (count * icon_width) + ((count - 1) * spacing)
+	var y_offset_down: float = 5.0
+
+	for i in range(count):
+		var offset_x: float = - (total_width / 2.0) + (i * step)
+		valid_icons[i].position = effect_center_position + Vector2(offset_x, -(icon_width / 2.0) + y_offset_down)
 
 
 # ============================================================
@@ -289,7 +481,6 @@ func take_turn(camera: Camera2D, default_camera_pos: Vector2) -> void:
 	is_taking_turn = true
 	z_index = 100
 
-	# Kurangi durasi buff aktif setiap kali giliran musuh dimulai
 	_process_buff_durations()
 
 	is_defending = false
@@ -356,7 +547,7 @@ func _execute_attack(
 		_reset_camera_focus(camera, default_camera_pos)
 		return
 
-	var dmg: float = (scaled_damage + bonus_damage) * damage_multiplier
+	var total_damage: float = (scaled_damage + buff_manager.get_total_attack_bonus()) * damage_multiplier
 	attack_preparing.emit()
 
 	_focus_camera_to_me(camera, true)
@@ -371,7 +562,8 @@ func _execute_attack(
 	play("attack")
 	await animation_finished
 
-	attack_hit.emit(dmg)
+	_play_sound("attack")
+	attack_hit.emit(total_damage)
 	_shake_camera(camera, 12.0 * damage_multiplier, 0.25)
 
 	await get_tree().create_timer(0.6).timeout
@@ -415,6 +607,7 @@ func _execute_defend(camera: Camera2D, default_camera_pos: Vector2) -> void:
 	is_defense_animation_locked = true
 
 	play("defend")
+	_play_sound("defend")
 	_focus_camera_to_me(camera, true)
 
 	show_reaction_text("Defending!", Color(0.3, 0.8, 1.0), true)
@@ -453,81 +646,36 @@ func _execute_item(
 		return
 
 	enemy_inventory.remove_at(item_index)
+	_play_sound("use_item")
+
+	var result: Dictionary = buff_manager.apply_item(item, self)
 	var used_any_effect: bool = false
 
-	# 1. HP Healing (Instant)
-	if item.heal_value > 0.0:
-		var old_hp: float = current_hp
-		current_hp = minf(scaled_max_hp, current_hp + item.heal_value)
-		var actual_heal: float = current_hp - old_hp
-
-		if actual_heal > 0.0:
-			used_any_effect = true
-			_update_hp_bar()
-			hp_changed.emit()
-			show_reaction_text(
-				"Used " + _get_item_name(item) + " (+" + str(int(actual_heal)) + ")",
-				Color(0.2, 1.0, 0.3),
-				true
-			)
-
-	# 2. Max HP Bonus
-	if item.max_hp_bonus != 0.0:
-		scaled_max_hp = maxf(1.0, scaled_max_hp + item.max_hp_bonus)
-		current_hp = minf(scaled_max_hp, current_hp)
+	if result["healed"] > 0.0:
 		used_any_effect = true
 		_update_hp_bar()
 		hp_changed.emit()
+		show_reaction_text(
+			result["item_name"] + " (+" + str(int(result["healed"])) + ")",
+			Color(0.2, 1.0, 0.3),
+			true
+		)
+		if STATUS_ICONS.has("health_up"):
+			_show_temporary_status_icon(STATUS_ICONS["health_up"], 3.5)
 
-	# 3. Shield
-	if item.shield_value > 0.0:
-		shield_value += item.shield_value
+	if result["shield_added"] > 0.0 or result["buff_applied"]:
 		used_any_effect = true
 
-	# 4. Stat Buffs (Duration vs Permanent/Instant)
-	var item_duration: int = item.duration if "duration" in item else 0
-	var atk_bonus: float = item.attack_bonus + item.damage_bonus
-	var def_bonus: float = item.defense_bonus
-	var red_bonus: float = (item.damage_reduction / 100.0) if item.damage_reduction > 0 else 0.0
-
-	var has_stat_buff: bool = (atk_bonus != 0.0 or def_bonus != 0.0 or red_bonus > 0.0)
-
-	# Hanya daftarkan ke active_buffs jika item memiliki duration > 0 DAN memiliki bonus stat berlanjut
-	if item_duration > 0 and has_stat_buff:
-		bonus_damage += atk_bonus
-		bonus_defense += def_bonus
-		damage_reduction = clampf(damage_reduction + red_bonus, 0.0, 0.90)
-
-		active_buffs.append({
-			"name": _get_item_name(item),
-			"duration": item_duration,
-			"attack_bonus": atk_bonus,
-			"defense_bonus": def_bonus,
-			"damage_reduction": red_bonus,
-			"is_new": true
-		})
-		used_any_effect = true
-	elif item_duration == 0:
-		# Duration == 0 (Efek Instan / Langsung saat diaktifkan)
-		if atk_bonus != 0.0:
-			bonus_damage += atk_bonus
-			used_any_effect = true
-		if def_bonus != 0.0:
-			bonus_defense += def_bonus
-			used_any_effect = true
-		if red_bonus > 0.0:
-			damage_reduction = clampf(damage_reduction + red_bonus, 0.0, 0.90)
-			used_any_effect = true
-
-	if item.has_status_effect():
+	if item.has_method("has_status_effect") and item.has_status_effect():
 		used_any_effect = true
 
 	_show_item_pop_icon(item)
+	_update_status_effects()
 
 	if not used_any_effect:
-		show_reaction_text("Used " + _get_item_name(item), Color(0.8, 0.8, 1.0), false)
-	elif item.heal_value <= 0.0:
-		show_reaction_text("Used " + _get_item_name(item), Color(0.4, 1.0, 0.4), true)
+		show_reaction_text(result["item_name"], Color(0.8, 0.8, 1.0), false)
+	elif result["healed"] <= 0.0:
+		show_reaction_text(result["item_name"], Color(0.4, 1.0, 0.4), true)
 
 	var tween: Tween = create_tween()
 	tween.tween_property(self, "modulate", Color(0.5, 1.5, 0.5, 1.0), 0.3)
@@ -571,6 +719,7 @@ func _on_death() -> void:
 	if enemy_collision: enemy_collision.disabled = true
 
 	play("death")
+	_play_sound("death")
 
 	if soul_particles:
 		soul_particles.emitting = true
@@ -590,7 +739,7 @@ func _on_death() -> void:
 
 
 # ============================================================
-# RECEIVE DAMAGE
+# RECEIVE DAMAGE (HURT STATE & SOUND)
 # ============================================================
 
 func receive_damage(
@@ -600,21 +749,24 @@ func receive_damage(
 ) -> void:
 
 	if is_dodge:
+		_play_sound("dodge")
 		show_reaction_text("DODGE", Color(0.7, 0.7, 0.7), false)
 		return
 
 	var was_defending: bool = is_defending
-	var total_defense: float = scaled_defense + bonus_defense
+	var total_defense: float = scaled_defense + buff_manager.get_total_defense_bonus()
 	var final_damage: float = maxf(1.0, amount - total_defense)
 
 	if was_defending:
 		final_damage *= (1.0 - DEFEND_DAMAGE_REDUCTION)
+		_play_sound("block")
 		show_reaction_text("BLOCK!", Color(0.3, 0.8, 1.0), false)
 		is_defending = false
 		is_defense_animation_locked = false
 
-	if damage_reduction > 0.0:
-		final_damage *= (1.0 - damage_reduction)
+	var reduction: float = buff_manager.get_total_damage_reduction()
+	if reduction > 0.0:
+		final_damage *= (1.0 - reduction)
 
 	if shield_value > 0.0:
 		var absorbed: float = minf(shield_value, final_damage)
@@ -628,12 +780,15 @@ func receive_damage(
 	current_hp = maxf(0.0, current_hp - final_damage)
 
 	_update_hp_bar()
+	_update_status_effects()
 	hp_changed.emit()
 	_trigger_blood_splash()
 
 	if is_critical:
+		_play_sound("hurt_crit")
 		show_reaction_text("Crit " + str(int(final_damage)), Color(1.0, 1.0, 0.0), true)
 	else:
+		_play_sound("hit")
 		show_reaction_text(str(int(final_damage)), Color(1.0, 1.0, 1.0), false)
 
 	if enemy_hit_icon:
@@ -658,18 +813,22 @@ func receive_damage(
 
 
 # ============================================================
-# HP BAR
+# HP BAR & LABEL UPDATE
 # ============================================================
 
 func _update_hp_bar() -> void:
-	if not bar_hp_progress or scaled_max_hp <= 0.0:
+	if scaled_max_hp <= 0.0:
 		return
 
-	var hp_ratio: float = clampf(current_hp / scaled_max_hp, 0.0, 1.0)
-	var target_width: float = hp_ratio * max_hp_bar_width
+	if bar_hp_progress:
+		var hp_ratio: float = clampf(current_hp / scaled_max_hp, 0.0, 1.0)
+		var target_width: float = hp_ratio * max_hp_bar_width
 
-	var tween: Tween = create_tween()
-	tween.tween_property(bar_hp_progress, "size:x", target_width, 0.4)
+		var tween: Tween = create_tween()
+		tween.tween_property(bar_hp_progress, "size:x", target_width, 0.4)
+
+	if enemy_hp_label:
+		enemy_hp_label.text = str(int(current_hp)) + " / " + str(int(scaled_max_hp))
 
 
 # ============================================================
@@ -772,6 +931,14 @@ func _animate_target_icon() -> void:
 
 func _focus_camera_to_me(camera: Camera2D, zoom_in: bool) -> void:
 	if camera == null: return
+	
+	const zoomIntoEnemy = preload("uid://cctpp2ov3hiof")
+	if zoomIntoEnemy:
+		var sfx_player: AudioStreamPlayer = AudioStreamPlayer.new()
+		add_child(sfx_player)
+		sfx_player.stream = zoomIntoEnemy
+		sfx_player.play()
+		sfx_player.finished.connect(sfx_player.queue_free)
 
 	var target_zoom: Vector2 = Vector2(1.45, 1.45) if zoom_in else Vector2.ONE
 	var viewport_size: Vector2 = get_viewport_rect().size

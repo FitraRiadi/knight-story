@@ -55,6 +55,21 @@ enum AIType {
 
 
 # ============================================================
+# AUDIO EFFECTS
+# ============================================================
+
+@export_group("Audio Effects")
+
+@export var sfx_idle: AudioStream
+
+@export var sfx_attack: AudioStream
+
+@export var sfx_hit: AudioStream
+
+@export var sfx_death: AudioStream
+
+
+# ============================================================
 # STATS
 # ============================================================
 
@@ -91,14 +106,12 @@ func get_profile_icon() -> Texture2D:
 	if icon_enemy != null:
 		return icon_enemy
 
-
 	if sprite_frames:
 		if sprite_frames.has_animation("idle"):
 			return sprite_frames.get_frame_texture(
 				"idle",
 				0
 			)
-
 
 	return null
 
@@ -121,7 +134,6 @@ func get_scaled_stats(
 
 	var final_gold: int = gold_reward
 
-
 	if target_level > min_level:
 
 		var level_diff: int = (
@@ -129,7 +141,6 @@ func get_scaled_stats(
 		)
 
 		var stat_bonus: float = 0.0
-
 
 		for step in range(level_diff):
 
@@ -139,7 +150,6 @@ func get_scaled_stats(
 				10.0 +
 				(tier * 5.0)
 			)
-
 
 		final_hp += (
 			stat_bonus * 2.0
@@ -151,7 +161,6 @@ func get_scaled_stats(
 			level_diff * 0.5
 		)
 
-
 		final_exp += (
 			level_diff * 5
 		)
@@ -159,7 +168,6 @@ func get_scaled_stats(
 		final_gold += (
 			level_diff * 5
 		)
-
 
 	return {
 		"max_hp": final_hp,

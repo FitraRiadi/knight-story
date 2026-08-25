@@ -56,10 +56,13 @@ autowrap_mode = 1
 
 [node name="bar-information" type="Control" parent="." unique_id=825928901]
 anchors_preset = 0
-offset_right = 40.0
+offset_left = 4.0
+offset_right = 44.0
 offset_bottom = 40.0
+scale = Vector2(0.65594494, 0.7516872)
 
 [node name="HPstatus" type="TextureRect" parent="bar-information" unique_id=1871637762]
+visible = false
 layout_mode = 0
 offset_left = 3.0
 offset_top = 41.0
@@ -96,6 +99,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="STAMINAstatus" type="TextureRect" parent="bar-information" unique_id=760150470]
+visible = false
 layout_mode = 0
 offset_left = 3.0
 offset_top = 50.0
@@ -132,6 +136,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="MORALstatus" type="TextureRect" parent="bar-information" unique_id=1973052057]
+visible = false
 layout_mode = 0
 offset_left = 3.0
 offset_top = 59.0
@@ -303,11 +308,32 @@ anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
+[node name="playBtn" type="TextureButton" parent="bar-features" unique_id=1822062271]
+layout_mode = 0
+offset_left = 597.0
+offset_top = 298.0
+offset_right = 1766.0
+offset_bottom = 636.0
+scale = Vector2(0.11773189, 0.111019455)
+texture_normal = ExtResource("1_2cotu")
+script = ExtResource("4_lxysw")
+
+[node name="Label" type="Label" parent="bar-features/playBtn" unique_id=591676330]
+layout_mode = 0
+offset_left = 43.468933
+offset_top = 77.9639
+offset_right = 1119.3157
+offset_bottom = 265.9639
+theme_override_fonts/font = ExtResource("2_mi53y")
+theme_override_font_sizes/font_size = 200
+text = "Play"
+horizontal_alignment = 1
+
 [node name="mapBtn" type="TextureButton" parent="bar-features" unique_id=1441154778]
 layout_mode = 0
-offset_left = 630.0
+offset_left = 485.00003
 offset_top = 310.0
-offset_right = 1799.0
+offset_right = 1654.0
 offset_bottom = 648.0
 scale = Vector2(0.092020474, 0.07695869)
 texture_normal = ExtResource("1_2cotu")
@@ -323,32 +349,11 @@ theme_override_font_sizes/font_size = 200
 text = "Maps"
 horizontal_alignment = 1
 
-[node name="playBtn" type="TextureButton" parent="bar-features" unique_id=1822062271]
-layout_mode = 0
-offset_left = 629.0
-offset_top = 278.0
-offset_right = 1798.0
-offset_bottom = 616.0
-scale = Vector2(0.092020474, 0.07695869)
-texture_normal = ExtResource("1_2cotu")
-script = ExtResource("4_lxysw")
-
-[node name="Label" type="Label" parent="bar-features/playBtn" unique_id=591676330]
-layout_mode = 0
-offset_left = 43.468933
-offset_top = 77.9639
-offset_right = 1119.3157
-offset_bottom = 265.9639
-theme_override_fonts/font = ExtResource("2_mi53y")
-theme_override_font_sizes/font_size = 200
-text = "Play"
-horizontal_alignment = 1
-
 [node name="inventoryBtn" type="TextureButton" parent="bar-features" unique_id=1883077124]
 layout_mode = 0
-offset_left = 521.0
+offset_left = 376.00003
 offset_top = 310.0
-offset_right = 1690.0
+offset_right = 1545.0
 offset_bottom = 648.0
 scale = Vector2(0.092020474, 0.07695869)
 texture_normal = ExtResource("1_2cotu")
@@ -366,9 +371,9 @@ horizontal_alignment = 1
 
 [node name="inventoryBtn2" type="TextureButton" parent="bar-features" unique_id=192332052]
 layout_mode = 0
-offset_left = 410.99997
+offset_left = 265.99997
 offset_top = 310.0
-offset_right = 1580.0
+offset_right = 1435.0
 offset_bottom = 648.0
 scale = Vector2(0.092020474, 0.07695869)
 texture_normal = ExtResource("1_2cotu")

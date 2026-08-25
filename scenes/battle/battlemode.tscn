@@ -3,18 +3,17 @@
 [ext_resource type="Script" uid="uid://bm15klo0yfmnk" path="res://scripts/local/battle/BattleManager.gd" id="1_i268m"]
 [ext_resource type="Texture2D" uid="uid://33aykbqtqcrw" path="res://assets/art/backgrounds/location/map/forest_of_shadow/forest_of_shadow1.jpg" id="1_ksrse"]
 [ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="3_g2c4h"]
-[ext_resource type="Texture2D" uid="uid://crxculdvm3mw0" path="res://assets/ui/buttons/Gemini_Generated_Image_w9mpvzw9mpvzw9mp-removebg-preview.png" id="3_h8kyn"]
 [ext_resource type="FontFile" uid="uid://dx6ognpbk586" path="res://assets/ui/fonts/alagard.ttf" id="3_i268m"]
+[ext_resource type="Texture2D" uid="uid://ct3bvjqujdl0y" path="res://assets/art/playerHand/hand/right-left/base.png" id="4_3b2kv"]
 [ext_resource type="Texture2D" uid="uid://ubgv1comvtdg" path="res://assets/art/profile/player/Icon4.png" id="4_o6x6a"]
-[ext_resource type="Texture2D" uid="uid://eeh1qrcceu17" path="res://assets/art/profile/enemy/grimward.jpg" id="5_o6x6a"]
+[ext_resource type="Texture2D" uid="uid://keqimxji2oh4" path="res://assets/art/playerHand/hand/left/shield/oak_shield.png" id="4_wnd2m"]
+[ext_resource type="Texture2D" uid="uid://b2dgxlip5um63" path="res://assets/art/playerHand/hand/right/weapon/iron_sword.png" id="5_5wo1c"]
 [ext_resource type="Texture2D" uid="uid://dukpxgco0stkj" path="res://assets/ui/icons/target_icon.png" id="6_ymp2q"]
-[ext_resource type="Texture2D" uid="uid://osri2skp6y4m" path="res://assets/art/ability/active/battlecry.jpg" id="7_abymu"]
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_h8kyn"]
-texture = ExtResource("3_g2c4h")
-
-[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_i268m"]
-texture = ExtResource("3_g2c4h")
+[ext_resource type="Texture2D" uid="uid://caxwao41ucbqm" path="res://assets/ui/icons/attackBtn.png" id="9_5wo1c"]
+[ext_resource type="Texture2D" uid="uid://ddc1w5qr1txmy" path="res://assets/ui/icons/defendBtn.png" id="10_5wo1c"]
+[ext_resource type="Texture2D" uid="uid://dp8tbij73ny0f" path="res://assets/ui/icons/backpackBtn.png" id="10_wnd2m"]
+[ext_resource type="Texture2D" uid="uid://1frxy5vhmlrl" path="res://assets/ui/icons/parry_icon.png" id="13_wnd2m"]
+[ext_resource type="PackedScene" uid="uid://bqlfgt02vqv1s" path="res://scenes/battle/battle_inventory.tscn" id="14_kngoi"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ymp2q"]
 bg_color = Color(0.54, 0.052650016, 0.027000008, 1)
@@ -44,6 +43,65 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_lsh83"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_kngoi"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_xngd2"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_y6eqr"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_wnd2m"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qpju5"]
+bg_color = Color(0.047557652, 0.047557652, 0.047557607, 0.72156864)
+corner_radius_top_left = 100
+corner_radius_top_right = 100
+corner_radius_bottom_right = 100
+corner_radius_bottom_left = 100
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_moojr"]
+bg_color = Color(0.8627451, 0.9882353, 0.07450981, 0.74509805)
+corner_radius_top_left = 100
+corner_radius_top_right = 100
+corner_radius_bottom_right = 100
+corner_radius_bottom_left = 100
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xncs8"]
+bg_color = Color(0, 0, 0, 0.5803922)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yyr2t"]
+bg_color = Color(0.87282884, 0.48816437, 0.09847432, 0.34509805)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hx87m"]
+bg_color = Color(0.838145, 0.4945842, 0.43093556, 0.4627451)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kylmi"]
+bg_color = Color(0.1430479, 0.17089295, 4.813075e-08, 0.8392157)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dt4my"]
+bg_color = Color(0.31764707, 0.52156866, 0.14901961, 0.65882355)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
 [node name="battlemode" type="Control" unique_id=184345478]
 layout_mode = 3
 anchors_preset = 15
@@ -63,84 +121,74 @@ grow_vertical = 2
 texture = ExtResource("1_ksrse")
 expand_mode = 1
 
-[node name="atkBtn" type="Button" parent="." unique_id=1136254172]
-clip_children = 2
-texture_filter = 1
+[node name="mapTitle" type="Label" parent="bg" unique_id=691397388]
+visible = false
 layout_mode = 0
-offset_left = 4.000001
-offset_top = 257.0
-offset_right = 1717.133
-offset_bottom = 725.0
-scale = Vector2(0.082459405, 0.084952995)
+offset_left = 271.00003
+offset_top = 147.99998
+offset_right = 561.6572
+offset_bottom = 176.99998
+scale = Vector2(0.85036165, 0.9007924)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.49411765)
 theme_override_fonts/font = ExtResource("3_i268m")
-theme_override_font_sizes/font_size = 250
-theme_override_styles/normal = SubResource("StyleBoxTexture_h8kyn")
-theme_override_styles/hover = SubResource("StyleBoxTexture_i268m")
-text = "Attack"
-icon = ExtResource("3_h8kyn")
+theme_override_font_sizes/font_size = 30
+text = "Forest Of Shadow"
+horizontal_alignment = 1
+vertical_alignment = 1
 
-[node name="TextureRect" type="TextureRect" parent="atkBtn" unique_id=765793808]
+[node name="Label" type="Label" parent="bg/mapTitle" unique_id=615507255]
 layout_mode = 0
-offset_left = 9.464824
-offset_top = 9.406222
-offset_right = 511.10043
-offset_bottom = 451.4985
-texture = ExtResource("3_g2c4h")
-expand_mode = 1
-
-[node name="TextureRect2" type="TextureRect" parent="atkBtn" unique_id=454526195]
-layout_mode = 0
-offset_left = 9.464824
-offset_top = 9.406222
-offset_right = 511.10043
-offset_bottom = 451.4985
-texture = ExtResource("3_h8kyn")
-expand_mode = 1
-
-[node name="defendBtn" type="Button" parent="." unique_id=1102411159]
-clip_children = 2
-texture_filter = 1
-layout_mode = 0
-offset_left = 6.0
-offset_top = 298.0
-offset_right = 1719.133
-offset_bottom = 766.0
-scale = Vector2(0.07269282, 0.07886729)
-theme_override_fonts/font = ExtResource("3_i268m")
-theme_override_font_sizes/font_size = 250
-theme_override_styles/normal = SubResource("StyleBoxTexture_h8kyn")
-theme_override_styles/hover = SubResource("StyleBoxTexture_i268m")
-text = "Defense"
-icon = ExtResource("3_h8kyn")
-
-[node name="TextureRect" type="TextureRect" parent="defendBtn" unique_id=256679440]
-layout_mode = 0
-offset_left = 9.464824
-offset_top = 9.406222
-offset_right = 511.10043
-offset_bottom = 451.4985
-texture = ExtResource("3_g2c4h")
-expand_mode = 1
-
-[node name="TextureRect2" type="TextureRect" parent="defendBtn" unique_id=1825532677]
-clip_children = 2
-layout_mode = 0
-offset_left = 9.464824
-offset_top = 9.406222
-offset_right = 511.10043
-offset_bottom = 451.4985
-texture = ExtResource("3_h8kyn")
-expand_mode = 1
+offset_left = -3.229519
+offset_top = 28.018585
+offset_right = 287.42776
+offset_bottom = 43.018585
+theme_override_font_sizes/font_size = 16
+text = "The Darkness Field"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=2106517464]
 position = Vector2(370, 170)
 
+[node name="hand-left" type="TextureRect" parent="Camera2D" unique_id=1647611838]
+texture_filter = 1
+offset_left = -366.0
+offset_top = -123.0
+offset_right = 368.0
+offset_bottom = 217.0
+mouse_filter = 2
+texture = ExtResource("4_wnd2m")
+expand_mode = 1
+
+[node name="hand-right" type="TextureRect" parent="Camera2D" unique_id=70181446]
+texture_filter = 1
+offset_left = -365.0
+offset_top = -172.0
+offset_right = 369.0
+offset_bottom = 168.0
+mouse_filter = 2
+texture = ExtResource("5_5wo1c")
+expand_mode = 1
+
+[node name="hand-right-left" type="TextureRect" parent="Camera2D" unique_id=1411404318]
+visible = false
+texture_filter = 1
+offset_left = -366.0
+offset_top = -170.0
+offset_right = 368.0
+offset_bottom = 170.0
+mouse_filter = 2
+texture = ExtResource("4_3b2kv")
+expand_mode = 1
+
 [node name="player-information" type="Control" parent="." unique_id=791426165]
+texture_filter = 1
 anchors_preset = 0
 offset_left = 2.0000002
 offset_right = 42.0
 offset_bottom = 40.0
-scale = Vector2(0.9075752, 1.0272249)
+scale = Vector2(0.797118, 0.81556207)
 
 [node name="MORALstatus" type="TextureRect" parent="player-information" unique_id=1592777693]
 texture_filter = 1
@@ -364,159 +412,196 @@ offset_right = 40.01151
 offset_bottom = 35.658287
 texture = ExtResource("4_o6x6a")
 
-[node name="enemy-information" type="Control" parent="." unique_id=1830293488]
+[node name="interaction" type="Control" parent="." unique_id=48050382]
 anchors_preset = 0
-offset_left = 700.0
-offset_top = -1.0
-offset_right = 740.0
-offset_bottom = 39.0
+offset_left = 280.0
+offset_top = 4.0
+offset_right = 320.0
+offset_bottom = 44.0
 
-[node name="HPstatus" type="TextureRect" parent="enemy-information" unique_id=905484975]
+[node name="atkBtn" type="Button" parent="interaction" unique_id=1136254172]
+texture_filter = 1
 layout_mode = 0
-offset_left = -169.0
-offset_top = 35.0
-offset_right = 33.0
-offset_bottom = 48.0
-texture = ExtResource("3_g2c4h")
-expand_mode = 1
-
-[node name="bar" type="Panel" parent="enemy-information/HPstatus" unique_id=1573537350]
-layout_mode = 0
-offset_left = 4.0
-offset_top = 1.0
-offset_right = 197.0
-offset_bottom = 12.0
-theme_override_styles/panel = SubResource("StyleBoxFlat_ymp2q")
-
-[node name="number" type="Label" parent="enemy-information/HPstatus" unique_id=2074158634]
-layout_mode = 0
-offset_left = 72.0
-offset_top = 5.0
-offset_right = 130.0
-offset_bottom = 14.0
+offset_left = 354.0
+offset_top = 229.0
+offset_right = 864.1421
+offset_bottom = 770.56714
+scale = Vector2(0.16466004, 0.14434505)
 theme_override_fonts/font = ExtResource("3_i268m")
+theme_override_font_sizes/font_size = 500
+theme_override_styles/normal = SubResource("StyleBoxEmpty_lsh83")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_kngoi")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_xngd2")
+icon = ExtResource("9_5wo1c")
+
+[node name="atkLabel" type="Label" parent="interaction/atkBtn" unique_id=1647390542]
+layout_mode = 0
+offset_left = 115.38916
+offset_top = 512.6605
+offset_right = 162.38916
+offset_bottom = 527.6605
+theme_override_font_sizes/font_size = 100
+text = "Attack"
+
+[node name="backpackBtn" type="Button" parent="interaction" unique_id=1156248231]
+texture_filter = 1
+layout_mode = 0
+offset_left = 399.0
+offset_top = 127.0
+offset_right = 909.1421
+offset_bottom = 668.56714
+scale = Vector2(0.12634899, 0.11041779)
+theme_override_fonts/font = ExtResource("3_i268m")
+theme_override_font_sizes/font_size = 500
+theme_override_styles/normal = SubResource("StyleBoxEmpty_lsh83")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_kngoi")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_xngd2")
+disabled = true
+icon = ExtResource("10_wnd2m")
+
+[node name="defendBtn" type="Button" parent="interaction" unique_id=1070356766]
+texture_filter = 1
+layout_mode = 0
+offset_left = -257.0
+offset_top = 212.0
+offset_right = 253.14209
+offset_bottom = 753.56714
+scale = Vector2(0.16466004, 0.14434505)
+theme_override_fonts/font = ExtResource("3_i268m")
+theme_override_font_sizes/font_size = 500
+theme_override_styles/normal = SubResource("StyleBoxEmpty_y6eqr")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_wnd2m")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_xngd2")
+icon = ExtResource("10_5wo1c")
+
+[node name="defendLabel" type="Label" parent="interaction/defendBtn" unique_id=1820145999]
+layout_mode = 0
+offset_left = 78.95055
+offset_top = 533.444
+offset_right = 409.95056
+offset_bottom = 627.444
+theme_override_font_sizes/font_size = 100
+text = "Defend"
+
+[node name="parryBtn" type="Button" parent="." unique_id=1011180995]
+visible = false
+layout_mode = 0
+offset_left = 197.0
+offset_top = 77.0
+offset_right = 2029.5886
+offset_bottom = 577.0
+scale = Vector2(0.053476267, 0.056005955)
+theme_override_font_sizes/font_size = 400
+theme_override_styles/normal = SubResource("StyleBoxFlat_qpju5")
+text = "Parry"
+icon = ExtResource("13_wnd2m")
+
+[node name="timing" type="Panel" parent="parryBtn" unique_id=603379443]
+layout_mode = 0
+offset_left = 56.09961
+offset_top = 482.09164
+offset_right = 1776.489
+offset_bottom = 499.94687
+theme_override_styles/panel = SubResource("StyleBoxFlat_moojr")
+
+[node name="attackQte" type="Control" parent="." unique_id=1145859259]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = -4.0
+offset_right = 2.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="information" type="Label" parent="attackQte" unique_id=1232580275]
+layout_mode = 0
+offset_left = 337.0
+offset_top = 239.0
+offset_right = 446.0
+offset_bottom = 254.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.21568628)
+text = "Attack Timing!"
+
+[node name="Label2" type="Label" parent="attackQte/information" unique_id=1310154040]
+layout_mode = 0
+offset_left = -33.0
+offset_top = 14.0
+offset_right = 135.0
+offset_bottom = 22.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.21568628)
 theme_override_font_sizes/font_size = 8
-text = "100 / 200"
+text = "Tap To Perform attack"
 horizontal_alignment = 1
-vertical_alignment = 1
 
-[node name="bg" type="TextureRect" parent="enemy-information" unique_id=1108733344]
+[node name="bg" type="TextureRect" parent="attackQte" unique_id=747703566]
 layout_mode = 0
-offset_left = -169.0
-offset_right = 40.0
-offset_bottom = 40.0
+offset_left = 230.0
+offset_top = 293.0
+offset_right = 552.0
+offset_bottom = 333.0
 texture = ExtResource("3_g2c4h")
 expand_mode = 1
 
-[node name="level" type="TextureRect" parent="enemy-information" unique_id=980037473]
+[node name="bar-container" type="Panel" parent="attackQte/bg" unique_id=1002143884]
 layout_mode = 0
-offset_left = -123.0
-offset_top = 22.0
-offset_right = -75.0
+offset_left = 6.0
+offset_top = 4.0
+offset_right = 313.0
+offset_bottom = 36.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_xncs8")
+
+[node name="bar-low" type="Panel" parent="attackQte/bg/bar-container" unique_id=2013307788]
+layout_mode = 0
+offset_left = 2.0
+offset_right = 210.0
 offset_bottom = 32.0
-texture = ExtResource("3_g2c4h")
-expand_mode = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_yyr2t")
 
-[node name="Label" type="Label" parent="enemy-information/level" unique_id=1945223495]
+[node name="bar-mid" type="Panel" parent="attackQte/bg/bar-container" unique_id=2116624882]
 layout_mode = 0
-offset_left = 13.0
-offset_top = 1.0
-offset_right = 32.32544
-offset_bottom = 16.0
-scale = Vector2(0.56919855, 0.55448294)
-theme_override_colors/font_color = Color(1, 1, 0.17254902, 1)
-theme_override_fonts/font = ExtResource("3_i268m")
-text = "LV"
+offset_left = 10.0
+offset_right = 149.0
+offset_bottom = 32.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_hx87m")
 
-[node name="level" type="Label" parent="enemy-information/level" unique_id=2112502254]
+[node name="bar-success" type="Panel" parent="attackQte/bg/bar-container" unique_id=254028990]
 layout_mode = 0
-offset_left = 25.0
-offset_top = 1.0
-offset_right = 62.657448
-offset_bottom = 16.0
-scale = Vector2(0.53110355, 0.5542145)
-theme_override_fonts/font = ExtResource("3_i268m")
-text = "5"
-vertical_alignment = 1
+offset_left = 53.0
+offset_right = 105.0
+offset_bottom = 32.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_kylmi")
 
-[node name="profile" type="TextureRect" parent="enemy-information" unique_id=2030950383]
-layout_mode = 0
-offset_left = -171.0
-offset_right = -131.0
-offset_bottom = 40.0
-scale = Vector2(1.1496692, 0.98153913)
-texture = ExtResource("3_g2c4h")
-expand_mode = 1
-
-[node name="Panel" type="Panel" parent="enemy-information/profile" unique_id=22419894]
-clip_children = 1
-layout_mode = 0
-offset_left = 0.8698156
-offset_top = 3.0564246
-offset_right = 38.27188
-offset_bottom = 37.6959
-theme_override_styles/panel = SubResource("StyleBoxFlat_i268m")
-
-[node name="img" type="TextureRect" parent="enemy-information/profile/Panel" unique_id=1755783118]
-layout_mode = 0
-offset_top = -3.0564249
-offset_right = 38.27191
-offset_bottom = 35.658283
-texture = ExtResource("5_o6x6a")
-expand_mode = 1
-
-[node name="enemyName" type="Label" parent="enemy-information" unique_id=2101815532]
-layout_mode = 0
-offset_left = -123.0
-offset_top = 5.0
-offset_right = -51.0
-offset_bottom = 20.0
-theme_override_fonts/font = ExtResource("3_i268m")
-text = "Grimward"
-
-[node name="TextureRect" type="TextureRect" parent="enemy-information" unique_id=850490874]
-layout_mode = 0
-offset_left = -203.0
-offset_top = 6.0
-offset_right = -172.0
-offset_bottom = 35.0
+[node name="TextureRect" type="TextureRect" parent="attackQte/bg/bar-container/bar-success" unique_id=724253918]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 7.0
+offset_right = -7.0
+grow_horizontal = 2
+grow_vertical = 2
 texture = ExtResource("6_ymp2q")
 expand_mode = 1
 
-[node name="enemy-skils" type="Control" parent="enemy-information" unique_id=925220412]
+[node name="bar-running" type="Panel" parent="attackQte/bg/bar-container" unique_id=702127615]
+layout_mode = 0
+offset_left = 174.0
+offset_right = 189.0
+offset_bottom = 32.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_dt4my")
+
+[node name="resetTarget" type="Button" parent="attackQte" unique_id=449822910]
+layout_mode = 0
+offset_left = 338.0
+offset_top = 265.0
+offset_right = 439.0
+offset_bottom = 288.0
+text = "Reset Target"
+
+[node name="BattleInventory" parent="." unique_id=1690500354 instance=ExtResource("14_kngoi")]
 visible = false
-anchors_preset = 0
-offset_left = -168.0
-offset_top = 52.0
-offset_right = 37.0
-offset_bottom = 81.0
-
-[node name="TextureRect" type="TextureRect" parent="enemy-information/enemy-skils" unique_id=1882011669]
-layout_mode = 0
-offset_left = 174.99998
-offset_right = 214.99998
-offset_bottom = 40.0
-scale = Vector2(0.7, 0.7)
-texture = ExtResource("7_abymu")
-expand_mode = 1
-
-[node name="TextureRect2" type="TextureRect" parent="." unique_id=1657768735]
-layout_mode = 0
-offset_left = 294.0
-offset_right = 443.0
-offset_bottom = 20.0
-texture = ExtResource("3_g2c4h")
-expand_mode = 1
-
-[node name="Label" type="Label" parent="." unique_id=691397388]
-layout_mode = 0
-offset_left = 280.0
-offset_top = 4.0
-offset_right = 457.0
-offset_bottom = 17.0
-theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.49411765)
-theme_override_fonts/font = ExtResource("3_i268m")
-theme_override_font_sizes/font_size = 10
-text = "Forest Of Shadow"
-horizontal_alignment = 1
-vertical_alignment = 1
+layout_mode = 1

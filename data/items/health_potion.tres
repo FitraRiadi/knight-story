@@ -10,4 +10,5 @@ item_name = "Health Potion"
 description = "Heal +50 Hp"
 icon = ExtResource("1_dvv3t")
 heal_value = 50.0
+ai_priority_multiplier = 2.0
 metadata/_custom_type_script = "uid://d1chgapjpv2yu"

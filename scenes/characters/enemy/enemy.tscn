@@ -10,7 +10,10 @@
 [ext_resource type="Texture2D" uid="uid://6488p8v54jf" path="res://assets/art/sprites/enemy/grimward/defend1-removebg-preview.png" id="8_2sc0v"]
 [ext_resource type="Script" uid="uid://c22n5t7mdh7ui" path="res://scripts/local/characters/enemy/Enemy.gd" id="9_7v1ds"]
 [ext_resource type="Texture2D" uid="uid://dukpxgco0stkj" path="res://assets/ui/icons/target_icon.png" id="10_qvr0l"]
+[ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="10_ubuwf"]
 [ext_resource type="Texture2D" uid="uid://bvn6tvox2at5e" path="res://assets/art/items/weapons/dagger_01.png" id="11_icfsp"]
+[ext_resource type="Texture2D" uid="uid://me2o2n8ea0mg" path="res://assets/ui/icons/statusEffect/attackUp.png" id="11_vkenx"]
+[ext_resource type="Texture2D" uid="uid://eeh1qrcceu17" path="res://assets/art/profile/enemy/grimward.jpg" id="12_vkenx"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_moojr"]
 animations = [{
@@ -82,6 +85,12 @@ animations = [{
 "speed": 2.0
 }]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_weo17"]
+bg_color = Color(0, 0, 0, 0.33333334)
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+corner_detail = 10
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_moojr"]
 bg_color = Color(0.0035191663, 0.003519169, 0.0035191642, 0.64705884)
 corner_radius_top_left = 5
@@ -89,12 +98,29 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_moojr"]
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kylmi"]
 bg_color = Color(0.6, 0.017999984, 0.017999984, 1)
-corner_radius_top_left = 2
-corner_radius_top_right = 2
-corner_radius_bottom_right = 2
-corner_radius_bottom_left = 2
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cql51"]
+bg_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+shadow_color = Color(0.8217887, 0.82178867, 0.82178867, 0.89411765)
+shadow_size = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i268m"]
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
 
 [node name="Enemy" type="AnimatedSprite2D" unique_id=249455329]
 texture_filter = 1
@@ -107,26 +133,35 @@ script = ExtResource("9_7v1ds")
 [node name="enemyStats" type="Control" parent="." unique_id=369807274]
 layout_mode = 3
 anchors_preset = 0
-offset_left = -44.444443
-offset_top = -117.77779
-offset_right = 58.055527
-offset_bottom = -77.77779
+offset_left = -46.666668
+offset_top = -133.33336
+offset_right = 57.777782
+offset_bottom = -74.444466
+
+[node name="Panel" type="Panel" parent="enemyStats" unique_id=1206998403]
+layout_mode = 0
+offset_left = 3.3333316
+offset_top = 33.333355
+offset_right = 101.111115
+offset_bottom = 42.222248
+theme_override_styles/panel = SubResource("StyleBoxFlat_weo17")
 
 [node name="name" type="Label" parent="enemyStats" unique_id=1774231093]
 layout_mode = 0
-offset_left = -40.0
+offset_left = -35.555542
 offset_top = 6.25
-offset_right = 140.0
+offset_right = 144.44446
 offset_bottom = 21.25
-text = "Ipin"
+theme_override_colors/font_shadow_color = Color(0.047058824, 0.047058824, 0.047058824, 0.7490196)
+text = "Enemy"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="level" type="Label" parent="enemyStats" unique_id=1998663788]
 layout_mode = 0
-offset_left = 8.75
+offset_left = 15.416664
 offset_top = 20.0
-offset_right = 133.50653
+offset_right = 140.17322
 offset_bottom = 35.0
 scale = Vector2(0.69134635, 0.69112873)
 theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
@@ -136,21 +171,97 @@ vertical_alignment = 1
 
 [node name="bar-hp" type="Panel" parent="enemyStats" unique_id=921374560]
 layout_mode = 0
-offset_top = 32.5
+offset_top = 30.277779
 offset_right = 106.24997
-offset_bottom = 40.0
+offset_bottom = 37.77778
+theme_override_styles/panel = SubResource("StyleBoxEmpty_moojr")
+
+[node name="TextureRect" type="TextureRect" parent="enemyStats/bar-hp" unique_id=1296114191]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("10_ubuwf")
+expand_mode = 1
 
 [node name="bar-hp-progress" type="Panel" parent="enemyStats/bar-hp" unique_id=532313685]
 layout_mode = 0
-offset_right = 106.24997
-offset_bottom = 7.5
+offset_left = 2.2222176
+offset_top = 0.8333435
+offset_right = 104.44444
+offset_bottom = 6.3889008
 theme_override_styles/panel = SubResource("StyleBoxFlat_kylmi")
 
+[node name="hp-label" type="Label" parent="enemyStats/bar-hp" unique_id=254578293]
+layout_mode = 0
+offset_left = 2.222218
+offset_top = 0.83334184
+offset_right = 104.44445
+offset_bottom = 7.8333416
+theme_override_font_sizes/font_size = 6
+text = "100 / 100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="enemyEffect" type="Control" parent="enemyStats" unique_id=366518000]
+anchors_preset = 0
+offset_top = 36.66667
+offset_right = 104.44444
+offset_bottom = 51.111122
+
+[node name="effect" type="TextureRect" parent="enemyStats/enemyEffect" unique_id=610779643]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 43.333336
+offset_right = -44.44445
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("11_vkenx")
+expand_mode = 1
+
+[node name="stroke" type="Panel" parent="enemyStats" unique_id=1652430202]
+texture_filter = 1
+layout_mode = 0
+offset_left = 8.61315
+offset_top = 8.859319
+offset_right = 46.113365
+offset_bottom = 39.434322
+rotation = 0.73378944
+scale = Vector2(0.7471384, 0.8917125)
+theme_override_styles/panel = SubResource("StyleBoxFlat_cql51")
+
+[node name="profile" type="Panel" parent="enemyStats" unique_id=541723891]
+clip_children = 1
+texture_filter = 1
+layout_mode = 0
+offset_left = 8.888891
+offset_top = 10.000004
+offset_right = 44.114555
+offset_bottom = 39.05394
+rotation = 0.73378944
+scale = Vector2(0.7471384, 0.8917125)
+theme_override_styles/panel = SubResource("StyleBoxFlat_i268m")
+
+[node name="img" type="TextureRect" parent="enemyStats/profile" unique_id=2089390063]
+layout_mode = 0
+offset_left = -16.570671
+offset_top = 14.526863
+offset_right = 44.68136
+offset_bottom = 59.953186
+rotation = -0.72479206
+scale = Vector2(0.8224401, 0.9931104)
+texture = ExtResource("12_vkenx")
+expand_mode = 1
+
 [node name="enemyTarget" type="TextureRect" parent="." unique_id=1480684603]
-offset_left = -5.555556
-offset_top = -138.8889
-offset_right = 34.444443
-offset_bottom = -98.8889
+offset_left = -8.888897
+offset_top = -154.44441
+offset_right = 31.111103
+offset_bottom = -114.44441
 scale = Vector2(0.5437715, 0.5073433)
 texture = ExtResource("10_qvr0l")
 expand_mode = 1

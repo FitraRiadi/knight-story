@@ -1,0 +1,301 @@
+[gd_scene format=3 uid="uid://30s1gi4exl86"]
+
+[ext_resource type="Script" uid="uid://dw1tcpvsbdya6" path="res://scripts/local/location/room/tavern/tavern.gd" id="1_7ykne"]
+[ext_resource type="Texture2D" uid="uid://d2grcgfrh5v4q" path="res://assets/art/backgrounds/location/map/lotus_village/tavern/tavern-1.jpg" id="1_8lml3"]
+[ext_resource type="Texture2D" uid="uid://mmfn71ng3w2p" path="res://assets/art/backgrounds/location/map/lotus_village/tavern/tavern-2.jpg" id="2_ml0d6"]
+[ext_resource type="Texture2D" uid="uid://cean352dlvuac" path="res://assets/art/backgrounds/location/map/lotus_village/tavern/tavern-3.jpg" id="3_liswf"]
+[ext_resource type="FontFile" uid="uid://dx6ognpbk586" path="res://assets/ui/fonts/alagard.ttf" id="5_0t5g7"]
+[ext_resource type="Script" uid="uid://teyjnyhys4en" path="res://scripts/local/location/room/tavern/dialog.gd" id="6_0t5g7"]
+[ext_resource type="Texture2D" uid="uid://vc4tcdcsd57b" path="res://assets/art/items/consumable/potion/Icon46.png" id="7_8lml3"]
+[ext_resource type="Texture2D" uid="uid://dm7p2vx8g2bl6" path="res://assets/art/items/materials/snowberries_01.png" id="7_ml0d6"]
+[ext_resource type="Texture2D" uid="uid://dr1k8p4uyoodj" path="res://assets/art/backgrounds/location/map/lotus_village/tavern/tavern-7.jpg" id="7_ppr7d"]
+[ext_resource type="Texture2D" uid="uid://b33fssrpey0re" path="res://assets/art/items/weapons/bow_unloaded_01.png" id="8_liswf"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_moojr"]
+animations = [{
+"frames": [{
+"duration": 6.0,
+"texture": ExtResource("1_8lml3")
+}, {
+"duration": 3.0,
+"texture": ExtResource("2_ml0d6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("1_8lml3")
+}, {
+"duration": 1.0,
+"texture": ExtResource("3_liswf")
+}, {
+"duration": 7.0,
+"texture": ExtResource("2_ml0d6")
+}, {
+"duration": 1.2,
+"texture": ExtResource("7_ppr7d")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_ml0d6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_ml0d6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_ml0d6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_ml0d6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("2_ml0d6")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 5.0
+}]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0t5g7"]
+bg_color = Color(0, 0, 0, 0.56078434)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dt4my"]
+bg_color = Color(0.31660217, 0.09705717, 0.12493492, 0.5372549)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jncy7"]
+bg_color = Color(0.24529293, 0.16889995, 0.3208451, 0.27450982)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_moojr"]
+bg_color = Color(0.10980392, 0.06666667, 0.015686275, 0.627451)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kylmi"]
+bg_color = Color(0.6, 0.6, 0.6, 0.17254902)
+
+[node name="tavern" type="Control" unique_id=1669818934]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_7ykne")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=2134086769]
+position = Vector2(370.00003, 170)
+scale = Vector2(0.7226563, 0.7234042)
+sprite_frames = SubResource("SpriteFrames_moojr")
+autoplay = "default"
+frame_progress = 0.74493694
+
+[node name="base-title" type="Label" parent="." unique_id=2095092758]
+layout_mode = 0
+offset_left = 498.0
+offset_top = 13.0
+offset_right = 826.0
+offset_bottom = 62.0
+theme_override_font_sizes/font_size = 24
+text = "Robert`s
+Tavern"
+horizontal_alignment = 1
+
+[node name="introDialog" type="Control" parent="." unique_id=92428346]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="introDialog" unique_id=1306633013]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 283.0
+offset_right = 741.0
+offset_bottom = 340.0
+color = Color(0.16462399, 0.16462399, 0.16462399, 0.80784315)
+
+[node name="dialog" type="Label" parent="introDialog" unique_id=1176377254]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 284.0
+offset_right = 735.48615
+offset_bottom = 335.47693
+scale = Vector2(1.0034226, 1.0684395)
+offset_transform_enabled = true
+offset_transform_position = Vector2(20, 10)
+theme_override_fonts/font = ExtResource("5_0t5g7")
+theme_override_font_sizes/font_size = 15
+autowrap_mode = 1
+script = ExtResource("6_0t5g7")
+
+[node name="nameSpeaking" type="Label" parent="introDialog" unique_id=2070858807]
+layout_mode = 0
+offset_left = 7.0
+offset_top = 269.0
+offset_right = 123.0
+offset_bottom = 292.0
+theme_override_colors/font_color = Color(1, 1, 0.2, 1)
+theme_override_font_sizes/font_size = 23
+text = "Robert"
+
+[node name="feature" type="Control" parent="." unique_id=1408928092]
+anchors_preset = 0
+offset_left = 35.0
+offset_top = 21.0
+offset_right = 473.0
+offset_bottom = 301.0
+
+[node name="container" type="Panel" parent="feature" unique_id=701886620]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_bottom = -21.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_0t5g7")
+
+[node name="BuyItemBtn" type="Button" parent="feature" unique_id=1904119812]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -304.0
+offset_bottom = -151.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_dt4my")
+
+[node name="TextureRect" type="TextureRect" parent="feature/BuyItemBtn" unique_id=522013124]
+texture_filter = 1
+layout_mode = 0
+offset_left = 18.0
+offset_top = 13.0
+offset_right = 117.0
+offset_bottom = 101.0
+texture = ExtResource("7_ml0d6")
+
+[node name="Label" type="Label" parent="feature/BuyItemBtn" unique_id=779835069]
+layout_mode = 0
+offset_left = 39.0
+offset_top = 107.0
+offset_right = 103.0
+offset_bottom = 122.0
+text = "Buy Item"
+
+[node name="TavernBtn" type="Button" parent="feature" unique_id=1807390888]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 135.0
+offset_right = -62.0
+offset_bottom = -151.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_jncy7")
+
+[node name="TextureRect" type="TextureRect" parent="feature/TavernBtn" unique_id=653934868]
+texture_filter = 1
+layout_mode = 0
+offset_left = 73.0
+offset_top = 13.0
+offset_right = 172.0
+offset_bottom = 101.0
+texture = ExtResource("8_liswf")
+
+[node name="Label" type="Label" parent="feature/TavernBtn" unique_id=748679934]
+layout_mode = 0
+offset_left = 70.0
+offset_top = 100.0
+offset_right = 174.0
+offset_bottom = 115.0
+text = "Tavern Games"
+
+[node name="SellingItemBtn" type="Button" parent="feature" unique_id=1435223237]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 130.0
+offset_right = -304.0
+offset_bottom = -21.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TextureRect" type="TextureRect" parent="feature/SellingItemBtn" unique_id=772516289]
+texture_filter = 1
+layout_mode = 0
+offset_left = 20.0
+offset_top = 9.0
+offset_right = 112.0
+offset_bottom = 88.0
+texture = ExtResource("7_8lml3")
+
+[node name="Label" type="Label" parent="feature/SellingItemBtn" unique_id=2057822427]
+layout_mode = 0
+offset_left = 12.0
+offset_top = 90.0
+offset_right = 126.0
+offset_bottom = 123.0
+text = "Selling Your Item"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="exit" type="Button" parent="feature" unique_id=910802179]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 379.0
+offset_right = -1.0
+offset_bottom = -152.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="feature/exit" unique_id=375047977]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 94.0
+offset_right = 70.0
+offset_bottom = 119.0
+rotation = -1.5729856
+theme_override_font_sizes/font_size = 26
+text = "Exit"
+
+[node name="container4" type="Button" parent="feature" unique_id=1762677275]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 135.0
+offset_top = 130.0
+offset_right = -186.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
+
+[node name="Label" type="Label" parent="feature/container4" unique_id=1398651049]
+layout_mode = 0
+offset_left = 37.0
+offset_top = 96.0
+offset_right = 78.0
+offset_bottom = 111.0
+text = "Quest"
+
+[node name="container7" type="Button" parent="feature" unique_id=368502916]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 252.0
+offset_top = 130.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_kylmi")
+
+[node name="Label" type="Label" parent="feature/container7" unique_id=1475494195]
+layout_mode = 0
+offset_left = 40.0
+offset_top = 96.0
+offset_right = 150.0
+offset_bottom = 111.0
+text = "Announcement"

@@ -6,6 +6,8 @@ const QUEST_MENU_SCENE: PackedScene = preload("res://scenes/gui/popup/quest/ques
 # Ambil referensi node dari scene tree lotus_village
 @onready var go_black_smith: Button = $bg/goBlackSmith
 @onready var go_quest_board: Button = $bg/goQuestBoard
+@onready var go_tavern: Button = $bg/goTavern
+
 @onready var lotus_village_music: AudioStreamPlayer = $"lotus_village-music"
 
 # Variabel untuk menyimpan instansiasi popup quest aktif
@@ -18,7 +20,10 @@ func _ready() -> void:
 		
 	if go_quest_board:
 		go_quest_board.pressed.connect(show_quest_popup)
-
+	
+	if go_tavern:
+		go_tavern.pressed.connect(_on_go_tavern_pressed)
+	
 	if lotus_village_music:
 		lotus_village_music.play()
 
@@ -43,3 +48,6 @@ func hide_quest_popup() -> void:
 # Fungsi yang berjalan otomatis saat tombol goBlackSmith ditekan
 func _on_go_black_smith_pressed() -> void:
 	TransitionManager.pindah_scene("res://scenes/locations/room/blacksmith/blacksmith.tscn")
+
+func _on_go_tavern_pressed() -> void:
+	TransitionManager.pindah_scene("res://scenes/locations/room/tavern/tavern.tscn")

@@ -1,5 +1,6 @@
 [gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://c60fficmw2t6s"]
 
+[ext_resource type="Texture2D" uid="uid://cgpns6s1y2fje" path="res://assets/art/profile/enemy/warewolf.jpg" id="1_7fsbw"]
 [ext_resource type="Script" uid="uid://d1jtt6i0k5g0g" path="res://scripts/local/characters/enemy/EnemyData.gd" id="1_n2612"]
 [ext_resource type="Texture2D" uid="uid://d2altnflbpbe3" path="res://assets/art/sprites/enemy/warewolf/idle1-removebg-preview (1).png" id="2_8o2hm"]
 [ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="2_t7j65"]
@@ -78,11 +79,12 @@ animations = [{
 
 [resource]
 script = ExtResource("1_n2612")
-ai_type = 1
+ai_type = 2
 starting_inventory = Array[ExtResource("2_t7j65")]([ExtResource("11_akbxh")])
 enemy_id = "warewolf"
 enemy_name = "Warewolf"
 min_level = 3
+icon_enemy = ExtResource("1_7fsbw")
 sprite_frames = SubResource("SpriteFrames_8puy6")
 max_hp = 90.0
 damage_to_player = 25.0

@@ -1,7 +1,10 @@
 [gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://cqwk7w724mc2s"]
 
 [ext_resource type="Script" uid="uid://d1jtt6i0k5g0g" path="res://scripts/local/characters/enemy/EnemyData.gd" id="1_0ypgr"]
+[ext_resource type="Texture2D" uid="uid://cawcaghcxu5hk" path="res://assets/art/profile/enemy/skeleton.jpg" id="1_jan5e"]
+[ext_resource type="AudioStream" uid="uid://wrxtp2jx4gko" path="res://assets/audio/effects/enemies/skeleton/death.mp3" id="2_a4t8e"]
 [ext_resource type="Texture2D" uid="uid://qoytqlh3n2md" path="res://assets/art/sprites/enemy/skeleton/idle1.png" id="2_f6q1b"]
+[ext_resource type="AudioStream" uid="uid://dh8v4tcgv7nxq" path="res://assets/audio/effects/enemies/skeleton/hurt.mp3" id="2_ok8xq"]
 [ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="2_wrqo5"]
 [ext_resource type="Texture2D" uid="uid://ivu2jvm1egjd" path="res://assets/art/sprites/enemy/skeleton/idle2.png" id="3_br6mt"]
 [ext_resource type="Texture2D" uid="uid://clol5dvdn1ug6" path="res://assets/art/sprites/enemy/skeleton/attack1.png" id="4_ok8xq"]
@@ -82,7 +85,10 @@ ai_type = 2
 starting_inventory = Array[ExtResource("2_wrqo5")]([ExtResource("11_br6mt")])
 enemy_id = "skeleton"
 enemy_name = "Skeleton"
+icon_enemy = ExtResource("1_jan5e")
 sprite_frames = SubResource("SpriteFrames_0ypgr")
+sfx_hit = ExtResource("2_ok8xq")
+sfx_death = ExtResource("2_a4t8e")
 max_hp = 50.0
 damage_to_player = 8.0
 metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"
