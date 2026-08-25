@@ -1,14 +1,16 @@
 [gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://xf6noadq87vm"]
 
 [ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="1_2j6ld"]
-[ext_resource type="Texture2D" uid="uid://fp54217e7p4i" path="res://assets/art/items/consumable/potion/Icon35.png" id="1_f66ti"]
+[ext_resource type="Texture2D" uid="uid://csriovkscy4pg" path="res://assets/art/items/consumable/potion/Icon20.png" id="1_f66ti"]
 
 [resource]
 script = ExtResource("1_2j6ld")
 item_id = "attack_potion"
 item_name = "Attack Potion"
-description = "Attack +50Dmg"
+description = "Temporarily increases Attack Power by 35 for 1 turns, allowing the user to deal more damage in battle."
 icon = ExtResource("1_f66ti")
-attack_bonus = 30.0
+rarity = "Uncommon"
+item_effect_type = 4
+attack_bonus = 15.0
 duration = 1
 metadata/_custom_type_script = "uid://d1chgapjpv2yu"

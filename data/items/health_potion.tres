@@ -7,8 +7,9 @@
 script = ExtResource("1_8kas0")
 item_id = "health_potion"
 item_name = "Health Potion"
-description = "Heal +50 Hp"
+description = "Instantly restores 100 HP, recovering health immediately upon use."
 icon = ExtResource("1_dvv3t")
-heal_value = 50.0
+item_effect_type = 1
+heal_value = 100.0
 ai_priority_multiplier = 2.0
 metadata/_custom_type_script = "uid://d1chgapjpv2yu"

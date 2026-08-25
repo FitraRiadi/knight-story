@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="InventoryBattleData" format=3 uid="uid://cvwp16yfaw4gb"]
+
+[ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="1_8c0xt"]
+[ext_resource type="Script" uid="uid://krelh1pcnvst" path="res://scripts/data/inventory_battle_data.gd" id="2_cpgdw"]
+[ext_resource type="Resource" uid="uid://xf6noadq87vm" path="res://data/items/attack_potion.tres" id="2_iyc1v"]
+[ext_resource type="Resource" uid="uid://dmfc6tb72muxj" path="res://data/items/health_potion.tres" id="3_ugvms"]
+
+[resource]
+script = ExtResource("2_cpgdw")
+items = Array[ExtResource("1_8c0xt")]([ExtResource("2_iyc1v"), ExtResource("3_ugvms"), ExtResource("2_iyc1v"), ExtResource("3_ugvms"), ExtResource("2_iyc1v"), ExtResource("2_iyc1v"), null, null, null])

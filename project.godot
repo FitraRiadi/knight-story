@@ -34,6 +34,10 @@ window/stretch/aspect="ignore"
 
 theme/custom_font="uid://dx6ognpbk586"
 
+[internationalization]
+
+locale/locale_filter_mode=0
+
 [physics]
 
 3d/physics_engine="Jolt Physics"

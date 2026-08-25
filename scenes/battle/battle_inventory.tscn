@@ -1,9 +1,9 @@
 [gd_scene format=3 uid="uid://bqlfgt02vqv1s"]
 
 [ext_resource type="Texture2D" uid="uid://du3aqt5b0q3h4" path="res://assets/ui/icons/inventorySlot.png" id="1_dhnwk"]
+[ext_resource type="Script" uid="uid://crg77mw2ganm8" path="res://scripts/local/battle/battle_inventory.gd" id="1_uqent"]
 [ext_resource type="Texture2D" uid="uid://dp8tbij73ny0f" path="res://assets/ui/icons/backpackBtn.png" id="2_geesr"]
 [ext_resource type="Texture2D" uid="uid://csriovkscy4pg" path="res://assets/art/items/consumable/potion/Icon20.png" id="3_ea8f0"]
-[ext_resource type="Texture2D" uid="uid://cpqu8k4yk4d1v" path="res://assets/ui/icons/slotActive.png" id="3_ehndr"]
 [ext_resource type="Texture2D" uid="uid://vc4tcdcsd57b" path="res://assets/art/items/consumable/potion/Icon46.png" id="3_jkeq3"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kylmi"]
@@ -51,8 +51,10 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("1_uqent")
 
 [node name="LabelInventory" type="TextureRect" parent="." unique_id=416743598]
+texture_filter = 1
 layout_mode = 0
 offset_left = 129.00002
 offset_top = 229.99998
@@ -81,7 +83,137 @@ theme_override_font_sizes/font_size = 11
 theme_override_styles/normal = SubResource("StyleBoxFlat_kylmi")
 text = "Close"
 
+[node name="itemInfo" type="Panel" parent="." unique_id=1947445987]
+texture_filter = 1
+layout_mode = 0
+offset_left = 257.0
+offset_top = 176.0
+offset_right = 475.0
+offset_bottom = 269.0
+
+[node name="container" type="Panel" parent="itemInfo" unique_id=2069292196]
+layout_mode = 0
+offset_right = 218.0
+offset_bottom = 71.0
+
+[node name="infoItem" type="Panel" parent="itemInfo/container" unique_id=1297742415]
+layout_mode = 0
+offset_left = 59.0
+offset_top = 3.0
+offset_right = 215.0
+offset_bottom = 66.0
+
+[node name="Label" type="Label" parent="itemInfo/container/infoItem" unique_id=338143854]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 4.0
+offset_top = 2.0
+offset_right = -2.0
+offset_bottom = -46.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 9
+theme_override_styles/normal = SubResource("StyleBoxFlat_ehndr")
+text = "Attack Potion"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label2" type="Label" parent="itemInfo/container/infoItem" unique_id=1514357176]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 21.0
+offset_right = 153.0
+offset_bottom = 59.0
+theme_override_font_sizes/font_size = 8
+text = "Imrove your attack +50 Dmg"
+autowrap_mode = 3
+
+[node name="itemIcon" type="Panel" parent="itemInfo/container" unique_id=1419752850]
+texture_filter = 1
+layout_mode = 0
+offset_left = 9.0
+offset_top = 15.0
+offset_right = 54.0
+offset_bottom = 58.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_ea8f0")
+
+[node name="img" type="TextureRect" parent="itemInfo/container/itemIcon" unique_id=172569802]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_ea8f0")
+
+[node name="itemBadge" type="Control" parent="itemInfo/container" unique_id=422387780]
+texture_filter = 1
+anchors_preset = 0
+offset_top = -13.0
+offset_right = 217.0
+
+[node name="rarity" type="Label" parent="itemInfo/container/itemBadge" unique_id=1399125474]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 3.0
+offset_right = 44.0
+offset_bottom = 13.0
+scale = Vector2(0.8664847, 0.88860697)
+theme_override_font_sizes/font_size = 7
+theme_override_styles/normal = SubResource("StyleBoxFlat_dt4my")
+text = "Rare"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="type" type="Label" parent="itemInfo/container/itemBadge" unique_id=726940740]
+layout_mode = 0
+offset_left = 39.0
+offset_top = 3.0
+offset_right = 87.47171
+offset_bottom = 13.0
+scale = Vector2(0.8664847, 0.88860697)
+theme_override_font_sizes/font_size = 7
+theme_override_styles/normal = SubResource("StyleBoxFlat_xncs8")
+text = "Consumable"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ItemEffectType" type="Label" parent="itemInfo/container/itemBadge" unique_id=1827023944]
+layout_mode = 0
+offset_left = 82.0
+offset_top = 3.0
+offset_right = 130.47171
+offset_bottom = 13.0
+scale = Vector2(0.8664847, 0.88860697)
+theme_override_font_sizes/font_size = 7
+theme_override_styles/normal = SubResource("StyleBoxFlat_xncs8")
+text = "Heal"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="useItemBtn" type="Button" parent="itemInfo" unique_id=509268856]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 75.0
+offset_right = 89.36066
+offset_bottom = 98.0
+scale = Vector2(0.67361915, 0.6622833)
+text = "Use Item"
+
+[node name="dropItemBtn" type="Button" parent="itemInfo" unique_id=452948351]
+layout_mode = 0
+offset_left = 157.0
+offset_top = 75.0
+offset_right = 241.36066
+offset_bottom = 98.0
+scale = Vector2(0.67361915, 0.6622833)
+text = "Drop Item"
+
 [node name="inventorySlot" type="TextureRect" parent="." unique_id=989576920]
+texture_filter = 1
 layout_mode = 0
 offset_left = 127.0
 offset_top = 274.0
@@ -164,124 +296,10 @@ offset_right = 775.48444
 offset_bottom = 66.96168
 expand_mode = 1
 
-[node name="slotActive" type="TextureRect" parent="inventorySlot" unique_id=2098146689]
+[node name="titikCoordinat" type="Panel" parent="." unique_id=92934034]
+visible = false
 layout_mode = 0
-offset_left = 1.5923767
-offset_top = 2.480091
-offset_right = 103.50415
-offset_bottom = 78.12193
-texture = ExtResource("3_ehndr")
-expand_mode = 1
-
-[node name="itemInfo" type="Panel" parent="." unique_id=1947445987]
-layout_mode = 0
-offset_left = 257.0
-offset_top = 176.0
-offset_right = 475.0
-offset_bottom = 269.0
-
-[node name="container" type="Panel" parent="itemInfo" unique_id=2069292196]
-layout_mode = 0
-offset_right = 218.0
-offset_bottom = 71.0
-
-[node name="infoItem" type="Panel" parent="itemInfo/container" unique_id=1297742415]
-layout_mode = 0
-offset_left = 59.0
-offset_top = 3.0
-offset_right = 215.0
-offset_bottom = 66.0
-
-[node name="Label" type="Label" parent="itemInfo/container/infoItem" unique_id=338143854]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 4.0
-offset_top = 2.0
-offset_right = -2.0
-offset_bottom = -46.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_colors/font_color = Color(1, 0.962128, 0, 0.49300003)
-theme_override_font_sizes/font_size = 9
-theme_override_styles/normal = SubResource("StyleBoxFlat_ehndr")
-text = "Attack Potion"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="Label2" type="Label" parent="itemInfo/container/infoItem" unique_id=1514357176]
-layout_mode = 0
-offset_left = 6.0
-offset_top = 21.0
-offset_right = 153.0
-offset_bottom = 59.0
-theme_override_font_sizes/font_size = 9
-text = "Imrove your attack +50 Dmg"
-autowrap_mode = 3
-
-[node name="itemIcon" type="Panel" parent="itemInfo/container" unique_id=1419752850]
-layout_mode = 0
-offset_left = 9.0
-offset_top = 15.0
-offset_right = 54.0
-offset_bottom = 58.0
-theme_override_styles/panel = SubResource("StyleBoxFlat_ea8f0")
-
-[node name="img" type="TextureRect" parent="itemInfo/container/itemIcon" unique_id=172569802]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = ExtResource("3_ea8f0")
-
-[node name="itemBadge" type="Control" parent="itemInfo/container" unique_id=422387780]
-anchors_preset = 0
-offset_top = -13.0
-offset_right = 217.0
-
-[node name="rarity" type="Label" parent="itemInfo/container/itemBadge" unique_id=1399125474]
-layout_mode = 0
-offset_left = 1.0
-offset_top = 3.0
-offset_right = 44.0
-offset_bottom = 13.0
-scale = Vector2(0.8664847, 0.88860697)
-theme_override_font_sizes/font_size = 7
-theme_override_styles/normal = SubResource("StyleBoxFlat_dt4my")
-text = "Rare"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="type" type="Label" parent="itemInfo/container/itemBadge" unique_id=726940740]
-layout_mode = 0
-offset_left = 39.0
-offset_top = 3.0
-offset_right = 87.47171
-offset_bottom = 13.0
-scale = Vector2(0.8664847, 0.88860697)
-theme_override_font_sizes/font_size = 7
-theme_override_styles/normal = SubResource("StyleBoxFlat_xncs8")
-text = "Consumable"
-horizontal_alignment = 1
-vertical_alignment = 1
-
-[node name="useItemBtn" type="Button" parent="itemInfo" unique_id=509268856]
-layout_mode = 0
-offset_left = 5.0
-offset_top = 75.0
-offset_right = 89.36066
-offset_bottom = 98.0
-scale = Vector2(0.67361915, 0.6622833)
-text = "Use Item"
-
-[node name="dropItemBtn" type="Button" parent="itemInfo" unique_id=452948351]
-layout_mode = 0
-offset_left = 157.0
-offset_top = 75.0
-offset_right = 241.36066
-offset_bottom = 98.0
-scale = Vector2(0.67361915, 0.6622833)
-text = "Drop Item"
+offset_left = 375.0
+offset_top = 131.0
+offset_right = 387.0
+offset_bottom = 145.0

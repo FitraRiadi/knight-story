@@ -6,8 +6,13 @@ extends Control
 
 @onready var atk_btn: Button = $interaction/atkBtn
 @onready var defend_btn: Button = $interaction/defendBtn
+@onready var backpack_btn: Button = $interaction/backpackBtn
+@onready var run_btn: Button = $interaction/runBtn
+@onready var skill_btn: Button = $interaction/skillBtn
 @onready var parry_btn: Button = $parryBtn
-@onready var parry_timing_bar: Panel = $parryBtn/timing
+
+# DIUBAH: Menjadi TextureProgressBar agar bisa melakukan efek radial/melingkar
+@onready var parry_timing_bar: TextureProgressBar = $parryBtn/timing
 
 # --- NODE UI QTE ATTACK ---
 @onready var attack_qte_node: Control = $attackQte
@@ -29,10 +34,7 @@ extends Control
 @onready var morale_bar: Panel = $"player-information/MORALstatus/bar"
 @onready var morale_label: Label = $"player-information/MORALstatus/number"
 
-
-
 var enemy_scene: PackedScene
-
 @export_dir var enemy_resources_folder: String = "res://data/enemies/"
 
 # --- STATISTIK PLAYER ---
@@ -66,10 +68,12 @@ var is_player_turn: bool = true
 
 var original_atk_pos: Vector2
 var original_def_pos: Vector2
+var original_backpack_pos: Vector2
+var original_run_post: Vector2
+var original_skill_post: Vector2
 var default_camera_pos: Vector2 = Vector2.ZERO
 
 @export var center_spawn_position: Vector2 = Vector2(380, 180)
-
 var available_enemy_pool: Array[String] = []
 
 var blood_vignette_rect: TextureRect
@@ -92,33 +96,24 @@ var original_hand_left_pos: Vector2
 
 @export var hand_left_corner_offset: Vector2 = Vector2(-120, 200)
 
-# ============================================================
-# BGM AUDIO SYSTEM
-# ============================================================
+# BGM SYSTEM
 var bgm_player: AudioStreamPlayer
 
-# ============================================================
 # COMBO SYSTEM
-# ============================================================
 var current_combo: int = 0
 var combo_canvas_layer: CanvasLayer
 var combo_popup_label: Label
 var combo_tween: Tween
 
-# ============================================================
 # INTERACTIVE PARRY QTE SYSTEM
-# ============================================================
 var parry_timer: SceneTreeTimer
 var is_parry_window_active: bool = false
 var parry_success_this_turn: bool = false
 var parry_canvas_layer: CanvasLayer
 var parry_timing_tween: Tween
-var original_timing_width: float = 0.0
-var parry_extra_reduction: float = 0.0 # Variable penampung bonus pengurangan damage parry
+var parry_extra_reduction: float = 0.0
 
-# ============================================================
 # INTERACTIVE ATTACK QTE SYSTEM
-# ============================================================
 enum AttackResult { MISS, LOW, MID, CRITICAL }
 
 var is_attack_qte_active: bool = false
@@ -127,9 +122,7 @@ var attack_qte_canvas_layer: CanvasLayer
 var attack_running_tween: Tween
 var target_attack_qte_pos: Vector2
 
-# ============================================================
 # PLAYER HP CAMERA OVERLAY
-# ============================================================
 var player_hp_overlay_layer: CanvasLayer
 var player_hp_overlay_root: Control
 var player_hp_overlay_background: ColorRect
@@ -146,45 +139,138 @@ var player_hp_overlay_show_tween: Tween
 var player_hp_overlay_hide_tween: Tween
 var player_hp_overlay_visible: bool = false
 
+# BATTLE INVENTORY SYSTEM
+var battle_inventory_scene: PackedScene = preload("res://scenes/battle/battle_inventory.tscn")
+var battle_inventory_instance: Control = null
+var inventory_canvas_layer: CanvasLayer
+var is_inventory_open: bool = false
+
 
 func _ready() -> void:
-	original_atk_pos = atk_btn.position
-	original_def_pos = defend_btn.position
+	if atk_btn: original_atk_pos = atk_btn.position
+	if defend_btn: original_def_pos = defend_btn.position
+	if backpack_btn: original_backpack_pos = backpack_btn.position
+	if run_btn: original_run_post = run_btn.position
+	if skill_btn: original_skill_post = skill_btn.position
 	
 	_setup_bgm()
 	_setup_hand_layer()
 	_setup_parry_qte_ui()
 	_setup_attack_qte_ui()
 	_setup_combo_ui()
+	_setup_battle_inventory_layer()
 	
-	
-	
-	if camera:
-		default_camera_pos = camera.global_position
-	
-	if hp_bar:
-		max_hp_bar_width = hp_bar.size.x
-	
-	if stamina_bar:
-		max_stamina_bar_width = stamina_bar.size.x
-	
-	if morale_bar:
-		max_morale_bar_width = morale_bar.size.x
+	if camera: default_camera_pos = camera.global_position
+	if hp_bar: max_hp_bar_width = hp_bar.size.x
+	if stamina_bar: max_stamina_bar_width = stamina_bar.size.x
+	if morale_bar: max_morale_bar_width = morale_bar.size.x
 		
-	
-	
 	_setup_blood_vignette()
 	_setup_player_hp_camera_overlay()
 	_update_player_ui_instant()
 	
-	atk_btn.pressed.connect(_on_attack_pressed)
-	defend_btn.pressed.connect(_on_defend_pressed)
-	
+	if atk_btn: atk_btn.pressed.connect(_on_attack_pressed)
+	if defend_btn: defend_btn.pressed.connect(_on_defend_pressed)
+	if backpack_btn: backpack_btn.pressed.connect(_on_backpack_pressed)
 	if reset_target_btn and not reset_target_btn.pressed.is_connected(_on_reset_target_pressed):
 		reset_target_btn.pressed.connect(_on_reset_target_pressed)
 		
 	_auto_detect_enemy_pool()
 	spawn_random_enemies(1, 3, 1, 5)
+
+
+# ============================================================
+# SETUP BATTLE INVENTORY
+# ============================================================
+func _setup_battle_inventory_layer() -> void:
+	inventory_canvas_layer = CanvasLayer.new()
+	inventory_canvas_layer.layer = 160
+	add_child(inventory_canvas_layer)
+
+
+func _on_backpack_pressed() -> void:
+	if not is_player_turn or is_inventory_open:
+		return
+	open_battle_inventory()
+
+
+func open_battle_inventory() -> void:
+	if not battle_inventory_scene or is_inventory_open:
+		return
+		
+	is_inventory_open = true
+	is_player_turn = false
+	
+	_set_buttons_active(false)
+	_pull_hand_to_corner(0.4)
+	
+	battle_inventory_instance = battle_inventory_scene.instantiate() as Control
+	inventory_canvas_layer.add_child(battle_inventory_instance)
+	
+	if battle_inventory_instance.has_signal("closed"):
+		battle_inventory_instance.connect("closed", Callable(self, "_on_battle_inventory_closed"))
+	if battle_inventory_instance.has_signal("inventory_closed"):
+		battle_inventory_instance.connect("inventory_closed", Callable(self, "_on_battle_inventory_closed"))
+	if battle_inventory_instance.has_signal("item_used"):
+		battle_inventory_instance.connect("item_used", Callable(self, "_on_item_used_in_battle"))
+	
+	battle_inventory_instance.show()
+	battle_inventory_instance.modulate.a = 0.0
+	battle_inventory_instance.scale = Vector2(0.8, 0.8)
+	
+	var viewport_size = get_viewport().get_visible_rect().size
+	battle_inventory_instance.pivot_offset = battle_inventory_instance.size * 0.5
+	battle_inventory_instance.position = (viewport_size - battle_inventory_instance.size) * 0.5
+	
+	var tw = create_tween().set_parallel(true)
+	tw.tween_property(battle_inventory_instance, "modulate:a", 1.0, 0.25).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tw.tween_property(battle_inventory_instance, "scale", Vector2.ONE, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+func close_battle_inventory() -> void:
+	if not is_inventory_open:
+		return
+		
+	is_inventory_open = false
+	
+	if is_instance_valid(battle_inventory_instance):
+		battle_inventory_instance.queue_free()
+		battle_inventory_instance = null
+	
+	is_player_turn = true
+	_reset_hand_to_original(0.4)
+	_set_buttons_active(true)
+
+
+func _on_battle_inventory_closed() -> void:
+	close_battle_inventory()
+
+
+func _on_item_used_in_battle(item: ItemData) -> void:
+	is_inventory_open = false
+	
+	var old_inventory = battle_inventory_instance
+	battle_inventory_instance = null
+	
+	if is_instance_valid(old_inventory):
+		var tw = create_tween()
+		tw.tween_interval(0.2)
+		tw.tween_callback(old_inventory.queue_free)
+
+	# Terapkan Efek Item
+	if item:
+		if "heal_value" in item and item.heal_value > 0.0:
+			current_hp = min(max_hp, current_hp + item.heal_value)
+			_animate_hp_change()
+		
+		if "attack_bonus" in item and item.attack_bonus > 0.0:
+			current_stamina = min(max_stamina, current_stamina + item.attack_bonus)
+			_animate_stamina_change()
+
+	_reset_hand_to_original(0.3)
+	
+	await get_tree().create_timer(1.0).timeout
+	_start_enemies_turn()
 
 
 # ============================================================
@@ -195,9 +281,7 @@ func _setup_bgm() -> void:
 	if bgm_stream:
 		bgm_player = AudioStreamPlayer.new()
 		bgm_player.stream = bgm_stream
-		bgm_player.volume_db = -20.0 # Atur desibel di sini (semakin minus semakin kecil, misal: -10.0 s/d -20.0 dB)
-		# Atau jika ingin pakai persentase (misal 30%):
-		# bgm_player.volume_db = linear_to_db(0.3)
+		bgm_player.volume_db = -20.0
 		bgm_player.autoplay = true
 		add_child(bgm_player)
 		bgm_player.play()
@@ -247,7 +331,6 @@ func _show_combo_popup() -> void:
 	combo_popup_label.text = str(current_combo) + "x Combo!"
 	combo_popup_label.show()
 	
-	# Play Sound Effect Audio Combo Label Pop
 	var combo_sfx: AudioStream = load("res://assets/audio/effects/battle/ui/comboLabel-pop.mp3")
 	if combo_sfx:
 		var sfx_player: AudioStreamPlayer = AudioStreamPlayer.new()
@@ -306,7 +389,6 @@ func _start_attack_qte() -> void:
 	can_input_attack_qte = false
 	attack_qte_node.show()
 	
-	# Play Sound Effect Audio Attack QTE Open
 	var qte_open_sfx: AudioStream = load("res://assets/audio/effects/battle/ui/attackQte-open.mp3")
 	if qte_open_sfx:
 		var sfx_player: AudioStreamPlayer = AudioStreamPlayer.new()
@@ -414,6 +496,7 @@ func _on_reset_target_pressed() -> void:
 	hide_tw.tween_property(attack_qte_node, "modulate:a", 0.0, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	hide_tw.chain().tween_callback(attack_qte_node.hide)
 	
+	is_player_turn = true
 	_set_buttons_active(true)
 
 
@@ -500,14 +583,10 @@ func _spawn_attack_qte_particles() -> void:
 func _spawn_qte_popup_text(result: AttackResult) -> void:
 	var text_msg: String = ""
 	match result:
-		AttackResult.CRITICAL:
-			text_msg = "Perfect Timing!"
-		AttackResult.MID:
-			text_msg = "Nice Timing!"
-		AttackResult.LOW:
-			text_msg = "Weak Hit!"
-		AttackResult.MISS:
-			text_msg = "Try Again.."
+		AttackResult.CRITICAL: text_msg = "Perfect Timing!"
+		AttackResult.MID: text_msg = "Nice Timing!"
+		AttackResult.LOW: text_msg = "Weak Hit!"
+		AttackResult.MISS: text_msg = "Try Again.."
 
 	var label = Label.new()
 	label.text = text_msg
@@ -581,7 +660,6 @@ func _execute_actual_attack(result: AttackResult) -> void:
 			var crit_damage = player_damage + player_crit_damage
 			target_enemy.receive_damage(crit_damage, true, false)
 	
-	
 	await get_tree().create_timer(0.8).timeout
 	_start_enemies_turn()
 
@@ -597,9 +675,6 @@ func _setup_parry_qte_ui() -> void:
 			current_parent.remove_child(parry_btn)
 		parry_canvas_layer.add_child(parry_btn)
 		
-		if parry_timing_bar:
-			original_timing_width = parry_timing_bar.size.x
-		
 		parry_btn.hide()
 		if not parry_btn.pressed.is_connected(_on_parry_button_clicked):
 			parry_btn.pressed.connect(_on_parry_button_clicked)
@@ -611,7 +686,7 @@ func _show_parry_window(duration: float = 1.0) -> void:
 		
 	parry_success_this_turn = false
 	is_parry_window_active = true
-	parry_extra_reduction = 0.0 # Reset bonus ekstra parry tiap window terbuka
+	parry_extra_reduction = 0.0
 	
 	var viewport_size = get_viewport().get_visible_rect().size
 	var min_x = 120.0
@@ -629,16 +704,17 @@ func _show_parry_window(duration: float = 1.0) -> void:
 	parry_btn.scale = Vector2(0.01, 0.01)
 	parry_btn.show()
 	
+	# DIUBAH: Melakukan animasi radial value (100 -> 0)
 	if parry_timing_bar:
-		parry_timing_bar.size.x = original_timing_width
+		parry_timing_bar.value = parry_timing_bar.max_value
 		if parry_timing_tween and parry_timing_tween.is_running():
 			parry_timing_tween.kill()
 		parry_timing_tween = create_tween()
-		parry_timing_tween.tween_property(parry_timing_bar, "size:x", 0.0, duration).set_trans(Tween.TRANS_LINEAR)
+		parry_timing_tween.tween_property(parry_timing_bar, "value", 0.0, duration).set_trans(Tween.TRANS_LINEAR)
 	
 	var tw = create_tween().set_parallel(true)
 	tw.tween_property(parry_btn, "modulate:a", 1.0, 0.15)
-	tw.tween_property(parry_btn, "scale", Vector2(0.053, 0.053), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(parry_btn, "scale", Vector2(0.088, 0.085), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	
 	if parry_timer != null:
 		parry_timer = null
@@ -775,20 +851,19 @@ func _on_parry_button_clicked() -> void:
 	parry_success_this_turn = true
 	is_parry_window_active = false
 	
-	# Hitung rasio sisa waktu parry bar (0.0 sampai 1.0)
 	var remaining_ratio: float = 0.0
-	if original_timing_width > 0.0 and parry_timing_bar:
-		remaining_ratio = clampf(parry_timing_bar.size.x / original_timing_width, 0.0, 1.0)
+	# DIUBAH: Menghitung persentase dari value progress bar yang tersisa
+	if parry_timing_bar and parry_timing_bar.max_value > 0.0:
+		remaining_ratio = clampf(parry_timing_bar.value / parry_timing_bar.max_value, 0.0, 1.0)
 	
-	# Kalkulasi Bonus Berdasarkan Persentase Timing
 	var stamina_bonus: float = 0.0
 	var popup_msg: String = "Parry!"
 	
 	if remaining_ratio >= 0.75:
 		stamina_bonus = 30.0
-		parry_extra_reduction = 30.0 # Pengurangan damage ekstra
+		parry_extra_reduction = 30.0
 		popup_msg = "Perfect Parry!"
-		current_morale = min(max_morale, current_morale + 10.0) # Bonus Morale
+		current_morale = min(max_morale, current_morale + 10.0)
 	elif remaining_ratio >= 0.30:
 		stamina_bonus = 10.0
 		parry_extra_reduction = 15.0
@@ -799,7 +874,6 @@ func _on_parry_button_clicked() -> void:
 		parry_extra_reduction = 0.0
 		popup_msg = "Parry!"
 		
-	# Play Sound Parry
 	var parry_sfx: AudioStream = preload("res://assets/audio/effects/battle/parry/parry-base.mp3")
 	if parry_sfx:
 		var sfx_player: AudioStreamPlayer = AudioStreamPlayer.new()
@@ -837,6 +911,7 @@ func _on_parry_button_clicked() -> void:
 	current_stamina = min(max_stamina, current_stamina + stamina_bonus)
 	_animate_stamina_change()
 	_animate_hp_change()
+
 
 func _setup_hand_layer() -> void:
 	if not hand_right and not hand_left:
@@ -894,7 +969,6 @@ func _stop_hand_breathing() -> void:
 func _play_juicy_hand_attack_animation() -> void:
 	_stop_hand_breathing()
 	
-	# Play Sound Effect (One-shot Audio Player)
 	var attack_sfx_player = AudioStreamPlayer.new()
 	attack_sfx_player.stream = load("res://assets/audio/effects/battle/sword/sword-attack.mp3")
 	add_child(attack_sfx_player)
@@ -1244,8 +1318,6 @@ func _spawn_enemies(enemy_ids: Array[String], custom_levels: Array[int] = []) ->
 		enemy_instance.attack_preparing.connect(_on_enemy_attack_preparing)
 		enemy_instance.enemy_defeated.connect(_on_enemy_defeated)
 		
-		
-	
 	_position_enemies(total_enemies)
 	_update_target_selection()
 
@@ -1289,23 +1361,16 @@ func _position_enemies(count: int) -> void:
 
 
 func _update_player_ui_instant() -> void:
-	if hp_bar:
-		hp_bar.size.x = (current_hp / max_hp) * max_hp_bar_width
-	if hp_label:
-		hp_label.text = str(int(current_hp)) + " / " + str(int(max_hp))
-	if stamina_bar:
-		stamina_bar.size.x = (current_stamina / max_stamina) * max_stamina_bar_width
-	if stamina_label:
-		stamina_label.text = str(int(current_stamina)) + " / " + str(int(max_stamina))
-	if morale_bar:
-		morale_bar.size.x = (current_morale / max_morale) * max_morale_bar_width
-	if morale_label:
-		morale_label.text = str(int(current_morale)) + " / " + str(int(max_morale))
+	if hp_bar: hp_bar.size.x = (current_hp / max_hp) * max_hp_bar_width
+	if hp_label: hp_label.text = str(int(current_hp)) + " / " + str(int(max_hp))
+	if stamina_bar: stamina_bar.size.x = (current_stamina / max_stamina) * max_stamina_bar_width
+	if stamina_label: stamina_label.text = str(int(current_stamina)) + " / " + str(int(max_stamina))
+	if morale_bar: morale_bar.size.x = (current_morale / max_morale) * max_morale_bar_width
+	if morale_label: morale_label.text = str(int(current_morale)) + " / " + str(int(max_morale))
 
 
 func _animate_hp_change() -> void:
-	if hp_label:
-		hp_label.text = str(int(current_hp)) + " / " + str(int(max_hp))
+	if hp_label: hp_label.text = str(int(current_hp)) + " / " + str(int(max_hp))
 	if hp_bar:
 		var target_w = (current_hp / max_hp) * max_hp_bar_width
 		var tw = create_tween()
@@ -1313,8 +1378,7 @@ func _animate_hp_change() -> void:
 
 
 func _animate_stamina_change() -> void:
-	if stamina_label:
-		stamina_label.text = str(int(current_stamina)) + " / " + str(int(max_stamina))
+	if stamina_label: stamina_label.text = str(int(current_stamina)) + " / " + str(int(max_stamina))
 	if stamina_bar:
 		var target_w = (current_stamina / max_stamina) * max_stamina_bar_width
 		var tw = create_tween()
@@ -1325,8 +1389,6 @@ func player_receive_damage_custom(amount: float) -> void:
 	_hide_parry_window()
 	
 	var final_damage = amount
-	
-	# Memperhitungkan parry_extra_reduction dari bonus timing
 	if parry_success_this_turn and is_defending:
 		final_damage = max(0.0, amount - (parry_flat_reduction + parry_extra_reduction + (defense_flat_reduction * 0.9)))
 	elif parry_success_this_turn:
@@ -1334,7 +1396,6 @@ func player_receive_damage_custom(amount: float) -> void:
 	elif is_defending:
 		final_damage = max(0.0, amount - defense_flat_reduction)
 	
-	# Play Sound Shield jika Player dalam mode defend saat terkena damage
 	if is_defending:
 		var shield_sfx: AudioStream = load("res://assets/audio/effects/battle/shield/shield-base.mp3")
 		if shield_sfx:
@@ -1397,10 +1458,6 @@ func _input(event: InputEvent) -> void:
 			_change_target(-1)
 
 
-func _unhandled_input(event: InputEvent) -> void:
-	pass
-
-
 func _change_target(dir: int) -> void:
 	if enemies.size() == 0:
 		return
@@ -1408,25 +1465,15 @@ func _change_target(dir: int) -> void:
 	_update_target_selection()
 
 
-
-
-
-
 func _update_target_selection() -> void:
 	enemies = enemies.filter(func(e): return is_instance_valid(e) and e.current_hp > 0)
-	
 	if enemies.size() == 0:
 		return
-	
-	
 	if selected_enemy_index >= enemies.size():
 		selected_enemy_index = max(0, enemies.size() - 1)
 	
 	for i in range(enemies.size()):
 		enemies[i].set_highlight(i == selected_enemy_index)
-	
-
-
 
 
 func _on_attack_pressed() -> void:
@@ -1437,7 +1484,6 @@ func _on_attack_pressed() -> void:
 	
 	is_player_turn = false
 	_set_buttons_active(false)
-	
 	get_viewport().set_input_as_handled()
 	_start_attack_qte()
 
@@ -1446,7 +1492,6 @@ func _on_defend_pressed() -> void:
 	if not is_player_turn:
 		return
 	
-	# Play Sound Shield Open
 	var shield_open_sfx: AudioStream = load("res://assets/audio/effects/battle/shield/shield_open.mp3")
 	if shield_open_sfx:
 		var sfx_player: AudioStreamPlayer = AudioStreamPlayer.new()
@@ -1508,27 +1553,33 @@ func _start_enemies_turn() -> void:
 	_update_target_selection()
 	
 	if enemies.size() > 0:
+		is_player_turn = true
 		_set_buttons_active(true)
 
 
 func _set_buttons_active(show_buttons: bool) -> void:
-	atk_btn.disabled = (not show_buttons or current_stamina < attack_stamina_cost)
-	defend_btn.disabled = not show_buttons
+	if atk_btn: atk_btn.disabled = (not show_buttons or current_stamina < attack_stamina_cost)
+	if defend_btn: defend_btn.disabled = not show_buttons
+	if backpack_btn: backpack_btn.disabled = not show_buttons
+	if run_btn: run_btn.disabled = not show_buttons
+	if skill_btn: skill_btn.disabled = not show_buttons
 	
 	var hide_offset_y: float = 200.0
 	var target_atk_y: float = (original_atk_pos.y if show_buttons else original_atk_pos.y + hide_offset_y)
 	var target_def_y: float = (original_def_pos.y if show_buttons else original_def_pos.y + hide_offset_y)
+	var target_backpack_y: float = (original_backpack_pos.y if show_buttons else original_backpack_pos.y + hide_offset_y)
+	var target_run_y: float = (original_run_post.y if show_buttons else original_run_post.y + hide_offset_y)
+	var target_skill_y: float =  (original_skill_post.y if show_buttons else original_skill_post.y + hide_offset_y)
 	
 	var trans_type = (Tween.TRANS_BACK if show_buttons else Tween.TRANS_CUBIC)
 	var ease_type = (Tween.EASE_OUT if show_buttons else Tween.EASE_IN)
 	
 	var tw = create_tween().set_parallel(true)
-	tw.tween_property(atk_btn, "position:y", target_atk_y, 0.4).set_trans(trans_type).set_ease(ease_type)
-	tw.tween_property(defend_btn, "position:y", target_def_y, 0.4).set_trans(trans_type).set_ease(ease_type)
+	if atk_btn: tw.tween_property(atk_btn, "position:y", target_atk_y, 0.4).set_trans(trans_type).set_ease(ease_type)
+	if defend_btn: tw.tween_property(defend_btn, "position:y", target_def_y, 0.4).set_trans(trans_type).set_ease(ease_type)
+	if backpack_btn: tw.tween_property(backpack_btn, "position:y", target_backpack_y, 0.4).set_trans(trans_type).set_ease(ease_type)
+	if run_btn: tw.tween_property(run_btn, "position:y", target_run_y, 0.4).set_trans(trans_type).set_ease(ease_type)
+	if skill_btn: tw.tween_property(skill_btn, "position:y", target_skill_y, 0.4).set_trans(trans_type).set_ease(ease_type)
 	
-	if show_buttons:
-		tw.chain().tween_callback(_set_player_turn_true)
-
-
 func _set_player_turn_true() -> void:
 	is_player_turn = true
