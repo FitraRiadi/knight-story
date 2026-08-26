@@ -87,6 +87,12 @@ var available_enemy_pool: Array[String] = []
 var blood_vignette_rect: TextureRect
 var blood_vignette_tween: Tween
 
+var attack_shadow_rect: TextureRect
+var attack_shadow_tween: Tween
+
+var attack_success_glow: Panel
+var attack_success_glow_tween: Tween
+
 var original_enemy_info_pos: Vector2
 var enemy_info_tween: Tween
 var is_enemy_info_visible: bool = true
@@ -441,6 +447,97 @@ func _setup_attack_qte_ui() -> void:
 		attack_qte_node.hide()
 		attack_qte_node.modulate.a = 0.0
 
+	_setup_attack_shadow()
+	_setup_success_glow()
+
+
+func _setup_attack_shadow() -> void:
+	var shadow_canvas_layer = CanvasLayer.new()
+	shadow_canvas_layer.layer = 154
+	add_child(shadow_canvas_layer)
+
+	attack_shadow_rect = TextureRect.new()
+	attack_shadow_rect.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	attack_shadow_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	attack_shadow_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	attack_shadow_rect.stretch_mode = TextureRect.STRETCH_SCALE
+
+	var grad_tex = GradientTexture2D.new()
+	grad_tex.fill = GradientTexture2D.FILL_RADIAL
+	grad_tex.fill_from = Vector2(0.5, 0.5)
+	grad_tex.fill_to = Vector2(0.8, 0.8)
+
+	var grad = Gradient.new()
+	grad.set_color(0, Color(0.0, 0.0, 0.0, 0.0))
+	grad.set_color(1, Color(0.0, 0.0, 0.0, 0.45))
+	grad_tex.gradient = grad
+
+	attack_shadow_rect.texture = grad_tex
+	attack_shadow_rect.modulate.a = 0.0
+	shadow_canvas_layer.add_child(attack_shadow_rect)
+
+
+func _show_attack_shadow() -> void:
+	if not attack_shadow_rect:
+		return
+	if attack_shadow_tween and attack_shadow_tween.is_running():
+		attack_shadow_tween.kill()
+	attack_shadow_tween = create_tween()
+	attack_shadow_tween.tween_property(attack_shadow_rect, "modulate:a", 1.0, 0.35).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
+
+func _hide_attack_shadow() -> void:
+	if not attack_shadow_rect:
+		return
+	if attack_shadow_tween and attack_shadow_tween.is_running():
+		attack_shadow_tween.kill()
+	attack_shadow_tween = create_tween()
+	attack_shadow_tween.tween_property(attack_shadow_rect, "modulate:a", 0.0, 0.35).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+
+
+func _setup_success_glow() -> void:
+	if not attack_bar_success:
+		return
+	attack_success_glow = Panel.new()
+	attack_success_glow.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	attack_success_glow.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var glow_style = StyleBoxFlat.new()
+	glow_style.bg_color = Color(1.0, 0.9, 0.3)
+	glow_style.corner_radius_top_left = 10
+	glow_style.corner_radius_top_right = 10
+	glow_style.corner_radius_bottom_right = 10
+	glow_style.corner_radius_bottom_left = 10
+	attack_success_glow.add_theme_stylebox_override("panel", glow_style)
+
+	var mat = CanvasItemMaterial.new()
+	mat.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	attack_success_glow.material = mat
+
+	attack_success_glow.modulate.a = 0.0
+	attack_success_glow.visible = false
+	attack_bar_success.add_child(attack_success_glow)
+
+
+func _start_success_glow() -> void:
+	if not attack_success_glow:
+		return
+	attack_success_glow.visible = true
+	if attack_success_glow_tween and attack_success_glow_tween.is_running():
+		attack_success_glow_tween.kill()
+	attack_success_glow_tween = create_tween().set_loops()
+	attack_success_glow_tween.tween_property(attack_success_glow, "modulate:a", 0.6, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	attack_success_glow_tween.tween_property(attack_success_glow, "modulate:a", 0.15, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _stop_success_glow() -> void:
+	if not attack_success_glow:
+		return
+	if attack_success_glow_tween and attack_success_glow_tween.is_running():
+		attack_success_glow_tween.kill()
+	attack_success_glow.modulate.a = 0.0
+	attack_success_glow.visible = false
+
 
 func _start_attack_qte() -> void:
 	if not attack_qte_node or not attack_bar_container or not attack_bar_success or not attack_bar_running:
@@ -489,7 +586,9 @@ func _start_attack_qte() -> void:
 		cam_zoom_tw.tween_property(camera, "global_position", target_focus_pos, 0.35).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 		cam_zoom_tw.tween_property(camera, "zoom", target_zoom, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		cam_zoom_tw.set_ignore_time_scale(true)
-	
+
+	_show_attack_shadow()
+
 	var container_width: float = attack_bar_container.size.x
 	var container_height: float = attack_bar_container.size.y
 
@@ -530,6 +629,8 @@ func _start_attack_qte() -> void:
 		attack_bar_success.position.y = 0.0
 		attack_bar_success.size.y = container_height
 
+	_start_success_glow()
+
 	# Running bar tetap loop full container width
 	var running_width: float = attack_bar_running.size.x
 	var run_min_x: float = 0.0
@@ -565,7 +666,10 @@ func _on_reset_target_pressed() -> void:
 	
 	if attack_running_tween and attack_running_tween.is_running():
 		attack_running_tween.kill()
-		
+
+	_stop_success_glow()
+	_hide_attack_shadow()
+
 	if camera:
 		var cam_reset_tw = create_tween().set_parallel(true)
 		cam_reset_tw.tween_property(camera, "zoom", Vector2(1.0, 1.0), 0.3).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN_OUT)
@@ -600,6 +704,9 @@ func _check_attack_qte_result() -> void:
 	
 	if attack_running_tween and attack_running_tween.is_running():
 		attack_running_tween.kill()
+
+	_stop_success_glow()
+	_hide_attack_shadow()
 	
 	if camera:
 		var cam_reset_tw = create_tween().set_parallel(true)

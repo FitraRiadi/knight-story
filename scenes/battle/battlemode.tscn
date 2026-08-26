@@ -97,6 +97,17 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gujcb"]
+bg_color = Color(0.18631536, 0.18631536, 0.18631536, 0.78300005)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_w4lhp"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ve2ux"]
+
 [node name="battlemode" type="Control" unique_id=184345478]
 layout_mode = 3
 anchors_preset = 15
@@ -534,7 +545,6 @@ fill_mode = 4
 texture_progress = ExtResource("14_qpju5")
 
 [node name="attackQte" type="Control" parent="." unique_id=1145859259]
-visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -548,21 +558,23 @@ grow_vertical = 2
 
 [node name="information" type="Label" parent="attackQte" unique_id=1232580275]
 layout_mode = 0
-offset_left = 337.0
-offset_top = 239.0
-offset_right = 446.0
-offset_bottom = 254.0
+offset_left = 291.0
+offset_top = 12.0
+offset_right = 495.0
+offset_bottom = 41.0
+theme_override_colors/font_color = Color(1, 1, 0.33183005, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.21568628)
+theme_override_font_sizes/font_size = 30
 text = "Attack Timing!"
 
 [node name="Label2" type="Label" parent="attackQte/information" unique_id=1310154040]
 layout_mode = 0
-offset_left = -33.0
-offset_top = 14.0
-offset_right = 135.0
-offset_bottom = 22.0
+offset_left = 14.0
+offset_top = 24.0
+offset_right = 182.0
+offset_bottom = 39.0
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.21568628)
-theme_override_font_sizes/font_size = 8
+theme_override_font_sizes/font_size = 15
 text = "Tap To Perform attack"
 horizontal_alignment = 1
 
@@ -630,4 +642,7 @@ offset_left = 338.0
 offset_top = 265.0
 offset_right = 439.0
 offset_bottom = 288.0
-text = "Reset Target"
+theme_override_styles/normal = SubResource("StyleBoxFlat_gujcb")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_w4lhp")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_ve2ux")
+text = "Cancel"
