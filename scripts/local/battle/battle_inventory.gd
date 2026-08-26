@@ -77,7 +77,7 @@ func _ready() -> void:
 	]
 
 	if not inventory_data:
-		inventory_data = load("uid://cvwp16yfaw4gb") as InventoryBattleData
+		inventory_data = PlayerDataManager.data.battle_inventory
 
 	_create_active_slot()
 	_setup_slot_signals()
@@ -361,7 +361,7 @@ func _on_use_item_pressed() -> void:
 	if not item or not item.is_consumable():
 		return
 
-	inventory_data.items[_current_selected_index] = null
+	PlayerDataManager.remove_item(_current_selected_index)
 	_populate_slots_from_data()
 
 	_show_item_use_popup(item)
@@ -512,7 +512,7 @@ func _show_drop_confirmation_popup(item: ItemData) -> void:
 
 func _confirm_drop_item(index: int, overlay_node: Node, popup_panel: Node) -> void:
 	if index >= 0 and inventory_data and index < inventory_data.items.size():
-		inventory_data.items[index] = null
+		PlayerDataManager.remove_item(index)
 		_populate_slots_from_data()
 		_move_active_slot(index, false)
 		_hide_item_info()

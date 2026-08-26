@@ -77,14 +77,14 @@ corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hx87m"]
-bg_color = Color(0.838145, 0.4945842, 0.43093556, 0.4627451)
+bg_color = Color(0.8831197, 0.9352641, 0.64310896, 0.4627451)
 corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kylmi"]
-bg_color = Color(0.1430479, 0.17089295, 4.813075e-08, 0.8392157)
+bg_color = Color(0.67230505, 1.7688051e-06, 6.256998e-07, 0.72156864)
 corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
@@ -605,6 +605,7 @@ offset_bottom = 32.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_kylmi")
 
 [node name="TextureRect" type="TextureRect" parent="attackQte/bg/bar-container/bar-success" unique_id=724253918]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -619,7 +620,7 @@ expand_mode = 1
 [node name="bar-running" type="Panel" parent="attackQte/bg/bar-container" unique_id=702127615]
 layout_mode = 0
 offset_left = 174.0
-offset_right = 189.0
+offset_right = 177.0
 offset_bottom = 32.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_dt4my")
 

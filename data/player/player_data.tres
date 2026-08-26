@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="PlayerData" format=3 uid="uid://b4jb0xp54s1ot"]
+
+[ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="1_item"]
+[ext_resource type="Script" uid="uid://cokrj4x2ljt1j" path="res://scripts/data/player_data.gd" id="1_player"]
+[ext_resource type="Script" uid="uid://krelh1pcnvst" path="res://scripts/data/inventory_battle_data.gd" id="2_inv"]
+[ext_resource type="Texture2D" uid="uid://ckufyttm362u8" path="res://assets/art/profile/player/Icon38.png" id="5_o4y3s"]
+
+[sub_resource type="Resource" id="Resource_inventory"]
+script = ExtResource("2_inv")
+items = Array[ExtResource("1_item")]([null, null, null, null, null, null, null, null, null])
+
+[resource]
+script = ExtResource("1_player")
+player_name = "Rayosdelsol"
+player_level = 20
+player_exp = 243
+player_profile = ExtResource("5_o4y3s")
+max_hp = 1000.0
+max_stamina = 1000.0
+attack_stamina_cost = 100.0
+player_damage = 500.0
+player_critical_chance = 40.0
+player_hit_rate = 60.0
+parry_flat_reduction = 30.0
+battle_inventory = SubResource("Resource_inventory")

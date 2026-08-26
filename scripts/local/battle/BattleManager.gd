@@ -34,32 +34,40 @@ extends Control
 @onready var morale_bar: Panel = $"player-information/MORALstatus/bar"
 @onready var morale_label: Label = $"player-information/MORALstatus/number"
 
+# --- NODE UI PLAYER INFO ---
+@onready var player_name_label: Label = $"player-information/information/name"
+@onready var player_level_label: Label = $"player-information/level/level"
+@onready var player_badge_label: Label = $"player-information/badge/Label"
+@onready var player_profile_img: TextureRect = $"player-information/profile/Panel/img"
+@onready var exp_bar_progress: Panel = $"player-information/information/exp-bar/exp-progress"
+
 var enemy_scene: PackedScene
 @export_dir var enemy_resources_folder: String = "res://data/enemies/"
 
-# --- STATISTIK PLAYER ---
-var max_hp: float = 500.0
-var current_hp: float = 500.0
+# --- STATISTIK PLAYER (dari PlayerData) ---
+var max_hp: float
+var current_hp: float
 
-var max_stamina: float = 200.0
-var current_stamina: float = 200.0
-var attack_stamina_cost: float = 15.0
+var max_stamina: float
+var current_stamina: float
+var attack_stamina_cost: float
 
-var max_morale: float = 200.0
-var current_morale: float = 100.0
+var max_morale: float
+var current_morale: float
 
-var player_damage: float = 80.0
-var player_crit_damage: float = 50.0
-var player_critical_chance: float = 50.0
-var player_hit_rate: float = 100.0
-var defense_flat_reduction: float = 20.0 
-var parry_flat_reduction: float = 10.0 
+var player_damage: float
+var player_crit_damage: float
+var player_critical_chance: float
+var player_hit_rate: float
+var defense_flat_reduction: float
+var parry_flat_reduction: float
 
 var is_defending: bool = false
 
 var max_hp_bar_width: float = 0.0
 var max_stamina_bar_width: float = 0.0
 var max_morale_bar_width: float = 0.0
+var max_exp_bar_width: float = 0.0
 var max_enemy_hp_bar_width: float = 0.0
 
 var enemies: Array[BattleEnemy] = []
@@ -132,7 +140,7 @@ var player_hp_overlay_damage_label: Label
 
 var player_hp_overlay_max_width: float = 360.0
 var player_hp_overlay_bar_height: float = 18.0
-var player_hp_overlay_visual_hp: float = 500.0
+var player_hp_overlay_visual_hp: float
 
 var player_hp_overlay_tween: Tween
 var player_hp_overlay_show_tween: Tween
@@ -164,9 +172,11 @@ func _ready() -> void:
 	if hp_bar: max_hp_bar_width = hp_bar.size.x
 	if stamina_bar: max_stamina_bar_width = stamina_bar.size.x
 	if morale_bar: max_morale_bar_width = morale_bar.size.x
+	if exp_bar_progress: max_exp_bar_width = exp_bar_progress.size.x
 		
 	_setup_blood_vignette()
 	_setup_player_hp_camera_overlay()
+	_load_player_data()
 	_update_player_ui_instant()
 	
 	if atk_btn: atk_btn.pressed.connect(_on_attack_pressed)
@@ -177,6 +187,56 @@ func _ready() -> void:
 		
 	_auto_detect_enemy_pool()
 	spawn_random_enemies(1, 3, 1, 5)
+
+
+# ============================================================
+# LOAD PLAYER DATA
+# ============================================================
+func _load_player_data() -> void:
+	var pd = PlayerDataManager.data
+	if pd == null:
+		push_error("[BattleManager] PlayerData tidak ditemukan!")
+		return
+
+	max_hp = pd.max_hp
+	current_hp = pd.max_hp
+
+	max_stamina = pd.max_stamina
+	current_stamina = pd.max_stamina
+	attack_stamina_cost = pd.attack_stamina_cost
+
+	max_morale = pd.max_morale
+	current_morale = pd.max_morale * 0.5
+
+	player_damage = pd.player_damage
+	player_crit_damage = pd.player_crit_damage
+	player_critical_chance = pd.player_critical_chance
+	player_hit_rate = pd.player_hit_rate
+	defense_flat_reduction = pd.defense_flat_reduction
+	parry_flat_reduction = pd.parry_flat_reduction
+
+	if player_name_label: player_name_label.text = pd.player_name
+	if player_level_label: player_level_label.text = str(pd.player_level)
+	if player_profile_img and pd.player_profile:
+		player_profile_img.texture = pd.player_profile
+
+	player_hp_overlay_visual_hp = pd.max_hp
+
+	_animate_exp_bar()
+
+
+func _animate_exp_bar() -> void:
+	var pd = PlayerDataManager.data
+	if pd == null or not exp_bar_progress:
+		return
+
+	var exp_ratio: float = 0.0
+	if pd.player_max_exp > 0:
+		exp_ratio = clampf(float(pd.player_exp) / float(pd.player_max_exp), 0.0, 1.0)
+
+	var target_width: float = exp_ratio * max_exp_bar_width
+	var tw = create_tween()
+	tw.tween_property(exp_bar_progress, "size:x", target_width, 0.35).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 
 # ============================================================
@@ -206,7 +266,9 @@ func open_battle_inventory() -> void:
 	
 	battle_inventory_instance = battle_inventory_scene.instantiate() as Control
 	inventory_canvas_layer.add_child(battle_inventory_instance)
-	
+
+	battle_inventory_instance.inventory_data = PlayerDataManager.data.battle_inventory
+
 	if battle_inventory_instance.has_signal("closed"):
 		battle_inventory_instance.connect("closed", Callable(self, "_on_battle_inventory_closed"))
 	if battle_inventory_instance.has_signal("inventory_closed"):
@@ -428,37 +490,56 @@ func _start_attack_qte() -> void:
 		cam_zoom_tw.tween_property(camera, "zoom", target_zoom, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		cam_zoom_tw.set_ignore_time_scale(true)
 	
-	var container_width = attack_bar_container.size.x
-	
+	var container_width: float = attack_bar_container.size.x
+	var container_height: float = attack_bar_container.size.y
+
+	# hit_rate (1-100) = overall difficulty, semakin kecil semakin susah
+	var hit_rate: float = clampf(player_hit_rate, 1.0, 100.0)
+	var effective_width: float = container_width * (hit_rate / 100.0)
+
+	# critical_chance (1-100) = lebar bar-success di dalam effective area
+	var crit_chance: float = clampf(player_critical_chance, 1.0, 100.0)
+
+	# Lebar bar: success proporsional ke crit_chance, mid sebagai pemisah, low = keseluruhan hit zone
+	var success_width: float = max(8.0, effective_width * (crit_chance / 100.0) * 0.5)
+	var mid_width: float = max(12.0, effective_width * 0.6)
+	var low_width: float = max(16.0, effective_width * 0.9)
+
+	# Clamp biar ga overlap satu sama lain
+	success_width = min(success_width, mid_width)
+	mid_width = min(mid_width, low_width)
+
+	# Center semua bar di dalam effective area
+	var effective_center: float = container_width * 0.5
+
 	if attack_bar_low:
-		var low_max_x = max(0.0, container_width - attack_bar_low.size.x)
-		attack_bar_low.position.x = randf_range(0.0, low_max_x)
-		
+		attack_bar_low.size.x = low_width
+		attack_bar_low.position.x = effective_center - (low_width * 0.5)
+		attack_bar_low.position.y = 0.0
+		attack_bar_low.size.y = container_height
+
 	if attack_bar_mid:
-		var mid_max_x = max(0.0, container_width - attack_bar_mid.size.x)
-		if attack_bar_low:
-			var center_low = attack_bar_low.position.x + (attack_bar_low.size.x * 0.5)
-			attack_bar_mid.position.x = clampf(center_low - (attack_bar_mid.size.x * 0.5), 0.0, mid_max_x)
-		else:
-			attack_bar_mid.position.x = randf_range(0.0, mid_max_x)
-			
+		attack_bar_mid.size.x = mid_width
+		attack_bar_mid.position.x = effective_center - (mid_width * 0.5)
+		attack_bar_mid.position.y = 0.0
+		attack_bar_mid.size.y = container_height
+
 	if attack_bar_success:
-		var success_max_x = max(0.0, container_width - attack_bar_success.size.x)
-		if attack_bar_mid:
-			var center_mid = attack_bar_mid.position.x + (attack_bar_mid.size.x * 0.5)
-			attack_bar_success.position.x = clampf(center_mid - (attack_bar_success.size.x * 0.5), 0.0, success_max_x)
-		else:
-			attack_bar_success.position.x = randf_range(0.0, success_max_x)
-	
-	var running_width = attack_bar_running.size.x
-	var run_min_x = 0.0
-	var run_max_x = max(0.0, container_width - running_width)
-	
+		attack_bar_success.size.x = success_width
+		attack_bar_success.position.x = effective_center - (success_width * 0.5)
+		attack_bar_success.position.y = 0.0
+		attack_bar_success.size.y = container_height
+
+	# Running bar tetap loop full container width
+	var running_width: float = attack_bar_running.size.x
+	var run_min_x: float = 0.0
+	var run_max_x: float = max(0.0, container_width - running_width)
+
 	attack_bar_running.position.x = run_min_x
-	
+
 	if attack_running_tween and attack_running_tween.is_running():
 		attack_running_tween.kill()
-		
+
 	attack_running_tween = create_tween().set_loops()
 	attack_running_tween.tween_property(attack_bar_running, "position:x", run_max_x, 0.6).set_trans(Tween.TRANS_LINEAR)
 	attack_running_tween.tween_property(attack_bar_running, "position:x", run_min_x, 0.6).set_trans(Tween.TRANS_LINEAR)
@@ -1082,7 +1163,7 @@ func _setup_player_hp_camera_overlay() -> void:
 	player_hp_overlay_label = Label.new()
 	player_hp_overlay_label.position = Vector2.ZERO
 	player_hp_overlay_label.size = Vector2(player_hp_overlay_max_width, player_hp_overlay_bar_height)
-	player_hp_overlay_label.text = "500 / 500"
+	player_hp_overlay_label.text = ""
 	player_hp_overlay_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	player_hp_overlay_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	player_hp_overlay_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
