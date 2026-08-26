@@ -714,7 +714,7 @@ func _show_parry_window(duration: float = 1.0) -> void:
 	
 	var tw = create_tween().set_parallel(true)
 	tw.tween_property(parry_btn, "modulate:a", 1.0, 0.15)
-	tw.tween_property(parry_btn, "scale", Vector2(0.088, 0.085), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(parry_btn, "scale", Vector2(0.100, 0.095), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	
 	if parry_timer != null:
 		parry_timer = null
