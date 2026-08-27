@@ -708,15 +708,18 @@ func _on_item_used_in_battle(item: ItemData) -> void:
 	if item and player_buff_manager:
 		var result: Dictionary = player_buff_manager.apply_item_simple(item, self)
 		
-		# Heal — tampilkan temporary icon
+		# Heal — tampilkan temporary icon + visual
 		if result.get("healed", 0.0) > 0.0:
 			_animate_hp_change()
+			_play_heal_visual(result["healed"])
 			if PLAYER_STATUS_ICONS.has("health_up"):
 				_show_player_temporary_status_icon(PLAYER_STATUS_ICONS["health_up"], 2.0)
 		
-		# Buff (attack/defense) — tampilkan persistent icon
+		# Buff (attack/defense) — tampilkan persistent icon + visual
 		if result.get("buff_applied", false):
 			_update_player_status_effects()
+			var effect_str: String = item.get_effect_type_string() if item.has_method("get_effect_type_string") else ""
+			_play_buff_visual(effect_str)
 	
 	_reset_hand_to_original(0.3)
 	
@@ -2069,6 +2072,88 @@ func _animate_stamina_change() -> void:
 		var target_w = (current_stamina / max_stamina) * max_stamina_bar_width
 		var tw = create_tween()
 		tw.tween_property(stamina_bar, "size:x", target_w, 0.35).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
+
+# ============================================================
+# CONSUMABLE VISUAL EFFECTS
+# ============================================================
+
+func _play_heal_visual(heal_amount: float) -> void:
+	# 1. Green flash di player-info
+	if player_info:
+		var flash_tw := create_tween()
+		flash_tw.tween_property(player_info, "modulate", Color(0.5, 1.6, 0.5, 1.0), 0.1)
+		flash_tw.tween_property(player_info, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.25)
+
+	# 2. Floating heal text
+	if player_profile_img:
+		_spawn_floating_text("+" + str(int(heal_amount)), Color(0.3, 1.0, 0.5), player_profile_img.global_position)
+
+	# 3. Heal particles
+	if player_profile_img:
+		_spawn_item_particles(player_profile_img.global_position, Color(0.3, 1.0, 0.5), 12)
+
+
+func _play_buff_visual(buff_type: String) -> void:
+	var particle_color: Color
+	var lower_type := buff_type.to_lower()
+	if lower_type.begins_with("attack") or lower_type.begins_with("damage") or lower_type.begins_with("crit"):
+		particle_color = Color(1.0, 0.4, 0.2)
+	elif lower_type.begins_with("defense") or lower_type.begins_with("shield"):
+		particle_color = Color(0.3, 0.6, 1.0)
+	else:
+		particle_color = Color(1.0, 1.0, 0.3)
+
+	if player_profile_img:
+		_spawn_item_particles(player_profile_img.global_position, particle_color, 10)
+
+	# Flash warna sesuai buff
+	if player_info:
+		var flash_tw := create_tween()
+		flash_tw.tween_property(player_info, "modulate", Color(particle_color.r, particle_color.g, particle_color.b, 1.0), 0.1)
+		flash_tw.tween_property(player_info, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.25)
+
+
+func _spawn_floating_text(msg: String, text_color: Color, pos: Vector2) -> void:
+	var label := Label.new()
+	label.text = msg
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 14)
+	label.add_theme_color_override("font_color", text_color)
+	label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.6))
+	label.z_index = 200
+	label.position = pos + Vector2(-20, -10)
+	label.modulate.a = 0.0
+	add_child(label)
+
+	var tw := create_tween()
+	tw.tween_property(label, "modulate:a", 1.0, 0.15)
+	tw.parallel().tween_property(label, "position:y", pos.y - 35.0, 0.8).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(label, "modulate:a", 0.0, 0.3).set_delay(0.2)
+	tw.tween_callback(label.queue_free)
+
+
+func _spawn_item_particles(pos: Vector2, color: Color, count: int) -> void:
+	for i in range(count):
+		var p := ColorRect.new()
+		p.color = color
+		p.size = Vector2(randf_range(3, 6), randf_range(3, 6))
+		p.position = pos + Vector2(randf_range(-15, 15), randf_range(-5, 10))
+		p.modulate.a = 0.9
+		p.z_index = 190
+		add_child(p)
+
+		var offset_x: float = randf_range(-20, 20)
+		var offset_y: float = randf_range(-45, -20)
+		var dur: float = randf_range(0.5, 0.8)
+		var delay: float = i * 0.04
+
+		var tw := create_tween()
+		tw.tween_property(p, "position", p.position + Vector2(offset_x, offset_y), dur).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT).set_delay(delay)
+		tw.parallel().tween_property(p, "modulate:a", 0.0, dur * 0.7).set_delay(delay)
+		tw.parallel().tween_property(p, "scale", Vector2(0.3, 0.3), dur * 0.6).set_delay(delay + dur * 0.4)
+		tw.tween_callback(p.queue_free).set_delay(dur + 0.1)
 
 
 func player_receive_damage_custom(amount: float) -> void:
