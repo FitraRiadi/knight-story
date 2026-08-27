@@ -126,6 +126,7 @@ var parry_success_this_turn: bool = false
 var parry_canvas_layer: CanvasLayer
 var parry_timing_tween: Tween
 var parry_extra_reduction: float = 0.0
+var current_enemy_attacking: BattleEnemy = null
 
 # INTERACTIVE ATTACK QTE SYSTEM
 enum AttackResult { MISS, LOW, MID, CRITICAL }
@@ -1416,7 +1417,11 @@ func _on_parry_button_clicked() -> void:
 		sfx_player.finished.connect(sfx_player.queue_free)
 	
 	_add_combo(1)
-	
+
+	# MORALE: Parry berhasil -> kurangi morale enemy -25%
+	if current_enemy_attacking and is_instance_valid(current_enemy_attacking):
+		current_enemy_attacking.decrease_morale_by_parry()
+
 	var visual_center: Vector2 = parry_btn.position + Vector2(40, 40)
 	_spawn_parry_particles(visual_center)
 	_spawn_parry_popup_text(visual_center, popup_msg)
@@ -1943,6 +1948,10 @@ func player_receive_damage_custom(amount: float) -> void:
 	_animate_player_hp_overlay_damage(final_damage)
 	trigger_camera_shake_and_blood(14.0, 0.4, 0.85)
 
+	# MORALE: Enemy attack berhasil (tidak di-parry) -> naikkan morale +25%
+	if not parry_success_this_turn and current_enemy_attacking and is_instance_valid(current_enemy_attacking):
+		current_enemy_attacking.increase_morale_on_hit()
+
 
 func _on_enemy_defeated(_exp_amount: int, _gold_amount: int, _dropped_items: Array[String], enemy: BattleEnemy) -> void:
 	# Spawn item drops jika ada
@@ -2084,6 +2093,7 @@ func _start_enemies_turn() -> void:
 	for enemy in enemies:
 		if enemy.current_hp > 0:
 			_pull_hand_to_corner(0.4)
+			current_enemy_attacking = enemy
 			
 			await enemy.take_turn(camera, default_camera_pos)
 			_hide_player_hp_camera_overlay()

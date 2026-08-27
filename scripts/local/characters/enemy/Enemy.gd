@@ -86,6 +86,24 @@ var shield_value: float = 0.0
 
 
 # ============================================================
+# MORALE SYSTEM
+# ============================================================
+var current_morale: float = 100.0
+var scaled_max_morale: float = 100.0
+var is_stunned: bool = false
+var stun_turns_remaining: int = 0
+
+# Morale config
+const MORALE_INCREASE_ON_HIT: float = 0.25
+const MORALE_DECREASE_ON_PARRY: float = 0.25
+const MORALE_RECOVER_ON_STUN_END: float = 0.50
+
+# Crack overlay & smoke particle
+var crack_overlay: Node2D = null
+var smoke_particles: CPUParticles2D = null
+
+
+# ============================================================
 # DEFEND STATE
 # ============================================================
 
@@ -171,6 +189,8 @@ func _ready() -> void:
 
 	_setup_blood_particles()
 	_setup_soul_particles()
+	_setup_smoke_particles()
+	_setup_crack_overlay()
 
 	if enemy_hit_icon:
 		enemy_hit_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -209,7 +229,9 @@ func _ready() -> void:
 
 func _on_animation_finished() -> void:
 	if animation == &"hurt":
-		_play_idle_if_allowed()
+		if not is_stunned:
+			_play_idle_if_allowed()
+		# Jika stunned, frame terakhir sudah di-lock di _execute_stun_turn
 
 
 # ============================================================
@@ -270,6 +292,11 @@ func setup_enemy(new_id: String, custom_level: int = 0) -> void:
 		scaled_exp = int(scaled.get("exp", 20))
 		scaled_gold = int(scaled.get("gold", 10))
 
+		scaled_max_morale = stats.max_morale
+		current_morale = scaled_max_morale
+		is_stunned = false
+		stun_turns_remaining = 0
+
 		current_hp = scaled_max_hp
 		enemy_inventory = stats.starting_inventory.duplicate()
 
@@ -290,6 +317,8 @@ func setup_enemy(new_id: String, custom_level: int = 0) -> void:
 		scaled_defense = 0.0
 		scaled_exp = 20
 		scaled_gold = 10
+		scaled_max_morale = 100.0
+		current_morale = 100.0
 
 	_update_profile_icon()
 	_reset_combat_modifiers()
@@ -388,6 +417,10 @@ func _update_status_effects() -> void:
 	for status in status_to_check:
 		if _check_has_buff(status) and not active_types.has(status):
 			active_types.append(status)
+
+	# MORALE STUN: Tampilkan stun icon jika is_stunned
+	if is_stunned and not active_types.has("stun"):
+		active_types.append("stun")
 
 	var icon_width: float = 20.0
 
@@ -493,6 +526,16 @@ func take_turn(camera: Camera2D, default_camera_pos: Vector2) -> void:
 	if enemy_collision:
 		enemy_collision.disabled = true
 
+	# STUN CHECK: Skip turn if stunned
+	if is_stunned and stun_turns_remaining > 0:
+		await _execute_stun_turn(camera, default_camera_pos)
+		if current_hp > 0.0 and enemy_collision:
+			enemy_collision.disabled = false
+		is_taking_turn = false
+		z_index = original_z_index
+		action_finished.emit()
+		return
+
 	var decision: EnemyAI.Decision = enemy_ai.decide(
 		stats,
 		current_hp,
@@ -569,6 +612,12 @@ func _execute_attack(
 
 	await get_tree().create_timer(0.6).timeout
 	_reset_camera_focus(camera, default_camera_pos)
+
+	# STUN VISUAL: Kalau parry menyebabkan morale habis, langsung play animasi stun
+	if is_stunned:
+		await _play_stun_visuals()
+		# JANGAN idle - tetap lock di frame terakhir hurt
+		return
 
 	_play_idle_if_allowed()
 
@@ -1039,6 +1088,183 @@ func _setup_soul_particles() -> void:
 
 func _trigger_blood_splash() -> void:
 	if blood_particles: blood_particles.restart()
+
+
+# ============================================================
+# MORALE SYSTEM
+# ============================================================
+
+func decrease_morale_by_parry() -> void:
+	"""Dipanggil saat player berhasil parry serangan enemy"""
+	var reduction: float = scaled_max_morale * MORALE_DECREASE_ON_PARRY
+	current_morale = maxf(0.0, current_morale - reduction)
+	_check_morale_stun()
+	_update_crack_overlay()
+	_update_smoke_intensity()
+
+
+func increase_morale_on_hit() -> void:
+	"""Dipanggil saat enemy berhasil attack player (tidak di-parry)"""
+	var bonus: float = scaled_max_morale * MORALE_INCREASE_ON_HIT
+	current_morale = minf(scaled_max_morale, current_morale + bonus)
+	_update_crack_overlay()
+	_update_smoke_intensity()
+
+
+func _check_morale_stun() -> void:
+	"""Cek apakah morale habis -> trigger stun 1 turn"""
+	if current_morale <= 0.0 and not is_stunned:
+		is_stunned = true
+		stun_turns_remaining = 1
+		_update_status_effects()
+
+
+func _play_stun_visuals() -> void:
+	"""Mainkan animasi hurt + lock frame saat morale habis (tanpa skip turn)"""
+	show_reaction_text("STUNNED!", Color(1.0, 0.8, 0.0), true)
+	_play_sound("hit")
+
+	# Mainkan animasi hurt dan tunggu selesai
+	play("hurt")
+	await animation_finished
+
+	# Lock di frame terakhir animasi hurt
+	var hurt_frame_count: int = get_sprite_frames().get_frame_count(&"hurt") if get_sprite_frames().has_animation(&"hurt") else 1
+	if hurt_frame_count > 1:
+		frame = hurt_frame_count - 1
+		set_frame_and_progress(hurt_frame_count - 1, 0.0)
+
+
+func _execute_stun_turn(camera: Camera2D, default_camera_pos: Vector2) -> void:
+	"""Eksekusi giliran saat enemy stun: skip turn, kurangi stun, recover"""
+	_focus_camera_to_me(camera, true)
+
+	show_reaction_text("Stunned!", Color(1.0, 0.8, 0.0), true)
+
+	# Tunggu 1 turn (1.5 detik) saat stun
+	await get_tree().create_timer(1.5).timeout
+
+	# Kurangi stun turns
+	stun_turns_remaining -= 1
+	if stun_turns_remaining <= 0:
+		is_stunned = false
+		_recover_morale_after_stun()
+
+	_reset_camera_focus(camera, default_camera_pos)
+	_play_idle_if_allowed()
+	_update_status_effects()
+
+
+func _recover_morale_after_stun() -> void:
+	"""Recover 50% morale setelah stun berakhir"""
+	var recovery: float = scaled_max_morale * MORALE_RECOVER_ON_STUN_END
+	current_morale = minf(scaled_max_morale, recovery)
+	show_reaction_text("Morale Recovered!", Color(0.3, 0.8, 1.0), false)
+	_update_crack_overlay()
+	_update_smoke_intensity()
+	_update_status_effects()
+
+
+func get_morale_ratio() -> float:
+	"""Return morale sebagai ratio 0.0 - 1.0"""
+	if scaled_max_morale <= 0.0:
+		return 1.0
+	return clampf(current_morale / scaled_max_morale, 0.0, 1.0)
+
+
+# ============================================================
+# SMOKE PARTICLE (Morale)
+# ============================================================
+
+func _setup_smoke_particles() -> void:
+	smoke_particles = CPUParticles2D.new()
+	add_child(smoke_particles)
+	smoke_particles.z_index = 45
+	smoke_particles.amount = 15
+	smoke_particles.lifetime = 2.0
+	smoke_particles.one_shot = false
+	smoke_particles.emitting = false
+	smoke_particles.direction = Vector2(0, -1)
+	smoke_particles.spread = 30.0
+	smoke_particles.gravity = Vector2(0, -40)
+	smoke_particles.initial_velocity_min = 15.0
+	smoke_particles.initial_velocity_max = 35.0
+	smoke_particles.scale_amount_min = 3.0
+	smoke_particles.scale_amount_max = 7.0
+	smoke_particles.color = Color(0.3, 0.3, 0.3, 0.5)
+	smoke_particles.position = Vector2(0, -20)
+
+	# Posisikan particle di area profile (atas-tengah enemy)
+	if enemy_profile_img and is_instance_valid(enemy_profile_img):
+		var profile_global_pos: Vector2 = enemy_profile_img.global_position
+		smoke_particles.position = to_local(profile_global_pos) + Vector2(enemy_profile_img.size.x / 2.0, enemy_profile_img.size.y / 2.0)
+	_update_smoke_intensity()
+
+
+func _update_smoke_intensity() -> void:
+	"""Update intensitas smoke berdasarkan morale"""
+	if not is_instance_valid(smoke_particles):
+		return
+
+	var morale_ratio: float = get_morale_ratio()
+	# Smoke muncul saat morale <= 50%
+	if morale_ratio <= 0.5:
+		smoke_particles.emitting = true
+		# Makin rendah morale, makin banyak & cepat particle
+		var intensity: float = 1.0 - (morale_ratio / 0.5)  # 0.0 - 1.0
+		smoke_particles.amount = int(lerp(5.0, 20.0, intensity))
+		smoke_particles.initial_velocity_min = lerp(10.0, 30.0, intensity)
+		smoke_particles.initial_velocity_max = lerp(25.0, 60.0, intensity)
+		smoke_particles.scale_amount_min = lerp(2.0, 5.0, intensity)
+		smoke_particles.scale_amount_max = lerp(5.0, 10.0, intensity)
+		smoke_particles.modulate.a = lerp(0.3, 0.8, intensity)
+	else:
+		smoke_particles.emitting = false
+
+
+# ============================================================
+# CRACK OVERLAY (Morale - Profile)
+# ============================================================
+
+func _setup_crack_overlay() -> void:
+	"""Buat crack overlay di atas profile image"""
+	if not is_instance_valid(enemy_profile_img):
+		return
+
+	# Buat crack overlay sebagai child dari profile (ikut rotation/scale)
+	var crack_script: GDScript = preload("res://scripts/local/characters/enemy/CrackOverlay.gd")
+	crack_overlay = Node2D.new()
+	crack_overlay.name = "CrackOverlay"
+	crack_overlay.z_index = 10
+	crack_overlay.set_script(crack_script)
+	crack_overlay.enemy_ref = self
+	enemy_profile_img.get_parent().add_child(crack_overlay)
+
+	# Posisikan di tengah profile
+	var profile_panel: Control = enemy_profile_img.get_parent()
+	crack_overlay.position = profile_panel.size / 2.0
+	# Scale biar crack pas di area profile (CrackOverlay pakai 100x100 base)
+	crack_overlay.scale = profile_panel.size / Vector2(100.0, 100.0)
+	crack_overlay.modulate.a = 0.0
+
+	_update_crack_overlay()
+
+
+func _update_crack_overlay() -> void:
+	"""Update crack visual berdasarkan morale"""
+	if not is_instance_valid(crack_overlay):
+		return
+
+	var morale_ratio: float = get_morale_ratio()
+	# Crack mulai muncul saat morale <= 50%
+	if morale_ratio > 0.5:
+		crack_overlay.modulate.a = 0.0
+		return
+
+	# Hitung intensitas crack: 0.0 (50% morale) - 1.0 (0% morale)
+	var crack_intensity: float = 1.0 - (morale_ratio / 0.5)
+	crack_overlay.modulate.a = clampf(crack_intensity, 0.0, 1.0)
+	crack_overlay.queue_redraw()
 
 
 func _shake_camera(camera: Camera2D, intensity: float, duration: float) -> void:
