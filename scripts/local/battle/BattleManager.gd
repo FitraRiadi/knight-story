@@ -195,6 +195,7 @@ var enemies_killed: int = 0
 
 # BATTLE INTRO
 @onready var map_title: Label = $bg/mapTitle
+@onready var player_info: Control = $"player-information"
 
 const PLAYER_STATUS_ICONS: Dictionary = {
 	"attack_up": preload("res://assets/ui/icons/statusEffect/attackUp.png"),
@@ -248,7 +249,9 @@ func _ready() -> void:
 	_auto_detect_enemy_pool()
 	# Hide buttons dulu, nanti muncul setelah intro
 	_set_buttons_active(false, true)
-	await _play_battle_intro()
+	# Intro: map title fade + player info slide (barengan)
+	_play_battle_intro()
+	_animate_player_info_intro()
 	await _animate_hands_intro()
 	spawn_random_enemies(1, 3, 1, 5)
 
@@ -2360,6 +2363,16 @@ func _play_battle_intro() -> void:
 	tw.tween_property(map_title, "modulate:a", 1.0, 3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 
+func _animate_player_info_intro() -> void:
+	if not player_info:
+		return
+
+	var orig_pos: Vector2 = player_info.position
+	player_info.position.x = -player_info.size.x - 10.0
+
+	var tw := create_tween()
+	tw.tween_property(player_info, "position:x", orig_pos.x, 0.45).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
 
 # ============================================================
 # BUTTON HOVER SCALE
@@ -2712,6 +2725,36 @@ func _show_flee_qte() -> void:
 	# Animasi opening
 	_animate_flee_opening()
 
+	# Cancel button di bawah card area
+	var cancel_btn := Button.new()
+	cancel_btn.text = "CANCEL"
+	cancel_btn.custom_minimum_size = Vector2(100, 28)
+	cancel_btn.set_anchors_preset(Control.PRESET_CENTER)
+	cancel_btn.offset_left = -50.0
+	cancel_btn.offset_right = 50.0
+	cancel_btn.offset_top = 135.0
+	cancel_btn.offset_bottom = 163.0
+	cancel_btn.add_theme_font_size_override("font_size", 11)
+
+	var cancel_style := StyleBoxFlat.new()
+	cancel_style.bg_color = Color(0.2, 0.2, 0.2, 0.8)
+	cancel_style.set_corner_radius_all(4)
+	cancel_style.set_content_margin_all(6)
+	cancel_btn.add_theme_stylebox_override("normal", cancel_style)
+
+	var cancel_hover := StyleBoxFlat.new()
+	cancel_hover.bg_color = Color(0.35, 0.35, 0.35, 0.9)
+	cancel_hover.set_corner_radius_all(4)
+	cancel_hover.set_content_margin_all(6)
+	cancel_btn.add_theme_stylebox_override("hover", cancel_hover)
+
+	cancel_btn.pressed.connect(_on_flee_cancel_pressed)
+	flee_qte_root.add_child(cancel_btn)
+
+	var cancel_tw := create_tween()
+	cancel_tw.tween_property(cancel_btn, "modulate:a", 0.0, 0.0)
+	cancel_tw.tween_property(cancel_btn, "modulate:a", 1.0, 0.3).set_delay(0.6)
+
 
 func _create_flee_card(index: int) -> PanelContainer:
 	var card := PanelContainer.new()
@@ -2823,6 +2866,18 @@ func _animate_flee_opening() -> void:
 		flee_is_choosing = true
 	)
 
+
+func _on_flee_cancel_pressed() -> void:
+	flee_is_choosing = false
+	# Fade out lalu cleanup
+	if flee_qte_root:
+		var tw := create_tween()
+		tw.tween_property(flee_qte_root, "modulate:a", 0.0, 0.25).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+		tw.tween_callback(_cleanup_flee_qte)
+		tw.tween_callback(func():
+			is_player_turn = true
+			_set_buttons_active(true)
+		)
 
 func _on_flee_card_pressed(index: int) -> void:
 	if not flee_is_choosing:
