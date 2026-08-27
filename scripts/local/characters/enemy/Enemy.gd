@@ -92,6 +92,7 @@ var current_morale: float = 100.0
 var scaled_max_morale: float = 100.0
 var is_stunned: bool = false
 var stun_turns_remaining: int = 0
+var stun_interrupted: bool = false
 
 # Morale config
 const MORALE_INCREASE_ON_HIT: float = 0.25
@@ -606,18 +607,21 @@ func _execute_attack(
 	play("attack")
 	await animation_finished
 
+	# STUN INTERRUPT: Parry menyebabkan stun mid-attack, skip damage langsung stun
+	if stun_interrupted:
+		stun_interrupted = false
+		_focus_camera_to_me(camera, true)
+		await _play_stun_visuals()
+		await get_tree().create_timer(1.5).timeout
+		_reset_camera_focus(camera, default_camera_pos)
+		return
+
 	_play_sound("attack")
 	attack_hit.emit(total_damage)
 	_shake_camera(camera, 12.0 * damage_multiplier, 0.25)
 
 	await get_tree().create_timer(0.6).timeout
 	_reset_camera_focus(camera, default_camera_pos)
-
-	# STUN VISUAL: Kalau parry menyebabkan morale habis, langsung play animasi stun
-	if is_stunned:
-		await _play_stun_visuals()
-		# JANGAN idle - tetap lock di frame terakhir hurt
-		return
 
 	_play_idle_if_allowed()
 

@@ -109,6 +109,43 @@ corner_radius_bottom_left = 5
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ve2ux"]
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jncy7"]
+bg_color = Color(0, 0, 0, 0.62600005)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_v8twt"]
+bg_color = Color(0, 0, 0, 0.45800003)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mnmqb"]
+bg_color = Color(0.050708726, 0.050708726, 0.050708726, 0.58400005)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1qqxr"]
+bg_color = Color(0.60038817, 0.60038817, 0.60038817, 0.22200002)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w4lhp"]
+bg_color = Color(0.012920001, 0.012920001, 0.012920001, 0.40300003)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_kxutv"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2ujja"]
+bg_color = Color(0.06100855, 0.06100855, 0.06100855, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_1orl3"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8svm1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hdopt"]
+bg_color = Color(0.10747974, 0.10747974, 0.10747967, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
 [node name="battlemode" type="Control" unique_id=184345478]
 layout_mode = 3
 anchors_preset = 15
@@ -670,3 +707,241 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_gujcb")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_w4lhp")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_ve2ux")
 text = "Cancel"
+
+[node name="scoreBoard" type="Control" parent="." unique_id=1824372562]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="container" type="Panel" parent="scoreBoard" unique_id=1077844098]
+layout_mode = 0
+offset_left = 153.0
+offset_top = 33.0
+offset_right = 596.0
+offset_bottom = 261.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_jncy7")
+
+[node name="container3" type="Panel" parent="scoreBoard" unique_id=1409525245]
+layout_mode = 0
+offset_left = 153.0
+offset_top = 261.0
+offset_right = 596.0
+offset_bottom = 317.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_v8twt")
+
+[node name="container2" type="Panel" parent="scoreBoard" unique_id=1405820272]
+layout_mode = 0
+offset_left = 162.0
+offset_top = 90.0
+offset_right = 586.0
+offset_bottom = 249.0
+
+[node name="title" type="Label" parent="scoreBoard" unique_id=1795731443]
+layout_mode = 0
+offset_left = 233.0
+offset_top = 42.0
+offset_right = 509.0
+offset_bottom = 85.0
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_mnmqb")
+text = "Battle Results"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="cardScore" type="Control" parent="scoreBoard" unique_id=1618801188]
+anchors_preset = 0
+offset_left = 176.0
+offset_top = 117.0
+offset_right = 296.0
+offset_bottom = 203.0
+
+[node name="bg" type="Panel" parent="scoreBoard/cardScore" unique_id=1163917753]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -2.0
+offset_right = -3.0
+offset_bottom = 24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_1qqxr")
+
+[node name="title" type="Label" parent="scoreBoard/cardScore" unique_id=240126125]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 65.0
+offset_right = 114.0
+offset_bottom = 80.0
+theme_override_font_sizes/font_size = 9
+theme_override_styles/normal = SubResource("StyleBoxFlat_w4lhp")
+text = "Enemy Defeated"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="logo" type="Panel" parent="scoreBoard/cardScore" unique_id=1887503587]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 2.0000076
+offset_right = 68.0
+offset_bottom = 42.0
+scale = Vector2(1.5, 1.5)
+theme_override_styles/panel = SubResource("StyleBoxEmpty_kxutv")
+
+[node name="TextureRect" type="TextureRect" parent="scoreBoard/cardScore/logo" unique_id=1834817606]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("6_ymp2q")
+expand_mode = 1
+
+[node name="score" type="Label" parent="scoreBoard/cardScore" unique_id=1288540891]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 82.0
+offset_right = 114.0
+offset_bottom = 107.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_2ujja")
+text = "2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="cardScore2" type="Control" parent="scoreBoard" unique_id=2091175846]
+anchors_preset = 0
+offset_left = 315.0
+offset_top = 117.0
+offset_right = 435.0
+offset_bottom = 203.0
+
+[node name="bg" type="Panel" parent="scoreBoard/cardScore2" unique_id=1497098001]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -2.0
+offset_right = -3.0
+offset_bottom = 24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_1qqxr")
+
+[node name="title" type="Label" parent="scoreBoard/cardScore2" unique_id=1893712353]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 65.0
+offset_right = 114.0
+offset_bottom = 80.0
+theme_override_font_sizes/font_size = 9
+theme_override_styles/normal = SubResource("StyleBoxFlat_w4lhp")
+text = "Hit Accuracy"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="logo" type="Panel" parent="scoreBoard/cardScore2" unique_id=1628822429]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 2.0000076
+offset_right = 68.0
+offset_bottom = 42.0
+scale = Vector2(1.5, 1.5)
+theme_override_styles/panel = SubResource("StyleBoxEmpty_1orl3")
+
+[node name="TextureRect" type="TextureRect" parent="scoreBoard/cardScore2/logo" unique_id=1804657453]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("9_5wo1c")
+expand_mode = 1
+
+[node name="score" type="Label" parent="scoreBoard/cardScore2" unique_id=840395086]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 82.0
+offset_right = 114.0
+offset_bottom = 107.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_2ujja")
+text = "2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="cardScore3" type="Control" parent="scoreBoard" unique_id=1282010480]
+anchors_preset = 0
+offset_left = 455.0
+offset_top = 117.0
+offset_right = 575.0
+offset_bottom = 203.0
+
+[node name="bg" type="Panel" parent="scoreBoard/cardScore3" unique_id=464257952]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -2.0
+offset_right = -3.0
+offset_bottom = 24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_1qqxr")
+
+[node name="title" type="Label" parent="scoreBoard/cardScore3" unique_id=1266949262]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 65.0
+offset_right = 114.0
+offset_bottom = 80.0
+theme_override_font_sizes/font_size = 9
+theme_override_styles/normal = SubResource("StyleBoxFlat_w4lhp")
+text = "Parries Successful"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="logo" type="Panel" parent="scoreBoard/cardScore3" unique_id=722675434]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 2.0000076
+offset_right = 68.0
+offset_bottom = 42.0
+scale = Vector2(1.5, 1.5)
+theme_override_styles/panel = SubResource("StyleBoxEmpty_8svm1")
+
+[node name="TextureRect" type="TextureRect" parent="scoreBoard/cardScore3/logo" unique_id=504094822]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("13_kngoi")
+expand_mode = 1
+
+[node name="score" type="Label" parent="scoreBoard/cardScore3" unique_id=248269031]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 82.0
+offset_right = 114.0
+offset_bottom = 107.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_2ujja")
+text = "2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="continueBtn" type="Button" parent="scoreBoard" unique_id=1291469379]
+layout_mode = 0
+offset_left = 312.0
+offset_top = 268.0
+offset_right = 464.0
+offset_bottom = 309.0
+scale = Vector2(0.8569655, 0.78637534)
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_hdopt")
+text = "Continue"

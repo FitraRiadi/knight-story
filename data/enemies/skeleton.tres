@@ -76,7 +76,7 @@ animations = [{
 }],
 "loop": 1,
 "name": &"idle",
-"speed": 3.0
+"speed": 2.0
 }]
 
 [resource]

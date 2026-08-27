@@ -173,6 +173,25 @@ var player_buff_manager: BuffManager
 var player_effect_container: Control
 var player_effect_center_position: Vector2 = Vector2.ZERO
 
+# SCOREBOARD SYSTEM
+var total_attacks: int = 0
+var total_hits: int = 0
+var total_parries: int = 0
+var enemies_killed: int = 0
+
+@onready var scoreBoard: Control = $scoreBoard
+@onready var score_card_enemy: Control = $scoreBoard/cardScore
+@onready var score_card_accuracy: Control = $scoreBoard/cardScore2
+@onready var score_card_parry: Control = $scoreBoard/cardScore3
+@onready var score_label_enemy: Label = $scoreBoard/cardScore/score
+@onready var score_label_accuracy: Label = $scoreBoard/cardScore2/score
+@onready var score_label_parry: Label = $scoreBoard/cardScore3/score
+@onready var score_continue_btn: Button = $scoreBoard/continueBtn
+@onready var score_container: Panel = $scoreBoard/container
+@onready var score_container2: Panel = $scoreBoard/container2
+@onready var score_container3: Panel = $scoreBoard/container3
+@onready var score_title: Label = $scoreBoard/title
+
 const PLAYER_STATUS_ICONS: Dictionary = {
 	"attack_up": preload("res://assets/ui/icons/statusEffect/attackUp.png"),
 	"health_up": preload("res://assets/ui/icons/statusEffect/healthUp.png"),
@@ -207,6 +226,7 @@ func _ready() -> void:
 	_setup_player_hp_camera_overlay()
 	_load_player_data()
 	_update_player_ui_instant()
+	_setup_scoreboard()
 	
 	if atk_btn: atk_btn.pressed.connect(_on_attack_pressed)
 	if defend_btn: defend_btn.pressed.connect(_on_defend_pressed)
@@ -1060,12 +1080,19 @@ func _check_attack_qte_result() -> void:
 	
 	var qte_result: AttackResult = AttackResult.MISS
 	
+	# SCOREBOARD: Hitung total serangan
+	total_attacks += 1
+	
 	if _check_is_overlapping(attack_bar_running, attack_bar_success):
 		qte_result = AttackResult.CRITICAL
 	elif _check_is_overlapping(attack_bar_running, attack_bar_mid):
 		qte_result = AttackResult.MID
 	elif _check_is_overlapping(attack_bar_running, attack_bar_low):
 		qte_result = AttackResult.LOW
+	
+	# SCOREBOARD: Hitung hit (bukan miss)
+	if qte_result != AttackResult.MISS:
+		total_hits += 1
 	
 	if qte_result != AttackResult.MISS:
 		_add_combo(1)
@@ -1417,10 +1444,16 @@ func _on_parry_button_clicked() -> void:
 		sfx_player.finished.connect(sfx_player.queue_free)
 	
 	_add_combo(1)
+	
+	# SCOREBOARD: Hitung parry
+	total_parries += 1
 
 	# MORALE: Parry berhasil -> kurangi morale enemy -25%
 	if current_enemy_attacking and is_instance_valid(current_enemy_attacking):
 		current_enemy_attacking.decrease_morale_by_parry()
+		# Kalau parry bikin morale habis, interrupt attack langsung
+		if current_enemy_attacking.is_stunned:
+			current_enemy_attacking.stun_interrupted = true
 
 	var visual_center: Vector2 = parry_btn.position + Vector2(40, 40)
 	_spawn_parry_particles(visual_center)
@@ -1954,6 +1987,9 @@ func player_receive_damage_custom(amount: float) -> void:
 
 
 func _on_enemy_defeated(_exp_amount: int, _gold_amount: int, _dropped_items: Array[String], enemy: BattleEnemy) -> void:
+	# SCOREBOARD: Hitung enemy defeated
+	enemies_killed += 1
+	
 	# Spawn item drops jika ada
 	if not _dropped_items.is_empty() and is_instance_valid(enemy):
 		var enemy_pos := enemy.global_position
@@ -1974,7 +2010,7 @@ func _on_enemy_defeated(_exp_amount: int, _gold_amount: int, _dropped_items: Arr
 	
 	if enemies.is_empty():
 		await get_tree().create_timer(0.5).timeout
-		respawn_test_enemies()
+		_show_scoreboard()
 
 
 func _on_enemy_clicked(clicked_enemy: BattleEnemy) -> void:
@@ -2147,3 +2183,173 @@ func _set_buttons_active(show_buttons: bool) -> void:
 	
 func _set_player_turn_true() -> void:
 	is_player_turn = true
+
+
+# ============================================================
+# SCOREBOARD SYSTEM
+# ============================================================
+
+func _setup_scoreboard() -> void:
+	# Mulai hidden
+	if scoreBoard:
+		scoreBoard.visible = false
+		scoreBoard.modulate.a = 0.0
+	
+	# Pastikan card awalnya kecil & transparan
+	for card in [score_card_enemy, score_card_accuracy, score_card_parry]:
+		if card:
+			card.scale = Vector2(0.3, 0.3)
+			card.modulate.a = 0.0
+	
+	# Container transparan
+	for c in [score_container, score_container2, score_container3]:
+		if c:
+			c.modulate.a = 0.0
+	
+	if score_title:
+		score_title.modulate.a = 0.0
+	if score_continue_btn:
+		score_continue_btn.modulate.a = 0.0
+		score_continue_btn.pressed.connect(_on_scoreboard_continue_pressed)
+
+
+func _show_scoreboard() -> void:
+	if not scoreBoard:
+		return
+	
+	# Update score text
+	_update_scoreboard_values()
+	
+	# Disable input player
+	is_player_turn = false
+	_set_buttons_active(false)
+	
+	# Hide battle UI
+	_hide_battle_ui_for_scoreboard()
+	
+	# Tampilkan scoreboard
+	scoreBoard.visible = true
+	
+	var tw := create_tween()
+	tw.tween_property(scoreBoard, "modulate:a", 1.0, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	
+	# Container fade in
+	tw.parallel().tween_property(score_container, "modulate:a", 1.0, 0.3)
+	tw.parallel().tween_property(score_container2, "modulate:a", 1.0, 0.3)
+	tw.parallel().tween_property(score_container3, "modulate:a", 1.0, 0.3)
+	
+	# Title fade in
+	tw.parallel().tween_property(score_title, "modulate:a", 1.0, 0.35)
+	
+	# Cards muncul satu-satu (staggered)
+	for card in [score_card_enemy, score_card_accuracy, score_card_parry]:
+		if card:
+			tw.tween_property(card, "modulate:a", 1.0, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			tw.parallel().tween_property(card, "scale", Vector2(1.0, 1.0), 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			tw.tween_interval(0.12)
+	
+	# Continue button muncul terakhir
+	tw.tween_property(score_continue_btn, "modulate:a", 1.0, 0.3).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+
+
+func _on_scoreboard_continue_pressed() -> void:
+	_hide_scoreboard()
+
+
+func _hide_scoreboard() -> void:
+	if not scoreBoard:
+		return
+	
+	var tw := create_tween()
+	
+	# Continue button fade out dulu
+	if score_continue_btn:
+		tw.tween_property(score_continue_btn, "modulate:a", 0.0, 0.15)
+	
+	# Cards fade out
+	for card in [score_card_parry, score_card_accuracy, score_card_enemy]:
+		if card:
+			tw.parallel().tween_property(card, "modulate:a", 0.0, 0.2)
+			tw.parallel().tween_property(card, "scale", Vector2(0.5, 0.5), 0.2).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
+	
+	# Container & title fade out
+	tw.parallel().tween_property(score_container, "modulate:a", 0.0, 0.25)
+	tw.parallel().tween_property(score_container2, "modulate:a", 0.0, 0.25)
+	tw.parallel().tween_property(score_container3, "modulate:a", 0.0, 0.25)
+	tw.parallel().tween_property(score_title, "modulate:a", 0.0, 0.25)
+	
+	# Full fade out
+	tw.tween_property(scoreBoard, "modulate:a", 0.0, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tw.tween_callback(func():
+		scoreBoard.visible = false
+		_reset_scoreboard_values()
+		_show_battle_ui_after_scoreboard()
+		respawn_test_enemies()
+	)
+
+
+func _update_scoreboard_values() -> void:
+	if score_label_enemy:
+		score_label_enemy.text = str(enemies_killed)
+	if score_label_accuracy:
+		var accuracy: int = 0
+		if total_attacks > 0:
+			accuracy = int(float(total_hits) / float(total_attacks) * 100.0)
+		score_label_accuracy.text = str(accuracy) + "%"
+	if score_label_parry:
+		score_label_parry.text = str(total_parries)
+
+
+func _reset_scoreboard_values() -> void:
+	total_attacks = 0
+	total_hits = 0
+	total_parries = 0
+	enemies_killed = 0
+
+
+func _hide_battle_ui_for_scoreboard() -> void:
+	# Hide player info
+	var player_info: Control = get_node_or_null("player-information")
+	if player_info:
+		var tw := create_tween().set_parallel(true)
+		tw.tween_property(player_info, "modulate:a", 0.0, 0.3)
+	
+	# Hide interaction buttons
+	var interaction: Control = get_node_or_null("interaction")
+	if interaction:
+		var tw := create_tween().set_parallel(true)
+		tw.tween_property(interaction, "modulate:a", 0.0, 0.3)
+	
+	# Hide hands
+	if hand_right:
+		if not has_meta("_hand_right_orig_pos"):
+			set_meta("_hand_right_orig_pos", hand_right.position)
+		var tw := create_tween().set_parallel(true)
+		tw.tween_property(hand_right, "modulate:a", 0.0, 0.3)
+	if hand_left:
+		if not has_meta("_hand_left_orig_pos"):
+			set_meta("_hand_left_orig_pos", hand_left.position)
+		var tw := create_tween().set_parallel(true)
+		tw.tween_property(hand_left, "modulate:a", 0.0, 0.3)
+
+
+func _show_battle_ui_after_scoreboard() -> void:
+	# Show player info
+	var player_info: Control = get_node_or_null("player-information")
+	if player_info:
+		var tw := create_tween().set_parallel(true)
+		tw.tween_property(player_info, "modulate:a", 1.0, 0.3)
+	
+	# Show interaction
+	var interaction: Control = get_node_or_null("interaction")
+	if interaction:
+		var tw := create_tween().set_parallel(true)
+		tw.tween_property(interaction, "modulate:a", 1.0, 0.3)
+	
+	# Show hands
+	if hand_right:
+		var tw := create_tween().set_parallel(true)
+		tw.tween_property(hand_right, "modulate:a", 1.0, 0.3)
+	if hand_left:
+		var tw := create_tween().set_parallel(true)
+		tw.tween_property(hand_left, "modulate:a", 1.0, 0.3)
