@@ -838,6 +838,11 @@ func receive_damage(
 	hp_changed.emit()
 	_trigger_blood_splash()
 
+	# Red flash pas kena hit
+	var hit_flash := create_tween()
+	hit_flash.tween_property(self, "modulate", Color(1.5, 0.3, 0.3, 1.0), 0.08)
+	hit_flash.tween_property(self, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.15)
+
 	if is_critical:
 		_play_sound("hurt_crit")
 		show_reaction_text("Crit " + str(int(final_damage)), Color(1.0, 1.0, 0.0), true)
