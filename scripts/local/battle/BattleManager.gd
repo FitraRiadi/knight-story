@@ -235,7 +235,13 @@ func _ready() -> void:
 	if run_btn: run_btn.pressed.connect(_on_run_pressed)
 	if reset_target_btn and not reset_target_btn.pressed.is_connected(_on_reset_target_pressed):
 		reset_target_btn.pressed.connect(_on_reset_target_pressed)
-		
+
+	_setup_button_hover_scale(atk_btn)
+	_setup_button_hover_scale(defend_btn)
+	_setup_button_hover_scale(backpack_btn)
+	_setup_button_hover_scale(run_btn)
+	_setup_button_hover_scale(skill_btn)
+
 	_auto_detect_enemy_pool()
 	spawn_random_enemies(1, 3, 1, 5)
 
@@ -1885,6 +1891,11 @@ func _spawn_enemies(enemy_ids: Array[String], custom_levels: Array[int] = []) ->
 		if enemy_instance.has_method("setup_enemy"):
 			enemy_instance.setup_enemy(enemy_id_to_spawn, target_level)
 		
+		# Set posisi awal (bawah) + scale kecil + transparan
+		enemy_instance.global_position = _get_spawn_position(i, total_enemies) + Vector2(0, 80)
+		enemy_instance.scale = Vector2(0.3, 0.3)
+		enemy_instance.modulate.a = 0.0
+		
 		enemies.append(enemy_instance)
 		
 		enemy_instance.clicked.connect(_on_enemy_clicked)
@@ -1892,8 +1903,7 @@ func _spawn_enemies(enemy_ids: Array[String], custom_levels: Array[int] = []) ->
 		enemy_instance.attack_preparing.connect(_on_enemy_attack_preparing)
 		enemy_instance.enemy_defeated.connect(_on_enemy_defeated)
 		
-	_position_enemies(total_enemies)
-	_update_target_selection()
+	_animate_enemies_spawn()
 
 
 func spawn_custom_enemies(enemy_ids: Array[String], levels: Array[int] = []) -> void:
@@ -1922,16 +1932,46 @@ func respawn_test_enemies() -> void:
 	_set_buttons_active(true)
 
 
-func _position_enemies(count: int) -> void:
-	if count == 1:
-		enemies[0].global_position = center_spawn_position
-	elif count == 2:
-		enemies[0].global_position = center_spawn_position + Vector2(50, 0)
-		enemies[1].global_position = center_spawn_position + Vector2(-70, 0)
-	elif count == 3:
-		enemies[0].global_position = center_spawn_position + Vector2(80, 0)
-		enemies[1].global_position = center_spawn_position + Vector2(-80, 0)
-		enemies[2].global_position = center_spawn_position + Vector2(0, 20)
+func _get_spawn_position(index: int, total: int) -> Vector2:
+	if total == 1:
+		return center_spawn_position
+	elif total == 2:
+		if index == 0:
+			return center_spawn_position + Vector2(50, 0)
+		else:
+			return center_spawn_position + Vector2(-70, 0)
+	else:
+		if index == 0:
+			return center_spawn_position + Vector2(80, 0)
+		elif index == 1:
+			return center_spawn_position + Vector2(-80, 0)
+		else:
+			return center_spawn_position + Vector2(0, 20)
+	return center_spawn_position
+
+
+func _animate_enemies_spawn() -> void:
+	is_player_turn = false
+	_set_buttons_active(false)
+
+	for i in range(enemies.size()):
+		var enemy = enemies[i]
+		var target_pos: Vector2 = _get_spawn_position(i, enemies.size())
+		var delay: float = i * 0.15
+
+		var tw := create_tween()
+		tw.tween_interval(delay)
+		tw.parallel().tween_property(enemy, "global_position", target_pos, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.parallel().tween_property(enemy, "scale", Vector2(1.0, 1.0), 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.parallel().tween_property(enemy, "modulate:a", 1.0, 0.25).set_trans(Tween.TRANS_SINE)
+
+	# Tunggu semua selesai
+	var total_time: float = (enemies.size() - 1) * 0.15 + 0.3
+	await get_tree().create_timer(total_time).timeout
+
+	_update_target_selection()
+	is_player_turn = true
+	_set_buttons_active(true)
 
 
 func _update_player_ui_instant() -> void:
@@ -2186,6 +2226,26 @@ func _set_buttons_active(show_buttons: bool) -> void:
 	
 func _set_player_turn_true() -> void:
 	is_player_turn = true
+
+
+# ============================================================
+# BUTTON HOVER SCALE
+# ============================================================
+
+func _setup_button_hover_scale(btn: Button) -> void:
+	if not btn:
+		return
+	var orig_scale: Vector2 = btn.scale
+	btn.mouse_entered.connect(func():
+		if btn.disabled:
+			return
+		var tw := create_tween().set_parallel(true)
+		tw.tween_property(btn, "scale", orig_scale * 1.06, 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	)
+	btn.mouse_exited.connect(func():
+		var tw := create_tween().set_parallel(true)
+		tw.tween_property(btn, "scale", orig_scale, 0.15).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+	)
 
 
 # ============================================================
