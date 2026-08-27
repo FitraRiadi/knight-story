@@ -59,6 +59,7 @@ var player_damage: float
 var player_crit_damage: float
 var player_critical_chance: float
 var player_hit_rate: float
+var player_speed: float
 var defense_flat_reduction: float
 var parry_flat_reduction: float
 
@@ -231,6 +232,7 @@ func _ready() -> void:
 	if atk_btn: atk_btn.pressed.connect(_on_attack_pressed)
 	if defend_btn: defend_btn.pressed.connect(_on_defend_pressed)
 	if backpack_btn: backpack_btn.pressed.connect(_on_backpack_pressed)
+	if run_btn: run_btn.pressed.connect(_on_run_pressed)
 	if reset_target_btn and not reset_target_btn.pressed.is_connected(_on_reset_target_pressed):
 		reset_target_btn.pressed.connect(_on_reset_target_pressed)
 		
@@ -261,6 +263,7 @@ func _load_player_data() -> void:
 	player_crit_damage = pd.player_crit_damage
 	player_critical_chance = pd.player_critical_chance
 	player_hit_rate = pd.player_hit_rate
+	player_speed = pd.player_speed
 	defense_flat_reduction = pd.defense_flat_reduction
 	parry_flat_reduction = pd.parry_flat_reduction
 
@@ -2353,3 +2356,406 @@ func _show_battle_ui_after_scoreboard() -> void:
 	if hand_left:
 		var tw := create_tween().set_parallel(true)
 		tw.tween_property(hand_left, "modulate:a", 1.0, 0.3)
+
+
+# ============================================================
+# FLEE SYSTEM — MEMORY CARD
+# ============================================================
+
+var flee_qte_layer: CanvasLayer
+var flee_qte_root: Control
+var flee_cards: Array = []
+var flee_card_fronts: Array = []
+var flee_card_backs: Array = []
+var flee_card_labels: Array = []
+var flee_card_is_escape: Array = []
+var flee_current_chance: float = 30.0
+var flee_is_choosing: bool = false
+var flee_result_label: Label
+var flee_chance_label: Label
+var flee_title_label: Label
+
+const FLEE_CARD_COUNT: int = 6
+const FLEE_BASE_CHANCE: float = 30.0
+
+
+func _on_run_pressed() -> void:
+	if not is_player_turn:
+		return
+	if enemies.is_empty():
+		return
+
+	is_player_turn = false
+	_set_buttons_active(false)
+	_calculate_flee_chance()
+	_show_flee_qte()
+
+
+func _calculate_flee_chance() -> float:
+	var base: float = FLEE_BASE_CHANCE
+	var speed_bonus: float = (player_speed - 50.0) * 0.4
+
+	var enemy_level: int = 1
+	if enemies.size() > 0 and selected_enemy_index < enemies.size():
+		enemy_level = enemies[selected_enemy_index].level
+
+	var level_bonus: float = 0.0
+	if PlayerDataManager.data:
+		level_bonus = (PlayerDataManager.data.player_level - enemy_level) * 5.0
+	flee_current_chance = clampf(base + speed_bonus + level_bonus, 10.0, 90.0)
+	return flee_current_chance
+
+
+func _show_flee_qte() -> void:
+	# Buat CanvasLayer
+	flee_qte_layer = CanvasLayer.new()
+	flee_qte_layer.layer = 160
+	add_child(flee_qte_layer)
+
+	# Root
+	flee_qte_root = Control.new()
+	flee_qte_root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	flee_qte_layer.add_child(flee_qte_root)
+
+	# Dark overlay
+	var bg_dim := ColorRect.new()
+	bg_dim.color = Color(0.0, 0.0, 0.0, 0.6)
+	bg_dim.set_anchors_preset(Control.PRESET_FULL_RECT)
+	bg_dim.mouse_filter = Control.MOUSE_FILTER_STOP
+	flee_qte_root.add_child(bg_dim)
+
+	# Title
+	flee_title_label = Label.new()
+	flee_title_label.text = "ESCAPE BATTLE"
+	flee_title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	flee_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	flee_title_label.add_theme_font_size_override("font_size", 24)
+	flee_title_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
+	flee_title_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	flee_title_label.offset_top = 12.0
+	flee_title_label.offset_bottom = 42.0
+	flee_title_label.offset_left = 0.0
+	flee_title_label.offset_right = 0.0
+	flee_title_label.modulate.a = 0.0
+	flee_qte_root.add_child(flee_title_label)
+
+	# Flee chance label
+	flee_chance_label = Label.new()
+	flee_chance_label.text = "Escape Chance: " + str(int(flee_current_chance)) + "%"
+	flee_chance_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	flee_chance_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	flee_chance_label.add_theme_font_size_override("font_size", 11)
+	flee_chance_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8))
+	flee_chance_label.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	flee_chance_label.offset_top = 42.0
+	flee_chance_label.offset_bottom = 60.0
+	flee_chance_label.offset_left = 0.0
+	flee_chance_label.offset_right = 0.0
+	flee_chance_label.modulate.a = 0.0
+	flee_qte_root.add_child(flee_chance_label)
+
+	# Result label — di tengah, backdrop gelap
+	flee_result_label = Label.new()
+	flee_result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	flee_result_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	flee_result_label.add_theme_font_size_override("font_size", 28)
+	flee_result_label.z_index = 10
+
+	var result_bg := StyleBoxFlat.new()
+	result_bg.bg_color = Color(0.0, 0.0, 0.0, 0.5)
+	result_bg.set_corner_radius_all(5)
+	result_bg.set_content_margin_all(16)
+	flee_result_label.add_theme_stylebox_override("normal", result_bg)
+
+	flee_result_label.set_anchors_preset(Control.PRESET_CENTER)
+	flee_result_label.offset_top = -30.0
+	flee_result_label.offset_bottom = 30.0
+	flee_result_label.offset_left = -120.0
+	flee_result_label.offset_right = 120.0
+	flee_result_label.modulate.a = 0.0
+	flee_qte_root.add_child(flee_result_label)
+
+	# Card grid container (3x2, center-bawah title)
+	var card_grid := GridContainer.new()
+	card_grid.columns = 3
+	card_grid.add_theme_constant_override("h_separation", 12)
+	card_grid.add_theme_constant_override("v_separation", 12)
+	card_grid.set_anchors_preset(Control.PRESET_CENTER)
+	card_grid.offset_left = -140.0
+	card_grid.offset_right = 140.0
+	card_grid.offset_top = -90.0
+	card_grid.offset_bottom = 120.0
+	card_grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	flee_qte_root.add_child(card_grid)
+
+	# Hitung berapa escape cards
+	var escape_count: int = maxi(1, roundi(flee_current_chance / 100.0 * FLEE_CARD_COUNT))
+	escape_count = mini(escape_count, FLEE_CARD_COUNT - 1) # minimal 1 card buat gagal
+
+	# Buat array index, shuffle buat tentuin mana escape
+	var card_indices: Array[int] = []
+	for i in range(FLEE_CARD_COUNT):
+		card_indices.append(i)
+	card_indices.shuffle()
+
+	flee_card_is_escape.clear()
+	flee_card_is_escape.resize(FLEE_CARD_COUNT)
+	for i in range(FLEE_CARD_COUNT):
+		flee_card_is_escape[i] = false
+	for i in range(escape_count):
+		flee_card_is_escape[card_indices[i]] = true
+
+	# Buat cards
+	flee_cards.clear()
+	flee_card_fronts.clear()
+	flee_card_backs.clear()
+	flee_card_labels.clear()
+
+	for i in range(FLEE_CARD_COUNT):
+		var card := _create_flee_card(i)
+		card_grid.add_child(card)
+		flee_cards.append(card)
+
+	# Animasi opening
+	_animate_flee_opening()
+
+
+func _create_flee_card(index: int) -> PanelContainer:
+	var card := PanelContainer.new()
+	card.custom_minimum_size = Vector2(85, 100)
+	card.size = Vector2(85, 100)
+
+	# Card background style
+	var style_back := StyleBoxFlat.new()
+	style_back.bg_color = Color(0.15, 0.1, 0.35, 1.0)
+	style_back.border_color = Color(0.4, 0.3, 0.8)
+	style_back.set_border_width_all(2)
+	style_back.set_corner_radius_all(10)
+	style_back.set_content_margin_all(0)
+	card.add_theme_stylebox_override("panel", style_back)
+
+	# Card back content (question mark)
+	var back_content := VBoxContainer.new()
+	back_content.alignment = BoxContainer.ALIGNMENT_CENTER
+	back_content.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	card.add_child(back_content)
+
+	var q_mark := Label.new()
+	q_mark.text = "?"
+	q_mark.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	q_mark.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	q_mark.add_theme_font_size_override("font_size", 36)
+	q_mark.add_theme_color_override("font_color", Color(0.6, 0.5, 1.0))
+	q_mark.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	back_content.add_child(q_mark)
+
+	var sub_label := Label.new()
+	sub_label.text = str(index + 1)
+	sub_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub_label.add_theme_font_size_override("font_size", 9)
+	sub_label.add_theme_color_override("font_color", Color(0.4, 0.35, 0.6))
+	sub_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	back_content.add_child(sub_label)
+
+	flee_card_backs.append(back_content)
+
+	# Card front content (hidden) — hijau/merah solid
+	var front_panel := Panel.new()
+	var is_escape: bool = flee_card_is_escape[index]
+
+	var style_front := StyleBoxFlat.new()
+	style_front.set_corner_radius_all(10)
+	style_front.set_border_width_all(0)
+	style_front.set_content_margin_all(0)
+	if is_escape:
+		style_front.bg_color = Color(0.15, 0.7, 0.3, 1.0)
+	else:
+		style_front.bg_color = Color(0.8, 0.15, 0.15, 1.0)
+	front_panel.add_theme_stylebox_override("panel", style_front)
+	front_panel.visible = false
+
+	card.add_child(front_panel)
+	flee_card_fronts.append(front_panel)
+	flee_card_labels.append(q_mark)
+
+	# Click detection
+	var btn_overlay := Button.new()
+	btn_overlay.flat = true
+	btn_overlay.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	var transparent_style := StyleBoxFlat.new()
+	transparent_style.bg_color = Color(0, 0, 0, 0)
+	btn_overlay.add_theme_stylebox_override("normal", transparent_style)
+	btn_overlay.add_theme_stylebox_override("hover", transparent_style)
+	btn_overlay.add_theme_stylebox_override("pressed", transparent_style)
+	btn_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	btn_overlay.pressed.connect(_on_flee_card_pressed.bind(index))
+	card.add_child(btn_overlay)
+
+	# Hover effect
+	btn_overlay.mouse_entered.connect(func():
+		if flee_is_choosing:
+			var tw := create_tween().set_parallel(true)
+			tw.tween_property(card, "scale", Vector2(1.08, 1.08), 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	)
+	btn_overlay.mouse_exited.connect(func():
+		if flee_is_choosing:
+			var tw := create_tween().set_parallel(true)
+			tw.tween_property(card, "scale", Vector2(1.0, 1.0), 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	)
+
+	return card
+
+
+func _animate_flee_opening() -> void:
+	var tw := create_tween()
+
+	# Title fade in
+	tw.tween_property(flee_title_label, "modulate:a", 1.0, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(flee_chance_label, "modulate:a", 1.0, 0.25)
+
+	# Cards muncul satu-satu dengan bounce (cepet)
+	for card in flee_cards:
+		card.scale = Vector2(0.0, 0.0)
+		card.modulate.a = 0.0
+		card.pivot_offset = card.custom_minimum_size / 2.0
+
+	for card in flee_cards:
+		tw.parallel().tween_property(card, "modulate:a", 1.0, 0.12)
+		tw.parallel().tween_property(card, "scale", Vector2(1.12, 1.12), 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(card, "scale", Vector2(1.0, 1.0), 0.08).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		tw.tween_interval(0.04)
+
+	# Setelah semua cards muncul, aktifkan choosing
+	tw.tween_callback(func():
+		flee_is_choosing = true
+	)
+
+
+func _on_flee_card_pressed(index: int) -> void:
+	if not flee_is_choosing:
+		return
+	flee_is_choosing = false
+
+	var is_escape: bool = flee_card_is_escape[index]
+	var chosen_card: PanelContainer = flee_cards[index]
+
+	# FLIP ANIMATION
+	var tw := create_tween()
+
+	# 1. Card dipilih squeeze horizontal
+	tw.tween_property(chosen_card, "scale", Vector2(0.05, 1.1), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+
+	# 2. Swap front/back
+	tw.tween_callback(func():
+		flee_card_backs[index].visible = false
+		flee_card_fronts[index].visible = true
+	)
+
+	# 3. Card kembalikan scale
+	tw.tween_property(chosen_card, "scale", Vector2(1.05, 1.05), 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(chosen_card, "scale", Vector2(1.0, 1.0), 0.1).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+	# 4. Card lain fade out + scale down
+	var other_delay: float = 0.0
+	for i in range(FLEE_CARD_COUNT):
+		if i != index:
+			var other_card: PanelContainer = flee_cards[i]
+			tw.parallel().tween_property(other_card, "modulate:a", 0.0, 0.15 + other_delay).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+			tw.parallel().tween_property(other_card, "scale", Vector2(0.6, 0.6), 0.15 + other_delay).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
+			other_delay += 0.03
+
+	# 5. Tampilkan result
+	if is_escape:
+		# Glow effect hijau
+		tw.tween_callback(func():
+			chosen_card.get_theme_stylebox("panel").border_color = Color(0.5, 1.0, 0.7)
+		)
+		tw.tween_property(chosen_card, "scale", Vector2(1.15, 1.15), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(chosen_card, "scale", Vector2(1.0, 1.0), 0.15)
+		tw.tween_interval(0.4)
+		tw.tween_callback(_on_flee_success)
+	else:
+		# Shake effect merah
+		tw.tween_callback(func():
+			chosen_card.get_theme_stylebox("panel").border_color = Color(1.0, 0.5, 0.3)
+		)
+		var orig_x: float = chosen_card.position.x
+		for s in range(3):
+			tw.tween_property(chosen_card, "position:x", orig_x + 8.0, 0.04)
+			tw.tween_property(chosen_card, "position:x", orig_x - 8.0, 0.04)
+		tw.tween_property(chosen_card, "position:x", orig_x, 0.04)
+		tw.tween_interval(0.3)
+		tw.tween_callback(_on_flee_failure)
+
+
+func _on_flee_success() -> void:
+	# Tampilkan "You Escaped!"
+	flee_result_label.text = "You Escaped!"
+	flee_result_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
+
+	# Screen shake velocity
+	if camera:
+		var shake_tw := create_tween()
+		shake_tw.tween_property(camera, "offset", Vector2(4, 3), 0.04)
+		shake_tw.tween_property(camera, "offset", Vector2(-3, -4), 0.04)
+		shake_tw.tween_property(camera, "offset", Vector2(3, 2), 0.04)
+		shake_tw.tween_property(camera, "offset", Vector2(-2, -3), 0.04)
+		shake_tw.tween_property(camera, "offset", Vector2.ZERO, 0.04)
+
+	var tw := create_tween()
+	# Muncul dengan velocity
+	flee_result_label.modulate.a = 0.0
+	flee_result_label.scale = Vector2(1.5, 1.5)
+	tw.tween_property(flee_result_label, "modulate:a", 1.0, 0.1)
+	tw.parallel().tween_property(flee_result_label, "scale", Vector2(1.0, 1.0), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_interval(1.2)
+
+	# Fade out semua
+	tw.tween_property(flee_qte_root, "modulate:a", 0.0, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tw.tween_callback(_cleanup_flee_qte)
+	tw.tween_callback(func():
+		respawn_test_enemies()
+	)
+
+
+func _on_flee_failure() -> void:
+	# Tampilkan "Caught!" dengan velocity
+	flee_result_label.text = "Caught!"
+	flee_result_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.4))
+
+	# Screen shake velocity
+	if camera:
+		var shake_tw := create_tween()
+		shake_tw.tween_property(camera, "offset", Vector2(4, 3), 0.04)
+		shake_tw.tween_property(camera, "offset", Vector2(-3, -4), 0.04)
+		shake_tw.tween_property(camera, "offset", Vector2(3, 2), 0.04)
+		shake_tw.tween_property(camera, "offset", Vector2(-2, -3), 0.04)
+		shake_tw.tween_property(camera, "offset", Vector2.ZERO, 0.04)
+
+	var tw := create_tween()
+	# Muncul dengan velocity
+	flee_result_label.modulate.a = 0.0
+	flee_result_label.scale = Vector2(1.5, 1.5)
+	tw.tween_property(flee_result_label, "modulate:a", 1.0, 0.1)
+	tw.parallel().tween_property(flee_result_label, "scale", Vector2(1.0, 1.0), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_interval(0.8)
+
+	# Fade out semua
+	tw.tween_property(flee_qte_root, "modulate:a", 0.0, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tw.tween_callback(_cleanup_flee_qte)
+	tw.tween_callback(func():
+		# Langsung enemy turn (player turn skipped)
+		_start_enemies_turn()
+	)
+
+
+func _cleanup_flee_qte() -> void:
+	if flee_qte_layer and is_instance_valid(flee_qte_layer):
+		flee_qte_layer.queue_free()
+	flee_qte_layer = null
+	flee_qte_root = null
+	flee_cards.clear()
+	flee_card_fronts.clear()
+	flee_card_backs.clear()
+	flee_card_labels.clear()
+	flee_card_is_escape.clear()

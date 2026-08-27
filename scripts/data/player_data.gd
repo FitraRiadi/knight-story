@@ -48,6 +48,8 @@ class_name PlayerData
 
 @export var player_hit_rate: float = 50.0
 
+@export var player_speed: float = 50.0
+
 @export var defense_flat_reduction: float = 20.0
 
 @export var parry_flat_reduction: float = 10.0
