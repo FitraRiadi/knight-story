@@ -193,6 +193,9 @@ var enemies_killed: int = 0
 @onready var score_container3: Panel = $scoreBoard/container3
 @onready var score_title: Label = $scoreBoard/title
 
+# BATTLE INTRO
+@onready var map_title: Label = $bg/mapTitle
+
 const PLAYER_STATUS_ICONS: Dictionary = {
 	"attack_up": preload("res://assets/ui/icons/statusEffect/attackUp.png"),
 	"health_up": preload("res://assets/ui/icons/statusEffect/healthUp.png"),
@@ -243,6 +246,10 @@ func _ready() -> void:
 	_setup_button_hover_scale(skill_btn)
 
 	_auto_detect_enemy_pool()
+	# Hide buttons dulu, nanti muncul setelah intro
+	_set_buttons_active(false, true)
+	await _play_battle_intro()
+	await _animate_hands_intro()
 	spawn_random_enemies(1, 3, 1, 5)
 
 
@@ -1160,41 +1167,53 @@ func _spawn_qte_popup_text(result: AttackResult) -> void:
 	label.text = text_msg
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	
 	label.add_theme_font_size_override("font_size", 22)
-	label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
-	
+
+	# Warna teks berdasarkan result
+	match result:
+		AttackResult.CRITICAL: label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
+		AttackResult.MID: label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.5))
+		AttackResult.LOW: label.add_theme_color_override("font_color", Color(0.8, 0.6, 0.2))
+		AttackResult.MISS: label.add_theme_color_override("font_color", Color(0.8, 0.3, 0.3))
+
+	# Backdrop gelap rounded
+	var backdrop := StyleBoxFlat.new()
+	backdrop.bg_color = Color(0.0, 0.0, 0.0, 0.692)
+	backdrop.set_corner_radius_all(10)
+	backdrop.set_content_margin_all(12)
+	label.add_theme_stylebox_override("normal", backdrop)
+
+	var container := CenterContainer.new()
+	container.set_anchors_preset(Control.PRESET_TOP_WIDE)
+	container.offset_top = 30.0
+	container.offset_bottom = 70.0
+	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
 	if attack_qte_canvas_layer:
-		attack_qte_canvas_layer.add_child(label)
+		attack_qte_canvas_layer.add_child(container)
 	else:
-		add_child(label)
-		
-	var viewport_size = get_viewport().get_visible_rect().size
-	label.reset_size()
-	var actual_size = label.get_combined_minimum_size()
-	label.pivot_offset = actual_size * 0.5
-	
-	var top_y = 40.0
-	var center_x = (viewport_size.x * 0.5) - (actual_size.x * 0.5)
-	
-	label.position = Vector2(center_x, top_y)
-	label.scale = Vector2(0.2, 0.2)
-	label.modulate.a = 0.0
-	
+		add_child(container)
+
+	container.add_child(label)
+	label.pivot_offset = label.get_combined_minimum_size() * 0.5
+
+	# Mulai dari bawah + transparan + scale kecil
+	container.modulate.a = 0.0
+	container.position.y = 40.0
+
 	var tw = create_tween()
-	tw.set_parallel(true)
-	tw.tween_property(label, "scale", Vector2(1.15, 1.15), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tw.tween_property(label, "modulate:a", 1.0, 0.12)
-	
-	tw.chain().set_parallel(false)
-	tw.tween_property(label, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	tw.tween_interval(3.5)
-	
+	# Stagger muncul: naik + fade in + scale bounce
+	tw.tween_property(container, "modulate:a", 1.0, 0.1)
+	tw.parallel().tween_property(container, "position:y", 30.0, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(label, "scale", Vector2(1.1, 1.1), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(label, "scale", Vector2(1.0, 1.0), 0.1).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tw.tween_interval(2.5)
+
+	# Fade out + naik
 	tw.chain().set_parallel(true)
-	tw.tween_property(label, "position:y", top_y - 20.0, 0.6).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tw.tween_property(label, "modulate:a", 0.0, 3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	
-	tw.chain().tween_callback(label.queue_free)
+	tw.tween_property(container, "position:y", 10.0, 0.4).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tw.tween_property(container, "modulate:a", 0.0, 1.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tw.chain().tween_callback(container.queue_free)
 
 
 func _apply_hit_stop(duration: float) -> void:
@@ -1515,6 +1534,23 @@ func _setup_hand_layer() -> void:
 		hand_left.global_position = global_pos_left
 		original_hand_left_pos = hand_left.position
 		
+	# Mulai dari samping layar (off-screen)
+	if hand_right:
+		hand_right.position.x = get_viewport().get_visible_rect().size.x + 80.0
+		hand_right.modulate.a = 0.0
+	if hand_left:
+		hand_left.position.x = -80.0
+		hand_left.modulate.a = 0.0
+
+func _animate_hands_intro() -> void:
+	var tw := create_tween().set_parallel(true).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
+	if hand_right:
+		tw.tween_property(hand_right, "position", original_hand_pos, 0.5)
+		tw.tween_property(hand_right, "modulate:a", 1.0, 0.4)
+	if hand_left:
+		tw.tween_property(hand_left, "position", original_hand_left_pos, 0.5)
+		tw.tween_property(hand_left, "modulate:a", 1.0, 0.4)
+	await tw.finished
 	_start_hand_breathing()
 
 
@@ -1952,26 +1988,59 @@ func _get_spawn_position(index: int, total: int) -> Vector2:
 
 func _animate_enemies_spawn() -> void:
 	is_player_turn = false
-	_set_buttons_active(false)
+
+	# Spawn pertama lebih lambat biar dramatic + skip button tween
+	var first_spawn: bool = (enemies_killed == 0)
+	var spawn_duration: float = 0.45 if first_spawn else 0.3
+	var stagger: float = 0.2 if first_spawn else 0.15
+
+	# Kalau first spawn, button muncul stagger smooth
+	if first_spawn:
+		_set_buttons_active_staggered()
+	else:
+		_set_buttons_active(false)
 
 	for i in range(enemies.size()):
 		var enemy = enemies[i]
 		var target_pos: Vector2 = _get_spawn_position(i, enemies.size())
-		var delay: float = i * 0.15
+		var delay: float = i * stagger
 
 		var tw := create_tween()
 		tw.tween_interval(delay)
-		tw.parallel().tween_property(enemy, "global_position", target_pos, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		tw.parallel().tween_property(enemy, "scale", Vector2(1.0, 1.0), 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		tw.parallel().tween_property(enemy, "modulate:a", 1.0, 0.25).set_trans(Tween.TRANS_SINE)
+		tw.parallel().tween_property(enemy, "global_position", target_pos, spawn_duration).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.parallel().tween_property(enemy, "scale", Vector2(1.0, 1.0), spawn_duration).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.parallel().tween_property(enemy, "modulate:a", 1.0, spawn_duration * 0.8).set_trans(Tween.TRANS_SINE)
+
+		# Dust particle lebih cepet (0.15s setelah mulai)
+		tw.tween_callback(_spawn_dust_particle.bind(target_pos + Vector2(0, 102))).set_delay(0.15)
 
 	# Tunggu semua selesai
-	var total_time: float = (enemies.size() - 1) * 0.15 + 0.3
+	var total_time: float = (enemies.size() - 1) * stagger + spawn_duration
 	await get_tree().create_timer(total_time).timeout
 
 	_update_target_selection()
 	is_player_turn = true
-	_set_buttons_active(true)
+	_set_buttons_active(true, first_spawn)
+
+
+func _spawn_dust_particle(pos: Vector2) -> void:
+	var dust := CPUParticles2D.new()
+	dust.emitting = true
+	dust.one_shot = true
+	dust.amount = 8
+	dust.lifetime = 0.5
+	dust.explosiveness = 0.9
+	dust.direction = Vector2(0, -1)
+	dust.spread = 60.0
+	dust.initial_velocity_min = 30.0
+	dust.initial_velocity_max = 60.0
+	dust.gravity = Vector2(0, 120)
+	dust.scale_amount_min = 2.0
+	dust.scale_amount_max = 4.0
+	dust.color = Color(0.7, 0.6, 0.4, 0.6)
+	dust.position = pos
+	add_child(dust)
+	dust.finished.connect(dust.queue_free)
 
 
 func _update_player_ui_instant() -> void:
@@ -2200,7 +2269,7 @@ func _start_enemies_turn() -> void:
 		_set_buttons_active(true)
 
 
-func _set_buttons_active(show_buttons: bool) -> void:
+func _set_buttons_active(show_buttons: bool, instant: bool = false) -> void:
 	if atk_btn: atk_btn.disabled = (not show_buttons or current_stamina < attack_stamina_cost)
 	if defend_btn: defend_btn.disabled = not show_buttons
 	if backpack_btn: backpack_btn.disabled = not show_buttons
@@ -2214,6 +2283,14 @@ func _set_buttons_active(show_buttons: bool) -> void:
 	var target_run_y: float = (original_run_post.y if show_buttons else original_run_post.y + hide_offset_y)
 	var target_skill_y: float =  (original_skill_post.y if show_buttons else original_skill_post.y + hide_offset_y)
 	
+	if instant:
+		if atk_btn: atk_btn.position.y = target_atk_y
+		if defend_btn: defend_btn.position.y = target_def_y
+		if backpack_btn: backpack_btn.position.y = target_backpack_y
+		if run_btn: run_btn.position.y = target_run_y
+		if skill_btn: skill_btn.position.y = target_skill_y
+		return
+	
 	var trans_type = (Tween.TRANS_BACK if show_buttons else Tween.TRANS_CUBIC)
 	var ease_type = (Tween.EASE_OUT if show_buttons else Tween.EASE_IN)
 	
@@ -2224,8 +2301,64 @@ func _set_buttons_active(show_buttons: bool) -> void:
 	if run_btn: tw.tween_property(run_btn, "position:y", target_run_y, 0.4).set_trans(trans_type).set_ease(ease_type)
 	if skill_btn: tw.tween_property(skill_btn, "position:y", target_skill_y, 0.4).set_trans(trans_type).set_ease(ease_type)
 	
+func _set_buttons_active_staggered() -> void:
+	# Semua button mulai dari bawah (hidden)
+	var hide_offset_y: float = 200.0
+	if atk_btn: atk_btn.position.y = original_atk_pos.y + hide_offset_y
+	if defend_btn: defend_btn.position.y = original_def_pos.y + hide_offset_y
+	if backpack_btn: backpack_btn.position.y = original_backpack_pos.y + hide_offset_y
+	if run_btn: run_btn.position.y = original_run_post.y + hide_offset_y
+	if skill_btn: skill_btn.position.y = original_skill_post.y + hide_offset_y
+
+	# Disable dulu
+	if atk_btn: atk_btn.disabled = true
+	if defend_btn: defend_btn.disabled = true
+	if backpack_btn: backpack_btn.disabled = true
+	if run_btn: run_btn.disabled = true
+	if skill_btn: skill_btn.disabled = true
+
+	# Stagger muncul satu-satu
+	var btns: Array = []
+	if atk_btn: btns.append(atk_btn)
+	if skill_btn: btns.append(skill_btn)
+	if defend_btn: btns.append(defend_btn)
+	if backpack_btn: btns.append(backpack_btn)
+	if run_btn: btns.append(run_btn)
+
+	var tw := create_tween()
+	for i in range(btns.size()):
+		var btn = btns[i]
+		var target_y: float = original_atk_pos.y if btn == atk_btn else \
+			(original_def_pos.y if btn == defend_btn else \
+			(original_backpack_pos.y if btn == backpack_btn else \
+			(original_run_post.y if btn == run_btn else original_skill_post.y)))
+		tw.parallel().tween_property(btn, "position:y", target_y, 0.35).set_delay(i * 0.08).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+	tw.chain().tween_callback(func():
+		if atk_btn: atk_btn.disabled = (current_stamina < attack_stamina_cost)
+		if defend_btn: defend_btn.disabled = false
+		if backpack_btn: backpack_btn.disabled = false
+		if run_btn: run_btn.disabled = false
+		if skill_btn: skill_btn.disabled = false
+	)
+
 func _set_player_turn_true() -> void:
 	is_player_turn = true
+
+
+# ============================================================
+# BATTLE INTRO — MAP TITLE ANIMATION
+# ============================================================
+
+func _play_battle_intro() -> void:
+	if not map_title:
+		return
+
+	map_title.modulate.a = 0.0
+
+	var tw := create_tween()
+	tw.tween_property(map_title, "modulate:a", 1.0, 3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
 
 
 # ============================================================
