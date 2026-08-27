@@ -545,6 +545,7 @@ fill_mode = 4
 texture_progress = ExtResource("14_qpju5")
 
 [node name="attackQte" type="Control" parent="." unique_id=1145859259]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

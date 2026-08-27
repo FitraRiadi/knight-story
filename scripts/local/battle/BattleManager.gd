@@ -271,9 +271,8 @@ func open_battle_inventory() -> void:
 	_pull_hand_to_corner(0.4)
 	
 	battle_inventory_instance = battle_inventory_scene.instantiate() as Control
-	inventory_canvas_layer.add_child(battle_inventory_instance)
-
 	battle_inventory_instance.inventory_data = PlayerDataManager.data.battle_inventory
+	inventory_canvas_layer.add_child(battle_inventory_instance)
 
 	if battle_inventory_instance.has_signal("closed"):
 		battle_inventory_instance.connect("closed", Callable(self, "_on_battle_inventory_closed"))

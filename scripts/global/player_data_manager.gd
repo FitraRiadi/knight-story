@@ -3,20 +3,46 @@ extends Node
 # ============================================================
 # PLAYER DATA MANAGER (Autoload)
 #
-# Load player_data.tres saat game mulai.
-# Provide save() buat overwrite .tres setelah perubahan.
+# Load dari res:// sebagai default.
+# Save/load ke user://.knight/sys/cache/ (binary, hidden).
 # ============================================================
 
 var data: PlayerData
 
-const PATH := "res://data/player/player_data.tres"
+const DEFAULT_PATH := "res://data/player/player_data.tres"
+const SAVE_DIR := "user://.knight/sys/cache/"
+const SAVE_PATH := SAVE_DIR + "data.res"
 
 
 func _ready() -> void:
-	data = load(PATH) as PlayerData
+	print("[PlayerDataManager] Save path: ", ProjectSettings.globalize_path(SAVE_PATH))
+	_init_save()
 
-	if data == null:
-		push_error("[PlayerDataManager] Gagal load PlayerData di: " + PATH)
+
+func _init_save() -> void:
+	# Pastikan folder ada
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SAVE_DIR))
+
+	# Kalau save belum ada, copy dari res://
+	if not FileAccess.file_exists(SAVE_PATH):
+		var default_data = load(DEFAULT_PATH) as PlayerData
+		if default_data:
+			data = default_data.duplicate(true) as PlayerData
+			if data.battle_inventory:
+				data.battle_inventory = data.battle_inventory.duplicate(true) as InventoryBattleData
+			save()
+			return
+		else:
+			push_error("[PlayerDataManager] Gagal load default data dari: " + DEFAULT_PATH)
+			data = PlayerData.new()
+			return
+
+	# Load dari user://
+	var loaded = load(SAVE_PATH) as PlayerData
+	if loaded:
+		data = loaded
+	else:
+		push_error("[PlayerDataManager] Gagal load save data dari: " + SAVE_PATH)
 		data = PlayerData.new()
 
 
@@ -24,10 +50,11 @@ func save() -> void:
 	if data == null:
 		return
 
-	var err = ResourceSaver.save(data, PATH)
-
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(SAVE_DIR))
+	# Gunakan path .res untuk format binary
+	var err = ResourceSaver.save(data, SAVE_PATH)
 	if err != OK:
-		push_error("[PlayerDataManager] Gagal save PlayerData! Error code: " + str(err))
+		push_error("[PlayerDataManager] Gagal save! Error code: " + str(err))
 
 
 func remove_item(index: int) -> void:
@@ -39,3 +66,12 @@ func remove_item(index: int) -> void:
 
 	data.battle_inventory.items[index] = null
 	save()
+
+
+func reset_data() -> void:
+	# Hapus seluruh folder .knight
+	var knight_dir = ProjectSettings.globalize_path("user://.knight/")
+	var dir = DirAccess.open(ProjectSettings.globalize_path("user://"))
+	if dir:
+		dir.remove_recursive(knight_dir)
+	_init_save()
