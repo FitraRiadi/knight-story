@@ -88,4 +88,5 @@ icon_enemy = ExtResource("1_7fsbw")
 sprite_frames = SubResource("SpriteFrames_8puy6")
 max_hp = 90.0
 damage_to_player = 25.0
+exp_reward = 10
 metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"

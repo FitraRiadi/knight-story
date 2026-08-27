@@ -16,7 +16,8 @@ signal sound_requested(sound_name: String)
 signal enemy_defeated(
 	exp_amount: int,
 	gold_amount: int,
-	dropped_items: Array[String]
+	dropped_items: Array[String],
+	enemy: BattleEnemy
 )
 
 
@@ -731,7 +732,7 @@ func _on_death() -> void:
 	if stats != null and randf() <= stats.drop_chance and stats.drop_table.size() > 0:
 		dropped_items.append(str(stats.drop_table.pick_random()))
 
-	enemy_defeated.emit(exp_gained, gold_gained, dropped_items)
+	enemy_defeated.emit(exp_gained, gold_gained, dropped_items, self)
 
 	await get_tree().create_timer(0.8).timeout
 	var tween: Tween = create_tween()

@@ -87,4 +87,5 @@ min_level = 3
 icon_enemy = ExtResource("1_ycbiy")
 sprite_frames = SubResource("SpriteFrames_gn7wh")
 damage_to_player = 20.0
+exp_reward = 10
 metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"

@@ -159,6 +159,26 @@ var battle_inventory_instance: Control = null
 var inventory_canvas_layer: CanvasLayer
 var is_inventory_open: bool = false
 
+# ITEM DROP SYSTEM
+var drop_layer: CanvasLayer
+var item_cache: Dictionary = {}  # item_id -> ItemData
+const ITEMS_FOLDER: String = "res://data/items/"
+
+# EXP DROP SYSTEM
+var level_up_label: Label
+
+# PLAYER BUFF & EFFECT SYSTEM
+var player_buff_manager: BuffManager
+var player_effect_container: Control
+var player_effect_center_position: Vector2 = Vector2.ZERO
+
+const PLAYER_STATUS_ICONS: Dictionary = {
+	"attack_up": preload("res://assets/ui/icons/statusEffect/attackUp.png"),
+	"health_up": preload("res://assets/ui/icons/statusEffect/healthUp.png"),
+	"poison": preload("res://assets/ui/icons/statusEffect/poison.png"),
+	"stun": preload("res://assets/ui/icons/statusEffect/stun.png")
+}
+
 
 func _ready() -> void:
 	if atk_btn: original_atk_pos = atk_btn.position
@@ -173,6 +193,8 @@ func _ready() -> void:
 	_setup_attack_qte_ui()
 	_setup_combo_ui()
 	_setup_battle_inventory_layer()
+	_setup_drop_layer()
+	_setup_player_buff_and_effect()
 	
 	if camera: default_camera_pos = camera.global_position
 	if hp_bar: max_hp_bar_width = hp_bar.size.x
@@ -254,6 +276,324 @@ func _setup_battle_inventory_layer() -> void:
 	add_child(inventory_canvas_layer)
 
 
+# ============================================================
+# SETUP DROP LAYER
+# ============================================================
+func _setup_drop_layer() -> void:
+	drop_layer = CanvasLayer.new()
+	drop_layer.name = "DropLayer"
+	drop_layer.layer = 150
+	add_child(drop_layer)
+
+
+# ============================================================
+# SETUP PLAYER BUFF & EFFECT SYSTEM
+# ============================================================
+func _setup_player_buff_and_effect() -> void:
+	player_buff_manager = BuffManager.new()
+	
+	# Setup player effect container (node "playerEffect" under player-information)
+	var pi_node := get_node_or_null("player-information")
+	if pi_node:
+		player_effect_container = pi_node.get_node_or_null("playerEffect") as Control
+	
+	if player_effect_container:
+		# Hitung center position dari child "effect"
+		var effect_node := player_effect_container.get_node_or_null("effect") as TextureRect
+		if effect_node:
+			player_effect_center_position = effect_node.position + (effect_node.size / 2.0)
+			effect_node.texture = null  # Reset texture default
+			effect_node.hide()
+		# Bersihkan child temporary saat awal
+		for child in player_effect_container.get_children():
+			if child.name != "effect":
+				child.queue_free()
+
+
+func _update_player_status_effects() -> void:
+	if not player_effect_container:
+		return
+	
+	# 1. Bersihkan efek lama (kecuali yang temporary)
+	for child in player_effect_container.get_children():
+		if child.name != "effect" and not child.has_meta("is_temporary"):
+			child.queue_free()
+	
+	var active_types: Array[String] = []
+	
+	if player_buff_manager and player_buff_manager.has_method("get_active_buff_types"):
+		active_types = player_buff_manager.get_active_buff_types()
+	
+	# Cek attack bonus dari buff aktif
+	if player_buff_manager and player_buff_manager.get_total_attack_bonus() > 0.0:
+		if not active_types.has("attack_up"):
+			active_types.append("attack_up")
+	
+	# Cek HP di atas max (overheal) — sama kayak enemy
+	if current_hp > max_hp and not active_types.has("health_up"):
+		active_types.append("health_up")
+	
+	var icon_width: float = 20.0
+	
+	# 2. Tambahkan efek baru ke dalam container
+	for type in active_types:
+		if PLAYER_STATUS_ICONS.has(type):
+			var icon_rect: TextureRect = TextureRect.new()
+			icon_rect.texture = PLAYER_STATUS_ICONS[type]
+			icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+			icon_rect.custom_minimum_size = Vector2(icon_width, icon_width)
+			icon_rect.size = Vector2(icon_width, icon_width)
+			icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			player_effect_container.add_child(icon_rect)
+	
+	# 3. Rapihkan semua ikon
+	_rearrange_player_status_icons()
+
+
+func _show_player_temporary_status_icon(icon_texture: Texture2D, duration: float = 1.5) -> void:
+	if not player_effect_container:
+		return
+	
+	var icon_width: float = 20.0
+	var icon_rect: TextureRect = TextureRect.new()
+	icon_rect.set_meta("is_temporary", true)
+	icon_rect.texture = icon_texture
+	icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon_rect.custom_minimum_size = Vector2(icon_width, icon_width)
+	icon_rect.size = Vector2(icon_width, icon_width)
+	icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	
+	player_effect_container.add_child(icon_rect)
+	_rearrange_player_status_icons()
+	
+	var tween: Tween = create_tween()
+	tween.tween_interval(duration)
+	tween.tween_property(icon_rect, "modulate:a", 0.0, 0.4)
+	tween.finished.connect(func() -> void:
+		if is_instance_valid(icon_rect):
+			icon_rect.queue_free()
+			_rearrange_player_status_icons()
+	)
+
+
+func _rearrange_player_status_icons() -> void:
+	if not is_instance_valid(player_effect_container):
+		return
+	
+	var valid_icons: Array[Control] = []
+	for child in player_effect_container.get_children():
+		if child.name != "effect" and not child.is_queued_for_deletion():
+			valid_icons.append(child as Control)
+	
+	var count: int = valid_icons.size()
+	if count == 0:
+		return
+	
+	var icon_width: float = 20.0
+	var spacing: float = 4.0
+	var step: float = icon_width + spacing
+	var total_width: float = (count * icon_width) + ((count - 1) * spacing)
+	
+	for i in range(count):
+		var offset_x: float = -(total_width / 2.0) + (i * step)
+		valid_icons[i].position = player_effect_center_position + Vector2(offset_x, -(icon_width / 2.0) + 5.0)
+
+
+func _get_player_attack_bonus() -> float:
+	if player_buff_manager:
+		return player_buff_manager.get_total_attack_bonus()
+	return 0.0
+
+
+# ============================================================
+# LOAD ITEM BY ID
+# ============================================================
+func _load_item_by_id(item_id: String) -> ItemData:
+	# Cek cache dulu
+	if item_cache.has(item_id):
+		return item_cache[item_id]
+	
+	# Scan folder items
+	var dir := DirAccess.open(ITEMS_FOLDER)
+	if not dir:
+		push_error("[BattleManager] Tidak bisa buka folder: " + ITEMS_FOLDER)
+		return null
+	
+	dir.list_dir_begin()
+	var file_name := dir.get_next()
+	
+	while file_name != "":
+		if file_name.ends_with(".tres"):
+			var resource_path := ITEMS_FOLDER + file_name
+			var item := load(resource_path) as ItemData
+			if item and item.item_id == item_id:
+				item_cache[item_id] = item
+				return item
+		file_name = dir.get_next()
+	
+	dir.list_dir_end()
+	push_warning("[BattleManager] Item tidak ditemukan: " + item_id)
+	return null
+
+
+# ============================================================
+# SPAWN DROP ITEM
+# ============================================================
+func _spawn_drop_item(item_id: String, enemy_pos: Vector2) -> void:
+	var item := _load_item_by_id(item_id)
+	if not item:
+		return
+	
+	# Buat ItemDropVisual
+	var drop_visual := ItemDropVisual.new()
+	drop_visual.item_clicked.connect(_on_drop_item_clicked)
+	drop_layer.add_child(drop_visual)
+	drop_visual.setup(item, enemy_pos)
+
+
+# ============================================================
+# ON DROP ITEM CLICKED
+# ============================================================
+func _on_drop_item_clicked(item: ItemData) -> void:
+	if not item:
+		return
+	
+	# Cek apakah inventory penuh (tidak ada slot null)
+	var battle_inv := PlayerDataManager.data.battle_inventory
+	if not battle_inv:
+		return
+	
+	# Cari slot pertama yang null
+	var slot_index := -1
+	for i in range(battle_inv.items.size()):
+		if battle_inv.items[i] == null:
+			slot_index = i
+			break
+	
+	# Kalau semua slot terisi, cari slot kosong di akhir
+	if slot_index == -1:
+		if battle_inv.items.size() < 9:
+			slot_index = battle_inv.items.size()
+		else:
+			print("[BattleManager] Inventory penuh! Tidak bisa ambil item.")
+			return
+	
+	# Masukkan item ke slot
+	if slot_index < battle_inv.items.size():
+		battle_inv.items[slot_index] = item
+	else:
+		battle_inv.items.append(item)
+	
+	PlayerDataManager.save()
+	print("[BattleManager] Item ditambahkan: ", item.item_name, " di slot ", slot_index)
+
+
+# ============================================================
+# EXP DROP SYSTEM
+# ============================================================
+func _spawn_exp_orbs(exp_amount: int, from_pos: Vector2) -> void:
+	# Hitung target posisi EXP bar (global posisi dari exp_bar_progress)
+	var exp_bar_global := Vector2.ZERO
+	if exp_bar_progress:
+		exp_bar_global = exp_bar_progress.global_position + Vector2(exp_bar_progress.size.x, exp_bar_progress.size.y / 2.0)
+	
+	# Spawn beberapa orbs (max 5, atau lebih kecil kalau exp sedikit)
+	var orb_count := mini(5, maxi(1, exp_amount / 5))
+	var exp_per_orb := ceili(float(exp_amount) / float(orb_count))
+	
+	for i in range(orb_count):
+		# Offset spawn position di sekitar enemy
+		var spawn_pos := from_pos + Vector2(randf_range(-15, 15), randf_range(-15, 15))
+		
+		# Offset target di sekitar exp bar
+		var target := exp_bar_global + Vector2(randf_range(-8, 8), randf_range(-4, 4))
+		
+		var orb: ExpOrb = ExpOrb.new()
+		orb.setup(exp_per_orb, spawn_pos, target)
+		drop_layer.add_child(orb)
+		
+		# Delay antar orb (stagger)
+		if i > 0:
+			await get_tree().create_timer(0.1).timeout
+	
+	# Tunggu sebentar lalu update EXP + level up
+	await get_tree().create_timer(0.3).timeout
+	_add_exp_and_check_level_up(exp_amount)
+
+
+func _add_exp_and_check_level_up(exp_amount: int) -> void:
+	var pd = PlayerDataManager.data
+	if pd == null:
+		return
+	
+	pd.player_exp += exp_amount
+	print("[BattleManager] EXP gained: +", exp_amount, " | Total: ", pd.player_exp, "/", pd.player_max_exp)
+	
+	# Level up loop (kalau exp cukup untuk naik beberapa level)
+	var leveled_up := false
+	while pd.player_exp >= pd.player_max_exp:
+		pd.player_exp -= pd.player_max_exp
+		pd.player_level += 1
+		pd.player_max_exp = _calc_max_exp(pd.player_level)
+		leveled_up = true
+		print("[BattleManager] LEVEL UP! Level ", pd.player_level, " | Max EXP: ", pd.player_max_exp)
+	
+	# Update UI
+	_animate_exp_bar()
+	if player_level_label:
+		player_level_label.text = str(pd.player_level)
+	
+	# Save
+	PlayerDataManager.save()
+	
+	# Tampilkan notifikasi level up
+	if leveled_up:
+		_show_level_up_notification(pd.player_level)
+
+
+func _calc_max_exp(level: int) -> int:
+	# Setiap 5 level, max_exp naik +250
+	# Lv 1-5: 100, Lv 6-10: 350, Lv 11-15: 600, dst.
+	var tier: int = (level - 1) / 5
+	return 100 + (tier * 250)
+
+
+func _show_level_up_notification(new_level: int) -> void:
+	# Buat label "LEVEL UP!" di tengah layar
+	var lbl := Label.new()
+	lbl.text = "LEVEL UP! Lv." + str(new_level)
+	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	lbl.size = Vector2(300, 50)
+	lbl.position = Vector2(
+		(size.x - 300) / 2.0,
+		(size.y - 50) / 2.0
+	)
+	lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2, 1.0))
+	lbl.add_theme_font_size_override("font_size", 24)
+	lbl.modulate.a = 0.0
+	lbl.z_index = 200
+	add_child(lbl)
+	
+	# Animasi muncul
+	var tw := create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(lbl, "modulate:a", 1.0, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tw.tween_property(lbl, "position:y", lbl.position.y - 20, 0.5).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	
+	# Tahan sebentar
+	await tw.finished
+	await get_tree().create_timer(1.0).timeout
+	
+	# Animasi hilang
+	var tw_out := create_tween()
+	tw_out.tween_property(lbl, "modulate:a", 0.0, 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	await tw_out.finished
+	lbl.queue_free()
+
+
 func _on_backpack_pressed() -> void:
 	if not is_player_turn or is_inventory_open:
 		return
@@ -323,17 +663,21 @@ func _on_item_used_in_battle(item: ItemData) -> void:
 		var tw = create_tween()
 		tw.tween_interval(0.2)
 		tw.tween_callback(old_inventory.queue_free)
-
-	# Terapkan Efek Item
-	if item:
-		if "heal_value" in item and item.heal_value > 0.0:
-			current_hp = min(max_hp, current_hp + item.heal_value)
-			_animate_hp_change()
+	
+	# Terapkan Efek Item pakai BuffManager
+	if item and player_buff_manager:
+		var result: Dictionary = player_buff_manager.apply_item_simple(item, self)
 		
-		if "attack_bonus" in item and item.attack_bonus > 0.0:
-			current_stamina = min(max_stamina, current_stamina + item.attack_bonus)
-			_animate_stamina_change()
-
+		# Heal — tampilkan temporary icon
+		if result.get("healed", 0.0) > 0.0:
+			_animate_hp_change()
+			if PLAYER_STATUS_ICONS.has("health_up"):
+				_show_player_temporary_status_icon(PLAYER_STATUS_ICONS["health_up"], 2.0)
+		
+		# Buff (attack/defense) — tampilkan persistent icon
+		if result.get("buff_applied", false):
+			_update_player_status_effects()
+	
 	_reset_hand_to_original(0.3)
 	
 	await get_tree().create_timer(1.0).timeout
@@ -834,17 +1178,19 @@ func _execute_actual_attack(result: AttackResult) -> void:
 	
 	var target_enemy = enemies[selected_enemy_index]
 	
+	# Hitung damage dengan buff bonus
+	var total_damage: float = player_damage + _get_player_attack_bonus()
+	
 	match result:
 		AttackResult.MISS:
 			target_enemy.receive_damage(0.0, false, true)
 		AttackResult.LOW:
-			var low_damage = player_damage * 0.4
+			var low_damage = total_damage * 0.4
 			target_enemy.receive_damage(low_damage, false, false)
 		AttackResult.MID:
-			var mid_damage = player_damage
-			target_enemy.receive_damage(mid_damage, false, false)
+			target_enemy.receive_damage(total_damage, false, false)
 		AttackResult.CRITICAL:
-			var crit_damage = player_damage + player_crit_damage
+			var crit_damage = total_damage + player_crit_damage
 			target_enemy.receive_damage(crit_damage, true, false)
 	
 	await get_tree().create_timer(0.8).timeout
@@ -1517,7 +1863,7 @@ func spawn_random_enemies(min_count: int = 1, max_count: int = 3, min_level: int
 	if available_enemy_pool.is_empty():
 		return
 	
-	var count: int = randi_range(clampi(min_count, 1, 3), clampi(max_count, 1, 3))
+	var count: int = randi_range(clampi(min_count, 1, 2), clampi(max_count, 1, 2))
 	var random_ids: Array[String] = []
 	var random_levels: Array[int] = []
 	
@@ -1598,8 +1944,23 @@ func player_receive_damage_custom(amount: float) -> void:
 	trigger_camera_shake_and_blood(14.0, 0.4, 0.85)
 
 
-func _on_enemy_defeated(_exp_amount: int, _gold_amount: int, _dropped_items: Array[String]) -> void:
-	await get_tree().create_timer(1.0).timeout
+func _on_enemy_defeated(_exp_amount: int, _gold_amount: int, _dropped_items: Array[String], enemy: BattleEnemy) -> void:
+	# Spawn item drops jika ada
+	if not _dropped_items.is_empty() and is_instance_valid(enemy):
+		var enemy_pos := enemy.global_position
+		for item_id in _dropped_items:
+			_spawn_drop_item(item_id, enemy_pos)
+			# Offset sedikit biar item gak tumpuk
+			enemy_pos.x += randf_range(-30.0, 30.0)
+			enemy_pos.y += randf_range(-20.0, 20.0)
+	
+	# Spawn EXP orbs terbang ke UI
+	if _exp_amount > 0 and is_instance_valid(enemy):
+		_spawn_exp_orbs(_exp_amount, enemy.global_position)
+		await get_tree().create_timer(1.2).timeout  # Tunggu orbs sampai
+	else:
+		await get_tree().create_timer(1.0).timeout
+	
 	_update_target_selection()
 	
 	if enemies.is_empty():
@@ -1713,6 +2074,12 @@ func _on_defend_pressed() -> void:
 
 func _start_enemies_turn() -> void:
 	_update_target_selection()
+	
+	# Process player buff durations
+	if player_buff_manager:
+		var expired := player_buff_manager.process_turn_start()
+		if not expired.is_empty():
+			_update_player_status_effects()
 	
 	for enemy in enemies:
 		if enemy.current_hp > 0:

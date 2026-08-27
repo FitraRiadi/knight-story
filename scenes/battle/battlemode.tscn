@@ -10,6 +10,7 @@
 [ext_resource type="Texture2D" uid="uid://b2dgxlip5um63" path="res://assets/art/playerHand/hand/right/weapon/iron_sword.png" id="5_5wo1c"]
 [ext_resource type="Texture2D" uid="uid://dukpxgco0stkj" path="res://assets/ui/icons/target_icon.png" id="6_ymp2q"]
 [ext_resource type="Texture2D" uid="uid://caxwao41ucbqm" path="res://assets/ui/icons/attackBtn.png" id="9_5wo1c"]
+[ext_resource type="Texture2D" uid="uid://me2o2n8ea0mg" path="res://assets/ui/icons/statusEffect/attackUp.png" id="9_gujcb"]
 [ext_resource type="Texture2D" uid="uid://ddc1w5qr1txmy" path="res://assets/ui/icons/defendBtn.png" id="10_5wo1c"]
 [ext_resource type="Texture2D" uid="uid://dp8tbij73ny0f" path="res://assets/ui/icons/backpackBtn.png" id="10_wnd2m"]
 [ext_resource type="Texture2D" uid="uid://bx2e55df83y6s" path="res://assets/ui/icons/runBtn.png" id="11_kngoi"]
@@ -417,6 +418,27 @@ offset_right = 40.01151
 offset_bottom = 35.658287
 texture = ExtResource("4_o6x6a")
 
+[node name="playerEffect" type="Control" parent="player-information" unique_id=1119730705]
+anchors_preset = 0
+offset_left = 6.2725964
+offset_top = 73.56889
+offset_right = 110.71706
+offset_bottom = 88.01334
+scale = Vector2(1.8687787, 2.1181943)
+
+[node name="effect" type="TextureRect" parent="player-information/playerEffect" unique_id=36442757]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 43.333336
+offset_right = -44.44445
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("9_gujcb")
+expand_mode = 1
+
 [node name="interaction" type="Control" parent="." unique_id=48050382]
 anchors_preset = 0
 offset_left = 280.0
@@ -559,10 +581,11 @@ grow_vertical = 2
 
 [node name="information" type="Label" parent="attackQte" unique_id=1232580275]
 layout_mode = 0
-offset_left = 291.0
-offset_top = 12.0
-offset_right = 495.0
-offset_bottom = 41.0
+offset_left = 322.0
+offset_top = 229.0
+offset_right = 526.0
+offset_bottom = 258.0
+scale = Vector2(0.6773468, 0.68144476)
 theme_override_colors/font_color = Color(1, 1, 0.33183005, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.21568628)
 theme_override_font_sizes/font_size = 30

@@ -2,24 +2,18 @@
 
 [ext_resource type="Script" uid="uid://cokrj4x2ljt1j" path="res://scripts/data/player_data.gd" id="1_player"]
 [ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="2_item"]
+[ext_resource type="Resource" uid="uid://dmfc6tb72muxj" path="res://data/items/health_potion.tres" id="2_o4y3s"]
 [ext_resource type="Texture2D" uid="uid://8paessvpk5d7" path="res://assets/art/profile/player/Icon5.png" id="3_1mohm"]
 [ext_resource type="Script" uid="uid://krelh1pcnvst" path="res://scripts/data/inventory_battle_data.gd" id="3_inv"]
+[ext_resource type="Resource" uid="uid://xf6noadq87vm" path="res://data/items/attack_potion.tres" id="3_ioold"]
 
 [sub_resource type="Resource" id="Resource_inventory"]
 script = ExtResource("3_inv")
-items = Array[ExtResource("2_item")]([null, null, null, null, null, null, null, null, null])
+items = Array[ExtResource("2_item")]([ExtResource("2_o4y3s"), ExtResource("3_ioold"), ExtResource("3_ioold"), ExtResource("3_ioold"), ExtResource("3_ioold"), ExtResource("3_ioold"), ExtResource("2_o4y3s"), ExtResource("3_ioold"), ExtResource("3_ioold")])
 
 [resource]
 script = ExtResource("1_player")
-player_name = "Knights"
-player_level = 20
-player_exp = 243
+player_name = "Rayosdelsol"
 player_profile = ExtResource("3_1mohm")
-max_hp = 1000.0
-max_stamina = 1000.0
-attack_stamina_cost = 100.0
-player_damage = 500.0
-player_critical_chance = 40.0
-player_hit_rate = 60.0
 parry_flat_reduction = 30.0
 battle_inventory = SubResource("Resource_inventory")

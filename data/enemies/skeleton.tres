@@ -91,4 +91,5 @@ sfx_hit = ExtResource("2_ok8xq")
 sfx_death = ExtResource("2_a4t8e")
 max_hp = 50.0
 damage_to_player = 8.0
+exp_reward = 10
 metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"

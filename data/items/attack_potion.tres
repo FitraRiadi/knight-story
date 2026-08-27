@@ -7,10 +7,10 @@
 script = ExtResource("1_2j6ld")
 item_id = "attack_potion"
 item_name = "Attack Potion"
-description = "Temporarily increases Attack Power by 35 for 1 turns, allowing the user to deal more damage in battle."
+description = "Temporarily increases Attack Power by 15 for 1 turns, allowing the user to deal more damage in battle."
 icon = ExtResource("1_f66ti")
 rarity = "Uncommon"
 item_effect_type = 4
 attack_bonus = 15.0
-duration = 1
+duration = 3
 metadata/_custom_type_script = "uid://d1chgapjpv2yu"

@@ -69,6 +69,57 @@ func apply_item(item: ItemData, target_unit: Object) -> Dictionary:
 
 
 # ============================================================
+# APPLY ITEM (Player Version - uses BattleManager properties)
+# ============================================================
+func apply_item_simple(item: ItemData, battle_manager: Object) -> Dictionary:
+	var result = {
+		"healed": 0.0,
+		"shield_added": 0.0,
+		"buff_applied": false,
+		"item_name": _get_item_name(item)
+	}
+	
+	if item == null or battle_manager == null:
+		return result
+	
+	# 1. Pemulihan HP (Instant)
+	if item.heal_value > 0.0:
+		var old_hp: float = battle_manager.current_hp
+		battle_manager.current_hp = minf(battle_manager.max_hp, battle_manager.current_hp + item.heal_value)
+		result["healed"] = battle_manager.current_hp - old_hp
+	
+	# 2. Penambahan Max HP
+	if item.max_hp_bonus != 0.0:
+		battle_manager.max_hp = maxf(1.0, battle_manager.max_hp + item.max_hp_bonus)
+		battle_manager.current_hp = minf(battle_manager.max_hp, battle_manager.current_hp)
+	
+	# 3. Stat Buffs & Duration Logic
+	var item_duration: int = item.duration if "duration" in item else 0
+	var atk_bonus: float = item.attack_bonus + item.damage_bonus
+	var def_bonus: float = item.defense_bonus
+	var red_bonus: float = (item.damage_reduction / 100.0) if item.damage_reduction > 0 else 0.0
+	
+	var has_stat_buff: bool = (atk_bonus != 0.0 or def_bonus != 0.0 or red_bonus > 0.0)
+	
+	if item_duration > 0 and has_stat_buff:
+		active_buffs.append({
+			"name": result["item_name"],
+			"type": _determine_buff_type(atk_bonus, def_bonus, item),
+			"duration": item_duration,
+			"attack_bonus": atk_bonus,
+			"defense_bonus": def_bonus,
+			"damage_reduction": red_bonus,
+			"is_new": true
+		})
+		result["buff_applied"] = true
+	elif item_duration == 0 and has_stat_buff:
+		base_bonus_damage += atk_bonus
+		base_bonus_defense += def_bonus
+	
+	return result
+
+
+# ============================================================
 # TURN PROCESSOR
 # ============================================================
 
