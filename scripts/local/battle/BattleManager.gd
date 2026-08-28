@@ -706,6 +706,16 @@ func _on_item_used_in_battle(item: ItemData) -> void:
 	
 	# Terapkan Efek Item pakai BuffManager
 	if item and player_buff_manager:
+		# Suara minum potion
+		var potion_sfx: AudioStream = load("res://assets/audio/effects/battle/items/use_potion_base.mp3")
+		if potion_sfx:
+			var sfx_player := AudioStreamPlayer.new()
+			sfx_player.stream = potion_sfx
+			sfx_player.volume_db = -5.0
+			add_child(sfx_player)
+			sfx_player.play()
+			sfx_player.finished.connect(sfx_player.queue_free)
+
 		var result: Dictionary = player_buff_manager.apply_item_simple(item, self)
 		
 		# Heal — tampilkan temporary icon + visual
@@ -2079,16 +2089,6 @@ func _animate_stamina_change() -> void:
 # ============================================================
 
 func _play_heal_visual(heal_amount: float) -> void:
-	# Suara minum potion
-	var potion_sfx: AudioStream = load("res://assets/audio/effects/battle/items/use_potion_base.mp3")
-	if potion_sfx:
-		var sfx_player := AudioStreamPlayer.new()
-		sfx_player.stream = potion_sfx
-		sfx_player.volume_db = -5.0
-		add_child(sfx_player)
-		sfx_player.play()
-		sfx_player.finished.connect(sfx_player.queue_free)
-
 	# 1. Green flash di player-info
 	if player_info:
 		var flash_tw := create_tween()
