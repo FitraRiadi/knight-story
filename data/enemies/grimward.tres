@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://ckk8ulooi2h2x"]
 
 [ext_resource type="Script" uid="uid://d1jtt6i0k5g0g" path="res://scripts/local/characters/enemy/EnemyData.gd" id="1_arywp"]
+[ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/AbilityData.gd" id="1_qphqy"]
 [ext_resource type="Texture2D" uid="uid://eeh1qrcceu17" path="res://assets/art/profile/enemy/grimward.jpg" id="1_ycbiy"]
 [ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="2_or5ns"]
 [ext_resource type="Texture2D" uid="uid://babnlghrmqvsm" path="res://assets/art/sprites/enemy/grimward/idle1-removebg-preview.png" id="2_pfxji"]
@@ -12,6 +13,7 @@
 [ext_resource type="Texture2D" uid="uid://d1r4psmgu73iu" path="res://assets/art/sprites/enemy/grimward/hit2-removebg-preview.png" id="7_fcr88"]
 [ext_resource type="Texture2D" uid="uid://e3q04pvucu10" path="res://assets/art/sprites/enemy/grimward/death1-removebg-preview.png" id="8_lxv2q"]
 [ext_resource type="Texture2D" uid="uid://6488p8v54jf" path="res://assets/art/sprites/enemy/grimward/defend1-removebg-preview.png" id="9_eodqq"]
+[ext_resource type="Resource" uid="uid://c0sv4kwsteft7" path="res://data/enemies/abilities/tactical_attack.tres" id="10_ab1"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_gn7wh"]
 animations = [{
@@ -88,4 +90,5 @@ icon_enemy = ExtResource("1_ycbiy")
 sprite_frames = SubResource("SpriteFrames_gn7wh")
 damage_to_player = 20.0
 exp_reward = 10
+abilities = Array[ExtResource("1_qphqy")]([ExtResource("10_ab1")])
 metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"

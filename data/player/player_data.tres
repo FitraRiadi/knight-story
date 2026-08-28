@@ -9,11 +9,12 @@
 
 [sub_resource type="Resource" id="Resource_inventory"]
 script = ExtResource("3_inv")
-items = Array[ExtResource("2_item")]([ExtResource("2_o4y3s"), ExtResource("3_ioold"), ExtResource("3_ioold"), ExtResource("3_ioold"), ExtResource("3_ioold"), ExtResource("3_ioold"), ExtResource("2_o4y3s"), ExtResource("3_ioold"), ExtResource("3_ioold")])
+items = Array[ExtResource("2_item")]([ExtResource("2_o4y3s"), ExtResource("2_o4y3s"), ExtResource("2_o4y3s"), ExtResource("2_o4y3s"), ExtResource("2_o4y3s"), ExtResource("2_o4y3s"), ExtResource("2_o4y3s"), ExtResource("3_ioold"), ExtResource("3_ioold")])
 
 [resource]
 script = ExtResource("1_player")
 player_name = "Rayosdelsol"
 player_profile = ExtResource("3_1mohm")
 parry_flat_reduction = 30.0
+durability = 5.0
 battle_inventory = SubResource("Resource_inventory")

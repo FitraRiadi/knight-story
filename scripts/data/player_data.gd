@@ -18,6 +18,8 @@ class_name PlayerData
 
 @export var player_profile: Texture2D
 
+@export var gold: int = 500
+
 
 # ============================================================
 # PLAYER VITALS
@@ -53,6 +55,8 @@ class_name PlayerData
 @export var defense_flat_reduction: float = 20.0
 
 @export var parry_flat_reduction: float = 10.0
+
+@export var durability: float = 5.0
 
 
 # ============================================================

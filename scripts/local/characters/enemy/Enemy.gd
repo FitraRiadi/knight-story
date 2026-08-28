@@ -12,6 +12,7 @@ signal attack_preparing
 signal attack_hit(damage_amount: float)
 signal hp_changed
 signal sound_requested(sound_name: String)
+signal battle_cry_activated(ability_level: int)
 
 signal enemy_defeated(
 	exp_amount: int,
@@ -53,6 +54,8 @@ const STATUS_ICONS: Dictionary = {
 
 var enemy_ai: EnemyAI
 
+var enemy_abilities: Array[AbilityData] = []
+
 
 # ============================================================
 # HP & SCALED STATS
@@ -93,6 +96,7 @@ var scaled_max_morale: float = 100.0
 var is_stunned: bool = false
 var stun_turns_remaining: int = 0
 var stun_interrupted: bool = false
+var force_attack_finish: bool = false
 
 # Morale config
 const MORALE_INCREASE_ON_HIT: float = 0.25
@@ -102,6 +106,11 @@ const MORALE_RECOVER_ON_STUN_END: float = 0.50
 # Crack overlay & smoke particle
 var crack_overlay: Node2D = null
 var smoke_particles: CPUParticles2D = null
+
+# Buff & heal particles
+var buff_particles: CPUParticles2D = null
+var heal_particles: CPUParticles2D = null
+var current_buff_particle_type: String = ""
 
 
 # ============================================================
@@ -191,6 +200,8 @@ func _ready() -> void:
 	_setup_blood_particles()
 	_setup_soul_particles()
 	_setup_smoke_particles()
+	_setup_buff_particles()
+	_setup_heal_particles()
 	_setup_crack_overlay()
 
 	if enemy_hit_icon:
@@ -301,6 +312,12 @@ func setup_enemy(new_id: String, custom_level: int = 0) -> void:
 		current_hp = scaled_max_hp
 		enemy_inventory = stats.starting_inventory.duplicate()
 
+		# Load abilities dari EnemyData
+		enemy_abilities.clear()
+		for ab: AbilityData in stats.abilities:
+			if ab != null:
+				enemy_abilities.append(ab)
+
 		if enemy_name_label:
 			enemy_name_label.text = stats.enemy_name
 
@@ -375,6 +392,20 @@ func _process_buff_durations() -> void:
 
 	for buff_name in expired_buff_names:
 		show_reaction_text(buff_name + " Expired!", Color(0.8, 0.8, 0.8), false)
+
+	# Cek apakah masih ada buff attack/defense aktif
+	if current_buff_particle_type != "":
+		var active_types: Array[String] = buff_manager.get_active_buff_types()
+		var still_has_buff: bool = false
+		for t in active_types:
+			if t == "attack_up" or t == "defense_up" or t == "generic":
+				still_has_buff = true
+				# Kalau type berbeda dari yang sedang ditampilkan, switch
+				if t != current_buff_particle_type:
+					_play_enemy_buff_visual(t)
+				break
+		if not still_has_buff:
+			_stop_buff_particles()
 
 	_update_status_effects()
 
@@ -604,8 +635,26 @@ func _execute_attack(
 		is_power_attack
 	)
 
+	# Tunggu animasi attack selesai, tapi kalau force_attack_finish aktif, langsung loncat ke frame terakhir
+	var attack_frame_count: int = get_sprite_frames().get_frame_count(&"attack") if get_sprite_frames().has_animation(&"attack") else 1
+	force_attack_finish = false
+	stun_interrupted = false
+	frame = 0
 	play("attack")
-	await animation_finished
+	var was_force_finished: bool = false
+	var frame_check_time: float = 0.0
+	while frame_check_time < 2.0:
+		await get_tree().process_frame
+		frame_check_time += get_process_delta_time()
+		if force_attack_finish:
+			stop()
+			if attack_frame_count > 1:
+				set_frame_and_progress(attack_frame_count - 1, 0.0)
+			was_force_finished = true
+			break
+		if not is_playing():
+			break
+	force_attack_finish = false
 
 	# STUN INTERRUPT: Parry menyebabkan stun mid-attack, skip damage langsung stun
 	if stun_interrupted:
@@ -616,11 +665,61 @@ func _execute_attack(
 		_reset_camera_focus(camera, default_camera_pos)
 		return
 
-	_play_sound("attack")
+	if not was_force_finished:
+		_play_sound("attack")
 	attack_hit.emit(total_damage)
 	_shake_camera(camera, 12.0 * damage_multiplier, 0.25)
 
 	await get_tree().create_timer(0.6).timeout
+
+	# BATTLE CRY: Check double attack setelah serangan pertama
+	if not stun_interrupted and should_double_attack():
+		var ab := get_battle_cry_ability()
+		var cry_level: int = ab.get_level()
+		var bonus_mult: float = BattleCryAbility.get_bonus_damage_multiplier(cry_level)
+		var cry_text: String = BattleCryAbility.get_battle_cry_text(cry_level)
+		var cry_color: Color = BattleCryAbility.get_battle_cry_text_color(cry_level)
+
+		show_reaction_text(cry_text, cry_color, true)
+		battle_cry_activated.emit(cry_level)
+		await get_tree().create_timer(0.4).timeout
+
+		# Serangan kedua dengan bonus damage
+		var second_damage: float = (scaled_damage + buff_manager.get_total_attack_bonus()) * bonus_mult
+		force_attack_finish = false
+		stun_interrupted = false
+		frame = 0
+		play("attack")
+		var second_frame_count: int = get_sprite_frames().get_frame_count(&"attack") if get_sprite_frames().has_animation(&"attack") else 1
+		var second_was_force: bool = false
+		var second_check_time: float = 0.0
+		while second_check_time < 2.0:
+			await get_tree().process_frame
+			second_check_time += get_process_delta_time()
+			if force_attack_finish:
+				stop()
+				if second_frame_count > 1:
+					set_frame_and_progress(second_frame_count - 1, 0.0)
+				second_was_force = true
+				break
+			if not is_playing():
+				break
+		force_attack_finish = false
+
+		if stun_interrupted:
+			stun_interrupted = false
+			_focus_camera_to_me(camera, true)
+			await _play_stun_visuals()
+			await get_tree().create_timer(1.5).timeout
+			_reset_camera_focus(camera, default_camera_pos)
+			return
+
+		if not second_was_force:
+			_play_sound("attack")
+		attack_hit.emit(second_damage)
+		_shake_camera(camera, 10.0 * bonus_mult, 0.2)
+		await get_tree().create_timer(0.5).timeout
+
 	_reset_camera_focus(camera, default_camera_pos)
 
 	_play_idle_if_allowed()
@@ -709,6 +808,7 @@ func _execute_item(
 		used_any_effect = true
 		_update_hp_bar()
 		hp_changed.emit()
+		_play_enemy_heal_visual()
 		show_reaction_text(
 			result["item_name"] + " (+" + str(int(result["healed"])) + ")",
 			Color(0.2, 1.0, 0.3),
@@ -717,7 +817,19 @@ func _execute_item(
 		if STATUS_ICONS.has("health_up"):
 			_show_temporary_status_icon(STATUS_ICONS["health_up"], 3.5)
 
-	if result["shield_added"] > 0.0 or result["buff_applied"]:
+	if result["buff_applied"]:
+		used_any_effect = true
+		# Tentuin buff type berdasarkan item stats
+		var atk_bonus: float = item.attack_bonus + item.damage_bonus
+		var def_bonus: float = item.defense_bonus
+		var buff_type: String = "generic"
+		if atk_bonus > 0.0:
+			buff_type = "attack_up"
+		elif def_bonus > 0.0:
+			buff_type = "defense_up"
+		_play_enemy_buff_visual(buff_type)
+
+	if result["shield_added"] > 0.0:
 		used_any_effect = true
 
 	if item.has_method("has_status_effect") and item.has_status_effect():
@@ -731,9 +843,12 @@ func _execute_item(
 	elif result["healed"] <= 0.0:
 		show_reaction_text(result["item_name"], Color(0.4, 1.0, 0.4), true)
 
-	var tween: Tween = create_tween()
-	tween.tween_property(self, "modulate", Color(0.5, 1.5, 0.5, 1.0), 0.3)
-	tween.tween_property(self, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.3)
+	# Flash sudah di-handle di _play_enemy_buff_visual / _play_enemy_heal_visual
+	# Kalau gak ada buff/heal, flash hijau generic
+	if not result["buff_applied"] and result["healed"] <= 0.0:
+		var tween: Tween = create_tween()
+		tween.tween_property(self, "modulate", Color(0.5, 1.5, 0.5, 1.0), 0.3)
+		tween.tween_property(self, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.3)
 
 	await get_tree().create_timer(1.6).timeout
 	_reset_camera_focus(camera, default_camera_pos)
@@ -772,6 +887,7 @@ func _on_death() -> void:
 	if enemy_hit_icon: enemy_hit_icon.hide()
 	if enemy_collision: enemy_collision.disabled = true
 
+	_stop_buff_particles()
 	play("death")
 	_play_sound("death")
 
@@ -1188,6 +1304,47 @@ func get_morale_ratio() -> float:
 
 
 # ============================================================
+# ABILITIES
+# ============================================================
+
+func get_tactical_attack_ability() -> AbilityData:
+	for ab: AbilityData in enemy_abilities:
+		if ab.is_tactical_attack():
+			return ab
+	return null
+
+
+func get_battle_cry_ability() -> AbilityData:
+	for ab: AbilityData in enemy_abilities:
+		if ab.is_battle_cry():
+			return ab
+	return null
+
+
+func has_tactical_attack() -> bool:
+	return get_tactical_attack_ability() != null
+
+
+func has_battle_cry() -> bool:
+	return get_battle_cry_ability() != null
+
+
+func should_counter_attack() -> bool:
+	var ab := get_tactical_attack_ability()
+	if ab == null:
+		return false
+	return TacticalAttackAbility.should_counter(ab.get_level())
+
+
+func should_double_attack() -> bool:
+	var ab := get_battle_cry_ability()
+	if ab == null:
+		return false
+	return BattleCryAbility.should_double_attack(ab.get_level())
+	return clampf(current_morale / scaled_max_morale, 0.0, 1.0)
+
+
+# ============================================================
 # SMOKE PARTICLE (Morale)
 # ============================================================
 
@@ -1235,6 +1392,105 @@ func _update_smoke_intensity() -> void:
 		smoke_particles.modulate.a = lerp(0.3, 0.8, intensity)
 	else:
 		smoke_particles.emitting = false
+
+
+# ============================================================
+# BUFF PARTICLES (Attack Up, Defense Up, Generic)
+# ============================================================
+
+func _setup_buff_particles() -> void:
+	buff_particles = CPUParticles2D.new()
+	add_child(buff_particles)
+	buff_particles.z_index = 50
+	buff_particles.amount = 12
+	buff_particles.lifetime = 1.5
+	buff_particles.one_shot = false
+	buff_particles.emitting = false
+	buff_particles.direction = Vector2(0, -1)
+	buff_particles.spread = 35.0
+	buff_particles.gravity = Vector2(0, -60)
+	buff_particles.initial_velocity_min = 20.0
+	buff_particles.initial_velocity_max = 50.0
+	buff_particles.scale_amount_min = 2.0
+	buff_particles.scale_amount_max = 5.0
+	buff_particles.color = Color(1.0, 0.4, 0.15, 0.8)
+
+	if enemy_collision and is_instance_valid(enemy_collision):
+		buff_particles.position = enemy_collision.position + enemy_collision.size / 2.0
+
+
+func _play_enemy_buff_visual(buff_type: String) -> void:
+	if not buff_particles:
+		return
+
+	var lower_type := buff_type.to_lower()
+
+	# Anti-duplicate: kalau type sama, restart aja
+	if lower_type == current_buff_particle_type and buff_particles.emitting:
+		buff_particles.restart()
+		return
+
+	# Update warna sesuai type
+	match lower_type:
+		"attack_up":
+			buff_particles.color = Color(1.0, 0.4, 0.15, 0.8)
+		"defense_up":
+			buff_particles.color = Color(0.3, 0.6, 1.0, 0.8)
+		_:
+			buff_particles.color = Color(1.0, 0.85, 0.2, 0.8)
+
+	current_buff_particle_type = lower_type
+	buff_particles.emitting = true
+	buff_particles.restart()
+
+	# Flash warna sesuai buff
+	var flash_color: Color = buff_particles.color
+	var tween: Tween = create_tween()
+	tween.tween_property(self, "modulate", Color(flash_color.r, flash_color.g, flash_color.b, 1.0), 0.1)
+	tween.tween_property(self, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.25)
+
+
+func _stop_buff_particles() -> void:
+	if buff_particles:
+		buff_particles.emitting = false
+	current_buff_particle_type = ""
+
+
+# ============================================================
+# HEAL PARTICLES (One-shot burst)
+# ============================================================
+
+func _setup_heal_particles() -> void:
+	heal_particles = CPUParticles2D.new()
+	add_child(heal_particles)
+	heal_particles.z_index = 50
+	heal_particles.amount = 10
+	heal_particles.lifetime = 0.6
+	heal_particles.one_shot = true
+	heal_particles.explosiveness = 0.9
+	heal_particles.emitting = false
+	heal_particles.direction = Vector2(0, -1)
+	heal_particles.spread = 60.0
+	heal_particles.gravity = Vector2(0, -200)
+	heal_particles.initial_velocity_min = 60.0
+	heal_particles.initial_velocity_max = 120.0
+	heal_particles.scale_amount_min = 2.0
+	heal_particles.scale_amount_max = 5.0
+	heal_particles.color = Color(0.2, 1.0, 0.3, 0.9)
+
+	if enemy_collision and is_instance_valid(enemy_collision):
+		heal_particles.position = enemy_collision.position + enemy_collision.size / 2.0
+
+
+func _play_enemy_heal_visual() -> void:
+	if not heal_particles:
+		return
+	heal_particles.restart()
+
+	# Flash hijau
+	var tween: Tween = create_tween()
+	tween.tween_property(self, "modulate", Color(0.5, 1.5, 0.5, 1.0), 0.15)
+	tween.tween_property(self, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.3)
 
 
 # ============================================================

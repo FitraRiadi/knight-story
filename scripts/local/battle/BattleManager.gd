@@ -62,6 +62,7 @@ var player_hit_rate: float
 var player_speed: float
 var defense_flat_reduction: float
 var parry_flat_reduction: float
+var player_durability: float
 
 var is_defending: bool = false
 
@@ -282,6 +283,7 @@ func _load_player_data() -> void:
 	player_speed = pd.player_speed
 	defense_flat_reduction = pd.defense_flat_reduction
 	parry_flat_reduction = pd.parry_flat_reduction
+	player_durability = pd.durability
 
 	if player_name_label: player_name_label.text = pd.player_name
 	if player_level_label: player_level_label.text = str(pd.player_level)
@@ -1266,6 +1268,30 @@ func _execute_actual_attack(result: AttackResult) -> void:
 			target_enemy.receive_damage(crit_damage, true, false)
 	
 	await get_tree().create_timer(0.8).timeout
+
+	# TACTICAL ATTACK: Enemy bisa counter-attack setelah player nyerang
+	if result != AttackResult.MISS and target_enemy.current_hp > 0 and not target_enemy.is_stunned and target_enemy.has_tactical_attack() and target_enemy.should_counter_attack():
+		var ab := target_enemy.get_tactical_attack_ability()
+		var counter_mult: float = TacticalAttackAbility.get_counter_damage_multiplier(ab.get_level())
+		var counter_text: String = TacticalAttackAbility.get_counter_text(ab.get_level())
+		var counter_color: Color = TacticalAttackAbility.get_counter_text_color(ab.get_level())
+
+		target_enemy.show_reaction_text(counter_text, counter_color, true)
+		await get_tree().create_timer(0.15).timeout
+
+		# Play animasi attack dulu
+		target_enemy.play("attack")
+		await target_enemy.animation_finished
+
+		var counter_damage: float = (target_enemy.scaled_damage + target_enemy.buff_manager.get_total_attack_bonus()) * counter_mult
+		target_enemy._play_sound("attack")
+		player_receive_damage_custom(counter_damage)
+		trigger_camera_shake_and_blood(10.0, 0.2, 0.6)
+		await get_tree().create_timer(0.3).timeout
+
+		# Pastikan animasi balik idle setelah counter
+		target_enemy.play("idle")
+
 	_start_enemies_turn()
 
 
@@ -1495,6 +1521,8 @@ func _on_parry_button_clicked() -> void:
 	# MORALE: Parry berhasil -> kurangi morale enemy -25%
 	if current_enemy_attacking and is_instance_valid(current_enemy_attacking):
 		current_enemy_attacking.decrease_morale_by_parry()
+		# Paksa animasi attack ke frame terakhir
+		current_enemy_attacking.force_attack_finish = true
 		# Kalau parry bikin morale habis, interrupt attack langsung
 		if current_enemy_attacking.is_stunned:
 			current_enemy_attacking.stun_interrupted = true
@@ -1831,6 +1859,15 @@ func _on_enemy_attack_preparing() -> void:
 	_show_parry_window(0.9)
 
 
+func _on_battle_cry_activated(ability_level: int) -> void:
+	var parry_count: int = BattleCryAbility.get_parry_count(ability_level)
+	# Parry window pertama sudah muncul dari attack_preparing
+	# Tambah parry window lagi jika level >= 2
+	if parry_count >= 2:
+		await get_tree().create_timer(0.1).timeout
+		_show_parry_window(0.7)
+
+
 func _auto_detect_enemy_pool() -> void:
 	available_enemy_pool.clear()
 	if Engine.has_singleton("EnemyDatabase") or has_node("/root/EnemyDatabase"):
@@ -1954,6 +1991,7 @@ func _spawn_enemies(enemy_ids: Array[String], custom_levels: Array[int] = []) ->
 		enemy_instance.attack_hit.connect(player_receive_damage_custom)
 		enemy_instance.attack_preparing.connect(_on_enemy_attack_preparing)
 		enemy_instance.enemy_defeated.connect(_on_enemy_defeated)
+		enemy_instance.battle_cry_activated.connect(_on_battle_cry_activated)
 		
 	_animate_enemies_spawn()
 
@@ -2171,11 +2209,13 @@ func player_receive_damage_custom(amount: float) -> void:
 	
 	var final_damage = amount
 	if parry_success_this_turn and is_defending:
-		final_damage = max(0.0, amount - (parry_flat_reduction + parry_extra_reduction + (defense_flat_reduction * 0.9)))
+		final_damage = max(0.0, amount - player_durability - (parry_flat_reduction + parry_extra_reduction + (defense_flat_reduction * 0.9)))
 	elif parry_success_this_turn:
-		final_damage = max(0.0, amount - (parry_flat_reduction + parry_extra_reduction))
+		final_damage = max(0.0, amount - player_durability - (parry_flat_reduction + parry_extra_reduction))
 	elif is_defending:
-		final_damage = max(0.0, amount - defense_flat_reduction)
+		final_damage = max(0.0, amount - player_durability - defense_flat_reduction)
+	else:
+		final_damage = max(0.0, amount - player_durability)
 	
 	if is_defending:
 		var shield_sfx: AudioStream = load("res://assets/audio/effects/battle/shield/shield-base.mp3")

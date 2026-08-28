@@ -57,6 +57,49 @@ func save() -> void:
 		push_error("[PlayerDataManager] Gagal save! Error code: " + str(err))
 
 
+func add_gold(amount: int) -> void:
+	if data == null:
+		return
+	data.gold += amount
+	save()
+
+
+func spend_gold(amount: int) -> bool:
+	if data == null:
+		return false
+	if data.gold < amount:
+		return false
+	data.gold -= amount
+	save()
+	return true
+
+
+func get_gold() -> int:
+	if data == null:
+		return 0
+	return data.gold
+
+
+func add_item_to_inventory(item: ItemData) -> bool:
+	if data == null or data.battle_inventory == null:
+		return false
+
+	# Cari null slot dulu (slot yang sudah dipake tapi di-set null)
+	for i in range(data.battle_inventory.items.size()):
+		if data.battle_inventory.items[i] == null:
+			data.battle_inventory.items[i] = item
+			save()
+			return true
+
+	# Kalau gak ada null slot, append kalau belum max 9
+	if data.battle_inventory.items.size() < 9:
+		data.battle_inventory.items.append(item)
+		save()
+		return true
+
+	return false
+
+
 func remove_item(index: int) -> void:
 	if data == null or data.battle_inventory == null:
 		return

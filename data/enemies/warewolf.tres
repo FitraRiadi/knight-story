@@ -1,7 +1,9 @@
 [gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://c60fficmw2t6s"]
 
+[ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/AbilityData.gd" id="1_0gqwf"]
 [ext_resource type="Texture2D" uid="uid://cgpns6s1y2fje" path="res://assets/art/profile/enemy/warewolf.jpg" id="1_7fsbw"]
 [ext_resource type="Script" uid="uid://d1jtt6i0k5g0g" path="res://scripts/local/characters/enemy/EnemyData.gd" id="1_n2612"]
+[ext_resource type="Resource" uid="uid://c0sv4kwsteft7" path="res://data/enemies/abilities/tactical_attack.tres" id="2_6qdrg"]
 [ext_resource type="Texture2D" uid="uid://d2altnflbpbe3" path="res://assets/art/sprites/enemy/warewolf/idle1-removebg-preview (1).png" id="2_8o2hm"]
 [ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="2_t7j65"]
 [ext_resource type="Texture2D" uid="uid://dprj4c65ff6jj" path="res://assets/art/sprites/enemy/warewolf/idle2-removebg-preview (1).png" id="3_akbxh"]
@@ -89,4 +91,5 @@ sprite_frames = SubResource("SpriteFrames_8puy6")
 max_hp = 90.0
 damage_to_player = 25.0
 exp_reward = 10
+abilities = Array[ExtResource("1_0gqwf")]([ExtResource("2_6qdrg")])
 metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"

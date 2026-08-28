@@ -2,7 +2,9 @@
 
 [ext_resource type="Script" uid="uid://d1jtt6i0k5g0g" path="res://scripts/local/characters/enemy/EnemyData.gd" id="1_dhcys"]
 [ext_resource type="Texture2D" uid="uid://broht88c253af" path="res://assets/art/profile/enemy/grooter.jpg" id="1_hanjq"]
+[ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/AbilityData.gd" id="1_ocbkr"]
 [ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="2_yo2og"]
+[ext_resource type="Resource" uid="uid://c0sv4kwsteft7" path="res://data/enemies/abilities/tactical_attack.tres" id="3_nqphn"]
 [ext_resource type="Texture2D" uid="uid://b77h5eoduna8q" path="res://assets/art/sprites/enemy/grooter/idle1.png" id="3_yaoiv"]
 [ext_resource type="Texture2D" uid="uid://bsderxif8r56i" path="res://assets/art/sprites/enemy/grooter/idle2.png" id="4_ocbkr"]
 [ext_resource type="Texture2D" uid="uid://bar7568hd75ol" path="res://assets/art/sprites/enemy/grooter/attack1.png" id="5_nqphn"]
@@ -11,6 +13,7 @@
 [ext_resource type="Texture2D" uid="uid://hlupngh0nw5u" path="res://assets/art/sprites/enemy/grooter/hit2.png" id="8_drvox"]
 [ext_resource type="Texture2D" uid="uid://b32kx3oikj31r" path="res://assets/art/sprites/enemy/grooter/dead1.png" id="9_66wuw"]
 [ext_resource type="Texture2D" uid="uid://dsay57h3moksf" path="res://assets/art/sprites/enemy/grooter/defend1.png" id="10_vkkbq"]
+[ext_resource type="Resource" uid="uid://b2265a03f0302" path="res://data/enemies/abilities/battle_cry.tres" id="11_ab2"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_3hfl1"]
 animations = [{
@@ -87,4 +90,5 @@ sprite_frames = SubResource("SpriteFrames_3hfl1")
 max_hp = 150.0
 damage_to_player = 10.0
 exp_reward = 10
+abilities = Array[ExtResource("1_ocbkr")]([ExtResource("11_ab2"), ExtResource("3_nqphn")])
 metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"
