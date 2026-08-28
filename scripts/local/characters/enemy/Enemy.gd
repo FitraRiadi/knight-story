@@ -1133,6 +1133,9 @@ func _play_stun_visuals() -> void:
 	show_reaction_text("STUNNED!", Color(1.0, 0.8, 0.0), true)
 	_play_sound("hit")
 
+	# Dark tint saat stun
+	modulate = Color(0.45, 0.45, 0.55, 1.0)
+
 	# Mainkan animasi hurt dan tunggu selesai
 	play("hurt")
 	await animation_finished
@@ -1166,6 +1169,9 @@ func _execute_stun_turn(camera: Camera2D, default_camera_pos: Vector2) -> void:
 
 func _recover_morale_after_stun() -> void:
 	"""Recover 50% morale setelah stun berakhir"""
+	# Reset warna normal
+	modulate = Color(1.0, 1.0, 1.0, 1.0)
+
 	var recovery: float = scaled_max_morale * MORALE_RECOVER_ON_STUN_END
 	current_morale = minf(scaled_max_morale, recovery)
 	show_reaction_text("Morale Recovered!", Color(0.3, 0.8, 1.0), false)
