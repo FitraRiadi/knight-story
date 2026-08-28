@@ -7,3 +7,4 @@ script = ExtResource("1")
 ability_id = "life_steal"
 ability_name = "Life Steal"
 ability_type = 2
+level = 3

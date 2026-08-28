@@ -184,7 +184,14 @@ var player_effect_center_position: Vector2 = Vector2.ZERO
 var total_attacks: int = 0
 var total_hits: int = 0
 var total_parries: int = 0
+var total_parry_attempts: int = 0
 var enemies_killed: int = 0
+
+# Hit quality counters
+var total_miss: int = 0
+var total_low: int = 0
+var total_mid: int = 0
+var total_critical: int = 0
 
 @onready var scoreBoard: Control = $scoreBoard
 @onready var score_card_enemy: Control = $scoreBoard/cardScore
@@ -1134,6 +1141,13 @@ func _check_attack_qte_result() -> void:
 	# SCOREBOARD: Hitung hit (bukan miss)
 	if qte_result != AttackResult.MISS:
 		total_hits += 1
+
+	# SCOREBOARD: Hitung per quality
+	match qte_result:
+		AttackResult.MISS: total_miss += 1
+		AttackResult.LOW: total_low += 1
+		AttackResult.MID: total_mid += 1
+		AttackResult.CRITICAL: total_critical += 1
 	
 	if qte_result != AttackResult.MISS:
 		_add_combo(1)
@@ -1292,6 +1306,7 @@ func _execute_actual_attack(result: AttackResult) -> void:
 
 		var counter_damage: float = (target_enemy.scaled_damage + target_enemy.buff_manager.get_total_attack_bonus()) * counter_mult
 		target_enemy._play_sound("attack")
+		parry_success_this_turn = false
 		player_receive_damage_custom(counter_damage)
 		trigger_camera_shake_and_blood(10.0, 0.2, 0.6)
 		await get_tree().create_timer(0.3).timeout
@@ -1325,6 +1340,7 @@ func _show_parry_window(duration: float = 1.0) -> void:
 	parry_success_this_turn = false
 	is_parry_window_active = true
 	parry_extra_reduction = 0.0
+	total_parry_attempts += 1
 	
 	var viewport_size = get_viewport().get_visible_rect().size
 	var min_x = 120.0
@@ -2751,17 +2767,24 @@ func _update_scoreboard_values() -> void:
 	if score_label_accuracy:
 		var accuracy: int = 0
 		if total_attacks > 0:
-			accuracy = int(float(total_hits) / float(total_attacks) * 100.0)
+			# Weighted hit rate: MISS=0, LOW=25, MID=75, CRITICAL=100
+			var weighted_score: float = total_low * 25.0 + total_mid * 75.0 + total_critical * 100.0
+			accuracy = int(weighted_score / float(total_attacks))
 		score_label_accuracy.text = str(accuracy) + "%"
 	if score_label_parry:
-		score_label_parry.text = str(total_parries)
+		score_label_parry.text = str(total_parries) + " / " + str(total_parry_attempts)
 
 
 func _reset_scoreboard_values() -> void:
 	total_attacks = 0
 	total_hits = 0
 	total_parries = 0
+	total_parry_attempts = 0
 	enemies_killed = 0
+	total_miss = 0
+	total_low = 0
+	total_mid = 0
+	total_critical = 0
 
 
 func _hide_battle_ui_for_scoreboard() -> void:
@@ -2847,16 +2870,63 @@ func _on_run_pressed() -> void:
 
 func _calculate_flee_chance() -> float:
 	var base: float = FLEE_BASE_CHANCE
-	var speed_bonus: float = (player_speed - 50.0) * 0.4
 
-	var enemy_level: int = 1
-	if enemies.size() > 0 and selected_enemy_index < enemies.size():
-		enemy_level = enemies[selected_enemy_index].level
+	# === FAKTOR PENDUKUNG (Naikin chance) ===
 
+	# 1. Player Speed (KRUSIAL - makin cepat makin gampang lari)
+	var speed_bonus: float = (player_speed - 50.0) * 1.5
+
+	# 2. Level Advantage (KRUSIAL - level beda gede pengaruhnya)
+	var total_enemy_level: int = 0
+	var enemy_count: int = 0
+	for enemy in enemies:
+		if enemy and is_instance_valid(enemy) and enemy.current_hp > 0:
+			total_enemy_level += enemy.level
+			enemy_count += 1
+	var avg_enemy_level: float = float(total_enemy_level) / maxf(float(enemy_count), 1.0)
 	var level_bonus: float = 0.0
 	if PlayerDataManager.data:
-		level_bonus = (PlayerDataManager.data.player_level - enemy_level) * 5.0
-	flee_current_chance = clampf(base + speed_bonus + level_bonus, 10.0, 90.0)
+		level_bonus = (PlayerDataManager.data.player_level - avg_enemy_level) * 12.0
+
+	# 3. Enemy HP Rendah (gunakan enemy paling lemah)
+	var weakest_hp_ratio: float = 1.0
+	for enemy in enemies:
+		if enemy and is_instance_valid(enemy) and enemy.current_hp > 0:
+			var hp_ratio: float = enemy.current_hp / maxf(enemy.scaled_max_hp, 1.0)
+			if hp_ratio < weakest_hp_ratio:
+				weakest_hp_ratio = hp_ratio
+	var hp_bonus: float = (1.0 - weakest_hp_ratio) * 20.0
+
+	# 4. Enemy Stunned (morale habis)
+	var stunned_count: int = 0
+	for enemy in enemies:
+		if enemy and is_instance_valid(enemy) and enemy.current_hp > 0 and enemy.is_stunned:
+			stunned_count += 1
+	var stun_bonus: float = float(stunned_count) * 20.0
+
+	# 5. Enemy Defending (lagi fokus def, kesempatan lari)
+	var defending_count: int = 0
+	for enemy in enemies:
+		if enemy and is_instance_valid(enemy) and enemy.current_hp > 0 and enemy.is_defending:
+			defending_count += 1
+	var defend_bonus: float = float(defending_count) * 8.0
+
+	# === FAKTOR PENGHAMBAT (Turunin chance) ===
+
+	# 5. Banyak Enemy
+	var count_penalty: float = float(maxi(enemy_count - 1, 0)) * -8.0
+
+	# 7. Level Tertinggi Enemy (KRUSIAL - musuh level tinggi susah lari)
+	var highest_level: int = 0
+	for enemy in enemies:
+		if enemy and is_instance_valid(enemy) and enemy.current_hp > 0:
+			if enemy.level > highest_level:
+				highest_level = enemy.level
+	var level_penalty: float = float(highest_level) * -6.0
+
+	# === HITUNG FINAL ===
+	var final_chance: float = base + speed_bonus + level_bonus + hp_bonus + stun_bonus + defend_bonus + count_penalty + level_penalty
+	flee_current_chance = clampf(final_chance, 10.0, 90.0)
 	return flee_current_chance
 
 
