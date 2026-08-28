@@ -72,6 +72,11 @@ var max_morale_bar_width: float = 0.0
 var max_exp_bar_width: float = 0.0
 var max_enemy_hp_bar_width: float = 0.0
 
+# Player buff & heal particles
+var player_buff_particles: CPUParticles2D = null
+var player_heal_particles: CPUParticles2D = null
+var current_player_buff_type: String = ""
+
 var enemies: Array[BattleEnemy] = []
 var selected_enemy_index: int = 0
 var is_player_turn: bool = true
@@ -221,6 +226,8 @@ func _ready() -> void:
 	_setup_battle_inventory_layer()
 	_setup_drop_layer()
 	_setup_player_buff_and_effect()
+	_setup_player_buff_particles()
+	_setup_player_heal_particles()
 	
 	if camera: default_camera_pos = camera.global_position
 	if hp_bar: max_hp_bar_width = hp_bar.size.x
@@ -2137,7 +2144,10 @@ func _play_heal_visual(heal_amount: float) -> void:
 	if player_profile_img:
 		_spawn_floating_text("+" + str(int(heal_amount)), Color(0.3, 1.0, 0.5), player_profile_img.global_position)
 
-	# 3. Heal particles
+	# 3. Heal particles (CPUParticles2D looping)
+	_play_player_heal_visual()
+
+	# 4. Legacy one-shot particles
 	if player_profile_img:
 		_spawn_item_particles(player_profile_img.global_position, Color(0.3, 1.0, 0.5), 12)
 
@@ -2152,6 +2162,10 @@ func _play_buff_visual(buff_type: String) -> void:
 	else:
 		particle_color = Color(1.0, 1.0, 0.3)
 
+	# CPUParticles2D looping buff aura
+	_play_player_buff_visual(buff_type)
+
+	# Legacy one-shot particles
 	if player_profile_img:
 		_spawn_item_particles(player_profile_img.global_position, particle_color, 10)
 
@@ -2204,6 +2218,89 @@ func _spawn_item_particles(pos: Vector2, color: Color, count: int) -> void:
 		tw.tween_callback(p.queue_free).set_delay(dur + 0.1)
 
 
+# ============================================================
+# PLAYER BUFF & HEAL PARTICLES (CPUParticles2D)
+# ============================================================
+
+func _setup_player_buff_particles() -> void:
+	if not player_profile_img:
+		return
+	player_buff_particles = CPUParticles2D.new()
+	add_child(player_buff_particles)
+	player_buff_particles.z_index = 100
+	player_buff_particles.amount = 12
+	player_buff_particles.lifetime = 1.5
+	player_buff_particles.one_shot = false
+	player_buff_particles.emitting = false
+	player_buff_particles.direction = Vector2(0, -1)
+	player_buff_particles.spread = 35.0
+	player_buff_particles.gravity = Vector2(0, -60)
+	player_buff_particles.initial_velocity_min = 20.0
+	player_buff_particles.initial_velocity_max = 50.0
+	player_buff_particles.scale_amount_min = 2.0
+	player_buff_particles.scale_amount_max = 5.0
+	player_buff_particles.color = Color(1.0, 0.4, 0.15, 0.8)
+	player_buff_particles.position = player_profile_img.position + player_profile_img.size / 2.0
+
+
+func _setup_player_heal_particles() -> void:
+	if not player_profile_img:
+		return
+	player_heal_particles = CPUParticles2D.new()
+	add_child(player_heal_particles)
+	player_heal_particles.z_index = 100
+	player_heal_particles.amount = 10
+	player_heal_particles.lifetime = 0.6
+	player_heal_particles.one_shot = true
+	player_heal_particles.explosiveness = 0.9
+	player_heal_particles.emitting = false
+	player_heal_particles.direction = Vector2(0, -1)
+	player_heal_particles.spread = 60.0
+	player_heal_particles.gravity = Vector2(0, -200)
+	player_heal_particles.initial_velocity_min = 60.0
+	player_heal_particles.initial_velocity_max = 120.0
+	player_heal_particles.scale_amount_min = 2.0
+	player_heal_particles.scale_amount_max = 5.0
+	player_heal_particles.color = Color(0.2, 1.0, 0.3, 0.9)
+	player_heal_particles.position = player_profile_img.position + player_profile_img.size / 2.0
+
+
+func _play_player_buff_visual(buff_type: String) -> void:
+	if not player_buff_particles:
+		return
+	var lower_type := buff_type.to_lower()
+
+	# Anti-duplicate: kalau type sama, restart aja
+	if lower_type == current_player_buff_type and player_buff_particles.emitting:
+		player_buff_particles.restart()
+		return
+
+	# Update warna sesuai type
+	match lower_type:
+		"attack_up":
+			player_buff_particles.color = Color(1.0, 0.4, 0.15, 0.8)
+		"defense_up":
+			player_buff_particles.color = Color(0.3, 0.6, 1.0, 0.8)
+		_:
+			player_buff_particles.color = Color(1.0, 0.85, 0.2, 0.8)
+
+	current_player_buff_type = lower_type
+	player_buff_particles.emitting = true
+	player_buff_particles.restart()
+
+
+func _play_player_heal_visual() -> void:
+	if not player_heal_particles:
+		return
+	player_heal_particles.restart()
+
+
+func _stop_player_buff_particles() -> void:
+	if player_buff_particles:
+		player_buff_particles.emitting = false
+	current_player_buff_type = ""
+
+
 func player_receive_damage_custom(amount: float) -> void:
 	_hide_parry_window()
 	
@@ -2234,6 +2331,10 @@ func player_receive_damage_custom(amount: float) -> void:
 	# MORALE: Enemy attack berhasil (tidak di-parry) -> naikkan morale +25%
 	if not parry_success_this_turn and current_enemy_attacking and is_instance_valid(current_enemy_attacking):
 		current_enemy_attacking.increase_morale_on_hit()
+
+	# LIFE STEAL: Cek apakah enemy punya life steal ability
+	if current_enemy_attacking and is_instance_valid(current_enemy_attacking) and current_enemy_attacking.current_hp > 0:
+		current_enemy_attacking._apply_life_steal(amount)
 
 
 func _on_enemy_defeated(_exp_amount: int, _gold_amount: int, _dropped_items: Array[String], enemy: BattleEnemy) -> void:
@@ -2375,6 +2476,18 @@ func _start_enemies_turn() -> void:
 		var expired := player_buff_manager.process_turn_start()
 		if not expired.is_empty():
 			_update_player_status_effects()
+		# Cek apakah masih ada buff attack/defense aktif
+		if current_player_buff_type != "":
+			var active_types: Array[String] = player_buff_manager.get_active_buff_types()
+			var still_has_buff: bool = false
+			for t in active_types:
+				if t == "attack_up" or t == "defense_up" or t == "generic":
+					still_has_buff = true
+					if t != current_player_buff_type:
+						_play_player_buff_visual(t)
+					break
+			if not still_has_buff:
+				_stop_player_buff_particles()
 	
 	for enemy in enemies:
 		if enemy.current_hp > 0:

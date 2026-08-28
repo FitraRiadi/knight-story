@@ -22,6 +22,10 @@ var is_switching: bool = false
 
 
 func _ready() -> void:
+	# Sembunyikan feature panel di awal (seperti blacksmith)
+	feature.position.x -= 800
+	feature.visible = true
+
 	if exit:
 		exit.pressed.connect(_on_exit_tavern)
 	if buy_item_btn:
@@ -36,6 +40,7 @@ func _ready() -> void:
 		announcement_btn.pressed.connect(_on_announcement_pressed)
 
 	_create_gold_display()
+	gold_display.visible = false
 
 
 # ============================================================
@@ -92,6 +97,13 @@ func _hide_feature() -> void:
 func _show_feature() -> void:
 	feature.visible = true
 	gold_display.visible = true
+
+
+func _show_feature_slide_in() -> void:
+	# Slide feature dari kiri ke kanan (seperti blacksmith intro)
+	gold_display.visible = true
+	var tween = create_tween().set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(feature, "position:x", feature.position.x + 800, 0.5)
 
 
 # ============================================================
@@ -396,7 +408,17 @@ func _on_panel_closed() -> void:
 # ============================================================
 
 func _on_selling_pressed() -> void:
-	pass
+	if is_switching:
+		return
+	is_switching = true
+
+	await _close_active_panel_and_wait()
+
+	_hide_feature()
+
+	var sell_panel = SellPanel.new()
+	_open_panel(sell_panel)
+	is_switching = false
 
 func _on_quest_pressed() -> void:
 	pass

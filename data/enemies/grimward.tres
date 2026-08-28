@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="2_or5ns"]
 [ext_resource type="Texture2D" uid="uid://babnlghrmqvsm" path="res://assets/art/sprites/enemy/grimward/idle1-removebg-preview.png" id="2_pfxji"]
 [ext_resource type="Resource" uid="uid://dmfc6tb72muxj" path="res://data/items/health_potion.tres" id="3_u0vpp"]
+[ext_resource type="Resource" path="res://data/enemies/abilities/life_steal.tres" id="3_w4pim"]
 [ext_resource type="Texture2D" uid="uid://xpfvadqs4lpj" path="res://assets/art/sprites/enemy/grimward/idle2-removebg-preview.png" id="3_ycbiy"]
 [ext_resource type="Texture2D" uid="uid://i208trw5gtud" path="res://assets/art/sprites/enemy/grimward/attack1-removebg-preview.png" id="4_fvgrf"]
 [ext_resource type="Texture2D" uid="uid://bfk8r607vwxap" path="res://assets/art/sprites/enemy/grimward/attack2-removebg-preview.png" id="5_qphqy"]
@@ -90,5 +91,5 @@ icon_enemy = ExtResource("1_ycbiy")
 sprite_frames = SubResource("SpriteFrames_gn7wh")
 damage_to_player = 20.0
 exp_reward = 10
-abilities = Array[ExtResource("1_qphqy")]([ExtResource("10_ab1")])
+abilities = Array[ExtResource("1_qphqy")]([ExtResource("10_ab1"), ExtResource("3_w4pim")])
 metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"

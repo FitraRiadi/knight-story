@@ -1,10 +1,10 @@
 extends Control
-class_name ShopPanel
+class_name SellPanel
 
 
 # ============================================================
-# SHOP PANEL
-# UI toko Robert di Tavern. Match style feature panel.
+# SELL PANEL
+# UI jual item di Tavern. Match style feature panel.
 # Bounds: feature = (35, 21, 438, 280)
 # ============================================================
 
@@ -13,6 +13,7 @@ signal closed
 var panel: Panel
 var gold_label: Label
 var item_container: VBoxContainer
+var empty_label: Label
 
 var overlay: ColorRect
 
@@ -22,8 +23,8 @@ const TITLE_COLOR := Color(1, 1, 0.2)
 const GOLD_COLOR := Color(1, 0.85, 0.2)
 const TEXT_COLOR := Color(1, 0.95, 0.8)
 const DESC_COLOR := Color(0.7, 0.65, 0.55)
-const BUY_NORMAL := Color(0.11, 0.35, 0.08, 0.85)
-const BUY_HOVER := Color(0.15, 0.45, 0.1, 1.0)
+const SELL_NORMAL := Color(0.35, 0.25, 0.05, 0.85)
+const SELL_HOVER := Color(0.45, 0.35, 0.08, 1.0)
 
 
 func _ready() -> void:
@@ -52,7 +53,7 @@ func _build_ui() -> void:
 	panel.add_theme_stylebox_override("panel", panel_style)
 	add_child(panel)
 
-	# Title bar (top area, like base-title)
+	# Title bar
 	var title_bar = Panel.new()
 	title_bar.position = Vector2(0, 0)
 	title_bar.size = Vector2(438, 30)
@@ -62,7 +63,7 @@ func _build_ui() -> void:
 	panel.add_child(title_bar)
 
 	var title = Label.new()
-	title.text = "Robert's Shop"
+	title.text = "Sell Your Items"
 	title.position = Vector2(0, 3)
 	title.size = Vector2(438, 24)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -86,7 +87,6 @@ func _build_ui() -> void:
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.follow_focus = true
 
-	# Scrollbar style — tipis, transparan
 	var scrollbar_v = scroll.get_v_scroll_bar()
 	scrollbar_v.custom_minimum_size.x = 4
 	scrollbar_v.modulate.a = 0.4
@@ -97,7 +97,18 @@ func _build_ui() -> void:
 	scroll.add_child(item_container)
 	panel.add_child(scroll)
 
-	# Close button (bottom-right, same style as exit button area)
+	# Empty label (shown when inventory is empty)
+	empty_label = Label.new()
+	empty_label.text = "Your inventory is empty!"
+	empty_label.position = Vector2(10, 100)
+	empty_label.size = Vector2(418, 30)
+	empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	empty_label.add_theme_font_size_override("font_size", 13)
+	empty_label.add_theme_color_override("font_color", DESC_COLOR)
+	empty_label.visible = false
+	panel.add_child(empty_label)
+
+	# Close button
 	var close_btn = Button.new()
 	close_btn.text = "X"
 	close_btn.position = Vector2(405, 258)
@@ -122,13 +133,20 @@ func _build_ui() -> void:
 
 
 func _populate_items() -> void:
-	var items = ShopDatabase.get_all_shop_items()
-	for item_data in items:
-		var row = _create_item_row(item_data)
-		item_container.add_child(row)
+	var inv_items = PlayerDataManager.data.battle_inventory.items
+	var has_items = false
+
+	for i in range(inv_items.size()):
+		if inv_items[i] != null:
+			var item_res: ItemData = inv_items[i]
+			var row = _create_item_row(item_res, i)
+			item_container.add_child(row)
+			has_items = true
+
+	empty_label.visible = not has_items
 
 
-func _create_item_row(item_data: Dictionary) -> PanelContainer:
+func _create_item_row(item_res: ItemData, inventory_index: int) -> PanelContainer:
 	var row = PanelContainer.new()
 	row.custom_minimum_size = Vector2(0, 55)
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -154,9 +172,8 @@ func _create_item_row(item_data: Dictionary) -> PanelContainer:
 	icon_rect.custom_minimum_size = Vector2(36, 36)
 	icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon_rect.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	var icon_path = item_data.get("icon_path", "")
-	if icon_path != "" and ResourceLoader.exists(icon_path):
-		icon_rect.texture = load(icon_path)
+	if item_res.icon:
+		icon_rect.texture = item_res.icon
 	hbox.add_child(icon_rect)
 
 	# Item info (name + desc stacked)
@@ -166,21 +183,21 @@ func _create_item_row(item_data: Dictionary) -> PanelContainer:
 	hbox.add_child(info_vbox)
 
 	var name_label = Label.new()
-	name_label.text = item_data.get("name", "Unknown")
+	name_label.text = item_res.item_name
 	name_label.add_theme_font_size_override("font_size", 14)
 	name_label.add_theme_color_override("font_color", TEXT_COLOR)
 	info_vbox.add_child(name_label)
 
 	var desc_label = Label.new()
-	desc_label.text = item_data.get("description", "")
+	desc_label.text = item_res.description
 	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	desc_label.add_theme_font_size_override("font_size", 10)
 	desc_label.add_theme_color_override("font_color", DESC_COLOR)
 	info_vbox.add_child(desc_label)
 
-	# Price
+	# Sell price
 	var price_label = Label.new()
-	price_label.text = str(item_data.get("price", 0)) + " G"
+	price_label.text = str(item_res.sell_value) + " G"
 	price_label.custom_minimum_size = Vector2(60, 0)
 	price_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	price_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
@@ -188,64 +205,56 @@ func _create_item_row(item_data: Dictionary) -> PanelContainer:
 	price_label.add_theme_color_override("font_color", GOLD_COLOR)
 	hbox.add_child(price_label)
 
-	# Buy button
-	var buy_btn = Button.new()
-	buy_btn.text = "Buy"
-	buy_btn.custom_minimum_size = Vector2(50, 28)
+	# Sell button
+	var sell_btn = Button.new()
+	sell_btn.text = "Sell"
+	sell_btn.custom_minimum_size = Vector2(50, 28)
 
-	var buy_style = StyleBoxFlat.new()
-	buy_style.bg_color = BUY_NORMAL
-	buy_style.corner_radius_top_left = 4
-	buy_style.corner_radius_top_right = 4
-	buy_style.corner_radius_bottom_left = 4
-	buy_style.corner_radius_bottom_right = 4
-	buy_btn.add_theme_stylebox_override("normal", buy_style)
+	var sell_style = StyleBoxFlat.new()
+	sell_style.bg_color = SELL_NORMAL
+	sell_style.corner_radius_top_left = 4
+	sell_style.corner_radius_top_right = 4
+	sell_style.corner_radius_bottom_left = 4
+	sell_style.corner_radius_bottom_right = 4
+	sell_btn.add_theme_stylebox_override("normal", sell_style)
 
-	var buy_hover = buy_style.duplicate()
-	buy_hover.bg_color = BUY_HOVER
-	buy_btn.add_theme_stylebox_override("hover", buy_hover)
+	var sell_hover = sell_style.duplicate()
+	sell_hover.bg_color = SELL_HOVER
+	sell_btn.add_theme_stylebox_override("hover", sell_hover)
 
-	buy_btn.add_theme_font_size_override("font_size", 12)
-	buy_btn.add_theme_color_override("font_color", TEXT_COLOR)
-	buy_btn.pressed.connect(_on_buy_pressed.bind(item_data))
-	hbox.add_child(buy_btn)
+	sell_btn.add_theme_font_size_override("font_size", 12)
+	sell_btn.add_theme_color_override("font_color", TEXT_COLOR)
+	sell_btn.pressed.connect(_on_sell_pressed.bind(item_res, inventory_index))
+	hbox.add_child(sell_btn)
 
 	return row
 
 
-func _on_buy_pressed(item_data: Dictionary) -> void:
-	var item_path = item_data.get("item_path", "")
-
-	if item_path == "" or not ResourceLoader.exists(item_path):
-		_show_floating_text("Item not available!", Color(1, 0.4, 0.3))
+func _on_sell_pressed(item_res: ItemData, inventory_index: int) -> void:
+	if item_res.sell_value <= 0:
+		_show_floating_text("Cannot sell this item!", Color(1, 0.4, 0.3))
 		return
 
-	var item_res = load(item_path) as ItemData
-	if item_res == null:
-		_show_floating_text("Failed to load item!", Color(1, 0.4, 0.3))
-		return
-
-	_show_buy_confirmation_popup(item_data, item_res)
+	_show_sell_confirmation_popup(item_res, inventory_index)
 
 
 # ============================================================
-# BUY CONFIRMATION POPUP
-# Mirror style dari drop confirmation di battle_inventory.gd
+# SELL CONFIRMATION POPUP
 # ============================================================
 
-func _show_buy_confirmation_popup(item_data: Dictionary, item_res: ItemData) -> void:
-	var price: int = item_data.get("price", 0)
-	var item_name: String = item_data.get("name", "Unknown")
+func _show_sell_confirmation_popup(item_res: ItemData, inventory_index: int) -> void:
+	var sell_price: int = item_res.sell_value
+	var item_name: String = item_res.item_name
 
 	# 1. Overlay
 	var popup_overlay := Control.new()
-	popup_overlay.name = "BuyPopupOverlay"
+	popup_overlay.name = "SellPopupOverlay"
 	popup_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
 	popup_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	# 2. Panel
 	var popup_panel := PanelContainer.new()
-	popup_panel.name = "ConfirmBuyPanel"
+	popup_panel.name = "ConfirmSellPanel"
 	popup_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var panel_style := StyleBoxFlat.new()
@@ -297,7 +306,7 @@ func _show_buy_confirmation_popup(item_data: Dictionary, item_res: ItemData) -> 
 
 	# 4b. Item Description (autowrap)
 	var popup_desc_label := Label.new()
-	popup_desc_label.text = item_data.get("description", "")
+	popup_desc_label.text = item_res.description
 	popup_desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	popup_desc_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	popup_desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -323,7 +332,7 @@ func _show_buy_confirmation_popup(item_data: Dictionary, item_res: ItemData) -> 
 	confirm_vbox.add_theme_stylebox_override("panel", confirm_info_style)
 
 	var confirm_text := Label.new()
-	confirm_text.text = "Buy This Item?"
+	confirm_text.text = "Sell This Item?"
 	confirm_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	confirm_text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	confirm_text.add_theme_color_override("font_color", GOLD_COLOR)
@@ -331,7 +340,7 @@ func _show_buy_confirmation_popup(item_data: Dictionary, item_res: ItemData) -> 
 	confirm_vbox.add_child(confirm_text)
 
 	var price_text := Label.new()
-	price_text.text = str(price) + " G"
+	price_text.text = str(sell_price) + " G"
 	price_text.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	price_text.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	price_text.add_theme_color_override("font_color", GOLD_COLOR)
@@ -421,43 +430,28 @@ func _show_buy_confirmation_popup(item_data: Dictionary, item_res: ItemData) -> 
 	tween.tween_property(popup_panel, "modulate:a", 1.0, 0.15)
 
 	# Signal tombol
-	yes_btn.pressed.connect(_confirm_buy_item.bind(item_data, item_res, popup_overlay, popup_panel))
-	no_btn.pressed.connect(_close_buy_popup.bind(popup_overlay, popup_panel))
+	yes_btn.pressed.connect(_confirm_sell_item.bind(item_res, inventory_index, popup_overlay, popup_panel))
+	no_btn.pressed.connect(_close_sell_popup.bind(popup_overlay, popup_panel))
 
 
-func _confirm_buy_item(item_data: Dictionary, item_res: ItemData, overlay_node: Node, popup_panel: Node) -> void:
-	var price: int = item_data.get("price", 0)
-	var item_name: String = item_data.get("name", "item")
+func _confirm_sell_item(item_res: ItemData, inventory_index: int, overlay_node: Node, popup_panel: Node) -> void:
+	var sell_price: int = item_res.sell_value
+	var item_name: String = item_res.item_name
 
-	_close_buy_popup(overlay_node, popup_panel)
+	_close_sell_popup(overlay_node, popup_panel)
 
-	# Validasi gold
-	if PlayerDataManager.get_gold() < price:
-		_show_floating_text("Not enough gold!", Color(1, 0.4, 0.3))
-		return
+	# Proses jual
+	PlayerDataManager.add_gold(sell_price)
+	PlayerDataManager.remove_item(inventory_index)
+	_update_gold_display()
+	_show_floating_text("Sold " + item_name + "!", Color(0.4, 1, 0.4))
+	_spawn_sell_particles()
 
-	# Validasi inventory: hitung item yang bukan null
-	var inv_items = PlayerDataManager.data.battle_inventory.items
-	var item_count = 0
-	for i in inv_items:
-		if i != null:
-			item_count += 1
-	if item_count >= 9:
-		_show_floating_text("Inventory full!", Color(1, 0.4, 0.3))
-		return
-
-	# Proses beli
-	if PlayerDataManager.spend_gold(price):
-		var new_item = item_res.duplicate(true) as ItemData
-		PlayerDataManager.add_item_to_inventory(new_item)
-		_update_gold_display()
-		_show_floating_text("Buying " + item_name + "!", Color(0.4, 1, 0.4))
-		_spawn_buy_particles()
-	else:
-		_show_floating_text("Purchase failed!", Color(1, 0.4, 0.3))
+	# Refresh list
+	_refresh_item_list()
 
 
-func _close_buy_popup(overlay_node: Node, popup_panel: Node) -> void:
+func _close_sell_popup(overlay_node: Node, popup_panel: Node) -> void:
 	if not is_instance_valid(overlay_node) or not is_instance_valid(popup_panel):
 		return
 
@@ -465,6 +459,17 @@ func _close_buy_popup(overlay_node: Node, popup_panel: Node) -> void:
 	tween.tween_property(popup_panel, "scale", Vector2(0.8, 0.8), 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	tween.tween_property(popup_panel, "modulate:a", 0.0, 0.15)
 	tween.chain().tween_callback(overlay_node.queue_free)
+
+
+func _refresh_item_list() -> void:
+	# Clear existing rows
+	for child in item_container.get_children():
+		child.queue_free()
+
+	await get_tree().process_frame
+
+	# Re-populate
+	_populate_items()
 
 
 func _update_gold_display() -> void:
@@ -480,7 +485,6 @@ func _show_floating_text(text: String, color: Color) -> void:
 	float_label.add_theme_font_size_override("font_size", 14)
 	float_label.add_theme_color_override("font_color", color)
 
-	# Style background: hitam 75% opacity, rounded 10
 	var float_bg := StyleBoxFlat.new()
 	float_bg.bg_color = Color(0, 0, 0, 0.75)
 	float_bg.set_corner_radius_all(10)
@@ -492,28 +496,23 @@ func _show_floating_text(text: String, color: Color) -> void:
 
 	add_child(float_label)
 
-	# Posisi sama kayak popup confirm buy (370, 130)
 	float_label.reset_size()
 	var target_pos := Vector2(370.0, 130.0)
 	float_label.pivot_offset = float_label.size / 2.0
 	float_label.position = target_pos - (float_label.size / 2.0)
 
-	# Mulai dari scale kecil + transparan
 	float_label.scale = Vector2(0.5, 0.5)
 	float_label.modulate.a = 0.0
 
-	# Animasi pop smooth (TRANS_CIRC)
 	var tween := create_tween().set_parallel(true)
 	tween.set_trans(Tween.TRANS_CIRC)
 	tween.set_ease(Tween.EASE_OUT)
 	tween.tween_property(float_label, "scale", Vector2(1.0, 1.0), 0.25)
 	tween.tween_property(float_label, "modulate:a", 1.0, 0.2)
 
-	# Tahan 2 detik
 	tween.chain()
 	tween.tween_interval(2.0)
 
-	# Fade out
 	tween.chain().set_parallel(true)
 	tween.set_trans(Tween.TRANS_CIRC)
 	tween.set_ease(Tween.EASE_IN)
@@ -526,11 +525,9 @@ func _on_close_pressed() -> void:
 
 
 func _play_intro() -> void:
-	# Overlay fade in
 	var tween_overlay = create_tween()
 	tween_overlay.tween_property(overlay, "modulate:a", 1.0, 0.25)
 
-	# Panel slide up from below
 	var target_y = panel.position.y
 	panel.position.y = target_y + 300
 	panel.modulate.a = 0.0
@@ -543,7 +540,6 @@ func _play_intro() -> void:
 
 
 func _play_outro() -> void:
-	# Panel slide down + fade out
 	var tween = create_tween().set_parallel(true)
 	tween.set_trans(Tween.TRANS_CIRC)
 	tween.set_ease(Tween.EASE_IN)
@@ -558,7 +554,7 @@ func _emit_closed() -> void:
 	queue_free()
 
 
-func _spawn_buy_particles() -> void:
+func _spawn_sell_particles() -> void:
 	var particles = CPUParticles2D.new()
 	particles.position = Vector2(370, 130)
 	particles.z_index = 100
@@ -574,7 +570,7 @@ func _spawn_buy_particles() -> void:
 	particles.initial_velocity_max = 150.0
 	particles.scale_amount_min = 2.0
 	particles.scale_amount_max = 4.0
-	particles.color = Color(0.4, 1.0, 0.4, 0.9)
+	particles.color = Color(1.0, 0.85, 0.2, 0.9)
 	add_child(particles)
 	await get_tree().create_timer(particles.lifetime + 0.1).timeout
 	if is_instance_valid(particles):

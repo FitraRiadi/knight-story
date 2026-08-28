@@ -19,7 +19,7 @@ const SHOP_DATABASE: Array[Dictionary] = [
 	{
 		"id": "attack_potion",
 		"name": "Attack Potion",
-		"description": "Temporarily boosts Attack by 15 for 3 turns.",
+		"description": "Temporarily increases Attack Power by 15 for 3 turns.",
 		"icon_path": "res://assets/art/items/consumable/potion/Icon20.png",
 		"price": 250,
 		"item_path": "res://data/items/attack_potion.tres",

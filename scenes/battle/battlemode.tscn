@@ -457,10 +457,10 @@ texture = ExtResource("4_o6x6a")
 
 [node name="playerEffect" type="Control" parent="player-information" unique_id=1119730705]
 anchors_preset = 0
-offset_left = 6.2725964
-offset_top = 73.56889
-offset_right = 110.71706
-offset_bottom = 88.01334
+offset_left = 3.763558
+offset_top = 69.89045
+offset_right = 108.208015
+offset_bottom = 84.33491
 scale = Vector2(1.8687787, 2.1181943)
 
 [node name="effect" type="TextureRect" parent="player-information/playerEffect" unique_id=36442757]

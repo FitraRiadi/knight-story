@@ -16,5 +16,4 @@ script = ExtResource("1_player")
 player_name = "Rayosdelsol"
 player_profile = ExtResource("3_1mohm")
 parry_flat_reduction = 30.0
-durability = 5.0
 battle_inventory = SubResource("Resource_inventory")

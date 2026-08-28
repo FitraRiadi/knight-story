@@ -63,6 +63,7 @@ enum ItemEffectType {
 @export_group("Item Settings")
 
 @export var use_count: int = 1
+@export var sell_value: int = 0
 
 
 # ============================================================

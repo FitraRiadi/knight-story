@@ -1,6 +1,7 @@
 extends Label
 
 @onready var dialogContainer: Control = $".."
+@onready var tavern: Control = $"../../"
 
 func _ready():
 	dialogContainer.position.y += 100
@@ -39,3 +40,7 @@ func _on_done(_label):
 	# Animasi slide down tutup dialog
 	var closing = create_tween()
 	closing.tween_property(dialogContainer, "position:y", dialogContainer.position.y + 100, 1.0).set_trans(Tween.TRANS_CIRC)
+	await closing.finished
+
+	# Munculkan feature panel dari kiri
+	tavern._show_feature_slide_in()

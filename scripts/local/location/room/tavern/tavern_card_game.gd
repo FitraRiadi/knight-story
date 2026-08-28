@@ -17,8 +17,8 @@ const CARD_GAP: float = 15.0
 const REVEAL_TIME: float = 1.8
 const SHUFFLE_COUNT_MIN: int = 6
 const SHUFFLE_COUNT_MAX: int = 9
-const SHUFFLE_SPEED_START: float = 0.35
-const SHUFFLE_SPEED_MIN: float = 0.12
+const SHUFFLE_SPEED_START: float = 0.45
+const SHUFFLE_SPEED_MIN: float = 0.18
 const GOLD_REWARD_MIN: int = 50
 const GOLD_REWARD_MAX: int = 150
 
@@ -30,7 +30,7 @@ var cards: Array[Panel] = []
 var card_labels: Array[Label] = []
 var card_icons: Array[ColorRect] = []
 
-var correct_index: int = 0
+var correct_card: Panel = null
 var is_shuffling: bool = false
 var is_guessing: bool = false
 var gold_reward: int = 0
@@ -156,7 +156,7 @@ func _start_game() -> void:
 		card_container.add_child(card)
 		cards.append(card)
 
-	correct_index = randi() % CARD_COUNT
+	correct_card = cards[randi() % CARD_COUNT]
 	gold_reward = randi_range(GOLD_REWARD_MIN, GOLD_REWARD_MAX)
 
 	await _reveal_correct_card()
@@ -201,8 +201,8 @@ func _create_card(index: int) -> Panel:
 	card.add_child(gem)
 	card_icons.append(gem)
 
-	# Click detection
-	card.gui_input.connect(_on_card_input.bind(index))
+	# Click detection — bind node, bukan index
+	card.gui_input.connect(_on_card_input.bind(card))
 
 	return card
 
@@ -211,9 +211,6 @@ func _reveal_correct_card() -> void:
 	status_label.text = "Memorize this card!"
 	status_label.add_theme_color_override("font_color", TEXT_COLOR)
 
-	var correct_card = cards[correct_index]
-
-	# Reveal style
 	var reveal_style = StyleBoxFlat.new()
 	reveal_style.bg_color = CARD_REVEAL_BG
 	reveal_style.border_width_top = 3
@@ -227,9 +224,9 @@ func _reveal_correct_card() -> void:
 	reveal_style.corner_radius_bottom_right = 6
 	correct_card.add_theme_stylebox_override("panel", reveal_style)
 
-	# Show gem
-	if correct_index < card_icons.size():
-		card_icons[correct_index].visible = true
+	var card_idx = cards.find(correct_card)
+	if card_idx >= 0 and card_idx < card_icons.size():
+		card_icons[card_idx].visible = true
 
 	# Pop animation
 	correct_card.pivot_offset = Vector2(CARD_WIDTH / 2.0, CARD_HEIGHT / 2.0)
@@ -239,9 +236,10 @@ func _reveal_correct_card() -> void:
 
 	await get_tree().create_timer(REVEAL_TIME).timeout
 
-	# Flip back
-	_reset_card_style(correct_index)
-	card_icons[correct_index].visible = false
+	# Flip back — hide gem dan style sebelum shuffle
+	var idx = cards.find(correct_card)
+	_reset_card_style(idx)
+	card_icons[idx].visible = false
 
 	await _shuffle_cards()
 
@@ -279,11 +277,6 @@ func _shuffle_cards() -> void:
 
 		await _swap_cards(a, b, current_speed)
 
-		if a == correct_index:
-			correct_index = b
-		elif b == correct_index:
-			correct_index = a
-
 		current_speed = maxf(current_speed - 0.025, SHUFFLE_SPEED_MIN)
 
 	status_label.text = "Pick the card!"
@@ -302,24 +295,35 @@ func _swap_cards(a: int, b: int, duration: float) -> void:
 	var pos_a = card_a.position
 	var pos_b = card_b.position
 
-	# Cross-path: one goes up, one goes down
-	var offset_y = 25.0 if a < b else -25.0
+	# Squeeze + rotate awal
+	var squeeze_tween = create_tween().set_parallel(true)
+	squeeze_tween.tween_property(card_a, "scale", Vector2(0.85, 1), duration * 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	squeeze_tween.tween_property(card_b, "scale", Vector2(0.85, 1), duration * 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	await squeeze_tween.finished
 
-	var tween = create_tween().set_parallel(true)
-	tween.set_trans(Tween.TRANS_QUAD)
-	tween.set_ease(Tween.EASE_IN_OUT)
+	# Geser cepat + rotate
+	var rot_a = 10.0 if pos_b.x > pos_a.x else -10.0
+	var rot_b = -rot_a
 
-	# A → B position
-	tween.tween_property(card_a, "position:x", pos_b.x, duration)
-	tween.tween_property(card_a, "position:y", pos_b.y + offset_y, duration * 0.5).set_ease(Tween.EASE_OUT)
-	tween.tween_property(card_a, "position:y", pos_b.y, duration).set_delay(duration * 0.5).set_ease(Tween.EASE_IN)
+	var swap_tween = create_tween().set_parallel(true)
+	swap_tween.set_trans(Tween.TRANS_BACK)
+	swap_tween.set_ease(Tween.EASE_IN_OUT)
 
-	# B → A position
-	tween.tween_property(card_b, "position:x", pos_a.x, duration)
-	tween.tween_property(card_b, "position:y", pos_a.y - offset_y, duration * 0.5).set_ease(Tween.EASE_OUT)
-	tween.tween_property(card_b, "position:y", pos_a.y, duration).set_delay(duration * 0.5).set_ease(Tween.EASE_IN)
+	swap_tween.tween_property(card_a, "position:x", pos_b.x, duration * 0.7)
+	swap_tween.tween_property(card_a, "rotation_degrees", rot_a, duration * 0.35).set_ease(Tween.EASE_OUT)
+	swap_tween.tween_property(card_a, "rotation_degrees", 0.0, duration * 0.35).set_delay(duration * 0.35).set_ease(Tween.EASE_IN)
 
-	await tween.finished
+	swap_tween.tween_property(card_b, "position:x", pos_a.x, duration * 0.7)
+	swap_tween.tween_property(card_b, "rotation_degrees", rot_b, duration * 0.35).set_ease(Tween.EASE_OUT)
+	swap_tween.tween_property(card_b, "rotation_degrees", 0.0, duration * 0.35).set_delay(duration * 0.35).set_ease(Tween.EASE_IN)
+
+	await swap_tween.finished
+
+	# Bounce back scale normal
+	var bounce_tween = create_tween().set_parallel(true)
+	bounce_tween.tween_property(card_a, "scale", Vector2.ONE, duration * 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	bounce_tween.tween_property(card_b, "scale", Vector2.ONE, duration * 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	await bounce_tween.finished
 
 	# Swap arrays
 	var temp = cards[a]
@@ -335,21 +339,20 @@ func _swap_cards(a: int, b: int, duration: float) -> void:
 	card_icons[b] = ti
 
 
-func _on_card_input(event: InputEvent, index: int) -> void:
+func _on_card_input(event: InputEvent, card: Panel) -> void:
 	if not is_guessing:
 		return
 	if not (event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT):
 		return
 
 	is_guessing = false
-	await _reveal_choice(index)
+	await _reveal_choice(card)
 
 
-func _reveal_choice(chosen_index: int) -> void:
-	var is_correct = (chosen_index == correct_index)
+func _reveal_choice(chosen_card: Panel) -> void:
+	var is_correct = (chosen_card == correct_card)
 
 	# Style chosen card
-	var chosen_card = cards[chosen_index]
 	var s = StyleBoxFlat.new()
 	s.border_width_top = 3
 	s.border_width_bottom = 3
@@ -381,7 +384,7 @@ func _reveal_choice(chosen_index: int) -> void:
 		cs.corner_radius_top_right = 6
 		cs.corner_radius_bottom_left = 6
 		cs.corner_radius_bottom_right = 6
-		cards[correct_index].add_theme_stylebox_override("panel", cs)
+		correct_card.add_theme_stylebox_override("panel", cs)
 
 	# Pop animation
 	chosen_card.pivot_offset = Vector2(CARD_WIDTH / 2.0, CARD_HEIGHT / 2.0)

@@ -3,7 +3,8 @@ class_name AbilityData
 
 enum AbilityType {
 	TACTICAL_ATTACK,
-	BATTLE_CRY
+	BATTLE_CRY,
+	LIFE_STEAL
 }
 
 @export var ability_id: String = ""
@@ -19,3 +20,7 @@ func is_tactical_attack() -> bool:
 
 func is_battle_cry() -> bool:
 	return ability_type == AbilityType.BATTLE_CRY
+
+
+func is_life_steal() -> bool:
+	return ability_type == AbilityType.LIFE_STEAL

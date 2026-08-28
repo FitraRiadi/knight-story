@@ -1345,6 +1345,51 @@ func should_double_attack() -> bool:
 
 
 # ============================================================
+# LIFE STEAL ABILITY
+# ============================================================
+
+func get_life_steal_ability() -> AbilityData:
+	for ab: AbilityData in enemy_abilities:
+		if ab.is_life_steal():
+			return ab
+	return null
+
+
+func has_life_steal() -> bool:
+	return get_life_steal_ability() != null
+
+
+func _apply_life_steal(damage_dealt: float) -> void:
+	var ab := get_life_steal_ability()
+	if ab == null:
+		return
+	if not LifeStealAbility.should_life_steal(ab.get_level()):
+		return
+
+	var heal_percent: float = LifeStealAbility.get_heal_percent(ab.get_level())
+	var heal_amount: float = damage_dealt * heal_percent
+	var old_hp: float = current_hp
+	current_hp = minf(scaled_max_hp, current_hp + heal_amount)
+	var actual_heal: float = current_hp - old_hp
+
+	if actual_heal <= 0.0:
+		return
+
+	# Update HP bar
+	_update_hp_bar()
+
+	# Show floating text
+	var ls_text: String = LifeStealAbility.get_life_steal_text(ab.get_level())
+	var ls_color: Color = LifeStealAbility.get_life_steal_text_color(ab.get_level())
+	show_reaction_text(ls_text + " +" + str(int(actual_heal)), ls_color, true)
+
+	# Green flash tween
+	var tween: Tween = create_tween()
+	tween.tween_property(self, "modulate", Color(0.5, 1.5, 0.5, 1.0), 0.15)
+	tween.tween_property(self, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.3)
+
+
+# ============================================================
 # SMOKE PARTICLE (Morale)
 # ============================================================
 
