@@ -936,7 +936,7 @@ func receive_damage(
 
 	var reduction: float = buff_manager.get_total_damage_reduction()
 	if reduction > 0.0:
-		final_damage *= (1.0 - reduction)
+		final_damage = max(0.0, final_damage - reduction)
 
 	if shield_value > 0.0:
 		var absorbed: float = minf(shield_value, final_damage)

@@ -110,12 +110,7 @@ enum ItemEffectType {
 @export var defense_bonus: float = 0.0
 @export var shield_value: float = 0.0
 
-@export_range(
-	0.0,
-	90.0,
-	0.5
-)
-var damage_reduction: float = 0.0
+@export var damage_reduction: float = 0.0
 
 
 # ============================================================
@@ -451,7 +446,7 @@ func get_effect_summary() -> String:
 		effects.append("Shield +%d" % int(shield_value))
 
 	if damage_reduction > 0.0:
-		effects.append("Damage Reduction +%.1f%%" % damage_reduction)
+		effects.append("Damage Reduction -%d" % int(damage_reduction))
 
 	if remove_debuff:
 		effects.append("Remove Debuff")

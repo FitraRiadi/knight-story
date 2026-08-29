@@ -1297,6 +1297,10 @@ func _execute_actual_attack(result: AttackResult) -> void:
 		var counter_text: String = TacticalAttackAbility.get_counter_text(ab.get_level())
 		var counter_color: Color = TacticalAttackAbility.get_counter_text_color(ab.get_level())
 
+		# Naikin z_index biar gak kehalang enemy lain
+		var old_z: int = target_enemy.z_index
+		target_enemy.z_index = 100
+
 		target_enemy.show_reaction_text(counter_text, counter_color, true)
 		await get_tree().create_timer(0.15).timeout
 
@@ -1313,6 +1317,9 @@ func _execute_actual_attack(result: AttackResult) -> void:
 
 		# Pastikan animasi balik idle setelah counter
 		target_enemy.play("idle")
+
+		# Balikin z_index
+		target_enemy.z_index = old_z
 
 	_start_enemies_turn()
 
@@ -2329,6 +2336,12 @@ func player_receive_damage_custom(amount: float) -> void:
 		final_damage = max(0.0, amount - player_durability - defense_flat_reduction)
 	else:
 		final_damage = max(0.0, amount - player_durability)
+
+	# DAMAGE REDUCTION: Apply flat damage reduction (Protection Potion, dll)
+	if player_buff_manager:
+		var buff_dmg_reduction: float = player_buff_manager.get_total_damage_reduction()
+		if buff_dmg_reduction > 0.0:
+			final_damage = max(0.0, final_damage - buff_dmg_reduction)
 	
 	if is_defending:
 		var shield_sfx: AudioStream = load("res://assets/audio/effects/battle/shield/shield-base.mp3")

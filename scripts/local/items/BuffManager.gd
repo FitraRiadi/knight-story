@@ -44,7 +44,7 @@ func apply_item(item: ItemData, target_unit: Object) -> Dictionary:
 	var item_duration: int = item.duration if "duration" in item else 0
 	var atk_bonus: float = item.attack_bonus + item.damage_bonus
 	var def_bonus: float = item.defense_bonus
-	var red_bonus: float = (item.damage_reduction / 100.0) if item.damage_reduction > 0 else 0.0
+	var red_bonus: float = item.damage_reduction
 
 	var has_stat_buff: bool = (atk_bonus != 0.0 or def_bonus != 0.0 or red_bonus > 0.0)
 
@@ -97,7 +97,7 @@ func apply_item_simple(item: ItemData, battle_manager: Object) -> Dictionary:
 	var item_duration: int = item.duration if "duration" in item else 0
 	var atk_bonus: float = item.attack_bonus + item.damage_bonus
 	var def_bonus: float = item.defense_bonus
-	var red_bonus: float = (item.damage_reduction / 100.0) if item.damage_reduction > 0 else 0.0
+	var red_bonus: float = item.damage_reduction
 	
 	var has_stat_buff: bool = (atk_bonus != 0.0 or def_bonus != 0.0 or red_bonus > 0.0)
 	
@@ -199,7 +199,7 @@ func get_total_damage_reduction() -> float:
 	var total: float = 0.0
 	for buff in active_buffs:
 		total += buff.get("damage_reduction", 0.0)
-	return clampf(total, 0.0, 0.90)
+	return total
 
 
 func clear() -> void:

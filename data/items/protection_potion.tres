@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://besh3dfkieai5"]
+
+[ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="1_item"]
+[ext_resource type="Texture2D" uid="uid://dxvy1vbijsxrl" path="res://assets/art/items/consumable/potion/Icon22.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_item")
+item_id = "protection_potion"
+item_name = "Protection Potion"
+description = "Reduces all incoming damage by 20 for 3 turns."
+icon = ExtResource("2_icon")
+rarity = "Uncommon"
+item_effect_type = 11
+sell_value = 125
+damage_reduction = 20.0
+duration = 3
+metadata/_custom_type_script = "uid://d1chgapjpv2yu"
