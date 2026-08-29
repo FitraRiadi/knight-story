@@ -113,6 +113,17 @@ func remove_item(index: int) -> void:
 	save()
 
 
+func remove_chest_item(index: int) -> void:
+	if data == null or data.chest_inventory == null:
+		return
+
+	if index < 0 or index >= data.chest_inventory.items.size():
+		return
+
+	data.chest_inventory.items[index] = null
+	save()
+
+
 func reset_data() -> void:
 	# Hapus seluruh folder .knight
 	var knight_dir = ProjectSettings.globalize_path("user://.knight/")

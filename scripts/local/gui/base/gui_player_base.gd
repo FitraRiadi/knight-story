@@ -30,7 +30,8 @@ var max_exp: float = 300.0      # Batas angka EXP maksimal
 var current_exp: float = 300.0  # Angka EXP pemain saat ini
 
 func _ready() -> void:
-	inventory_btn.pressed.connect(_open_chest_inventory)
+	inventory_btn.pressed.connect(_open_combined_inventory)
+	inventory_btn_2.pressed.connect(_open_combined_inventory)
 	if exp_progress:
 		# 1. Simpan batas visual full (100%) dari lebar Panel di Editor
 		max_exp_width = exp_progress.size.x
@@ -139,10 +140,10 @@ func set_exp(new_exp: float, new_max_exp: float = -1.0) -> void:
 
 
 # ============================================================
-# CHEST INVENTORY
+# INVENTORY
 # ============================================================
 
-func _open_chest_inventory() -> void:
-	var chest := ChestInventory.new()
-	chest.set_anchors_preset(Control.PRESET_FULL_RECT)
-	add_child(chest)
+func _open_combined_inventory() -> void:
+	var inv := CombinedInventory.new()
+	inv.set_anchors_preset(Control.PRESET_FULL_RECT)
+	add_child(inv)

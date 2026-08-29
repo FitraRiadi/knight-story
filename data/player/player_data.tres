@@ -6,10 +6,15 @@
 [ext_resource type="Texture2D" uid="uid://8paessvpk5d7" path="res://assets/art/profile/player/Icon5.png" id="3_1mohm"]
 [ext_resource type="Script" uid="uid://krelh1pcnvst" path="res://scripts/data/inventory_battle_data.gd" id="3_inv"]
 [ext_resource type="Resource" uid="uid://xf6noadq87vm" path="res://data/items/attack_potion.tres" id="3_ioold"]
+[ext_resource type="Resource" uid="uid://besh3dfkieai5" path="res://data/items/protection_potion.tres" id="4_ioold"]
 
 [sub_resource type="Resource" id="Resource_inventory"]
 script = ExtResource("3_inv")
-items = Array[ExtResource("2_item")]([ExtResource("2_o4y3s"), ExtResource("2_o4y3s"), ExtResource("2_o4y3s"), ExtResource("2_o4y3s"), ExtResource("2_o4y3s"), ExtResource("2_o4y3s"), ExtResource("2_o4y3s"), ExtResource("3_ioold"), ExtResource("3_ioold")])
+items = Array[ExtResource("2_item")]([ExtResource("2_o4y3s"), ExtResource("3_ioold"), ExtResource("4_ioold"), null, null, null, null, null, null])
+
+[sub_resource type="Resource" id="Resource_chest"]
+script = ExtResource("3_inv")
+items = Array[ExtResource("2_item")]([])
 
 [resource]
 script = ExtResource("1_player")
@@ -17,3 +22,4 @@ player_name = "Rayosdelsol"
 player_profile = ExtResource("3_1mohm")
 parry_flat_reduction = 30.0
 battle_inventory = SubResource("Resource_inventory")
+chest_inventory = SubResource("Resource_chest")
