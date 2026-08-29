@@ -9,6 +9,8 @@ class_name TavernCardGame
 # ============================================================
 
 signal closed
+signal back_to_menu
+signal game_won
 
 const CARD_COUNT: int = 5
 const CARD_WIDTH: float = 70.0
@@ -19,10 +21,11 @@ const SHUFFLE_COUNT_MIN: int = 6
 const SHUFFLE_COUNT_MAX: int = 9
 const SHUFFLE_SPEED_START: float = 0.45
 const SHUFFLE_SPEED_MIN: float = 0.18
-const GOLD_REWARD_MIN: int = 50
-const GOLD_REWARD_MAX: int = 150
+const GOLD_REWARD: int = 5
 
 var panel: Panel
+var title_bar: Panel
+var title_label: Label
 var status_label: Label
 var gold_reward_label: Label
 var card_container: Control
@@ -33,7 +36,6 @@ var card_icons: Array[ColorRect] = []
 var correct_card: Panel = null
 var is_shuffling: bool = false
 var is_guessing: bool = false
-var gold_reward: int = 0
 var overlay: ColorRect
 
 # Style constants (match existing tavern)
@@ -76,22 +78,23 @@ func _build_ui() -> void:
 	add_child(panel)
 
 	# Title bar
-	var title_bar = Panel.new()
+	title_bar = Panel.new()
 	title_bar.position = Vector2(0, 0)
 	title_bar.size = Vector2(438, 30)
 	var title_bar_style = StyleBoxFlat.new()
-	title_bar_style.bg_color = Color(0.245, 0.169, 0.321, 0.5)
+	title_bar_style.bg_color = Color(0.35, 0.22, 0.45, 0.85)
 	title_bar.add_theme_stylebox_override("panel", title_bar_style)
+	title_bar.modulate.a = 0.0
 	panel.add_child(title_bar)
 
-	var title = Label.new()
-	title.text = "Find The Card"
-	title.position = Vector2(0, 3)
-	title.size = Vector2(438, 24)
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 18)
-	title.add_theme_color_override("font_color", TITLE_COLOR)
-	title_bar.add_child(title)
+	title_label = Label.new()
+	title_label.text = "Find The Card"
+	title_label.position = Vector2(0, 3)
+	title_label.size = Vector2(438, 24)
+	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_label.add_theme_font_size_override("font_size", 18)
+	title_label.add_theme_color_override("font_color", TITLE_COLOR)
+	title_bar.add_child(title_label)
 
 	# Status label
 	status_label = Label.new()
@@ -131,12 +134,38 @@ func _play_intro() -> void:
 	panel.position.y = target_y + 300
 	panel.modulate.a = 0.0
 
+	# Sembunyikan semua content children (termasuk title_bar)
+	title_bar.visible = false
+	status_label.visible = false
+	card_container.visible = false
+
 	var tween = create_tween().set_parallel(true)
 	tween.set_trans(Tween.TRANS_CIRC)
 	tween.set_ease(Tween.EASE_OUT)
 	tween.tween_property(panel, "position:y", target_y, 0.35)
 	tween.tween_property(panel, "modulate:a", 1.0, 0.3)
 	await tween.finished
+
+	# === TITLE MOMENT ===
+	# Title bar fade in
+	title_bar.visible = true
+	title_bar.modulate.a = 0.0
+	var title_tween = create_tween()
+	title_tween.tween_property(title_bar, "modulate:a", 1.0, 0.2)
+
+	# Tunggu sebentar — TITLE VISIBLE
+	await get_tree().create_timer(0.8).timeout
+
+	# Content children fade in
+	status_label.visible = true
+	status_label.modulate.a = 0.0
+	card_container.visible = true
+	card_container.modulate.a = 0.0
+
+	var content_tween = create_tween().set_parallel(true)
+	content_tween.tween_property(status_label, "modulate:a", 1.0, 0.3)
+	content_tween.tween_property(card_container, "modulate:a", 1.0, 0.3)
+	await content_tween.finished
 
 
 func _start_game() -> void:
@@ -146,6 +175,10 @@ func _start_game() -> void:
 	is_shuffling = false
 	is_guessing = false
 
+	# Reset labels
+	status_label.text = ""
+	gold_reward_label.visible = false
+
 	for child in card_container.get_children():
 		child.queue_free()
 
@@ -153,11 +186,17 @@ func _start_game() -> void:
 		var card = _create_card(i)
 		var x = i * (CARD_WIDTH + CARD_GAP)
 		card.position = Vector2(x, 0)
+		card.modulate.a = 0.0
 		card_container.add_child(card)
 		cards.append(card)
 
+	# Fade in semua cards bareng
+	var card_tween = create_tween().set_parallel(true)
+	for card in cards:
+		card_tween.tween_property(card, "modulate:a", 1.0, 0.25)
+	await card_tween.finished
+
 	correct_card = cards[randi() % CARD_COUNT]
-	gold_reward = randi_range(GOLD_REWARD_MIN, GOLD_REWARD_MAX)
 
 	await _reveal_correct_card()
 
@@ -396,9 +435,10 @@ func _reveal_choice(chosen_card: Panel) -> void:
 	if is_correct:
 		status_label.text = "Correct!"
 		status_label.add_theme_color_override("font_color", Color(0.3, 1, 0.4))
-		gold_reward_label.text = "+" + str(gold_reward) + " Gold"
+		gold_reward_label.text = "+" + str(GOLD_REWARD) + " Gold"
 		gold_reward_label.visible = true
-		PlayerDataManager.add_gold(gold_reward)
+		PlayerDataManager.add_gold(GOLD_REWARD)
+		game_won.emit()
 	else:
 		status_label.text = "Wrong!"
 		status_label.add_theme_color_override("font_color", Color(1, 0.3, 0.2))
@@ -406,6 +446,140 @@ func _reveal_choice(chosen_card: Panel) -> void:
 		gold_reward_label.visible = true
 
 	await get_tree().create_timer(2.0).timeout
+	_show_play_again(is_correct)
+
+
+func _show_play_again(was_win: bool) -> void:
+	var popup_overlay := Control.new()
+	popup_overlay.set_anchors_preset(Control.PRESET_FULL_RECT)
+	popup_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
+
+	var popup_panel := PanelContainer.new()
+	popup_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.12, 0.12, 0.14, 0.95)
+	panel_style.border_width_left = 2
+	panel_style.border_width_top = 2
+	panel_style.border_width_right = 2
+	panel_style.border_width_bottom = 2
+	panel_style.border_color = Color(0.3, 0.3, 0.3, 1.0)
+	panel_style.corner_radius_top_left = 6
+	panel_style.corner_radius_top_right = 6
+	panel_style.corner_radius_bottom_left = 6
+	panel_style.corner_radius_bottom_right = 6
+	panel_style.content_margin_left = 20.0
+	panel_style.content_margin_right = 20.0
+	panel_style.content_margin_top = 14.0
+	panel_style.content_margin_bottom = 14.0
+	popup_panel.add_theme_stylebox_override("panel", panel_style)
+
+	var vbox := VBoxContainer.new()
+	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	vbox.add_theme_constant_override("separation", 10)
+
+	var title_label := Label.new()
+	title_label.text = "Play Again?"
+	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title_label.add_theme_font_size_override("font_size", 18)
+	title_label.add_theme_color_override("font_color", TITLE_COLOR)
+	vbox.add_child(title_label)
+
+	var result_label := Label.new()
+	if was_win:
+		result_label.text = "You Won! +" + str(GOLD_REWARD) + " Gold"
+		result_label.add_theme_color_override("font_color", Color(0.3, 1, 0.4))
+	else:
+		result_label.text = "You Lost!"
+		result_label.add_theme_color_override("font_color", Color(1, 0.3, 0.2))
+	result_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	result_label.add_theme_font_size_override("font_size", 14)
+	vbox.add_child(result_label)
+
+	var gold_label := Label.new()
+	gold_label.text = "Gold: " + str(PlayerDataManager.get_gold()) + " G"
+	gold_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	gold_label.add_theme_font_size_override("font_size", 13)
+	gold_label.add_theme_color_override("font_color", GOLD_COLOR)
+	vbox.add_child(gold_label)
+
+	var hbox_btns := HBoxContainer.new()
+	hbox_btns.alignment = BoxContainer.ALIGNMENT_CENTER
+	hbox_btns.add_theme_constant_override("separation", 16)
+
+	var yes_btn := Button.new()
+	yes_btn.text = "Yes"
+	yes_btn.custom_minimum_size = Vector2(80, 30)
+	yes_btn.focus_mode = Control.FOCUS_NONE
+
+	var yes_style := StyleBoxFlat.new()
+	yes_style.bg_color = Color(0.11, 0.35, 0.08, 0.85)
+	yes_style.corner_radius_top_left = 4
+	yes_style.corner_radius_top_right = 4
+	yes_style.corner_radius_bottom_left = 4
+	yes_style.corner_radius_bottom_right = 4
+	yes_btn.add_theme_stylebox_override("normal", yes_style)
+
+	var yes_hover := yes_style.duplicate()
+	yes_hover.bg_color = Color(0.15, 0.45, 0.1, 1.0)
+	yes_btn.add_theme_stylebox_override("hover", yes_hover)
+
+	yes_btn.add_theme_font_size_override("font_size", 13)
+	yes_btn.add_theme_color_override("font_color", TEXT_COLOR)
+
+	var no_btn := Button.new()
+	no_btn.text = "No"
+	no_btn.custom_minimum_size = Vector2(80, 30)
+	no_btn.focus_mode = Control.FOCUS_NONE
+
+	var no_style := StyleBoxFlat.new()
+	no_style.bg_color = Color(0.317, 0.097, 0.125, 0.6)
+	no_style.corner_radius_top_left = 4
+	no_style.corner_radius_top_right = 4
+	no_style.corner_radius_bottom_left = 4
+	no_style.corner_radius_bottom_right = 4
+	no_btn.add_theme_stylebox_override("normal", no_style)
+
+	var no_hover := no_style.duplicate()
+	no_hover.bg_color = Color(0.4, 0.15, 0.18, 0.8)
+	no_btn.add_theme_stylebox_override("hover", no_hover)
+
+	no_btn.add_theme_font_size_override("font_size", 13)
+	no_btn.add_theme_color_override("font_color", TEXT_COLOR)
+
+	hbox_btns.add_child(yes_btn)
+	hbox_btns.add_child(no_btn)
+	vbox.add_child(hbox_btns)
+
+	popup_panel.add_child(vbox)
+	popup_overlay.add_child(popup_panel)
+	add_child(popup_overlay)
+
+	# Posisi center
+	popup_panel.reset_size()
+	var target_pos := Vector2(370.0, 130.0)
+	popup_panel.pivot_offset = popup_panel.size / 2.0
+	popup_panel.position = target_pos - (popup_panel.size / 2.0)
+
+	popup_panel.scale = Vector2(0.2, 0.2)
+	popup_panel.modulate.a = 0.0
+
+	var tween := popup_panel.create_tween().set_parallel(true)
+	tween.tween_property(popup_panel, "scale", Vector2(1.0, 1.0), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(popup_panel, "modulate:a", 1.0, 0.15)
+
+	yes_btn.pressed.connect(_on_play_again.bind(popup_overlay))
+	no_btn.pressed.connect(_on_no_play_again.bind(popup_overlay))
+
+
+func _on_play_again(overlay_node: Node) -> void:
+	overlay_node.queue_free()
+	_start_game()
+
+
+func _on_no_play_again(overlay_node: Node) -> void:
+	overlay_node.queue_free()
+	back_to_menu.emit()
 	_play_outro()
 
 

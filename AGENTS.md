@@ -62,6 +62,7 @@ assets/              # UI, fonts, art assets
 | `TransitionManager` | `TransitionManager` | `pindah_scene(path)` - animated scene change |
 | `SoundManager` | `SoundManager` | Auto-binds click sound to all Buttons/TextureButtons |
 | `EnemyDatabase` | `EnemyDatabase` | Loads all enemy .tres files at startup |
+| `QuestDatabase` | `QuestDatabase` | Loads all quest .tres files at startup |
 
 ## Key Systems & Patterns
 
@@ -124,6 +125,12 @@ godot --path "D:\folder_fitra\Godot Project\knight-story"
 1. Create `.tres` file in `data/enemies/` with `EnemyData` resource
 2. Set `enemy_id`, `enemy_name`, stats, `sprite_frames`, `icon_enemy`
 3. EnemyDatabase auto-loads on startup (scans directory)
+
+## Adding New Quests
+1. Create `.tres` file in `data/quests/` with `QuestData` resource
+2. Set `quest_id`, `quest_name`, `description`, `quest_type`, `target`, `target_count`, rewards
+3. QuestDatabase auto-loads on startup (scans directory)
+4. Quest types: `play_games`, `collect_items`, `kill`, `gather`, `explore`
 
 ## Adding New Weapons
 1. Add entry to `WeaponDatabase.WEAPON_DATABASE` array in `scripts/data/weapon_database.gd`

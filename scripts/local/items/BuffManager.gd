@@ -57,6 +57,7 @@ func apply_item(item: ItemData, target_unit: Object) -> Dictionary:
 			"attack_bonus": atk_bonus,
 			"defense_bonus": def_bonus,
 			"damage_reduction": red_bonus,
+			"effect_icon": item.effect_icon if item.effect_icon else null,
 			"is_new": true
 		})
 		result["buff_applied"] = true
@@ -109,6 +110,7 @@ func apply_item_simple(item: ItemData, battle_manager: Object) -> Dictionary:
 			"attack_bonus": atk_bonus,
 			"defense_bonus": def_bonus,
 			"damage_reduction": red_bonus,
+			"effect_icon": item.effect_icon if item.effect_icon else null,
 			"is_new": true
 		})
 		result["buff_applied"] = true

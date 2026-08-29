@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://bqbudvdl3xqtp"]
+
+[ext_resource type="Script" uid="uid://bfisac7ed8x4w" path="res://scripts/local/location/room/tavern/quest_data.gd" id="1_quest"]
+
+[resource]
+script = ExtResource("1_quest")
+quest_id = "battle_ready"
+quest_name = "Battle Ready"
+description = "Collect 2 Attack Potions"
+quest_type = 1
+target_count = 2
+item_target = "attack_potion"
+reward_gold = 40
+reward_exp = 50
+reward_item_id = "None"

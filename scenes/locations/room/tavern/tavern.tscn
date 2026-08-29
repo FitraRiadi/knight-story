@@ -64,12 +64,16 @@ border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ioold"]
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jncy7"]
 bg_color = Color(0.24529293, 0.16889995, 0.3208451, 0.27450982)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_0qvnb"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xncs8"]
 bg_color = Color(0.32859877, 0.23149508, 0.08925796, 0.284)
@@ -78,12 +82,16 @@ border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_iyfge"]
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mnmqb"]
 bg_color = Color(0.22091639, 0.22091639, 0.22091639, 0.633)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_l843g"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_moojr"]
 bg_color = Color(0.10980392, 0.06666667, 0.015686275, 0.627451)
@@ -92,12 +100,16 @@ border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2l1gk"]
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kylmi"]
 bg_color = Color(0.26006752, 0.18281268, 0, 0.572)
 border_width_left = 1
 border_width_top = 1
 border_width_right = 1
 border_width_bottom = 1
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_fbpj2"]
 
 [node name="tavern" type="Control" unique_id=1669818934]
 layout_mode = 3
@@ -193,6 +205,7 @@ offset_bottom = -151.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_dt4my")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_ioold")
 
 [node name="TextureRect" type="TextureRect" parent="feature/BuyItemBtn" unique_id=522013124]
 texture_filter = 1
@@ -222,6 +235,7 @@ offset_bottom = -151.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_jncy7")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_0qvnb")
 
 [node name="TextureRect" type="TextureRect" parent="feature/TavernBtn" unique_id=653934868]
 texture_filter = 1
@@ -251,6 +265,7 @@ offset_bottom = -21.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_xncs8")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_iyfge")
 
 [node name="TextureRect" type="TextureRect" parent="feature/SellingItemBtn" unique_id=772516289]
 texture_filter = 1
@@ -282,6 +297,7 @@ offset_bottom = -152.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_mnmqb")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_l843g")
 
 [node name="Label" type="Label" parent="feature/exit" unique_id=375047977]
 layout_mode = 0
@@ -305,6 +321,7 @@ offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_2l1gk")
 
 [node name="Label" type="Label" parent="feature/container4" unique_id=1398651049]
 layout_mode = 0
@@ -334,6 +351,7 @@ offset_bottom = -20.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_kylmi")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_fbpj2")
 
 [node name="TextureRect" type="TextureRect" parent="feature/container7" unique_id=732996581]
 layout_mode = 0

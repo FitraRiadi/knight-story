@@ -14,6 +14,7 @@
 [ext_resource type="Texture2D" uid="uid://b32kx3oikj31r" path="res://assets/art/sprites/enemy/grooter/dead1.png" id="9_66wuw"]
 [ext_resource type="Texture2D" uid="uid://dsay57h3moksf" path="res://assets/art/sprites/enemy/grooter/defend1.png" id="10_vkkbq"]
 [ext_resource type="Resource" uid="uid://b2265a03f0302" path="res://data/enemies/abilities/battle_cry.tres" id="11_ab2"]
+[ext_resource type="Resource" uid="uid://besh3dfkieai5" path="res://data/items/protection_potion.tres" id="15_ebytt"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_3hfl1"]
 animations = [{
@@ -82,6 +83,7 @@ animations = [{
 [resource]
 script = ExtResource("1_dhcys")
 ai_type = 2
+starting_inventory = Array[ExtResource("2_yo2og")]([ExtResource("15_ebytt")])
 enemy_id = "grooter"
 enemy_name = "Grooter"
 min_level = 3

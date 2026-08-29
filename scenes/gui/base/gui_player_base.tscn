@@ -369,7 +369,7 @@ theme_override_font_sizes/font_size = 200
 text = "Inventory"
 horizontal_alignment = 1
 
-[node name="inventoryBtn2" type="TextureButton" parent="bar-features" unique_id=192332052]
+[node name="craftingBtn" type="TextureButton" parent="bar-features" unique_id=192332052]
 layout_mode = 0
 offset_left = 265.99997
 offset_top = 310.0
@@ -378,7 +378,7 @@ offset_bottom = 648.0
 scale = Vector2(0.092020474, 0.07695869)
 texture_normal = ExtResource("1_2cotu")
 
-[node name="Label" type="Label" parent="bar-features/inventoryBtn2" unique_id=828310388]
+[node name="Label" type="Label" parent="bar-features/craftingBtn" unique_id=828310388]
 layout_mode = 0
 offset_left = 43.468933
 offset_top = 77.9639

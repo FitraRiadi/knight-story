@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://quest_herbal"]
+
+[ext_resource type="Script" uid="uid://bfisac7ed8x4w" path="res://scripts/local/location/room/tavern/quest_data.gd" id="1_quest"]
+
+[resource]
+script = ExtResource("1_quest")
+quest_id = "herbal_remedy"
+quest_name = "Herbal Remedy"
+description = "Gather rare herbs needed by the village alchemist"
+quest_type = 3
+target_count = 10
+kill_target = ""
+item_target = "health_potion"
+game_target = ""
+explore_target = ""
+reward_gold = 0
+reward_exp = 0
+reward_item_id = "None"

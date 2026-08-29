@@ -40,6 +40,12 @@ var transfer_btn: Button
 var active_inv_type: String = ""  # "battle" atau "chest"
 var active_slot_index: int = -1
 
+# --- Drag state ---
+var is_dragging: bool = false
+var drag_source_type: String = ""
+var drag_source_index: int = -1
+var drag_preview: TextureRect = null
+
 
 # ============================================================
 # CONSTANTS
@@ -90,10 +96,10 @@ func _build_ui() -> void:
 	_build_title_bar()
 	_build_close_button()
 	_build_section_labels()
+	_build_item_info()
 	_build_battle_grid()
 	_build_chest_grid()
 	_build_divider()
-	_build_item_info()
 
 
 func _build_overlay() -> void:
@@ -221,7 +227,7 @@ func _build_battle_grid() -> void:
 	battle_grid = GridContainer.new()
 	battle_grid.columns = 3
 	battle_grid.position = Vector2(24, 58)
-	battle_grid.size = Vector2(148, 148)
+	battle_grid.custom_minimum_size = Vector2(148, 148)
 	battle_grid.mouse_filter = Control.MOUSE_FILTER_PASS
 	battle_grid.add_theme_constant_override("h_separation", SLOT_GAP)
 	battle_grid.add_theme_constant_override("v_separation", SLOT_GAP)
@@ -246,7 +252,7 @@ func _build_chest_grid() -> void:
 	chest_grid = GridContainer.new()
 	chest_grid.columns = 4
 	chest_grid.position = Vector2(200, 58)
-	chest_grid.size = Vector2(204, 204)
+	chest_grid.custom_minimum_size = Vector2(204, 204)
 	chest_grid.mouse_filter = Control.MOUSE_FILTER_PASS
 	chest_grid.add_theme_constant_override("h_separation", SLOT_GAP)
 	chest_grid.add_theme_constant_override("v_separation", SLOT_GAP)
@@ -290,7 +296,10 @@ func _create_slot_button(index: int, normal: StyleBoxFlat, pressed: StyleBoxFlat
 	var btn := SlotButton.new()
 	btn.toggle_mode = true
 	btn.custom_minimum_size = SLOT_SIZE
-	btn.size = SLOT_SIZE
+	btn.focus_mode = Control.FOCUS_NONE
+	btn.mouse_filter = Control.MOUSE_FILTER_STOP
+	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	btn.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	btn.text = ""
 	btn.add_theme_stylebox_override("normal", normal)
 	btn.add_theme_stylebox_override("hover", normal.duplicate())
@@ -313,12 +322,12 @@ func _setup_slot_callbacks() -> void:
 	for i in battle_slots.size():
 		var idx := i
 		battle_slots[i].pressed.connect(func(): _on_slot_clicked("battle", idx))
-		battle_slots[i].item_dropped.connect(_on_item_dropped)
+		battle_slots[i].slot_mouse_down.connect(_on_slot_mouse_down)
 
 	for i in chest_slots.size():
 		var idx := i
 		chest_slots[i].pressed.connect(func(): _on_slot_clicked("chest", idx))
-		chest_slots[i].item_dropped.connect(_on_item_dropped)
+		chest_slots[i].slot_mouse_down.connect(_on_slot_mouse_down)
 
 
 # ============================================================
@@ -347,7 +356,7 @@ func _build_item_info() -> void:
 
 	# Background panel
 	var bg := Panel.new()
-	bg.mouse_filter = Control.MOUSE_FILTER_PASS
+	bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	bg.position = Vector2(8, info_y)
 	bg.size = Vector2(PANEL_SIZE.x - 16, info_h)
 
@@ -639,26 +648,109 @@ func _set_info_empty() -> void:
 
 
 # ============================================================
-# DRAG & DROP
+# MANUAL DRAG & DROP
 # ============================================================
 
-func _on_item_dropped(src_type: String, src_idx: int, tgt_type: String, tgt_idx: int) -> void:
-	if src_type == tgt_type:
-		# Swap dalam satu inventory
-		if src_type == "battle":
-			PlayerDataManager.swap_battle_slots(src_idx, tgt_idx)
-		else:
-			PlayerDataManager.swap_chest_slots(src_idx, tgt_idx)
-	else:
-		# Transfer antar inventory (handle swap)
-		PlayerDataManager.swap_between_inventories(src_type, src_idx, tgt_type, tgt_idx)
+func _on_slot_mouse_down(button: SlotButton) -> void:
+	if not button.item_ref:
+		return
 
-	_populate_battle_slots()
-	_populate_chest_slots()
-	_deselect_all()
-	active_inv_type = ""
-	active_slot_index = -1
-	_set_info_empty()
+	# Mulai drag
+	is_dragging = true
+	drag_source_type = button.inv_type
+	drag_source_index = button.slot_index
+
+	# Buat preview icon
+	drag_preview = TextureRect.new()
+	drag_preview.texture = button.item_ref.icon
+	drag_preview.custom_minimum_size = Vector2(48, 48)
+	drag_preview.size = Vector2(48, 48)
+	drag_preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	drag_preview.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	drag_preview.modulate.a = 0.8
+	drag_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	drag_preview.z_index = 100
+	add_child(drag_preview)
+
+	# Update preview position
+	_update_drag_preview()
+
+
+func _input(event: InputEvent) -> void:
+	if is_dragging and event is InputEventMouseMotion:
+		_update_drag_preview()
+
+	elif is_dragging and event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+			var mouse_pos := get_viewport().get_mouse_position()
+			var target := _find_slot_under_cursor()
+			print("[DROP] mouse=%s target=%s src=%s[%d]" % [mouse_pos, target, drag_source_type, drag_source_index])
+
+			# Log semua slot rects
+			for s in battle_slots:
+				var r := s.get_global_rect()
+				print("  battle[%d] rect=%s item=%s" % [s.slot_index, r, s.item_ref.item_name if s.item_ref else "null"])
+			for s in chest_slots:
+				var r := s.get_global_rect()
+				print("  chest[%d] rect=%s item=%s" % [s.slot_index, r, s.item_ref.item_name if s.item_ref else "null"])
+
+			if target and (drag_source_type != target.inv_type or target.slot_index != drag_source_index):
+				var tgt_type: String = target.inv_type
+				var tgt_idx: int = target.slot_index
+				print("[DROP] SWAP %s[%d] -> %s[%d]" % [drag_source_type, drag_source_index, tgt_type, tgt_idx])
+
+				if drag_source_type == tgt_type:
+					if drag_source_type == "battle":
+						PlayerDataManager.swap_battle_slots(drag_source_index, tgt_idx)
+					else:
+						PlayerDataManager.swap_chest_slots(drag_source_index, tgt_idx)
+				else:
+					PlayerDataManager.swap_between_inventories(
+						drag_source_type, drag_source_index, tgt_type, tgt_idx
+					)
+
+				_populate_battle_slots()
+				_populate_chest_slots()
+				_deselect_all()
+				active_inv_type = ""
+				active_slot_index = -1
+				_set_info_empty()
+			else:
+				print("[DROP] NO VALID TARGET")
+
+			_end_drag()
+
+
+func _update_drag_preview() -> void:
+	if not drag_preview:
+		return
+	var mouse_pos := get_viewport().get_mouse_position()
+	drag_preview.position = mouse_pos - Vector2(24, 24)
+
+
+func _end_drag() -> void:
+	is_dragging = false
+	drag_source_type = ""
+	drag_source_index = -1
+	if drag_preview and is_instance_valid(drag_preview):
+		drag_preview.queue_free()
+	drag_preview = null
+
+
+func _find_slot_under_cursor() -> SlotButton:
+	var mouse_pos := get_viewport().get_mouse_position()
+
+	for slot in chest_slots:
+		var rect := slot.get_global_rect()
+		if rect.has_point(mouse_pos):
+			return slot
+
+	for slot in battle_slots:
+		var rect := slot.get_global_rect()
+		if rect.has_point(mouse_pos):
+			return slot
+
+	return null
 
 
 # ============================================================
@@ -873,4 +965,5 @@ func _emit_closed() -> void:
 
 
 func _on_close_pressed() -> void:
+	_end_drag()
 	_play_outro()

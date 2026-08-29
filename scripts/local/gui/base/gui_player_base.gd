@@ -6,7 +6,7 @@ extends Control
 # Ambil referensi tombol di dalam bar-features
 @onready var map_btn: TextureButton = $"bar-features/mapBtn"
 @onready var inventory_btn: TextureButton = $"bar-features/inventoryBtn"
-@onready var inventory_btn_2: TextureButton = $"bar-features/inventoryBtn2"
+@onready var crafting_btn: TextureButton = $"bar-features/craftingBtn"
 
 # Bar Top Information
 @onready var profile: TextureRect = $"bar-information/profile"
@@ -31,7 +31,6 @@ var current_exp: float = 300.0  # Angka EXP pemain saat ini
 
 func _ready() -> void:
 	inventory_btn.pressed.connect(_open_combined_inventory)
-	inventory_btn_2.pressed.connect(_open_combined_inventory)
 	if exp_progress:
 		# 1. Simpan batas visual full (100%) dari lebar Panel di Editor
 		max_exp_width = exp_progress.size.x
@@ -70,8 +69,8 @@ func _ready() -> void:
 	inventory_btn.position.y += 50
 	inventory_btn.modulate.a = 0
 	
-	inventory_btn_2.position.y += 50
-	inventory_btn_2.modulate.a = 0
+	crafting_btn.position.y += 50
+	crafting_btn.modulate.a = 0
 	
 	# --- ANIMASI INTRO ---
 	var tween = create_tween()
@@ -121,8 +120,8 @@ func _ready() -> void:
 	tween.tween_property(inventory_btn, "position:y", inventory_btn.position.y - 50, 0.5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT).set_delay(0.45)
 	tween.tween_property(inventory_btn, "modulate:a", 1.0, 0.5).set_delay(0.45)
 	
-	tween.tween_property(inventory_btn_2, "position:y", inventory_btn_2.position.y - 50, 0.5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT).set_delay(0.45)
-	tween.tween_property(inventory_btn_2, "modulate:a", 1.0, 0.5).set_delay(0.45)
+	tween.tween_property(crafting_btn, "position:y", crafting_btn.position.y - 50, 0.5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT).set_delay(0.45)
+	tween.tween_property(crafting_btn, "modulate:a", 1.0, 0.5).set_delay(0.45)
 
 # Fungsi umum untuk update EXP selanjutnya sewaktu gameplay berlangsung
 func set_exp(new_exp: float, new_max_exp: float = -1.0) -> void:

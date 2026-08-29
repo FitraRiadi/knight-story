@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://quest_potion_collector"]
+
+[ext_resource type="Script" uid="uid://bfisac7ed8x4w" path="res://scripts/local/location/room/tavern/quest_data.gd" id="1_quest"]
+
+[resource]
+script = ExtResource("1_quest")
+quest_id = "potion_collector"
+quest_name = "Potion Collector"
+description = "Collect 3 Health Potions"
+quest_type = 1
+target_count = 3
+kill_target = ""
+item_target = "health_potion"
+game_target = ""
+explore_target = ""
+reward_gold = 50
+reward_exp = 60
+reward_item_id = "None"

@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://quest_master_brewer"]
+
+[ext_resource type="Script" uid="uid://bfisac7ed8x4w" path="res://scripts/local/location/room/tavern/quest_data.gd" id="1_quest"]
+
+[resource]
+script = ExtResource("1_quest")
+quest_id = "master_brewer"
+quest_name = "Master Brewer"
+description = "Win 3 brew challenges at the tavern"
+quest_type = 0
+target_count = 3
+kill_target = ""
+item_target = ""
+game_target = "Brew Challenge"
+explore_target = ""
+reward_gold = 30
+reward_exp = 40
+reward_item_id = "None"

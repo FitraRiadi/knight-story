@@ -375,27 +375,31 @@ func _update_player_status_effects() -> void:
 		if child.name != "effect" and not child.has_meta("is_temporary"):
 			child.queue_free()
 	
-	var active_types: Array[String] = []
-	
-	if player_buff_manager and player_buff_manager.has_method("get_active_buff_types"):
-		active_types = player_buff_manager.get_active_buff_types()
-	
-	# Cek attack bonus dari buff aktif
-	if player_buff_manager and player_buff_manager.get_total_attack_bonus() > 0.0:
-		if not active_types.has("attack_up"):
-			active_types.append("attack_up")
-	
-	# Cek HP di atas max (overheal) — sama kayak enemy
-	if current_hp > max_hp and not active_types.has("health_up"):
-		active_types.append("health_up")
-	
 	var icon_width: float = 20.0
+	var shown_paths: Array[String] = []
 	
-	# 2. Tambahkan efek baru ke dalam container
-	for type in active_types:
-		if PLAYER_STATUS_ICONS.has(type):
+	# 2. Iterate over active_buffs langsung — pakai effect_icon per buff
+	if player_buff_manager:
+		for buff in player_buff_manager.active_buffs:
+			var icon_tex: Texture2D = buff.get("effect_icon")
+			var buff_type: String = buff.get("type", "")
+			
+			# Fallback ke type-based icon kalau effect_icon gak ada
+			if icon_tex == null and PLAYER_STATUS_ICONS.has(buff_type):
+				icon_tex = PLAYER_STATUS_ICONS[buff_type]
+			
+			if icon_tex == null:
+				continue
+			
+			# Dedup by resource path
+			var tex_path: String = icon_tex.resource_path if icon_tex else ""
+			if tex_path != "" and shown_paths.has(tex_path):
+				continue
+			if tex_path != "":
+				shown_paths.append(tex_path)
+			
 			var icon_rect: TextureRect = TextureRect.new()
-			icon_rect.texture = PLAYER_STATUS_ICONS[type]
+			icon_rect.texture = icon_tex
 			icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			icon_rect.custom_minimum_size = Vector2(icon_width, icon_width)
@@ -403,7 +407,45 @@ func _update_player_status_effects() -> void:
 			icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			player_effect_container.add_child(icon_rect)
 	
-	# 3. Rapihkan semua ikon
+	# 3. Special cases: overheal & base_bonus_damage (gak ada di active_buffs)
+	if current_hp > max_hp:
+		var heal_tex: Texture2D = PLAYER_STATUS_ICONS.get("health_up")
+		if heal_tex:
+			var tex_path: String = heal_tex.resource_path
+			if not shown_paths.has(tex_path):
+				shown_paths.append(tex_path)
+				var icon_rect: TextureRect = TextureRect.new()
+				icon_rect.texture = heal_tex
+				icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				icon_rect.custom_minimum_size = Vector2(icon_width, icon_width)
+				icon_rect.size = Vector2(icon_width, icon_width)
+				icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				player_effect_container.add_child(icon_rect)
+	
+	if player_buff_manager and player_buff_manager.get_total_attack_bonus() > 0.0:
+		# Cek apakah sudah ada attack icon dari active_buffs
+		var has_attack_icon: bool = false
+		for buff in player_buff_manager.active_buffs:
+			if buff.get("type") == "attack_up" or buff.get("effect_icon") != null:
+				has_attack_icon = true
+				break
+		if not has_attack_icon:
+			var atk_tex: Texture2D = PLAYER_STATUS_ICONS.get("attack_up")
+			if atk_tex:
+				var tex_path: String = atk_tex.resource_path
+				if not shown_paths.has(tex_path):
+					shown_paths.append(tex_path)
+					var icon_rect: TextureRect = TextureRect.new()
+					icon_rect.texture = atk_tex
+					icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+					icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+					icon_rect.custom_minimum_size = Vector2(icon_width, icon_width)
+					icon_rect.size = Vector2(icon_width, icon_width)
+					icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+					player_effect_container.add_child(icon_rect)
+	
+	# 4. Rapihkan semua ikon
 	_rearrange_player_status_icons()
 
 
@@ -738,8 +780,9 @@ func _on_item_used_in_battle(item: ItemData) -> void:
 		if result.get("healed", 0.0) > 0.0:
 			_animate_hp_change()
 			_play_heal_visual(result["healed"])
-			if PLAYER_STATUS_ICONS.has("health_up"):
-				_show_player_temporary_status_icon(PLAYER_STATUS_ICONS["health_up"], 2.0)
+			var heal_icon: Texture2D = item.effect_icon if item.effect_icon else PLAYER_STATUS_ICONS.get("health_up")
+			if heal_icon:
+				_show_player_temporary_status_icon(heal_icon, 2.0)
 		
 		# Buff (attack/defense) — tampilkan persistent icon + visual
 		if result.get("buff_applied", false):

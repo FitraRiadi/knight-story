@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://depppk00ae6b1"]
+
+[ext_resource type="Script" uid="uid://bfisac7ed8x4w" path="res://scripts/local/location/room/tavern/quest_data.gd" id="1_quest"]
+
+[resource]
+script = ExtResource("1_quest")
+quest_id = "stock_up"
+quest_name = "Stock Up"
+description = "Collect 2 Protection Potions"
+quest_type = 1
+target_count = 2
+item_target = "protection_potion"
+reward_gold = 40
+reward_exp = 50
+reward_item_id = "None"

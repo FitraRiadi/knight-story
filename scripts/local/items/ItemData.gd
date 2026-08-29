@@ -112,6 +112,8 @@ enum ItemEffectType {
 
 @export var damage_reduction: float = 0.0
 
+@export var effect_icon: Texture2D
+
 
 # ============================================================
 # STATUS EFFECT

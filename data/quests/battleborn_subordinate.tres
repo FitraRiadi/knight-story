@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://dr75lpl04wg4r"]
+
+[ext_resource type="Script" uid="uid://bfisac7ed8x4w" path="res://scripts/local/location/room/tavern/quest_data.gd" id="1_quest"]
+
+[resource]
+script = ExtResource("1_quest")
+quest_id = "battleborn_subordinate"
+quest_name = "The Battleborn Subordinate"
+description = "The Battleborn Threat has been on the edge, help eliminate them"
+quest_type = 2
+target_count = 5
+kill_target = "warewolf:Warewolf"
+reward_item_id = "None"

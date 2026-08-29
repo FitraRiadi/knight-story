@@ -435,40 +435,86 @@ func _update_status_effects() -> void:
 		if child.name != "effect" and not child.has_meta("is_temporary"):
 			child.queue_free()
 
-	var active_types: Array[String] = []
+	var icon_width: float = 20.0
+	var shown_paths: Array[String] = []
 
-	if buff_manager.has_method("get_active_buff_types"):
-		active_types = buff_manager.get_active_buff_types()
-	
-	if current_hp > scaled_max_hp and not active_types.has("health_up"):
-		active_types.append("health_up")
-	if buff_manager.get_total_attack_bonus() > 0.0 and not active_types.has("attack_up"):
-		active_types.append("attack_up")
-	
+	# 2. Iterate over active_buffs langsung — pakai effect_icon per buff
+	for buff in buff_manager.active_buffs:
+		var icon_tex: Texture2D = buff.get("effect_icon")
+		var buff_type: String = buff.get("type", "")
+
+		# Fallback ke type-based icon kalau effect_icon gak ada
+		if icon_tex == null and STATUS_ICONS.has(buff_type):
+			icon_tex = STATUS_ICONS[buff_type]
+
+		if icon_tex == null:
+			continue
+
+		# Dedup by resource path
+		var tex_path: String = icon_tex.resource_path if icon_tex else ""
+		if tex_path != "" and shown_paths.has(tex_path):
+			continue
+		if tex_path != "":
+			shown_paths.append(tex_path)
+
+		var icon_rect: TextureRect = TextureRect.new()
+		icon_rect.texture = icon_tex
+		icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon_rect.custom_minimum_size = Vector2(icon_width, icon_width)
+		icon_rect.size = Vector2(icon_width, icon_width)
+		icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		enemy_effect_container.add_child(icon_rect)
+
+	# 3. Special cases: overheal, poison, stun
+	if current_hp > scaled_max_hp:
+		var heal_tex: Texture2D = STATUS_ICONS.get("health_up")
+		if heal_tex:
+			var tex_path: String = heal_tex.resource_path
+			if not shown_paths.has(tex_path):
+				shown_paths.append(tex_path)
+				var icon_rect: TextureRect = TextureRect.new()
+				icon_rect.texture = heal_tex
+				icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				icon_rect.custom_minimum_size = Vector2(icon_width, icon_width)
+				icon_rect.size = Vector2(icon_width, icon_width)
+				icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				enemy_effect_container.add_child(icon_rect)
+
 	var status_to_check = ["poison", "stun"]
 	for status in status_to_check:
-		if _check_has_buff(status) and not active_types.has(status):
-			active_types.append(status)
+		if _check_has_buff(status):
+			var status_tex: Texture2D = STATUS_ICONS.get(status)
+			if status_tex:
+				var tex_path: String = status_tex.resource_path
+				if not shown_paths.has(tex_path):
+					shown_paths.append(tex_path)
+					var icon_rect: TextureRect = TextureRect.new()
+					icon_rect.texture = status_tex
+					icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+					icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+					icon_rect.custom_minimum_size = Vector2(icon_width, icon_width)
+					icon_rect.size = Vector2(icon_width, icon_width)
+					icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+					enemy_effect_container.add_child(icon_rect)
 
-	# MORALE STUN: Tampilkan stun icon jika is_stunned
-	if is_stunned and not active_types.has("stun"):
-		active_types.append("stun")
+	if is_stunned:
+		var stun_tex: Texture2D = STATUS_ICONS.get("stun")
+		if stun_tex:
+			var tex_path: String = stun_tex.resource_path
+			if not shown_paths.has(tex_path):
+				shown_paths.append(tex_path)
+				var icon_rect: TextureRect = TextureRect.new()
+				icon_rect.texture = stun_tex
+				icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+				icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				icon_rect.custom_minimum_size = Vector2(icon_width, icon_width)
+				icon_rect.size = Vector2(icon_width, icon_width)
+				icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+				enemy_effect_container.add_child(icon_rect)
 
-	var icon_width: float = 20.0
-
-	# 2. Tambahkan efek baru ke dalam container
-	for type in active_types:
-		if STATUS_ICONS.has(type):
-			var icon_rect: TextureRect = TextureRect.new()
-			icon_rect.texture = STATUS_ICONS[type]
-			icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-			icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-			icon_rect.custom_minimum_size = Vector2(icon_width, icon_width)
-			icon_rect.size = Vector2(icon_width, icon_width)
-			icon_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			enemy_effect_container.add_child(icon_rect)
-			
-	# 3. Rapihkan semua ikon yang ada di container
+	# 4. Rapihkan semua ikon
 	_rearrange_status_icons()
 
 
@@ -815,7 +861,8 @@ func _execute_item(
 			true
 		)
 		if STATUS_ICONS.has("health_up"):
-			_show_temporary_status_icon(STATUS_ICONS["health_up"], 3.5)
+			var heal_icon: Texture2D = item.effect_icon if item.effect_icon else STATUS_ICONS["health_up"]
+			_show_temporary_status_icon(heal_icon, 3.5)
 
 	if result["buff_applied"]:
 		used_any_effect = true

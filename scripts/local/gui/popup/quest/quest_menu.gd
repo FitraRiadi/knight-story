@@ -7,33 +7,8 @@ extends Control
 
 var origin_positions: Dictionary = {}
 
-# Data Statis Quest
-var static_quests: Array[Dictionary] = [
-	{
-		"type": "Kill Quest",
-		"title": "The Battleborn Subordinate",
-		"info": "The Battleborn Threat Has been edge gang sprung",
-		"purpose": "Kill 5 Skeleton",
-		"reward": "x4"
-	},
-	{
-		"type": "Gather Quest",
-		"title": "Herbal Remedy",
-		"info": "Gather rare herbs needed by the village alchemist",
-		"purpose": "Collect 10 Green Herbs",
-		"reward": "x100"
-	},
-	{
-		"type": "Explore Quest",
-		"title": "Scouting the Ruins",
-		"info": "Investigate the mysterious noise near the old ruins",
-		"purpose": "Explore Lotus Forest",
-		"reward": "x4"
-	}
-]
 
 func _ready() -> void:
-	# Hubungkan tombol backBtn
 	if back_btn:
 		back_btn.pressed.connect(_on_back_btn_pressed)
 
@@ -42,22 +17,21 @@ func _ready() -> void:
 	if quest2: quest_nodes.append(quest2)
 	if quest3: quest_nodes.append(quest3)
 
-	# Populate data statis ke dalam Label masing-masing quest
-	for i in range(quest_nodes.size()):
-		if i < static_quests.size():
-			_setup_quest_data(quest_nodes[i], static_quests[i])
+	# Load quests dari QuestDatabase, tampilkan max 3
+	var all_quests = QuestDatabase.get_all_quests()
+	var display_count = mini(quest_nodes.size(), all_quests.size())
+
+	for i in range(display_count):
+		_setup_quest_data(quest_nodes[i], all_quests[i])
 
 	for node in quest_nodes:
-		# Catat posisi awal Y
 		origin_positions[node] = node.position.y
-		
-		# Set transparan & geser sedikit ke atas (offset 20px)
 		node.modulate.a = 0.0
 		node.position.y -= 20.0
 
 	play_pure_fade_intro(quest_nodes)
 
-# Fungsi saat backBtn ditekan (dengan efek fade out cepat)
+
 func _on_back_btn_pressed() -> void:
 	var tween = create_tween()
 	tween.tween_property(self, "modulate:a", 0.0, 0.2)\
@@ -65,11 +39,11 @@ func _on_back_btn_pressed() -> void:
 		.set_ease(Tween.EASE_IN)
 	tween.tween_callback(queue_free)
 
-# Fungsi untuk mengisi Label sesuai hirarki Scene Tree
-func _setup_quest_data(quest_node: Control, data: Dictionary) -> void:
-	if quest_node == null:
+
+func _setup_quest_data(quest_node: Control, quest: QuestData) -> void:
+	if quest_node == null or quest == null:
 		return
-		
+
 	var type_label = quest_node.get_node_or_null("typeQuest") as Label
 	var title_label = quest_node.get_node_or_null("questTitle") as Label
 	var info_label = quest_node.get_node_or_null("questInfo/Label") as Label
@@ -77,31 +51,30 @@ func _setup_quest_data(quest_node: Control, data: Dictionary) -> void:
 	var reward_label = quest_node.get_node_or_null("rewardPanel/reward/Label") as Label
 
 	if type_label:
-		type_label.text = data.get("type", "")
+		type_label.text = quest.get_type_display()
 	if title_label:
-		title_label.text = data.get("title", "")
+		title_label.text = quest.quest_name
 	if info_label:
-		info_label.text = data.get("info", "")
+		info_label.text = quest.description
 	if purpose_label:
-		purpose_label.text = data.get("purpose", "")
+		purpose_label.text = quest.get_target_display()
 	if reward_label:
-		reward_label.text = data.get("reward", "")
+		reward_label.text = quest.get_reward_text()
+
 
 func play_pure_fade_intro(quest_nodes: Array[Control]) -> void:
 	var tween = create_tween()
-	
+
 	for i in range(quest_nodes.size()):
 		var node = quest_nodes[i]
 		var target_y: float = origin_positions.get(node, node.position.y)
 		var delay: float = i * 0.10
 
-		# Fade In dengan CIRC
 		tween.parallel().tween_property(node, "modulate:a", 1.0, 0.4)\
 			.set_delay(delay)\
 			.set_trans(Tween.TRANS_CIRC)\
 			.set_ease(Tween.EASE_OUT)
-			
-		# Slide turun halus ke posisi asli dengan CIRC
+
 		tween.parallel().tween_property(node, "position:y", target_y, 0.4)\
 			.set_delay(delay)\
 			.set_trans(Tween.TRANS_CIRC)\

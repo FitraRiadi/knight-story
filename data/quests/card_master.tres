@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://c0y5owv2xdfem"]
+
+[ext_resource type="Script" uid="uid://bfisac7ed8x4w" path="res://scripts/local/location/room/tavern/quest_data.gd" id="1_quest"]
+
+[resource]
+script = ExtResource("1_quest")
+quest_id = "card_master"
+quest_name = "Card Master"
+description = "Win 3 card games at the tavern"
+target_count = 3
+game_target = "Find The Card"
+reward_gold = 30
+reward_exp = 40
+reward_item_id = "None"

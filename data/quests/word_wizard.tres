@@ -1,0 +1,14 @@
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://b2nxirkfdmo8n"]
+
+[ext_resource type="Script" uid="uid://bfisac7ed8x4w" path="res://scripts/local/location/room/tavern/quest_data.gd" id="1_quest"]
+
+[resource]
+script = ExtResource("1_quest")
+quest_id = "word_wizard"
+quest_name = "Word Wizard"
+description = "Win 3 word chain games at the tavern"
+target_count = 3
+game_target = "Word Chain"
+reward_gold = 30
+reward_exp = 40
+reward_item_id = "None"

@@ -19,6 +19,7 @@ var gold_label: Label
 var gold_display: Panel
 var active_panel: Control = null
 var is_switching: bool = false
+var is_returning_to_menu: bool = false
 
 
 func _ready() -> void:
@@ -218,35 +219,54 @@ func _create_game_selection_menu() -> Control:
 	title.add_theme_color_override("font_color", Color(1, 1, 0.2))
 	title_bar.add_child(title)
 
-	# Game buttons
-	var btn_w = 205.0
-	var btn_h = 115.0
+	# Game cards
+	var card_w = 205.0
+	var card_h = 130.0
 	var gap = 8.0
 
-	var card_game_btn = _create_game_button(
+	# Find The Card
+	var card1 = _create_game_card(
 		"Find The Card",
-		"Guess the correct card\nafter a shuffle.\nWin gold!",
+		"Choose The Right Card!",
+		"res://assets/art/items/weapons/iron_sword.png",
+		3, 5,
 		Color(0.317, 0.097, 0.125, 0.6)
 	)
-	card_game_btn.position = Vector2(10, 40)
-	card_game_btn.size = Vector2(btn_w, btn_h)
-	card_game_btn.pressed.connect(_on_card_game_selected.bind(menu))
-	sel_panel.add_child(card_game_btn)
+	card1.position = Vector2(10, 40)
+	card1.size = Vector2(card_w, card_h)
+	card1.pressed.connect(_on_card_game_selected.bind(menu))
+	sel_panel.add_child(card1)
 
-	var coming_soon = _create_game_button(
-		"Coming Soon",
-		"More games will\nbe available later.",
-		Color(0.11, 0.067, 0.016, 0.4)
+	# Word Chain
+	var card2 = _create_game_card(
+		"Word Chain",
+		"Pick Robert's Favorite!",
+		"res://assets/art/items/materials/tome_01.png",
+		3, 5,
+		Color(0.245, 0.169, 0.321, 0.6)
 	)
-	coming_soon.position = Vector2(10 + btn_w + gap, 40)
-	coming_soon.size = Vector2(btn_w, btn_h)
-	coming_soon.disabled = true
-	sel_panel.add_child(coming_soon)
+	card2.position = Vector2(10 + card_w + gap, 40)
+	card2.size = Vector2(card_w, card_h)
+	card2.pressed.connect(_on_word_chain_selected.bind(menu))
+	sel_panel.add_child(card2)
+
+	# Brew Challenge (wide card, bottom)
+	var card3 = _create_game_card_wide(
+		"Brew Challenge",
+		"Mix Robert's favorite drink!",
+		"res://assets/art/items/consumable/potion/Icon9.png",
+		3, 5,
+		Color(0.15, 0.25, 0.15, 0.6)
+	)
+	card3.position = Vector2(10, 40 + card_h + gap)
+	card3.size = Vector2(418, 65)
+	card3.pressed.connect(_on_drink_mix_selected.bind(menu))
+	sel_panel.add_child(card3)
 
 	# Close button
 	var close_btn = Button.new()
 	close_btn.text = "Back"
-	close_btn.position = Vector2(370, 255)
+	close_btn.position = Vector2(370, 248)
 	close_btn.size = Vector2(58, 20)
 
 	var close_style = StyleBoxFlat.new()
@@ -272,7 +292,7 @@ func _create_game_selection_menu() -> Control:
 	return menu
 
 
-func _create_game_button(title_text: String, desc_text: String, bg_color: Color) -> Button:
+func _create_game_card(game_title: String, subtitle: String, icon_path: String, cost: int, reward: int, bg_color: Color) -> Button:
 	var btn = Button.new()
 	btn.text = ""
 
@@ -291,29 +311,127 @@ func _create_game_button(title_text: String, desc_text: String, bg_color: Color)
 	btn_hover.bg_color = bg_color.lightened(0.12)
 	btn.add_theme_stylebox_override("hover", btn_hover)
 
-	var btn_disabled = btn_style.duplicate()
-	btn_disabled.bg_color = bg_color.darkened(0.2)
-	btn.add_theme_stylebox_override("disabled", btn_disabled)
+	# Icon (top center)
+	var icon = TextureRect.new()
+	icon.custom_minimum_size = Vector2(50, 50)
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	icon.position = Vector2(77.5, 8)
+	if ResourceLoader.exists(icon_path):
+		icon.texture = load(icon_path)
+	btn.add_child(icon)
 
+	# Game title (below icon, center)
 	var title_label = Label.new()
-	title_label.text = desc_text
-	title_label.position = Vector2(10, 8)
-	title_label.size = Vector2(185, 100)
+	title_label.text = game_title
+	title_label.position = Vector2(0, 62)
+	title_label.size = Vector2(205, 18)
 	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
-	title_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	title_label.add_theme_font_size_override("font_size", 13)
-	title_label.add_theme_color_override("font_color", Color(1, 0.95, 0.85))
+	title_label.add_theme_font_size_override("font_size", 14)
+	title_label.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
 	btn.add_child(title_label)
 
-	var name_label = Label.new()
-	name_label.text = title_text
-	name_label.position = Vector2(0, 93)
-	name_label.size = Vector2(205, 18)
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 14)
-	name_label.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
-	btn.add_child(name_label)
+	# Cost label
+	var cost_label = Label.new()
+	cost_label.text = "Cost: " + str(cost) + "G"
+	cost_label.position = Vector2(0, 82)
+	cost_label.size = Vector2(205, 16)
+	cost_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	cost_label.add_theme_font_size_override("font_size", 11)
+	cost_label.add_theme_color_override("font_color", Color(0.7, 0.65, 0.55))
+	btn.add_child(cost_label)
+
+	# Reward label
+	var reward_label = Label.new()
+	reward_label.text = "Reward: " + str(reward) + "G"
+	reward_label.position = Vector2(0, 100)
+	reward_label.size = Vector2(205, 16)
+	reward_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	reward_label.add_theme_font_size_override("font_size", 11)
+	reward_label.add_theme_color_override("font_color", Color(0.4, 1, 0.4))
+	btn.add_child(reward_label)
+
+	# Subtitle (bottom)
+	var sub_label = Label.new()
+	sub_label.text = subtitle
+	sub_label.position = Vector2(0, 116)
+	sub_label.size = Vector2(205, 16)
+	sub_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	sub_label.add_theme_font_size_override("font_size", 9)
+	sub_label.add_theme_color_override("font_color", Color(1, 0.95, 0.8, 0.6))
+	btn.add_child(sub_label)
+
+	return btn
+
+
+func _create_game_card_wide(game_title: String, subtitle: String, icon_path: String, cost: int, reward: int, bg_color: Color) -> Button:
+	var btn = Button.new()
+	btn.text = ""
+
+	var btn_style = StyleBoxFlat.new()
+	btn_style.bg_color = bg_color
+	btn_style.corner_radius_top_left = 6
+	btn_style.corner_radius_top_right = 6
+	btn_style.corner_radius_bottom_left = 6
+	btn_style.corner_radius_bottom_right = 6
+	btn_style.content_margin_left = 10
+	btn_style.content_margin_top = 8
+	btn_style.content_margin_right = 10
+	btn.add_theme_stylebox_override("normal", btn_style)
+
+	var btn_hover = btn_style.duplicate()
+	btn_hover.bg_color = bg_color.lightened(0.12)
+	btn.add_theme_stylebox_override("hover", btn_hover)
+
+	# Icon (left)
+	var icon = TextureRect.new()
+	icon.custom_minimum_size = Vector2(50, 50)
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	icon.position = Vector2(8, 8)
+	if ResourceLoader.exists(icon_path):
+		icon.texture = load(icon_path)
+	btn.add_child(icon)
+
+	# Game title (right of icon)
+	var title_label = Label.new()
+	title_label.text = game_title
+	title_label.position = Vector2(70, 6)
+	title_label.size = Vector2(300, 18)
+	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	title_label.add_theme_font_size_override("font_size", 14)
+	title_label.add_theme_color_override("font_color", Color(1, 0.85, 0.3))
+	btn.add_child(title_label)
+
+	# Subtitle
+	var sub_label = Label.new()
+	sub_label.text = subtitle
+	sub_label.position = Vector2(70, 24)
+	sub_label.size = Vector2(300, 16)
+	sub_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	sub_label.add_theme_font_size_override("font_size", 10)
+	sub_label.add_theme_color_override("font_color", Color(1, 0.95, 0.8, 0.6))
+	btn.add_child(sub_label)
+
+	# Cost label (right side)
+	var cost_label = Label.new()
+	cost_label.text = "Cost: " + str(cost) + "G"
+	cost_label.position = Vector2(340, 6)
+	cost_label.size = Vector2(70, 14)
+	cost_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	cost_label.add_theme_font_size_override("font_size", 11)
+	cost_label.add_theme_color_override("font_color", Color(0.7, 0.65, 0.55))
+	btn.add_child(cost_label)
+
+	# Reward label (right side)
+	var reward_label = Label.new()
+	reward_label.text = "Reward: " + str(reward) + "G"
+	reward_label.position = Vector2(330, 22)
+	reward_label.size = Vector2(80, 14)
+	reward_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	reward_label.add_theme_font_size_override("font_size", 11)
+	reward_label.add_theme_color_override("font_color", Color(0.4, 1, 0.4))
+	btn.add_child(reward_label)
 
 	return btn
 
@@ -327,6 +445,16 @@ func _on_card_game_selected(game_menu: Control) -> void:
 		return
 	is_switching = true
 
+	# Cek gold
+	if PlayerDataManager.get_gold() < 3:
+		_show_floating_text(game_menu, "Not enough gold!", Color(1, 0.4, 0.3))
+		is_switching = false
+		return
+
+	# Deduct fee
+	PlayerDataManager.spend_gold(3)
+	_update_gold_display()
+
 	# Close game selection dengan animasi
 	if game_menu and is_instance_valid(game_menu):
 		_play_panel_outro(game_menu)
@@ -334,8 +462,139 @@ func _on_card_game_selected(game_menu: Control) -> void:
 
 	# Buka card game
 	var game = TavernCardGame.new()
+	game.back_to_menu.connect(_on_game_back_to_menu)
+	game.game_won.connect(_on_game_won.bind("Find The Card"))
 	_open_panel(game)
 	is_switching = false
+
+
+func _on_word_chain_selected(game_menu: Control) -> void:
+	if is_switching:
+		return
+	is_switching = true
+
+	# Cek gold
+	if PlayerDataManager.get_gold() < 3:
+		_show_floating_text(game_menu, "Not enough gold!", Color(1, 0.4, 0.3))
+		is_switching = false
+		return
+
+	# Deduct fee
+	PlayerDataManager.spend_gold(3)
+	_update_gold_display()
+
+	# Close game selection dengan animasi
+	if game_menu and is_instance_valid(game_menu):
+		_play_panel_outro(game_menu)
+		await game_menu.tree_exited
+
+	# Buka word chain game
+	var game = TavernWordChain.new()
+	game.back_to_menu.connect(_on_game_back_to_menu)
+	game.game_won.connect(_on_game_won.bind("Word Chain"))
+	_open_panel(game)
+	is_switching = false
+
+
+func _on_drink_mix_selected(game_menu: Control) -> void:
+	if is_switching:
+		return
+	is_switching = true
+
+	# Cek gold
+	if PlayerDataManager.get_gold() < 3:
+		_show_floating_text(game_menu, "Not enough gold!", Color(1, 0.4, 0.3))
+		is_switching = false
+		return
+
+	# Deduct fee
+	PlayerDataManager.spend_gold(3)
+	_update_gold_display()
+
+	# Close game selection dengan animasi
+	if game_menu and is_instance_valid(game_menu):
+		_play_panel_outro(game_menu)
+		await game_menu.tree_exited
+
+	# Buka drink mix game
+	var game = TavernDrinkMix.new()
+	game.back_to_menu.connect(_on_game_back_to_menu)
+	game.game_won.connect(_on_game_won.bind("Brew Challenge"))
+	_open_panel(game)
+	is_switching = false
+
+
+func _on_game_back_to_menu() -> void:
+	if is_switching:
+		return
+	is_switching = true
+	is_returning_to_menu = true
+
+	# Tunggu game selesai outro
+	if active_panel and is_instance_valid(active_panel):
+		await active_panel.tree_exited
+
+	active_panel = null
+
+	# Buka game selection menu lagi
+	var menu = _create_game_selection_menu()
+	active_panel = menu
+	add_child(menu)
+	is_switching = false
+
+
+func _on_game_won(game_name: String) -> void:
+	var active_id = PlayerDataManager.active_quest_id
+	if active_id == "":
+		return
+	var all_quests = QuestDatabase.get_all_quests()
+	for q in all_quests:
+		if q.quest_id == active_id and q.quest_type == QuestData.QuestType.PLAY_GAMES and q.get_target() == game_name:
+			PlayerDataManager.increment_quest_progress(active_id)
+			break
+
+
+func _show_floating_text(parent: Control, text: String, color: Color) -> void:
+	var float_label := Label.new()
+	float_label.text = text
+	float_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	float_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	float_label.add_theme_font_size_override("font_size", 14)
+	float_label.add_theme_color_override("font_color", color)
+
+	var float_bg := StyleBoxFlat.new()
+	float_bg.bg_color = Color(0, 0, 0, 0.75)
+	float_bg.set_corner_radius_all(10)
+	float_bg.content_margin_left = 16.0
+	float_bg.content_margin_right = 16.0
+	float_bg.content_margin_top = 10.0
+	float_bg.content_margin_bottom = 10.0
+	float_label.add_theme_stylebox_override("normal", float_bg)
+
+	parent.add_child(float_label)
+
+	float_label.reset_size()
+	var target_pos := Vector2(370.0, 130.0)
+	float_label.pivot_offset = float_label.size / 2.0
+	float_label.position = target_pos - (float_label.size / 2.0)
+
+	float_label.scale = Vector2(0.5, 0.5)
+	float_label.modulate.a = 0.0
+
+	var tween := create_tween().set_parallel(true)
+	tween.set_trans(Tween.TRANS_CIRC)
+	tween.set_ease(Tween.EASE_OUT)
+	tween.tween_property(float_label, "scale", Vector2(1.0, 1.0), 0.25)
+	tween.tween_property(float_label, "modulate:a", 1.0, 0.2)
+
+	tween.chain()
+	tween.tween_interval(2.0)
+
+	tween.chain().set_parallel(true)
+	tween.set_trans(Tween.TRANS_CIRC)
+	tween.set_ease(Tween.EASE_IN)
+	tween.tween_property(float_label, "modulate:a", 0.0, 0.3)
+	tween.chain().tween_callback(float_label.queue_free)
 
 
 func _on_game_menu_close(menu: Control) -> void:
@@ -399,7 +658,9 @@ func _play_panel_outro(menu: Control) -> void:
 
 func _on_panel_closed() -> void:
 	active_panel = null
-	_show_feature()
+	if not is_returning_to_menu:
+		_show_feature()
+	is_returning_to_menu = false
 	_update_gold_display()
 
 
@@ -421,7 +682,17 @@ func _on_selling_pressed() -> void:
 	is_switching = false
 
 func _on_quest_pressed() -> void:
-	pass
+	if is_switching:
+		return
+	is_switching = true
+
+	await _close_active_panel_and_wait()
+
+	_hide_feature()
+
+	var quest_panel = QuestPanel.new()
+	_open_panel(quest_panel)
+	is_switching = false
 
 func _on_announcement_pressed() -> void:
 	pass

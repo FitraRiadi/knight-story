@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="QuestData" format=3 uid="uid://quest_scouting"]
+
+[ext_resource type="Script" uid="uid://bfisac7ed8x4w" path="res://scripts/local/location/room/tavern/quest_data.gd" id="1_quest"]
+
+[resource]
+script = ExtResource("1_quest")
+quest_id = "scouting_ruins"
+quest_name = "Scouting the Ruins"
+description = "Investigate the mysterious noise near the old ruins"
+quest_type = 4
+target_count = 1
+kill_target = ""
+item_target = ""
+game_target = ""
+explore_target = "ruins"
+reward_gold = 0
+reward_exp = 0
+reward_item_id = "None"
