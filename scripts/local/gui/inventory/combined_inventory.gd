@@ -281,8 +281,8 @@ func _create_slot_pressed() -> StyleBoxFlat:
 	return style
 
 
-func _create_slot_button(index: int, normal: StyleBoxFlat, pressed: StyleBoxFlat) -> Button:
-	var btn := Button.new()
+func _create_slot_button(index: int, normal: StyleBoxFlat, pressed: StyleBoxFlat) -> SlotButton:
+	var btn := SlotButton.new()
 	btn.toggle_mode = true
 	btn.custom_minimum_size = SLOT_SIZE
 	btn.size = SLOT_SIZE
@@ -308,10 +308,12 @@ func _setup_slot_callbacks() -> void:
 	for i in battle_slots.size():
 		var idx := i
 		battle_slots[i].pressed.connect(func(): _on_slot_clicked("battle", idx))
+		battle_slots[i].item_dropped.connect(_on_item_dropped)
 
 	for i in chest_slots.size():
 		var idx := i
 		chest_slots[i].pressed.connect(func(): _on_slot_clicked("chest", idx))
+		chest_slots[i].item_dropped.connect(_on_item_dropped)
 
 
 # ============================================================
@@ -462,10 +464,14 @@ func _populate_all_slots() -> void:
 func _populate_battle_slots() -> void:
 	var items := PlayerDataManager.data.battle_inventory.items
 	for i in battle_slots.size():
+		battle_slots[i].inv_type = "battle"
+		battle_slots[i].slot_index = i
 		if i < items.size() and items[i] and items[i] is ItemData:
 			var item: ItemData = items[i]
+			battle_slots[i].item_ref = item
 			battle_slot_icons[i].texture = item.icon
 		else:
+			battle_slots[i].item_ref = null
 			battle_slot_icons[i].texture = null
 
 
@@ -473,14 +479,21 @@ func _populate_chest_slots() -> void:
 	var inv := PlayerDataManager.data.chest_inventory
 	if not inv:
 		for i in chest_slots.size():
+			chest_slots[i].inv_type = "chest"
+			chest_slots[i].slot_index = i
+			chest_slots[i].item_ref = null
 			chest_slot_icons[i].texture = null
 		return
 	var items := inv.items
 	for i in chest_slots.size():
+		chest_slots[i].inv_type = "chest"
+		chest_slots[i].slot_index = i
 		if i < items.size() and items[i] and items[i] is ItemData:
 			var item: ItemData = items[i]
+			chest_slots[i].item_ref = item
 			chest_slot_icons[i].texture = item.icon
 		else:
+			chest_slots[i].item_ref = null
 			chest_slot_icons[i].texture = null
 
 
@@ -610,6 +623,29 @@ func _set_info_empty() -> void:
 	info_effect.visible = false
 	drop_btn.visible = false
 	transfer_btn.visible = false
+
+
+# ============================================================
+# DRAG & DROP
+# ============================================================
+
+func _on_item_dropped(src_type: String, src_idx: int, tgt_type: String, tgt_idx: int) -> void:
+	if src_type == tgt_type:
+		# Swap dalam satu inventory
+		if src_type == "battle":
+			PlayerDataManager.swap_battle_slots(src_idx, tgt_idx)
+		else:
+			PlayerDataManager.swap_chest_slots(src_idx, tgt_idx)
+	else:
+		# Transfer antar inventory (handle swap)
+		PlayerDataManager.swap_between_inventories(src_type, src_idx, tgt_type, tgt_idx)
+
+	_populate_battle_slots()
+	_populate_chest_slots()
+	_deselect_all()
+	active_inv_type = ""
+	active_slot_index = -1
+	_set_info_empty()
 
 
 # ============================================================

@@ -196,6 +196,68 @@ func transfer_to_chest(battle_index: int) -> bool:
 	return true
 
 
+func swap_battle_slots(a: int, b: int) -> void:
+	if data == null or data.battle_inventory == null:
+		return
+	var items := data.battle_inventory.items
+	if a < 0 or a >= items.size() or b < 0 or b >= items.size():
+		return
+	var temp = items[a]
+	items[a] = items[b]
+	items[b] = temp
+	save()
+
+
+func swap_chest_slots(a: int, b: int) -> void:
+	if data == null or data.chest_inventory == null:
+		return
+	var items := data.chest_inventory.items
+	if a < 0 or a >= items.size() or b < 0 or b >= items.size():
+		return
+	var temp = items[a]
+	items[a] = items[b]
+	items[b] = temp
+	save()
+
+
+func swap_between_inventories(
+	src_type: String, src_idx: int,
+	tgt_type: String, tgt_idx: int
+) -> void:
+	if data == null:
+		return
+
+	var src_items: Array
+	var tgt_items: Array
+	if src_type == "battle":
+		src_items = data.battle_inventory.items
+	else:
+		src_items = data.chest_inventory.items
+
+	if tgt_type == "battle":
+		tgt_items = data.battle_inventory.items
+	else:
+		tgt_items = data.chest_inventory.items
+
+	if src_idx < 0 or src_idx >= src_items.size():
+		return
+	if tgt_idx < 0 or tgt_idx >= tgt_items.size():
+		return
+
+	var src_item = src_items[src_idx]
+	var tgt_item = tgt_items[tgt_idx]
+
+	# Pastikan array cukup besar
+	while src_items.size() <= src_idx:
+		src_items.append(null)
+	while tgt_items.size() <= tgt_idx:
+		tgt_items.append(null)
+
+	tgt_items[tgt_idx] = src_item
+	src_items[src_idx] = tgt_item
+	save()
+
+
 func reset_data() -> void:
 	# Hapus seluruh folder .knight
 	var knight_dir = ProjectSettings.globalize_path("user://.knight/")
