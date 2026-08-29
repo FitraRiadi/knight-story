@@ -34,6 +34,7 @@ var info_rarity: Label
 var info_type: Label
 var info_effect: Label
 var drop_btn: Button
+var transfer_btn: Button
 
 # --- State ---
 var active_inv_type: String = ""  # "battle" atau "chest"
@@ -72,6 +73,8 @@ const DROP_HOVER := Color(0.75, 0.2, 0.12, 1.0)
 # ============================================================
 
 func _ready() -> void:
+	if not PlayerDataManager.data.chest_inventory:
+		PlayerDataManager.data.chest_inventory = InventoryBattleData.new()
 	_build_ui()
 	_populate_all_slots()
 	_play_intro()
@@ -182,6 +185,30 @@ func _build_section_labels() -> void:
 	chest_label.add_theme_color_override("font_color", LABEL_COLOR)
 	panel.add_child(chest_label)
 
+	# Transfer button (hidden by default)
+	transfer_btn = Button.new()
+	transfer_btn.position = Vector2(16, 38)
+	transfer_btn.size = Vector2(388, 18)
+	transfer_btn.visible = false
+	transfer_btn.focus_mode = Control.FOCUS_NONE
+
+	var t_style := StyleBoxFlat.new()
+	t_style.bg_color = Color(0.12, 0.35, 0.55, 0.85)
+	t_style.corner_radius_top_left = 3
+	t_style.corner_radius_top_right = 3
+	t_style.corner_radius_bottom_left = 3
+	t_style.corner_radius_bottom_right = 3
+	transfer_btn.add_theme_stylebox_override("normal", t_style)
+
+	var t_hover := t_style.duplicate()
+	t_hover.bg_color = Color(0.15, 0.42, 0.65, 1.0)
+	transfer_btn.add_theme_stylebox_override("hover", t_hover)
+
+	transfer_btn.add_theme_font_size_override("font_size", 9)
+	transfer_btn.add_theme_color_override("font_color", TEXT_COLOR)
+	transfer_btn.pressed.connect(_on_transfer_pressed)
+	panel.add_child(transfer_btn)
+
 
 # ============================================================
 # BATTLE GRID (3×3)
@@ -190,7 +217,7 @@ func _build_section_labels() -> void:
 func _build_battle_grid() -> void:
 	battle_grid = GridContainer.new()
 	battle_grid.columns = 3
-	battle_grid.position = Vector2(24, 52)
+	battle_grid.position = Vector2(24, 58)
 	battle_grid.size = Vector2(148, 148)
 	battle_grid.add_theme_constant_override("h_separation", SLOT_GAP)
 	battle_grid.add_theme_constant_override("v_separation", SLOT_GAP)
@@ -214,7 +241,7 @@ func _build_battle_grid() -> void:
 func _build_chest_grid() -> void:
 	chest_grid = GridContainer.new()
 	chest_grid.columns = 4
-	chest_grid.position = Vector2(200, 52)
+	chest_grid.position = Vector2(200, 58)
 	chest_grid.size = Vector2(204, 204)
 	chest_grid.add_theme_constant_override("h_separation", SLOT_GAP)
 	chest_grid.add_theme_constant_override("v_separation", SLOT_GAP)
@@ -293,7 +320,7 @@ func _setup_slot_callbacks() -> void:
 
 func _build_divider() -> void:
 	var divider := Panel.new()
-	divider.position = Vector2(184, 52)
+	divider.position = Vector2(184, 58)
 	divider.size = Vector2(2, 204)
 
 	var style := StyleBoxFlat.new()
@@ -443,7 +470,12 @@ func _populate_battle_slots() -> void:
 
 
 func _populate_chest_slots() -> void:
-	var items := PlayerDataManager.data.chest_inventory.items
+	var inv := PlayerDataManager.data.chest_inventory
+	if not inv:
+		for i in chest_slots.size():
+			chest_slot_icons[i].texture = null
+		return
+	var items := inv.items
 	for i in chest_slots.size():
 		if i < items.size() and items[i] and items[i] is ItemData:
 			var item: ItemData = items[i]
@@ -474,9 +506,16 @@ func _on_slot_clicked(inv_type: String, index: int) -> void:
 	if item and item is ItemData:
 		_update_info_panel(item)
 		drop_btn.visible = true
+		# Show transfer button
+		if inv_type == "battle":
+			transfer_btn.text = "Move to Chest  >>"
+		else:
+			transfer_btn.text = "<<  Move to Battle"
+		transfer_btn.visible = true
 	else:
 		_set_info_empty()
 		drop_btn.visible = false
+		transfer_btn.visible = false
 
 
 func _deselect_all() -> void:
@@ -488,11 +527,17 @@ func _deselect_all() -> void:
 
 func _get_item_at(inv_type: String, index: int) -> ItemData:
 	if inv_type == "battle":
-		var items := PlayerDataManager.data.battle_inventory.items
+		var inv := PlayerDataManager.data.battle_inventory
+		if not inv:
+			return null
+		var items := inv.items
 		if index < items.size() and items[index] and items[index] is ItemData:
 			return items[index]
 	else:
-		var items := PlayerDataManager.data.chest_inventory.items
+		var inv := PlayerDataManager.data.chest_inventory
+		if not inv:
+			return null
+		var items := inv.items
 		if index < items.size() and items[index] and items[index] is ItemData:
 			return items[index]
 	return null
@@ -564,6 +609,30 @@ func _set_info_empty() -> void:
 	info_effect.text = ""
 	info_effect.visible = false
 	drop_btn.visible = false
+	transfer_btn.visible = false
+
+
+# ============================================================
+# TRANSFER ITEM
+# ============================================================
+
+func _on_transfer_pressed() -> void:
+	if active_inv_type == "" or active_slot_index < 0:
+		return
+
+	var success := false
+	if active_inv_type == "battle":
+		success = PlayerDataManager.transfer_to_chest(active_slot_index)
+	else:
+		success = PlayerDataManager.transfer_to_battle(active_slot_index)
+
+	if success:
+		_populate_battle_slots()
+		_populate_chest_slots()
+		_deselect_all()
+		active_inv_type = ""
+		active_slot_index = -1
+		_set_info_empty()
 
 
 # ============================================================

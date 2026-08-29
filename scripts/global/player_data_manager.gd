@@ -124,6 +124,78 @@ func remove_chest_item(index: int) -> void:
 	save()
 
 
+func transfer_to_battle(chest_index: int) -> bool:
+	if data == null or data.chest_inventory == null or data.battle_inventory == null:
+		return false
+
+	if chest_index < 0 or chest_index >= data.chest_inventory.items.size():
+		return false
+
+	var item = data.chest_inventory.items[chest_index]
+	if not item:
+		return false
+
+	# Cari slot kosong di battle_inventory
+	var battle_items := data.battle_inventory.items
+	var target_index := -1
+	for i in range(battle_items.size()):
+		if battle_items[i] == null:
+			target_index = i
+			break
+
+	# Kalau gak ada null slot, append kalau belum max 9
+	if target_index == -1 and battle_items.size() < 9:
+		target_index = battle_items.size()
+
+	if target_index == -1:
+		return false
+
+	# Pastikan array cukup besar
+	while battle_items.size() <= target_index:
+		battle_items.append(null)
+
+	battle_items[target_index] = item
+	data.chest_inventory.items[chest_index] = null
+	save()
+	return true
+
+
+func transfer_to_chest(battle_index: int) -> bool:
+	if data == null or data.chest_inventory == null or data.battle_inventory == null:
+		return false
+
+	if battle_index < 0 or battle_index >= data.battle_inventory.items.size():
+		return false
+
+	var item = data.battle_inventory.items[battle_index]
+	if not item:
+		return false
+
+	# Cari slot kosong di chest_inventory
+	var chest_items := data.chest_inventory.items
+	var target_index := -1
+	for i in range(chest_items.size()):
+		if chest_items[i] == null:
+			target_index = i
+			break
+
+	# Kalau gak ada null slot, append kalau belum max 18
+	if target_index == -1 and chest_items.size() < 18:
+		target_index = chest_items.size()
+
+	if target_index == -1:
+		return false
+
+	# Pastikan array cukup besar
+	while chest_items.size() <= target_index:
+		chest_items.append(null)
+
+	chest_items[target_index] = item
+	data.battle_inventory.items[battle_index] = null
+	save()
+	return true
+
+
 func reset_data() -> void:
 	# Hapus seluruh folder .knight
 	var knight_dir = ProjectSettings.globalize_path("user://.knight/")
