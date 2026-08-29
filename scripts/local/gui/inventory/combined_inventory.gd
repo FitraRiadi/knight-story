@@ -107,6 +107,7 @@ func _build_overlay() -> void:
 
 func _build_panel() -> void:
 	panel = Panel.new()
+	panel.mouse_filter = Control.MOUSE_FILTER_PASS
 	var viewport_size := get_viewport_rect().size
 	panel.position = Vector2(
 		(viewport_size.x - PANEL_SIZE.x) / 2.0,
@@ -167,6 +168,7 @@ func _build_close_button() -> void:
 func _build_section_labels() -> void:
 	# Battle label
 	var battle_label := Label.new()
+	battle_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	battle_label.text = "BATTLE"
 	battle_label.position = Vector2(16, 36)
 	battle_label.size = Vector2(152, 14)
@@ -177,6 +179,7 @@ func _build_section_labels() -> void:
 
 	# Chest label
 	var chest_label := Label.new()
+	chest_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	chest_label.text = "CHEST"
 	chest_label.position = Vector2(200, 36)
 	chest_label.size = Vector2(204, 14)
@@ -219,6 +222,7 @@ func _build_battle_grid() -> void:
 	battle_grid.columns = 3
 	battle_grid.position = Vector2(24, 58)
 	battle_grid.size = Vector2(148, 148)
+	battle_grid.mouse_filter = Control.MOUSE_FILTER_PASS
 	battle_grid.add_theme_constant_override("h_separation", SLOT_GAP)
 	battle_grid.add_theme_constant_override("v_separation", SLOT_GAP)
 
@@ -243,6 +247,7 @@ func _build_chest_grid() -> void:
 	chest_grid.columns = 4
 	chest_grid.position = Vector2(200, 58)
 	chest_grid.size = Vector2(204, 204)
+	chest_grid.mouse_filter = Control.MOUSE_FILTER_PASS
 	chest_grid.add_theme_constant_override("h_separation", SLOT_GAP)
 	chest_grid.add_theme_constant_override("v_separation", SLOT_GAP)
 
@@ -322,6 +327,7 @@ func _setup_slot_callbacks() -> void:
 
 func _build_divider() -> void:
 	var divider := Panel.new()
+	divider.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	divider.position = Vector2(184, 58)
 	divider.size = Vector2(2, 204)
 
@@ -341,6 +347,7 @@ func _build_item_info() -> void:
 
 	# Background panel
 	var bg := Panel.new()
+	bg.mouse_filter = Control.MOUSE_FILTER_PASS
 	bg.position = Vector2(8, info_y)
 	bg.size = Vector2(PANEL_SIZE.x - 16, info_h)
 
@@ -355,6 +362,7 @@ func _build_item_info() -> void:
 
 	# Icon
 	info_icon = TextureRect.new()
+	info_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	info_icon.custom_minimum_size = Vector2(48, 48)
 	info_icon.position = Vector2(16, info_y + 10)
 	info_icon.size = Vector2(48, 48)
@@ -364,6 +372,7 @@ func _build_item_info() -> void:
 
 	# Name
 	info_name = Label.new()
+	info_name.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	info_name.position = Vector2(72, info_y + 6)
 	info_name.size = Vector2(200, 16)
 	info_name.add_theme_font_size_override("font_size", 11)
@@ -372,6 +381,7 @@ func _build_item_info() -> void:
 
 	# Desc
 	info_desc = Label.new()
+	info_desc.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	info_desc.position = Vector2(72, info_y + 22)
 	info_desc.size = Vector2(200, 32)
 	info_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -381,6 +391,7 @@ func _build_item_info() -> void:
 
 	# Rarity badge
 	info_rarity = Label.new()
+	info_rarity.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	info_rarity.position = Vector2(72, info_y + 54)
 	info_rarity.size = Vector2(60, 14)
 	info_rarity.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -391,6 +402,7 @@ func _build_item_info() -> void:
 
 	# Type badge
 	info_type = Label.new()
+	info_type.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	info_type.position = Vector2(136, info_y + 54)
 	info_type.size = Vector2(70, 14)
 	info_type.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -401,6 +413,7 @@ func _build_item_info() -> void:
 
 	# Effect badge
 	info_effect = Label.new()
+	info_effect.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	info_effect.position = Vector2(210, info_y + 54)
 	info_effect.size = Vector2(70, 14)
 	info_effect.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

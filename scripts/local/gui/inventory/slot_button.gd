@@ -25,6 +25,10 @@ func _get_drag_data(position: Vector2) -> Variant:
 	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	preview.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	preview.modulate.a = 0.8
+	preview.offset_left = -18
+	preview.offset_top = -18
+	preview.offset_right = 18
+	preview.offset_bottom = 18
 	set_drag_preview(preview)
 
 	return {
