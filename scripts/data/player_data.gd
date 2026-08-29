@@ -66,3 +66,12 @@ class_name PlayerData
 @export_group("Battle Inventory")
 
 @export var battle_inventory: InventoryBattleData
+
+
+# ============================================================
+# CHEST INVENTORY
+# ============================================================
+
+@export_group("Chest Inventory")
+
+@export var chest_inventory: InventoryBattleData

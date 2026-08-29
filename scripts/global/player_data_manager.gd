@@ -30,6 +30,8 @@ func _init_save() -> void:
 			data = default_data.duplicate(true) as PlayerData
 			if data.battle_inventory:
 				data.battle_inventory = data.battle_inventory.duplicate(true) as InventoryBattleData
+			if data.chest_inventory:
+				data.chest_inventory = data.chest_inventory.duplicate(true) as InventoryBattleData
 			save()
 			return
 		else:
