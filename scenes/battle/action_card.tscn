@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://ctioncard001"]
 
 [ext_resource type="Script" uid="uid://c323m2x34d78d" path="res://scripts/local/battle/ActionCardUI.gd" id="1_ui"]
+[ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="2_k2yru"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 bg_color = Color(0.12, 0.1, 0.15, 0.95)
@@ -31,8 +32,8 @@ corner_radius_bottom_left = 10
 shadow_color = Color(1, 1, 1, 0.5)
 shadow_size = 16
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6ldy7"]
-bg_color = Color(0.22376983, 0.22376983, 0.22376983, 0.638)
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bq0so"]
+bg_color = Color(0, 0, 0, 0.26500002)
 corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
@@ -136,8 +137,8 @@ offset_top = 72.0
 offset_right = 106.0
 offset_bottom = 88.0
 theme_override_font_sizes/font_size = 10
-theme_override_styles/normal = SubResource("StyleBoxFlat_6ldy7")
-text = "CARD NAME"
+theme_override_styles/normal = SubResource("StyleBoxFlat_bq0so")
+text = "Card Name"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -153,9 +154,10 @@ color = Color(1, 1, 1, 0.2)
 [node name="Panel" type="Panel" parent="." unique_id=1351658703]
 layout_mode = 0
 offset_left = 2.0
-offset_top = 91.0
+offset_top = 92.0
 offset_right = 108.0
 offset_bottom = 158.0
+mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_moojr")
 
 [node name="DescLabel" type="Label" parent="." unique_id=1075724444]
@@ -167,6 +169,7 @@ offset_bottom = 152.0
 theme_override_font_sizes/font_size = 10
 text = "Card description here"
 horizontal_alignment = 1
+vertical_alignment = 1
 autowrap_mode = 2
 
 [node name="BadgeContainer" type="Control" parent="." unique_id=1582892708]
@@ -246,3 +249,12 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 0.4)
+
+[node name="TextureRect" type="TextureRect" parent="." unique_id=1294680117]
+layout_mode = 0
+offset_left = 13.0
+offset_top = 152.0
+offset_right = 100.0
+offset_bottom = 164.0
+texture = ExtResource("2_k2yru")
+expand_mode = 1
