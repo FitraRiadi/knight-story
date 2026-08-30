@@ -195,7 +195,7 @@ func _create_quest_row(quest: QuestData, active_id: String) -> PanelContainer:
 	row.custom_minimum_size = Vector2(0, 72)
 
 	var row_style = StyleBoxFlat.new()
-	row_style.bg_color = Color(0.11, 0.067, 0.016, 0.5)
+	row_style.bg_color = Color(0.08, 0.12, 0.22, 0.55) if active_id == quest.quest_id else Color(0.11, 0.067, 0.016, 0.5)
 	row_style.corner_radius_top_left = 4
 	row_style.corner_radius_top_right = 4
 	row_style.corner_radius_bottom_left = 4
@@ -216,18 +216,26 @@ func _create_quest_row(quest: QuestData, active_id: String) -> PanelContainer:
 	info_vbox.add_theme_constant_override("separation", 2)
 	hbox.add_child(info_vbox)
 
+	var is_completed = PlayerDataManager.is_quest_completed(quest.quest_id)
+	var is_active = active_id == quest.quest_id
+	var no_active = active_id == ""
+
+	# Strikethrough + dim untuk quest yang selesai
+	if is_completed:
+		row.modulate.a = 0.45
+
 	# Quest name
 	var name_label = Label.new()
 	name_label.text = quest.quest_name
 	name_label.add_theme_font_size_override("font_size", 14)
-	name_label.add_theme_color_override("font_color", TITLE_COLOR)
+	name_label.add_theme_color_override("font_color", TITLE_COLOR if not is_completed else Color(0.5, 0.5, 0.5))
 	info_vbox.add_child(name_label)
 
 	# Quest type + objective
 	var type_label = Label.new()
 	type_label.text = quest.get_type_display() + " — " + quest.get_target_display()
 	type_label.add_theme_font_size_override("font_size", 10)
-	type_label.add_theme_color_override("font_color", DESC_COLOR)
+	type_label.add_theme_color_override("font_color", DESC_COLOR if not is_completed else Color(0.45, 0.42, 0.38))
 	info_vbox.add_child(type_label)
 
 	# Progress + reward — cap progress di target_count
@@ -239,7 +247,7 @@ func _create_quest_row(quest: QuestData, active_id: String) -> PanelContainer:
 	var info_label = Label.new()
 	info_label.text = progress_text + "  |  " + reward_text
 	info_label.add_theme_font_size_override("font_size", 10)
-	info_label.add_theme_color_override("font_color", PROGRESS_COLOR)
+	info_label.add_theme_color_override("font_color", PROGRESS_COLOR if not is_completed else Color(0.4, 0.5, 0.6))
 	info_vbox.add_child(info_label)
 
 	# Right side (button)
@@ -250,10 +258,6 @@ func _create_quest_row(quest: QuestData, active_id: String) -> PanelContainer:
 	var action_btn = Button.new()
 	action_btn.custom_minimum_size = Vector2(70, 26)
 	action_btn.focus_mode = Control.FOCUS_NONE
-
-	var is_completed = PlayerDataManager.is_quest_completed(quest.quest_id)
-	var is_active = active_id == quest.quest_id
-	var no_active = active_id == ""
 
 	if is_completed:
 		# DONE
@@ -269,8 +273,8 @@ func _create_quest_row(quest: QuestData, active_id: String) -> PanelContainer:
 		action_btn.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
 		action_btn.pressed.connect(_on_claim_pressed.bind(quest))
 	elif is_active:
-		# ACTIVE — in progress
-		action_btn.text = "Active"
+		# ONGOING — in progress
+		action_btn.text = "Ongoing"
 		action_btn.disabled = true
 		action_btn.add_theme_stylebox_override("normal", _make_btn_style(ACTIVE_BG, ACTIVE_BORDER))
 		action_btn.add_theme_color_override("font_color", Color(0.6, 0.6, 0.7))
