@@ -167,6 +167,12 @@ var battle_inventory_instance: Control = null
 var inventory_canvas_layer: CanvasLayer
 var is_inventory_open: bool = false
 
+# ACTION CARD SYSTEM
+var action_cards: Array[ActionCardData] = []
+var action_card_cooldowns: Array[int] = []
+var is_card_ui_open: bool = false
+var has_auto_crit: bool = false
+
 # ITEM DROP SYSTEM
 var drop_layer: CanvasLayer
 var item_cache: Dictionary = {}  # item_id -> ItemData
@@ -252,6 +258,7 @@ func _ready() -> void:
 	if defend_btn: defend_btn.pressed.connect(_on_defend_pressed)
 	if backpack_btn: backpack_btn.pressed.connect(_on_backpack_pressed)
 	if run_btn: run_btn.pressed.connect(_on_run_pressed)
+	if skill_btn: skill_btn.pressed.connect(_on_skill_pressed)
 	if reset_target_btn and not reset_target_btn.pressed.is_connected(_on_reset_target_pressed):
 		reset_target_btn.pressed.connect(_on_reset_target_pressed)
 
@@ -794,6 +801,101 @@ func _on_item_used_in_battle(item: ItemData) -> void:
 	
 	await get_tree().create_timer(1.0).timeout
 	_start_enemies_turn()
+
+
+# ============================================================
+# ACTION CARD SYSTEM
+# ============================================================
+
+func _load_action_cards() -> void:
+	action_cards.clear()
+	action_card_cooldowns.clear()
+
+	var card_paths: Array[String] = [
+		"res://data/action_cards/heavy_strike.tres",
+		"res://data/action_cards/whirlwind.tres",
+		"res://data/action_cards/crit_focus.tres",
+		"res://data/action_cards/recover.tres"
+	]
+
+	for path in card_paths:
+		var card: ActionCardData = load(path) as ActionCardData
+		if card:
+			action_cards.append(card)
+			action_card_cooldowns.append(0)
+
+
+func _on_skill_pressed() -> void:
+	if not is_player_turn or is_inventory_open or is_card_ui_open:
+		return
+	open_action_card_ui()
+
+
+func open_action_card_ui() -> void:
+	if is_card_ui_open:
+		return
+
+	# Load cards kalau belum
+	if action_cards.is_empty():
+		_load_action_cards()
+
+	is_card_ui_open = true
+	is_player_turn = false
+	_set_buttons_active(false)
+	_pull_hand_to_corner(0.4)
+
+	var card_ui := ActionCardUI.new()
+	card_ui.setup(action_cards, action_card_cooldowns, current_stamina)
+	add_child(card_ui)
+
+	if card_ui.has_signal("card_selected"):
+		card_ui.card_selected.connect(_on_action_card_selected)
+	if card_ui.has_signal("card_closed"):
+		card_ui.card_closed.connect(_on_action_card_closed)
+
+	card_ui.open()
+
+
+func _on_action_card_selected(index: int) -> void:
+	if index < 0 or index >= action_cards.size():
+		return
+
+	var card: ActionCardData = action_cards[index]
+
+	# Kurangi stamina
+	current_stamina = maxf(0.0, current_stamina - card.stamina_cost)
+	_update_player_ui_instant()
+
+	# Set cooldown
+	if index < action_card_cooldowns.size():
+		action_card_cooldowns[index] = card.cooldown
+
+	# Efek card (placeholder — nanti diimplement)
+	match card.card_name:
+		"Heavy Strike":
+			pass  # nanti: 2x damage
+		"Whirlwind":
+			pass  # nanti: damage all
+		"Crit Focus":
+			has_auto_crit = true
+		"Recover":
+			var heal_amount: float = max_hp * 0.3
+			current_hp = minf(max_hp, current_hp + heal_amount)
+			_animate_hp_change()
+			_play_heal_visual(heal_amount)
+
+
+func _on_action_card_closed() -> void:
+	is_card_ui_open = false
+	is_player_turn = true
+	_reset_hand_to_original(0.4)
+	_set_buttons_active(true)
+
+
+func _process_action_card_cooldowns() -> void:
+	for i in range(action_card_cooldowns.size()):
+		if action_card_cooldowns[i] > 0:
+			action_card_cooldowns[i] -= 1
 
 
 # ============================================================
@@ -2594,6 +2696,7 @@ func _start_enemies_turn() -> void:
 	if enemies.size() > 0:
 		is_player_turn = true
 		_set_buttons_active(true)
+		_process_action_card_cooldowns()
 
 
 func _set_buttons_active(show_buttons: bool, instant: bool = false) -> void:

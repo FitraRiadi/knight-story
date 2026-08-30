@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ActionCardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/local/battle/ActionCardData.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+card_name = "Crit Focus"
+description = "Next attack is guaranteed critical"
+stamina_cost = 20.0
+cooldown = 2
+accent_color = Color(0.75, 0.38, 0.88, 1)
+metadata/_custom_type_script = "ActionCardData"

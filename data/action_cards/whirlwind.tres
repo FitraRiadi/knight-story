@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ActionCardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/local/battle/ActionCardData.gd" id="1_card"]
+
+[resource]
+script = ExtResource("1_card")
+card_name = "Whirlwind"
+description = "Deal damage to all enemies"
+stamina_cost = 40.0
+cooldown = 3
+accent_color = Color(0.25, 0.63, 0.75, 1)
+metadata/_custom_type_script = "ActionCardData"
