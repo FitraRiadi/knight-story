@@ -1,12 +1,13 @@
-[gd_resource type="Resource" script_class="ActionCardData" format=3]
+[gd_resource type="Resource" script_class="ActionCardData" format=3 uid="uid://bdh82uk467nb3"]
 
-[ext_resource type="Script" path="res://scripts/local/battle/ActionCardData.gd" id="1_card"]
+[ext_resource type="Script" uid="uid://810e6j6ko1jp" path="res://scripts/local/battle/ActionCardData.gd" id="1_card"]
+[ext_resource type="Texture2D" uid="uid://dk0qo0f3smio2" path="res://assets/art/items/materials/Icon6.png" id="1_dnf04"]
 
 [resource]
 script = ExtResource("1_card")
 card_name = "Crit Focus"
 description = "Next attack is guaranteed critical"
-stamina_cost = 20.0
-cooldown = 2
-accent_color = Color(0.75, 0.38, 0.88, 1)
-metadata/_custom_type_script = "ActionCardData"
+icon = ExtResource("1_dnf04")
+accent_color = Color(0.5091617, 0.6039453, 0.40444055, 1)
+bg_color = Color(0.71922624, 0.661287, 0.5429289, 0.9490196)
+active_shadow_color = Color(0.6468751, 0.8966003, 0, 0.6)
