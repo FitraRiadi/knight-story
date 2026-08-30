@@ -486,11 +486,23 @@ func _select_card(index: int) -> void:
 	var card: Control = card_nodes[index]
 	var data: ActionCardData = cards_data[index]
 
-	# Phase 1: Selected card flies up with punch
+	# Hitung posisi tengah viewport
+	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
+	var center_pos: Vector2 = Vector2(
+		(viewport_size.x - CARD_WIDTH * SELECT_SCALE) / 2.0,
+		(viewport_size.y - CARD_HEIGHT * SELECT_SCALE) / 2.0
+	)
+
+	# Phase 1: Selected card moves to center with punch
 	var tw := create_tween()
 
-	# Punch scale: 1.0 → 1.25 → 0.95 → 1.1
-	tw.tween_property(card, "scale", Vector2(1.25, 1.25), 0.12)\
+	# Move to center
+	tw.tween_property(card, "position", center_pos, 0.4)\
+		.set_trans(Tween.TRANS_BACK)\
+		.set_ease(Tween.EASE_OUT)
+
+	# Punch scale: 1.0 → 1.3 → 0.95 → SELECT_SCALE
+	tw.parallel().tween_property(card, "scale", Vector2(1.3, 1.3), 0.1)\
 		.set_trans(Tween.TRANS_BACK)\
 		.set_ease(Tween.EASE_OUT)
 	tw.tween_property(card, "scale", Vector2(0.95, 0.95), 0.08)\
@@ -500,17 +512,12 @@ func _select_card(index: int) -> void:
 		.set_trans(Tween.TRANS_ELASTIC)\
 		.set_ease(Tween.EASE_OUT)
 
-	# Lift up
-	tw.parallel().tween_property(card, "position:y", CARD_Y + SELECT_LIFT, 0.35)\
-		.set_trans(Tween.TRANS_BACK)\
-		.set_ease(Tween.EASE_OUT)
-
 	# Full glow
 	if index < card_glow_panels.size():
 		tw.parallel().tween_property(card_glow_panels[index], "modulate:a", 1.0, 0.15)
 
-	# Slight rotation
-	tw.parallel().tween_property(card, "rotation", deg_to_rad(randf_range(-3, 3)), 0.3)\
+	# Reset rotation ke 0 (centered, lurus)
+	tw.parallel().tween_property(card, "rotation", 0.0, 0.3)\
 		.set_trans(Tween.TRANS_CUBIC)
 
 	# Phase 2: Other cards cascade fade out
@@ -521,11 +528,11 @@ func _select_card(index: int) -> void:
 		var delay: float = (i * 0.08)
 		var other_tw := create_tween()
 		other_tw.tween_property(other, "modulate:a", 0.0, 0.15).set_delay(delay)
-		other_tw.parallel().tween_property(other, "position:y", other.position.y + 40, 0.2)\
+		other_tw.parallel().tween_property(other, "position:y", other.position.y + 50, 0.2)\
 			.set_delay(delay)\
 			.set_trans(Tween.TRANS_CUBIC)\
 			.set_ease(Tween.EASE_IN)
-		other_tw.parallel().tween_property(other, "scale", Vector2(0.8, 0.8), 0.2).set_delay(delay)
+		other_tw.parallel().tween_property(other, "scale", Vector2(0.7, 0.7), 0.2).set_delay(delay)
 
 	# Phase 3: Hold, then close
 	tw.tween_interval(0.6)
