@@ -2412,7 +2412,11 @@ func player_receive_damage_custom(amount: float) -> void:
 func _on_enemy_defeated(_exp_amount: int, _gold_amount: int, _dropped_items: Array[String], enemy: BattleEnemy) -> void:
 	# SCOREBOARD: Hitung enemy defeated
 	enemies_killed += 1
-	
+
+	# Quest tracking
+	if is_instance_valid(enemy):
+		EventBus.enemy_killed.emit(enemy.enemy_id)
+
 	# Spawn item drops jika ada
 	if not _dropped_items.is_empty() and is_instance_valid(enemy):
 		var enemy_pos := enemy.global_position
@@ -2746,8 +2750,14 @@ func _show_scoreboard() -> void:
 	if not scoreBoard:
 		return
 	
-	# Update score text
-	_update_scoreboard_values()
+	# Simpan target values buat count-up animation
+	var target_killed: int = enemies_killed
+	var target_accuracy: int = 0
+	if total_attacks > 0:
+		var weighted_score: float = total_low * 25.0 + total_mid * 75.0 + total_critical * 100.0
+		target_accuracy = int(weighted_score / float(total_attacks))
+	var target_parry_success: int = total_parries
+	var target_parry_total: int = total_parry_attempts
 	
 	# Disable input player
 	is_player_turn = false
@@ -2765,17 +2775,36 @@ func _show_scoreboard() -> void:
 	# Container fade in
 	tw.parallel().tween_property(score_container, "modulate:a", 1.0, 0.3)
 	tw.parallel().tween_property(score_container2, "modulate:a", 1.0, 0.3)
-	tw.parallel().tween_property(score_container3, "modulate:a", 1.0, 0.3)
+	tw.parallel().tween_property(score_container3, "modulate.a", 1.0, 0.3)
 	
 	# Title fade in
 	tw.parallel().tween_property(score_title, "modulate:a", 1.0, 0.35)
 	
-	# Cards muncul satu-satu (staggered)
-	for card in [score_card_enemy, score_card_accuracy, score_card_parry]:
+	# Cards muncul satu-satu (staggered) — barengan sama score count-up
+	var cards: Array[Control] = [score_card_enemy, score_card_accuracy, score_card_parry]
+	var count_duration: float = 0.6
+	
+	for i in range(cards.size()):
+		var card: Control = cards[i]
 		if card:
 			tw.tween_property(card, "modulate:a", 1.0, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 			tw.parallel().tween_property(card, "scale", Vector2(1.0, 1.0), 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-			tw.tween_interval(0.12)
+		
+		# Count-up animation per card (parallel bareng card appear)
+		if i == 0 and score_label_enemy:
+			tw.parallel().tween_method(func(val: float) -> void:
+				score_label_enemy.text = str(int(val))
+			, 0.0, float(target_killed), count_duration)
+		elif i == 1 and score_label_accuracy:
+			tw.parallel().tween_method(func(val: float) -> void:
+				score_label_accuracy.text = str(int(val)) + "%"
+			, 0.0, float(target_accuracy), count_duration)
+		elif i == 2 and score_label_parry:
+			tw.parallel().tween_method(func(val: float) -> void:
+				score_label_parry.text = str(int(val)) + " / " + str(target_parry_total)
+			, 0.0, float(target_parry_success), count_duration)
+		
+		tw.tween_interval(0.12)
 	
 	# Continue button muncul terakhir
 	tw.tween_property(score_continue_btn, "modulate:a", 1.0, 0.3).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)

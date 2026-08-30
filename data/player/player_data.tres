@@ -2,11 +2,11 @@
 
 [ext_resource type="Script" uid="uid://cokrj4x2ljt1j" path="res://scripts/data/player_data.gd" id="1_player"]
 [ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="2_item"]
-[ext_resource type="Resource" uid="uid://dmfc6tb72muxj" path="res://data/items/health_potion.tres" id="2_o4y3s"]
+[ext_resource type="Resource" uid="uid://dmfc6tb72muxj" path="res://data/items/consumable/health_potion.tres" id="2_o4y3s"]
 [ext_resource type="Texture2D" uid="uid://8paessvpk5d7" path="res://assets/art/profile/player/Icon5.png" id="3_1mohm"]
 [ext_resource type="Script" uid="uid://krelh1pcnvst" path="res://scripts/data/inventory_battle_data.gd" id="3_inv"]
-[ext_resource type="Resource" uid="uid://xf6noadq87vm" path="res://data/items/attack_potion.tres" id="3_ioold"]
-[ext_resource type="Resource" uid="uid://besh3dfkieai5" path="res://data/items/protection_potion.tres" id="4_ioold"]
+[ext_resource type="Resource" uid="uid://xf6noadq87vm" path="res://data/items/consumable/attack_potion.tres" id="3_ioold"]
+[ext_resource type="Resource" uid="uid://besh3dfkieai5" path="res://data/items/consumable/protection_potion.tres" id="4_ioold"]
 
 [sub_resource type="Resource" id="Resource_inventory"]
 script = ExtResource("3_inv")

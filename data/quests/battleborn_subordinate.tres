@@ -9,5 +9,5 @@ quest_name = "The Battleborn Subordinate"
 description = "The Battleborn Threat has been on the edge, help eliminate them"
 quest_type = 2
 target_count = 5
-kill_target = "warewolf:Warewolf"
+kill_target = "skeleton:Skeleton"
 reward_item_id = "None"

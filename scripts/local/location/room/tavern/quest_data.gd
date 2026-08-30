@@ -66,33 +66,54 @@ var reward_item_id: String = ""
 # HELPER — Dapatkan target aktif berdasarkan quest_type
 # ============================================================
 
+## Return raw ID (tanpa ":Display Name")
 func get_target() -> String:
+	var raw = ""
 	match quest_type:
 		QuestType.KILL:
-			return kill_target
+			raw = kill_target
 		QuestType.COLLECT_ITEMS, QuestType.GATHER:
-			return item_target
+			raw = item_target
 		QuestType.PLAY_GAMES:
-			return game_target
+			raw = game_target
 		QuestType.EXPLORE:
-			return explore_target
+			raw = explore_target
 		_:
 			return ""
+	return _strip_enum(raw)
+
+
+## Return display name dari ":Display Name" format
+func _get_display_name(raw: String) -> String:
+	if ":" in raw:
+		return raw.split(":", true, 1)[1]
+	return _capitalize_id(raw)
 
 
 func get_target_display() -> String:
-	var t = get_target()
+	var raw = ""
 	match quest_type:
 		QuestType.KILL:
-			return "Kill %d %s" % [target_count, _capitalize_id(t)]
+			raw = kill_target
 		QuestType.COLLECT_ITEMS:
-			return "Collect %d %s" % [target_count, _capitalize_id(t)]
+			raw = item_target
 		QuestType.GATHER:
-			return "Gather %d %s" % [target_count, _capitalize_id(t)]
+			raw = item_target
 		QuestType.PLAY_GAMES:
-			return "Win %d %s games" % [target_count, t]
+			return "Win %d %s games" % [target_count, game_target]
 		QuestType.EXPLORE:
-			return "Explore %s" % _capitalize_id(t)
+			return "Explore %s" % _get_display_name(explore_target)
+		_:
+			return description
+
+	var display = _get_display_name(raw)
+	match quest_type:
+		QuestType.KILL:
+			return "Kill %d %s" % [target_count, display]
+		QuestType.COLLECT_ITEMS:
+			return "Collect %d %s" % [target_count, display]
+		QuestType.GATHER:
+			return "Gather %d %s" % [target_count, display]
 		_:
 			return description
 
@@ -124,8 +145,15 @@ func get_reward_text() -> String:
 	if reward_exp > 0:
 		parts.append(str(reward_exp) + " EXP")
 	if reward_item_id != "" and reward_item_id != "None":
-		parts.append(_capitalize_id(reward_item_id))
+		parts.append(_get_display_name(reward_item_id))
 	return " + ".join(parts)
+
+
+## Strip ":Display Name" — return key only
+func _strip_enum(raw: String) -> String:
+	if ":" in raw:
+		return raw.split(":", true, 1)[0]
+	return raw
 
 
 func _capitalize_id(id: String) -> String:

@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="ItemData" format=3 uid="uid://cdwiqicslki8d"]
+
+[ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="1_8pu2h"]
+
+[resource]
+script = ExtResource("1_8pu2h")
+item_id = "iron_ingot"
+item_name = "Iron Ingot"
+rarity = "Uncommon"
+item_type = 1
+sell_value = 300
+metadata/_custom_type_script = "uid://d1chgapjpv2yu"

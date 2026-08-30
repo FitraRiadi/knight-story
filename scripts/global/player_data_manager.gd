@@ -17,6 +17,8 @@ const QUEST_SAVE_PATH := SAVE_DIR + "quests.json"
 # Quest state
 var active_quest_id: String = ""
 var quest_progress: Dictionary = {}  # { quest_id: current_count }
+var displayed_quest_ids: Array = []  # ID quest yang sedang tampil di board
+var completed_quest_ids: Array = []  # ID quest yang udah selesai (claimed)
 
 
 func _ready() -> void:
@@ -328,6 +330,8 @@ func save_quest_state() -> void:
 	var save_data = {
 		"active_quest_id": active_quest_id,
 		"quest_progress": quest_progress,
+		"displayed_quest_ids": displayed_quest_ids,
+		"completed_quest_ids": completed_quest_ids,
 	}
 	var file = FileAccess.open(QUEST_SAVE_PATH, FileAccess.WRITE)
 	if file:
@@ -350,6 +354,8 @@ func load_quest_state() -> void:
 	if save_data is Dictionary:
 		active_quest_id = save_data.get("active_quest_id", "")
 		quest_progress = save_data.get("quest_progress", {})
+		displayed_quest_ids = save_data.get("displayed_quest_ids", [])
+		completed_quest_ids = save_data.get("completed_quest_ids", [])
 
 
 func set_active_quest(quest_id: String) -> void:
@@ -362,6 +368,32 @@ func set_active_quest(quest_id: String) -> void:
 func clear_active_quest() -> void:
 	active_quest_id = ""
 	save_quest_state()
+
+
+func set_displayed_quests(ids: Array) -> void:
+	displayed_quest_ids = ids
+	save_quest_state()
+
+
+func remove_displayed_quest(quest_id: String) -> void:
+	displayed_quest_ids.erase(quest_id)
+	save_quest_state()
+
+
+func add_displayed_quest(quest_id: String) -> void:
+	if quest_id not in displayed_quest_ids:
+		displayed_quest_ids.append(quest_id)
+		save_quest_state()
+
+
+func mark_quest_completed(quest_id: String) -> void:
+	if quest_id not in completed_quest_ids:
+		completed_quest_ids.append(quest_id)
+		save_quest_state()
+
+
+func is_quest_completed(quest_id: String) -> bool:
+	return quest_id in completed_quest_ids
 
 
 func get_quest_progress(quest_id: String) -> int:

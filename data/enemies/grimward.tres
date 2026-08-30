@@ -5,7 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://eeh1qrcceu17" path="res://assets/art/profile/enemy/grimward.jpg" id="1_ycbiy"]
 [ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="2_or5ns"]
 [ext_resource type="Texture2D" uid="uid://babnlghrmqvsm" path="res://assets/art/sprites/enemy/grimward/idle1-removebg-preview.png" id="2_pfxji"]
-[ext_resource type="Resource" uid="uid://dmfc6tb72muxj" path="res://data/items/health_potion.tres" id="3_u0vpp"]
+[ext_resource type="Resource" uid="uid://dmfc6tb72muxj" path="res://data/items/consumable/health_potion.tres" id="3_u0vpp"]
 [ext_resource type="Resource" uid="uid://cq041xql6bmcc" path="res://data/enemies/abilities/life_steal.tres" id="3_w4pim"]
 [ext_resource type="Texture2D" uid="uid://xpfvadqs4lpj" path="res://assets/art/sprites/enemy/grimward/idle2-removebg-preview.png" id="3_ycbiy"]
 [ext_resource type="Texture2D" uid="uid://i208trw5gtud" path="res://assets/art/sprites/enemy/grimward/attack1-removebg-preview.png" id="4_fvgrf"]
@@ -15,7 +15,7 @@
 [ext_resource type="Texture2D" uid="uid://e3q04pvucu10" path="res://assets/art/sprites/enemy/grimward/death1-removebg-preview.png" id="8_lxv2q"]
 [ext_resource type="Texture2D" uid="uid://6488p8v54jf" path="res://assets/art/sprites/enemy/grimward/defend1-removebg-preview.png" id="9_eodqq"]
 [ext_resource type="Resource" uid="uid://c0sv4kwsteft7" path="res://data/enemies/abilities/tactical_attack.tres" id="10_ab1"]
-[ext_resource type="Resource" uid="uid://besh3dfkieai5" path="res://data/items/protection_potion.tres" id="16_fcr88"]
+[ext_resource type="Resource" uid="uid://besh3dfkieai5" path="res://data/items/consumable/protection_potion.tres" id="16_fcr88"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_gn7wh"]
 animations = [{

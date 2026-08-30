@@ -23,6 +23,8 @@ TransitionManager="*uid://c07jt1x8rs7rk"
 SoundManager="*uid://j5kyiwd6d022"
 EnemyDatabase="*uid://ooyavnxqxx7j"
 QuestDatabase="*res://scripts/data/quest_database.gd"
+EventBus="*res://scripts/global/event_bus.gd"
+QuestTracker="*res://scripts/global/quest_tracker.gd"
 PlayerDataManager="*res://scripts/global/player_data_manager.gd"
 
 [display]

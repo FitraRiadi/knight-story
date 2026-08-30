@@ -15,7 +15,7 @@
 [ext_resource type="Texture2D" uid="uid://e5ex7fxhnf5n" path="res://assets/art/sprites/enemy/skeleton/death1.png" id="7_ee2du"]
 [ext_resource type="Texture2D" uid="uid://ddcnhtwwhuf6n" path="res://assets/art/sprites/enemy/skeleton/death2.png" id="8_684md"]
 [ext_resource type="Texture2D" uid="uid://d4nc7ra86mlcy" path="res://assets/art/sprites/enemy/skeleton/defend1.png" id="9_ik7xt"]
-[ext_resource type="Resource" uid="uid://dmfc6tb72muxj" path="res://data/items/health_potion.tres" id="11_br6mt"]
+[ext_resource type="Resource" uid="uid://dmfc6tb72muxj" path="res://data/items/consumable/health_potion.tres" id="11_br6mt"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_0ypgr"]
 animations = [{

@@ -14,7 +14,7 @@ const SHOP_DATABASE: Array[Dictionary] = [
 		"description": "Instantly restores 100 HP.",
 		"icon_path": "res://assets/art/items/consumable/potion/Icon31.png",
 		"price": 100,
-		"item_path": "res://data/items/health_potion.tres",
+		"item_path": "res://data/items/consumable/health_potion.tres",
 	},
 	{
 		"id": "attack_potion",
@@ -22,7 +22,7 @@ const SHOP_DATABASE: Array[Dictionary] = [
 		"description": "Temporarily increases Attack Power by 15 for 3 turns.",
 		"icon_path": "res://assets/art/items/consumable/potion/Icon20.png",
 		"price": 250,
-		"item_path": "res://data/items/attack_potion.tres",
+		"item_path": "res://data/items/consumable/attack_potion.tres",
 	},
 ]
 
