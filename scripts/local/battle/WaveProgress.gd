@@ -43,6 +43,7 @@ signal all_waves_completed()
 @export var active_color: Color = Color(1.0, 0.85, 0.2, 1.0)
 @export var completed_color: Color = Color(0.3, 0.8, 0.2, 1.0)
 @export var inactive_color: Color = Color(0.35, 0.35, 0.35, 0.8)
+@export var traveling_color: Color = Color(1.0, 1.0, 1.0, 1.0)  # Putih
 
 @export var dot_border_color: Color = Color(0.2, 0.2, 0.2, 0.6)
 @export var dot_border_width: int = 2
@@ -54,10 +55,11 @@ signal all_waves_completed()
 
 @export_group("Animation")
 
-@export var grow_duration: float = 0.5
-@export var grow_scale: float = 1.4
-@export var grow_ease: Tween.EaseType = Tween.EASE_OUT
-@export var grow_trans: Tween.TransitionType = Tween.TRANS_ELASTIC
+@export var line_travel_duration: float = 0.4
+@export var line_travel_trans: Tween.TransitionType = Tween.TRANS_CIRC
+@export var dot_grow_scale: float = 1.4
+@export var dot_grow_duration: float = 0.3
+@export var dot_grow_trans: Tween.TransitionType = Tween.TRANS_ELASTIC
 
 
 # ============================================================
@@ -65,7 +67,7 @@ signal all_waves_completed()
 # ============================================================
 
 var dot_panels: Array[Panel] = []
-var line_rects: Array[ColorRect] = []
+var line_rects: Array[Panel] = []  # Changed to Panel for width animation
 
 
 # ============================================================
@@ -86,19 +88,18 @@ func set_wave(current: int, total: int = -1) -> void:
 	var old_wave := current_wave
 	current_wave = current
 	
-	# Animate new active dot if advancing
+	# Animate if advancing
 	if current_wave > old_wave and current_wave <= total_waves:
-		_animate_grow(current_wave - 1)
-	
-	_update_visual()
+		_animate_travel(old_wave - 1, current_wave - 1)
+	else:
+		_update_visual()
 
 
 func advance_wave() -> void:
 	if current_wave < total_waves:
 		var old_wave := current_wave
 		current_wave += 1
-		_animate_grow(current_wave - 1)
-		_update_visual()
+		_animate_travel(old_wave - 1, current_wave - 1)
 		wave_completed.emit(current_wave)
 		
 		if current_wave >= total_waves:
@@ -107,7 +108,7 @@ func advance_wave() -> void:
 
 func reset() -> void:
 	current_wave = 1
-	_update_visual()
+	_rebuild_ui()
 
 
 # ============================================================
@@ -129,7 +130,7 @@ func _rebuild_ui() -> void:
 
 	# Hitung center offset
 	var center_offset: float = (size.x - used_width) / 2.0
-	center_offset = maxf(center_offset, 0.0)  # Jangan negatif
+	center_offset = maxf(center_offset, 0.0)
 
 	var x_offset: float = center_offset
 
@@ -153,15 +154,19 @@ func _rebuild_ui() -> void:
 
 		x_offset += dot_size + dot_spacing
 
-		# === LINE (kecuali setelah dot terakhir) ===
+		# === LINE (Panel for width animation) ===
 		if i < total_waves - 1:
-			var line := ColorRect.new()
+			var line := Panel.new()
 			line.name = "Line_" + str(i)
 			line.custom_minimum_size = Vector2(line_width, line_height)
 			line.size = Vector2(line_width, line_height)
 			line.position = Vector2(x_offset, (dot_size - line_height) / 2.0)
-			line.color = inactive_color
 			line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+			var line_style := StyleBoxFlat.new()
+			line_style.set_corner_radius_all(1)
+			line_style.bg_color = inactive_color
+			line.add_theme_stylebox_override("panel", line_style)
 			add_child(line)
 			line_rects.append(line)
 
@@ -179,15 +184,12 @@ func _update_visual() -> void:
 		var style: StyleBoxFlat = dot.get_theme_stylebox("panel").duplicate()
 
 		if i < current_wave - 1:
-			# Completed
 			style.bg_color = completed_color
 			style.border_color = completed_color.darkened(0.2)
 		elif i == current_wave - 1:
-			# Active
 			style.bg_color = active_color
 			style.border_color = active_color.darkened(0.2)
 		else:
-			# Inactive
 			style.bg_color = inactive_color
 			style.border_color = dot_border_color
 
@@ -195,23 +197,72 @@ func _update_visual() -> void:
 
 	# Update lines
 	for i in range(line_rects.size()):
-		var line: ColorRect = line_rects[i]
+		var line: Panel = line_rects[i]
 		if not is_instance_valid(line):
 			continue
 
+		var line_style: StyleBoxFlat = line.get_theme_stylebox("panel").duplicate()
+
 		if i < current_wave - 1:
-			line.color = completed_color
+			line_style.bg_color = completed_color
 		elif i == current_wave - 1:
-			line.color = active_color
+			line_style.bg_color = active_color
 		else:
-			line.color = inactive_color
+			line_style.bg_color = inactive_color
+
+		line.add_theme_stylebox_override("panel", line_style)
+		line.size.x = line_width  # Reset width
 
 
 # ============================================================
-# ANIMATION
+# ANIMATION - TRAVEL
 # ============================================================
 
-func _animate_grow(dot_index: int) -> void:
+func _animate_travel(from_index: int, to_index: int) -> void:
+	# to_index = dot yang baru aktif (0-indexed)
+	# Line yang dianimate = line_rects[from_index] (garis sebelum dot baru)
+	
+	if from_index < 0 or from_index >= line_rects.size():
+		# No line to animate (first wave)
+		_animate_dot_grow(to_index)
+		_update_visual()
+		return
+	
+	var line: Panel = line_rects[from_index]
+	if not is_instance_valid(line):
+		_animate_dot_grow(to_index)
+		_update_visual()
+		return
+	
+	# Step 1: Set line width = 0, color = white (traveling)
+	var line_style: StyleBoxFlat = line.get_theme_stylebox("panel").duplicate()
+	line_style.bg_color = traveling_color
+	line.add_theme_stylebox_override("panel", line_style)
+	line.size.x = 0.0
+	
+	# Step 2: Animate line width ke full (traveling)
+	var tw := create_tween()
+	tw.tween_property(line, "size:x", line_width, line_travel_duration)\
+		.set_trans(line_travel_trans).set_ease(Tween.EASE_OUT)
+	
+	# Step 3: Setelah line sampai, ganti warna ke completed + grow dot
+	tw.tween_callback(func() -> void:
+		# Line color → completed
+		var final_style: StyleBoxFlat = line.get_theme_stylebox("panel").duplicate()
+		final_style.bg_color = completed_color
+		line.add_theme_stylebox_override("panel", final_style)
+		
+		# Grow dot
+		_animate_dot_grow(to_index)
+		_update_visual()
+	)
+
+
+# ============================================================
+# ANIMATION - DOT GROW
+# ============================================================
+
+func _animate_dot_grow(dot_index: int) -> void:
 	if dot_index < 0 or dot_index >= dot_panels.size():
 		return
 	
@@ -219,11 +270,11 @@ func _animate_grow(dot_index: int) -> void:
 	if not is_instance_valid(dot):
 		return
 	
-	# Scale up dulu (smooth)
+	# Scale up
 	var tw := create_tween()
-	tw.tween_property(dot, "scale", Vector2(grow_scale, grow_scale), 0.2)\
+	tw.tween_property(dot, "scale", Vector2(dot_grow_scale, dot_grow_scale), 0.15)\
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
-	# Lalu scale back with elastic bounce (halus)
-	tw.tween_property(dot, "scale", Vector2.ONE, 0.3)\
-		.set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	# Scale back with elastic bounce
+	tw.tween_property(dot, "scale", Vector2.ONE, dot_grow_duration)\
+		.set_trans(dot_grow_trans).set_ease(Tween.EASE_OUT)
