@@ -36,7 +36,6 @@ signal all_waves_completed()
 @export_group("Visual")
 
 @export var dot_size: float = 12.0
-@export var line_width: float = 16.0
 @export var line_height: float = 3.0
 @export var dot_spacing: float = 4.0
 
@@ -67,7 +66,8 @@ signal all_waves_completed()
 # ============================================================
 
 var dot_panels: Array[Panel] = []
-var line_rects: Array[Panel] = []  # Changed to Panel for width animation
+var progress_line: Panel  # Single continuous line
+var total_line_width: float = 0.0
 
 
 # ============================================================
@@ -90,7 +90,7 @@ func set_wave(current: int, total: int = -1) -> void:
 	
 	# Animate if advancing
 	if current_wave > old_wave and current_wave <= total_waves:
-		_animate_travel(old_wave - 1, current_wave - 1)
+		_animate_travel(old_wave, current_wave)
 	else:
 		_update_visual()
 
@@ -99,7 +99,7 @@ func advance_wave() -> void:
 	if current_wave < total_waves:
 		var old_wave := current_wave
 		current_wave += 1
-		_animate_travel(old_wave - 1, current_wave - 1)
+		_animate_travel(old_wave, current_wave)
 		wave_completed.emit(current_wave)
 		
 		if current_wave >= total_waves:
@@ -120,22 +120,24 @@ func _rebuild_ui() -> void:
 	for child in get_children():
 		child.queue_free()
 	dot_panels.clear()
-	line_rects.clear()
+	progress_line = null
 
 	# Wait for queue_free
 	await get_tree().process_frame
 
-	# Hitung total width yang dipakai
-	var used_width: float = (total_waves * dot_size) + ((total_waves - 1) * (line_width + dot_spacing * 2))
+	# Hitung posisi dot pertama dan terakhir
+	var first_dot_x: float = 0.0
+	var last_dot_x: float = 0.0
+	var x_offset: float = 0.0
 
-	# Hitung center offset
+	# Hitung total width untuk centering
+	var used_width: float = (total_waves * dot_size) + ((total_waves - 1) * (dot_size + dot_spacing * 2))
 	var center_offset: float = (size.x - used_width) / 2.0
 	center_offset = maxf(center_offset, 0.0)
+	x_offset = center_offset
 
-	var x_offset: float = center_offset
-
+	# Create dots
 	for i in range(total_waves):
-		# === DOT ===
 		var dot := Panel.new()
 		dot.name = "Dot_" + str(i)
 		dot.custom_minimum_size = Vector2(dot_size, dot_size)
@@ -152,30 +154,33 @@ func _rebuild_ui() -> void:
 		add_child(dot)
 		dot_panels.append(dot)
 
+		if i == 0:
+			first_dot_x = x_offset
+		if i == total_waves - 1:
+			last_dot_x = x_offset
+
 		x_offset += dot_size + dot_spacing
 
-		# === LINE (Panel for width animation) ===
-		if i < total_waves - 1:
-			var line := Panel.new()
-			line.name = "Line_" + str(i)
-			line.custom_minimum_size = Vector2(line_width, line_height)
-			line.size = Vector2(line_width, line_height)
-			line.position = Vector2(x_offset, (dot_size - line_height) / 2.0)
-			line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Single continuous line dari dot pertama ke dot terakhir
+	total_line_width = last_dot_x - first_dot_x + dot_size
+	
+	progress_line = Panel.new()
+	progress_line.name = "ProgressLine"
+	progress_line.position = Vector2(first_dot_x, (dot_size - line_height) / 2.0)
+	progress_line.size = Vector2(total_line_width, line_height)
+	progress_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-			var line_style := StyleBoxFlat.new()
-			line_style.set_corner_radius_all(1)
-			line_style.bg_color = inactive_color
-			line.add_theme_stylebox_override("panel", line_style)
-			add_child(line)
-			line_rects.append(line)
-
-			x_offset += line_width + dot_spacing
+	var line_style := StyleBoxFlat.new()
+	line_style.set_corner_radius_all(1)
+	line_style.bg_color = inactive_color
+	progress_line.add_theme_stylebox_override("panel", line_style)
+	add_child(progress_line)
 
 	_update_visual()
 
 
 func _update_visual() -> void:
+	# Update dots
 	for i in range(dot_panels.size()):
 		var dot: Panel = dot_panels[i]
 		if not is_instance_valid(dot):
@@ -195,65 +200,74 @@ func _update_visual() -> void:
 
 		dot.add_theme_stylebox_override("panel", style)
 
-	# Update lines
-	for i in range(line_rects.size()):
-		var line: Panel = line_rects[i]
-		if not is_instance_valid(line):
-			continue
-
-		var line_style: StyleBoxFlat = line.get_theme_stylebox("panel").duplicate()
-
-		if i < current_wave - 1:
-			line_style.bg_color = completed_color
-		elif i == current_wave - 1:
-			line_style.bg_color = active_color
+	# Update progress line width berdasarkan active dot
+	if progress_line and is_instance_valid(progress_line):
+		# Width = jarak dari dot pertama ke active dot
+		var active_dot_index: int = current_wave - 1
+		var target_width: float = 0.0
+		
+		if active_dot_index == 0:
+			target_width = 0.0  # Wave 1: garis kosong
 		else:
-			line_style.bg_color = inactive_color
-
-		line.add_theme_stylebox_override("panel", line_style)
-		line.size.x = line_width  # Reset width
+			# Width sampai dot active
+			var first_dot_x: float = dot_panels[0].position.x
+			var active_dot_x: float = dot_panels[active_dot_index].position.x
+			target_width = active_dot_x - first_dot_x
+		
+		progress_line.size.x = target_width
+		
+		# Warna berdasarkan state
+		var line_style: StyleBoxFlat = progress_line.get_theme_stylebox("panel").duplicate()
+		if current_wave >= total_waves:
+			line_style.bg_color = completed_color  # Semua selesai
+		elif current_wave > 1:
+			line_style.bg_color = completed_color  # Ada yang selesai
+		else:
+			line_style.bg_color = inactive_color  # Belum ada yang selesai
+		progress_line.add_theme_stylebox_override("panel", line_style)
 
 
 # ============================================================
-# ANIMATION - TRAVEL
+# ANIMATION
 # ============================================================
 
-func _animate_travel(from_index: int, to_index: int) -> void:
-	# to_index = dot yang baru aktif (0-indexed)
-	# Line yang dianimate = line_rects[from_index] (garis sebelum dot baru)
-	
-	if from_index < 0 or from_index >= line_rects.size():
-		# No line to animate (first wave)
-		_animate_dot_grow(to_index)
+func _animate_travel(from_wave: int, to_wave: int) -> void:
+	if not progress_line or not is_instance_valid(progress_line):
 		_update_visual()
 		return
 	
-	var line: Panel = line_rects[from_index]
-	if not is_instance_valid(line):
-		_animate_dot_grow(to_index)
-		_update_visual()
-		return
+	# Hitung target width
+	var target_dot_index: int = to_wave - 1
+	var target_width: float = 0.0
 	
-	# Step 1: Set line width = 0, color = white (traveling)
-	var line_style: StyleBoxFlat = line.get_theme_stylebox("panel").duplicate()
+	if target_dot_index > 0:
+		var first_dot_x: float = dot_panels[0].position.x
+		var target_dot_x: float = dot_panels[target_dot_index].position.x
+		target_width = target_dot_x - first_dot_x
+	
+	# Set line color = white (traveling) dan width = 0
+	var line_style: StyleBoxFlat = progress_line.get_theme_stylebox("panel").duplicate()
 	line_style.bg_color = traveling_color
-	line.add_theme_stylebox_override("panel", line_style)
-	line.size.x = 0.0
+	progress_line.add_theme_stylebox_override("panel", line_style)
+	progress_line.size.x = 0.0
 	
-	# Step 2: Animate line width ke full (traveling)
+	# Animate width ke target
 	var tw := create_tween()
-	tw.tween_property(line, "size:x", line_width, line_travel_duration)\
+	tw.tween_property(progress_line, "size:x", target_width, line_travel_duration)\
 		.set_trans(line_travel_trans).set_ease(Tween.EASE_OUT)
 	
-	# Step 3: Setelah line sampai, ganti warna ke completed + grow dot
+	# Setelah sampai, ganti warna ke completed + grow dot
 	tw.tween_callback(func() -> void:
 		# Line color → completed
-		var final_style: StyleBoxFlat = line.get_theme_stylebox("panel").duplicate()
-		final_style.bg_color = completed_color
-		line.add_theme_stylebox_override("panel", final_style)
+		var final_style: StyleBoxFlat = progress_line.get_theme_stylebox("panel").duplicate()
+		if to_wave >= total_waves:
+			final_style.bg_color = completed_color
+		else:
+			final_style.bg_color = completed_color
+		progress_line.add_theme_stylebox_override("panel", final_style)
 		
-		# Grow dot
-		_animate_dot_grow(to_index)
+		# Grow active dot
+		_animate_dot_grow(to_wave - 1)
 		_update_visual()
 	)
 
