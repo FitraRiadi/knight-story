@@ -17,7 +17,7 @@
 [ext_resource type="Texture2D" uid="uid://bqa1jdoqm6fsq" path="res://assets/ui/icons/skilBtn.png" id="12_yyr2t"]
 [ext_resource type="Texture2D" uid="uid://toj1si5imisd" path="res://assets/ui/icons/parryBtn.png" id="13_kngoi"]
 [ext_resource type="Texture2D" uid="uid://crm3m4q1wtttx" path="res://assets/ui/icons/timingCircle.png" id="14_qpju5"]
-[ext_resource type="Script" path="res://scripts/local/battle/WaveProgress.gd" id="wave_progress"]
+[ext_resource type="Script" uid="uid://dalxm83qgh3oh" path="res://scripts/local/battle/WaveProgress.gd" id="wave_progress"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ymp2q"]
 bg_color = Color(0.54, 0.052650016, 0.027000008, 1)
@@ -192,12 +192,12 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
 
-[node name="WaveProgress" type="Control" parent="bg"]
-layout_mode = 0
-offset_left = 575.0
-offset_top = 50.0
-offset_right = 840.0
-offset_bottom = 65.0
+[node name="WaveProgress" type="Control" parent="bg" unique_id=1667513961]
+anchors_preset = 0
+offset_left = 517.0
+offset_top = 45.0
+offset_right = 782.0
+offset_bottom = 60.0
 mouse_filter = 2
 script = ExtResource("wave_progress")
 

@@ -49,6 +49,18 @@ signal all_waves_completed()
 
 
 # ============================================================
+# ANIMATION SETTINGS
+# ============================================================
+
+@export_group("Animation")
+
+@export var grow_duration: float = 0.5
+@export var grow_scale: float = 1.4
+@export var grow_ease: Tween.EaseType = Tween.EASE_OUT
+@export var grow_trans: Tween.TransitionType = Tween.TRANS_ELASTIC
+
+
+# ============================================================
 # STATE
 # ============================================================
 
@@ -71,13 +83,21 @@ func _ready() -> void:
 func set_wave(current: int, total: int = -1) -> void:
 	if total > 0:
 		total_waves = total
+	var old_wave := current_wave
 	current_wave = current
+	
+	# Animate new active dot if advancing
+	if current_wave > old_wave and current_wave <= total_waves:
+		_animate_grow(current_wave - 1)
+	
 	_update_visual()
 
 
 func advance_wave() -> void:
 	if current_wave < total_waves:
+		var old_wave := current_wave
 		current_wave += 1
+		_animate_grow(current_wave - 1)
 		_update_visual()
 		wave_completed.emit(current_wave)
 		
@@ -104,16 +124,14 @@ func _rebuild_ui() -> void:
 	# Wait for queue_free
 	await get_tree().process_frame
 
-	# Hitung total width
-	var total_nodes: int = total_waves + (total_waves - 1)  # dots + lines
-	var total_width: float = (total_waves * dot_size) + ((total_waves - 1) * (line_width + dot_spacing * 2))
-	custom_minimum_size = Vector2(total_width, dot_size)
-	size = Vector2(total_width, dot_size)
+	# Hitung total width yang dipakai
+	var used_width: float = (total_waves * dot_size) + ((total_waves - 1) * (line_width + dot_spacing * 2))
 
-	# Pivot ke center
-	pivot_offset = Vector2(total_width / 2.0, dot_size / 2.0)
+	# Hitung center offset
+	var center_offset: float = (size.x - used_width) / 2.0
+	center_offset = maxf(center_offset, 0.0)  # Jangan negatif
 
-	var x_offset: float = 0.0
+	var x_offset: float = center_offset
 
 	for i in range(total_waves):
 		# === DOT ===
@@ -187,3 +205,25 @@ func _update_visual() -> void:
 			line.color = active_color
 		else:
 			line.color = inactive_color
+
+
+# ============================================================
+# ANIMATION
+# ============================================================
+
+func _animate_grow(dot_index: int) -> void:
+	if dot_index < 0 or dot_index >= dot_panels.size():
+		return
+	
+	var dot: Panel = dot_panels[dot_index]
+	if not is_instance_valid(dot):
+		return
+	
+	# Scale up dulu (smooth)
+	var tw := create_tween()
+	tw.tween_property(dot, "scale", Vector2(grow_scale, grow_scale), 0.2)\
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	
+	# Lalu scale back with elastic bounce (halus)
+	tw.tween_property(dot, "scale", Vector2.ONE, 0.3)\
+		.set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
