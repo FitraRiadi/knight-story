@@ -66,7 +66,8 @@ signal all_waves_completed()
 # ============================================================
 
 var dot_panels: Array[Panel] = []
-var progress_line: Panel  # Single continuous line
+var bg_line: Panel        # Background line (always full width, grey)
+var fill_line: Panel      # Fill line (animates width, white → green)
 var total_line_width: float = 0.0
 
 
@@ -120,7 +121,8 @@ func _rebuild_ui() -> void:
 	for child in get_children():
 		child.queue_free()
 	dot_panels.clear()
-	progress_line = null
+	bg_line = null
+	fill_line = null
 
 	# Wait for queue_free
 	await get_tree().process_frame
@@ -164,17 +166,31 @@ func _rebuild_ui() -> void:
 	# Single continuous line dari dot pertama ke dot terakhir
 	total_line_width = last_dot_x - first_dot_x + dot_size
 	
-	progress_line = Panel.new()
-	progress_line.name = "ProgressLine"
-	progress_line.position = Vector2(first_dot_x, (dot_size - line_height) / 2.0)
-	progress_line.size = Vector2(total_line_width, line_height)
-	progress_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Background line (always full width, grey)
+	bg_line = Panel.new()
+	bg_line.name = "BackgroundLine"
+	bg_line.position = Vector2(first_dot_x, (dot_size - line_height) / 2.0)
+	bg_line.size = Vector2(total_line_width, line_height)
+	bg_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	var line_style := StyleBoxFlat.new()
-	line_style.set_corner_radius_all(1)
-	line_style.bg_color = inactive_color
-	progress_line.add_theme_stylebox_override("panel", line_style)
-	add_child(progress_line)
+	var bg_style := StyleBoxFlat.new()
+	bg_style.set_corner_radius_all(1)
+	bg_style.bg_color = inactive_color
+	bg_line.add_theme_stylebox_override("panel", bg_style)
+	add_child(bg_line)
+	
+	# Fill line (animates width, sits on top of bg_line)
+	fill_line = Panel.new()
+	fill_line.name = "FillLine"
+	fill_line.position = Vector2(first_dot_x, (dot_size - line_height) / 2.0)
+	fill_line.size = Vector2(0.0, line_height)  # Start at 0 width
+	fill_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var fill_style := StyleBoxFlat.new()
+	fill_style.set_corner_radius_all(1)
+	fill_style.bg_color = inactive_color
+	fill_line.add_theme_stylebox_override("panel", fill_style)
+	add_child(fill_line)
 
 	_update_visual()
 
@@ -200,31 +216,28 @@ func _update_visual() -> void:
 
 		dot.add_theme_stylebox_override("panel", style)
 
-	# Update progress line width berdasarkan active dot
-	if progress_line and is_instance_valid(progress_line):
+	# Update fill line width berdasarkan active dot
+	if fill_line and is_instance_valid(fill_line):
 		# Width = jarak dari dot pertama ke active dot
 		var active_dot_index: int = current_wave - 1
 		var target_width: float = 0.0
 		
-		if active_dot_index == 0:
-			target_width = 0.0  # Wave 1: garis kosong
-		else:
-			# Width sampai dot active
+		if active_dot_index > 0:
 			var first_dot_x: float = dot_panels[0].position.x
 			var active_dot_x: float = dot_panels[active_dot_index].position.x
 			target_width = active_dot_x - first_dot_x
 		
-		progress_line.size.x = target_width
+		fill_line.size.x = target_width
 		
-		# Warna berdasarkan state
-		var line_style: StyleBoxFlat = progress_line.get_theme_stylebox("panel").duplicate()
+		# Warna fill line
+		var fill_style: StyleBoxFlat = fill_line.get_theme_stylebox("panel").duplicate()
 		if current_wave >= total_waves:
-			line_style.bg_color = completed_color  # Semua selesai
+			fill_style.bg_color = completed_color  # Semua selesai
 		elif current_wave > 1:
-			line_style.bg_color = completed_color  # Ada yang selesai
+			fill_style.bg_color = completed_color  # Ada yang selesai
 		else:
-			line_style.bg_color = inactive_color  # Belum ada yang selesai
-		progress_line.add_theme_stylebox_override("panel", line_style)
+			fill_style.bg_color = inactive_color  # Belum ada yang selesai
+		fill_line.add_theme_stylebox_override("panel", fill_style)
 
 
 # ============================================================
@@ -232,7 +245,7 @@ func _update_visual() -> void:
 # ============================================================
 
 func _animate_travel(from_wave: int, to_wave: int) -> void:
-	if not progress_line or not is_instance_valid(progress_line):
+	if not fill_line or not is_instance_valid(fill_line):
 		_update_visual()
 		return
 	
@@ -245,26 +258,23 @@ func _animate_travel(from_wave: int, to_wave: int) -> void:
 		var target_dot_x: float = dot_panels[target_dot_index].position.x
 		target_width = target_dot_x - first_dot_x
 	
-	# Set line color = white (traveling) dan width = 0
-	var line_style: StyleBoxFlat = progress_line.get_theme_stylebox("panel").duplicate()
-	line_style.bg_color = traveling_color
-	progress_line.add_theme_stylebox_override("panel", line_style)
-	progress_line.size.x = 0.0
+	# Set fill line color = white (traveling) dan width = 0
+	var fill_style: StyleBoxFlat = fill_line.get_theme_stylebox("panel").duplicate()
+	fill_style.bg_color = traveling_color
+	fill_line.add_theme_stylebox_override("panel", fill_style)
+	fill_line.size.x = 0.0
 	
 	# Animate width ke target
 	var tw := create_tween()
-	tw.tween_property(progress_line, "size:x", target_width, line_travel_duration)\
+	tw.tween_property(fill_line, "size:x", target_width, line_travel_duration)\
 		.set_trans(line_travel_trans).set_ease(Tween.EASE_OUT)
 	
 	# Setelah sampai, ganti warna ke completed + grow dot
 	tw.tween_callback(func() -> void:
-		# Line color → completed
-		var final_style: StyleBoxFlat = progress_line.get_theme_stylebox("panel").duplicate()
-		if to_wave >= total_waves:
-			final_style.bg_color = completed_color
-		else:
-			final_style.bg_color = completed_color
-		progress_line.add_theme_stylebox_override("panel", final_style)
+		# Fill line color → completed
+		var final_style: StyleBoxFlat = fill_line.get_theme_stylebox("panel").duplicate()
+		final_style.bg_color = completed_color
+		fill_line.add_theme_stylebox_override("panel", final_style)
 		
 		# Grow active dot
 		_animate_dot_grow(to_wave - 1)
