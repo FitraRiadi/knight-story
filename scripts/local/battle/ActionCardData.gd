@@ -62,3 +62,14 @@ class_name ActionCardData
 @export var active_shadow_color: Color = Color(0, 0, 0, 0.6)
 @export var active_shadow_offset: Vector2 = Vector2(0, 8)
 @export var active_shadow_size: int = 16
+
+
+# ============================================================
+# EXECUTE (Virtual — override di subclass)
+# ============================================================
+
+## Dipanggil saat card dipakai. Override di subclass card.
+## @param target — BattleEnemy yang dipilih
+## @param battle_manager — reference ke BattleManager
+func execute(target: Node, battle_manager: Node) -> void:
+	pass

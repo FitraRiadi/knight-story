@@ -874,10 +874,8 @@ func _on_action_card_selected(index: int) -> void:
 
 	var target = enemies[selected_enemy_index]
 
-	# Apply card effect
-	match card.card_name:
-		"Poison":
-			_apply_poison(target, card)
+	# Apply card effect via polymorphism
+	card.execute(target, self)
 
 	# Tandai card sudah dipakai
 	card_used_this_session = true
@@ -888,37 +886,6 @@ func _on_action_card_selected(index: int) -> void:
 
 	# Set cooldown
 	action_card_cooldowns[index] = card.cooldown
-
-
-func _apply_poison(target, card: ActionCardData) -> void:
-	# Cek apakah udah kena poison → reset duration
-	var existing_poison: Dictionary = {}
-	for buff in target.buff_manager.active_buffs:
-		if buff.get("type") == "poison":
-			existing_poison = buff
-			break
-
-	if not existing_poison.is_empty():
-		# Reset duration
-		existing_poison["duration"] = 3
-		existing_poison["is_new"] = true
-	else:
-		# Apply poison baru
-		target.buff_manager.active_buffs.append({
-			"name": card.card_name,
-			"type": "poison",
-			"duration": 3,
-			"attack_bonus": 0.0,
-			"defense_bonus": 0.0,
-			"damage_reduction": 0.0,
-			"poison_damage": 10.0,
-			"effect_icon": preload("res://assets/ui/icons/statusEffect/poison.png"),
-			"is_new": true
-		})
-
-	target._play_enemy_buff_visual("poison")
-	target._update_status_effects()
-	target.show_reaction_text("Poisoned!", Color(0.3, 0.8, 0.2), true)
 
 
 func _on_action_card_closed() -> void:

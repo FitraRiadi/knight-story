@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="ActionCardData" format=3 uid="uid://l8xl7uho6c54"]
+[gd_resource type="Resource" script_class="PoisonCard" format=3 uid="uid://dotqpwon0ldba"]
 
-[ext_resource type="Script" uid="uid://cuhqvs0qncily" path="res://scripts/local/battle/ActionCardData.gd" id="1_card"]
+[ext_resource type="Script" uid="uid://dhfll4ef2is66" path="res://scripts/local/battle/cards/PoisonCard.gd" id="1_card"]
 [ext_resource type="Texture2D" uid="uid://c736lhtawdjnm" path="res://assets/ui/icons/statusEffect/poison.png" id="2_icon"]
 
 [resource]
@@ -9,4 +9,3 @@ card_name = "Poison"
 description = "Poison enemy for 3 turns (-10 HP/turn)"
 icon = ExtResource("2_icon")
 accent_color = Color(0.3, 0.8, 0.2, 1)
-metadata/_custom_type_script = "ActionCardData"
