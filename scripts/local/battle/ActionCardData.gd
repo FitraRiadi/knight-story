@@ -19,8 +19,8 @@ class_name ActionCardData
 
 @export_group("Costs")
 
-@export var stamina_cost: float = 20.0
-@export var cooldown: int = 2
+@export var stamina_cost: float = 25.0
+@export var cooldown: int = 3
 
 
 # ============================================================

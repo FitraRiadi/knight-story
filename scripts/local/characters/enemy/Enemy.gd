@@ -388,19 +388,25 @@ func _reset_combat_modifiers() -> void:
 # ============================================================
 
 func _process_buff_durations() -> void:
+	# === POISON DOT: -10 HP per turn ===
+	for buff in buff_manager.active_buffs:
+		if buff.get("type") == "poison":
+			var poison_dmg: float = buff.get("poison_damage", 10.0)
+			receive_damage(poison_dmg, false, false)
+			show_reaction_text("-" + str(int(poison_dmg)), Color(0.3, 0.8, 0.2), false)
+
 	var expired_buff_names: Array[String] = buff_manager.process_turn_start()
 
 	for buff_name in expired_buff_names:
 		show_reaction_text(buff_name + " Expired!", Color(0.8, 0.8, 0.8), false)
 
-	# Cek apakah masih ada buff attack/defense aktif
+	# Cek apakah masih ada buff attack/defense/poison aktif
 	if current_buff_particle_type != "":
 		var active_types: Array[String] = buff_manager.get_active_buff_types()
 		var still_has_buff: bool = false
 		for t in active_types:
-			if t == "attack_up" or t == "defense_up" or t == "generic":
+			if t == "attack_up" or t == "defense_up" or t == "generic" or t == "poison":
 				still_has_buff = true
-				# Kalau type berbeda dari yang sedang ditampilkan, switch
 				if t != current_buff_particle_type:
 					_play_enemy_buff_visual(t)
 				break
@@ -594,6 +600,13 @@ func take_turn(camera: Camera2D, default_camera_pos: Vector2) -> void:
 	z_index = 100
 
 	_process_buff_durations()
+
+	# Cek apakah mati karena poison DoT
+	if current_hp <= 0.0:
+		is_taking_turn = false
+		z_index = original_z_index
+		action_finished.emit()
+		return
 
 	is_defending = false
 	is_defense_animation_locked = false
@@ -1528,6 +1541,8 @@ func _play_enemy_buff_visual(buff_type: String) -> void:
 			buff_particles.color = Color(1.0, 0.4, 0.15, 0.8)
 		"defense_up":
 			buff_particles.color = Color(0.3, 0.6, 1.0, 0.8)
+		"poison":
+			buff_particles.color = Color(0.3, 0.8, 0.2, 0.8)
 		_:
 			buff_particles.color = Color(1.0, 0.85, 0.2, 0.8)
 

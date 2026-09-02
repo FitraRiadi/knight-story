@@ -171,9 +171,7 @@ var is_inventory_open: bool = false
 var action_cards: Array[ActionCardData] = []
 var action_card_cooldowns: Array[int] = []
 var is_card_ui_open: bool = false
-var has_auto_crit: bool = false
-var is_card_attack: bool = false
-var card_attack_type: String = ""
+var card_used_this_session: bool = false
 
 # ITEM DROP SYSTEM
 var drop_layer: CanvasLayer
@@ -814,10 +812,7 @@ func _load_action_cards() -> void:
 	action_card_cooldowns.clear()
 
 	var card_paths: Array[String] = [
-		"res://data/action_cards/heavy_strike.tres",
-		"res://data/action_cards/whirlwind.tres",
-		"res://data/action_cards/crit_focus.tres",
-		"res://data/action_cards/recover.tres"
+		"res://data/action_cards/poison.tres",
 	]
 
 	for path in card_paths:
@@ -837,7 +832,6 @@ func open_action_card_ui() -> void:
 	if is_card_ui_open:
 		return
 
-	# Load cards kalau belum
 	if action_cards.is_empty():
 		_load_action_cards()
 
@@ -846,6 +840,7 @@ func open_action_card_ui() -> void:
 	_set_buttons_active(false)
 	_pull_hand_to_corner(0.4)
 
+	# Kirim semua card + cooldowns ke UI
 	var card_ui := ActionCardUI.new()
 	card_ui.setup(action_cards, action_card_cooldowns, current_stamina)
 	add_child(card_ui)
@@ -859,47 +854,86 @@ func open_action_card_ui() -> void:
 
 
 func _on_action_card_selected(index: int) -> void:
+	# index = index di action_cards (full list)
 	if index < 0 or index >= action_cards.size():
 		return
 
 	var card: ActionCardData = action_cards[index]
 
+	# Cek cooldown
+	if action_card_cooldowns[index] > 0:
+		return
+
+	# Cek stamina
+	if current_stamina < card.stamina_cost:
+		return
+
+	# Apply effect ke enemy yang udah di-select
+	if selected_enemy_index < 0 or selected_enemy_index >= enemies.size():
+		return
+
+	var target = enemies[selected_enemy_index]
+
+	# Apply card effect
+	match card.card_name:
+		"Poison":
+			_apply_poison(target, card)
+
+	# Tandai card sudah dipakai
+	card_used_this_session = true
+
 	# Kurangi stamina
 	current_stamina = maxf(0.0, current_stamina - card.stamina_cost)
-	_update_player_ui_instant()
+	_animate_stamina_change()
 
 	# Set cooldown
-	if index < action_card_cooldowns.size():
-		action_card_cooldowns[index] = card.cooldown
+	action_card_cooldowns[index] = card.cooldown
 
-	# Efek card → set flag, attack langsung saat card UI close
-	match card.card_name:
-		"Heavy Strike":
-			is_card_attack = true
-			card_attack_type = "Heavy Strike"
-		"Whirlwind":
-			is_card_attack = true
-			card_attack_type = "Whirlwind"
-		"Crit Focus":
-			has_auto_crit = true
-		"Recover":
-			var heal_amount: float = max_hp * 0.3
-			current_hp = minf(max_hp, current_hp + heal_amount)
-			_animate_hp_change()
-			_play_heal_visual(heal_amount)
+
+func _apply_poison(target, card: ActionCardData) -> void:
+	# Cek apakah udah kena poison → reset duration
+	var existing_poison: Dictionary = {}
+	for buff in target.buff_manager.active_buffs:
+		if buff.get("type") == "poison":
+			existing_poison = buff
+			break
+
+	if not existing_poison.is_empty():
+		# Reset duration
+		existing_poison["duration"] = 3
+		existing_poison["is_new"] = true
+	else:
+		# Apply poison baru
+		target.buff_manager.active_buffs.append({
+			"name": card.card_name,
+			"type": "poison",
+			"duration": 3,
+			"attack_bonus": 0.0,
+			"defense_bonus": 0.0,
+			"damage_reduction": 0.0,
+			"poison_damage": 10.0,
+			"effect_icon": preload("res://assets/ui/icons/statusEffect/poison.png"),
+			"is_new": true
+		})
+
+	target._play_enemy_buff_visual("poison")
+	target._update_status_effects()
+	target.show_reaction_text("Poisoned!", Color(0.3, 0.8, 0.2), true)
 
 
 func _on_action_card_closed() -> void:
 	is_card_ui_open = false
 	_reset_hand_to_original(0.4)
 
-	if is_card_attack:
-		# Attack card → langsung mulai QTE
-		is_player_turn = true
+	if card_used_this_session:
+		# Card dipakai → enemy turn
+		card_used_this_session = false
+		is_player_turn = false
 		_set_buttons_active(false)
-		_start_attack_qte()
+		await get_tree().create_timer(0.3).timeout
+		_start_enemies_turn()
 	else:
-		# Non-attack card (Crit Focus / Recover) → balik ke player turn
+		# Card UI ditutup tanpa pakai → balik ke player turn
 		is_player_turn = true
 		_set_buttons_active(true)
 
@@ -1295,11 +1329,6 @@ func _check_attack_qte_result() -> void:
 	elif _check_is_overlapping(attack_bar_running, attack_bar_low):
 		qte_result = AttackResult.LOW
 	
-	# CRIT FOCUS: Force critical jika auto_crit aktif
-	if has_auto_crit and qte_result != AttackResult.MISS:
-		qte_result = AttackResult.CRITICAL
-		has_auto_crit = false
-	
 	# SCOREBOARD: Hitung hit (bukan miss)
 	if qte_result != AttackResult.MISS:
 		total_hits += 1
@@ -1426,10 +1455,8 @@ func _apply_hit_stop(duration: float) -> void:
 func _execute_actual_attack(result: AttackResult) -> void:
 	_play_juicy_hand_attack_animation()
 	
-	# Stamina: skip kurangin kalau card attack (udah dikurangi di _on_action_card_selected)
-	if not is_card_attack:
-		current_stamina = max(0.0, current_stamina - attack_stamina_cost)
-		_animate_stamina_change()
+	current_stamina = max(0.0, current_stamina - attack_stamina_cost)
+	_animate_stamina_change()
 	
 	for enemy in enemies:
 		if enemy.enemy_collision:
@@ -1440,45 +1467,17 @@ func _execute_actual_attack(result: AttackResult) -> void:
 	# Hitung damage dengan buff bonus
 	var total_damage: float = player_damage + _get_player_attack_bonus()
 	
-	# === CARD EFFECT: WHIRLWIND → damage semua enemy ===
-	if is_card_attack and card_attack_type == "Whirlwind":
-		for enemy in enemies:
-			if enemy.current_hp > 0:
-				var whirlwind_damage: float = total_damage
-				match result:
-					AttackResult.MISS:
-						enemy.receive_damage(0.0, false, true)
-					AttackResult.LOW:
-						enemy.receive_damage(whirlwind_damage * 0.4, false, false)
-					AttackResult.MID:
-						enemy.receive_damage(whirlwind_damage, false, false)
-					AttackResult.CRITICAL:
-						enemy.receive_damage(whirlwind_damage + player_crit_damage, true, false)
-		
-		is_card_attack = false
-		card_attack_type = ""
-		await get_tree().create_timer(0.8).timeout
-		_start_enemies_turn()
-		return
-	
-	# === CARD EFFECT: HEAVY STRIKE → 2x damage ===
-	var damage_multiplier: float = 1.0
-	if is_card_attack and card_attack_type == "Heavy Strike":
-		damage_multiplier = 2.0
-		is_card_attack = false
-		card_attack_type = ""
-	
 	# Normal single target attack
 	match result:
 		AttackResult.MISS:
 			target_enemy.receive_damage(0.0, false, true)
 		AttackResult.LOW:
-			var low_damage = total_damage * 0.4 * damage_multiplier
+			var low_damage = total_damage * 0.4
 			target_enemy.receive_damage(low_damage, false, false)
 		AttackResult.MID:
-			target_enemy.receive_damage(total_damage * damage_multiplier, false, false)
+			target_enemy.receive_damage(total_damage, false, false)
 		AttackResult.CRITICAL:
-			var crit_damage = (total_damage + player_crit_damage) * damage_multiplier
+			var crit_damage = total_damage + player_crit_damage
 			target_enemy.receive_damage(crit_damage, true, false)
 	
 	await get_tree().create_timer(0.8).timeout
