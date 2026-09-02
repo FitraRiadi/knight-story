@@ -133,7 +133,9 @@ func _rebuild_ui() -> void:
 	var x_offset: float = 0.0
 
 	# Hitung total width untuk centering
-	var used_width: float = (total_waves * dot_size) + ((total_waves - 1) * (dot_size + dot_spacing * 2))
+	# Format: [dot][spacing][dot][spacing]...[dot]
+	var total_spacing: float = (total_waves - 1) * dot_spacing
+	var used_width: float = (total_waves * dot_size) + total_spacing
 	var center_offset: float = (size.x - used_width) / 2.0
 	center_offset = maxf(center_offset, 0.0)
 	x_offset = center_offset
@@ -146,6 +148,7 @@ func _rebuild_ui() -> void:
 		dot.size = Vector2(dot_size, dot_size)
 		dot.position = Vector2(x_offset, 0)
 		dot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		dot.z_index = 2  # Dots di atas line
 
 		var style := StyleBoxFlat.new()
 		style.set_corner_radius_all(int(dot_size / 2.0))
@@ -163,15 +166,18 @@ func _rebuild_ui() -> void:
 
 		x_offset += dot_size + dot_spacing
 
-	# Single continuous line dari dot pertama ke dot terakhir
-	total_line_width = last_dot_x - first_dot_x + dot_size
+	# Single continuous line dari center dot pertama ke center dot terakhir
+	var center_first: float = first_dot_x + dot_size / 2.0
+	var center_last: float = last_dot_x + dot_size / 2.0
+	total_line_width = center_last - center_first
 	
-	# Background line (always full width, grey)
+	# Background line (always full width, grey) - di belakang dots
 	bg_line = Panel.new()
 	bg_line.name = "BackgroundLine"
-	bg_line.position = Vector2(first_dot_x, (dot_size - line_height) / 2.0)
+	bg_line.position = Vector2(center_first, (dot_size - line_height) / 2.0)
 	bg_line.size = Vector2(total_line_width, line_height)
 	bg_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bg_line.z_index = 1  # Di belakang dots
 
 	var bg_style := StyleBoxFlat.new()
 	bg_style.set_corner_radius_all(1)
@@ -179,12 +185,13 @@ func _rebuild_ui() -> void:
 	bg_line.add_theme_stylebox_override("panel", bg_style)
 	add_child(bg_line)
 	
-	# Fill line (animates width, sits on top of bg_line)
+	# Fill line (animates width, sits on top of bg_line) - di belakang dots
 	fill_line = Panel.new()
 	fill_line.name = "FillLine"
-	fill_line.position = Vector2(first_dot_x, (dot_size - line_height) / 2.0)
+	fill_line.position = Vector2(center_first, (dot_size - line_height) / 2.0)
 	fill_line.size = Vector2(0.0, line_height)  # Start at 0 width
 	fill_line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	fill_line.z_index = 1  # Di belakang dots
 
 	var fill_style := StyleBoxFlat.new()
 	fill_style.set_corner_radius_all(1)
@@ -218,14 +225,14 @@ func _update_visual() -> void:
 
 	# Update fill line width berdasarkan active dot
 	if fill_line and is_instance_valid(fill_line):
-		# Width = jarak dari dot pertama ke active dot
+		# Width = jarak dari center dot pertama ke center dot active
 		var active_dot_index: int = current_wave - 1
 		var target_width: float = 0.0
 		
 		if active_dot_index > 0:
-			var first_dot_x: float = dot_panels[0].position.x
-			var active_dot_x: float = dot_panels[active_dot_index].position.x
-			target_width = active_dot_x - first_dot_x
+			var center_first: float = dot_panels[0].position.x + dot_size / 2.0
+			var center_active: float = dot_panels[active_dot_index].position.x + dot_size / 2.0
+			target_width = center_active - center_first
 		
 		fill_line.size.x = target_width
 		
@@ -254,9 +261,9 @@ func _animate_travel(from_wave: int, to_wave: int) -> void:
 	var target_width: float = 0.0
 	
 	if target_dot_index > 0:
-		var first_dot_x: float = dot_panels[0].position.x
-		var target_dot_x: float = dot_panels[target_dot_index].position.x
-		target_width = target_dot_x - first_dot_x
+		var center_first: float = dot_panels[0].position.x + dot_size / 2.0
+		var center_target: float = dot_panels[target_dot_index].position.x + dot_size / 2.0
+		target_width = center_target - center_first
 	
 	# Set fill line color = white (traveling) dan width = 0
 	var fill_style: StyleBoxFlat = fill_line.get_theme_stylebox("panel").duplicate()
