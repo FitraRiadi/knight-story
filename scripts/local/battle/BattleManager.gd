@@ -44,6 +44,12 @@ extends Control
 var enemy_scene: PackedScene
 @export_dir var enemy_resources_folder: String = "res://data/enemies/"
 
+# --- WAVE SYSTEM ---
+@onready var wave_progress: WaveProgress = $bg/WaveProgress
+var total_waves: int = 3
+var current_wave: int = 1
+var enemies_per_wave: int = 2
+
 # --- STATISTIK PLAYER (dari PlayerData) ---
 var max_hp: float
 var current_hp: float
@@ -275,7 +281,14 @@ func _ready() -> void:
 	_play_battle_intro()
 	_animate_player_info_intro()
 	await _animate_hands_intro()
-	spawn_random_enemies(1, 3, 1, 5)
+	
+	# Initialize wave system
+	total_waves = randi_range(2, 5)
+	current_wave = 1
+	enemies_per_wave = randi_range(1, 3)
+	wave_progress.set_wave(current_wave, total_waves)
+	
+	spawn_random_enemies(1, enemies_per_wave, 1, 5)
 
 
 # ============================================================
@@ -2207,7 +2220,12 @@ func spawn_random_enemies(min_count: int = 1, max_count: int = 3, min_level: int
 func respawn_test_enemies() -> void:
 	selected_enemy_index = 0
 	is_player_turn = true
-	spawn_random_enemies(1, 3, 1, 5)
+	# Reset wave system
+	total_waves = randi_range(2, 5)
+	current_wave = 1
+	enemies_per_wave = randi_range(1, 3)
+	wave_progress.set_wave(current_wave, total_waves)
+	spawn_random_enemies(1, enemies_per_wave, 1, 5)
 	_set_buttons_active(true)
 
 
@@ -2552,8 +2570,17 @@ func _on_enemy_defeated(_exp_amount: int, _gold_amount: int, _dropped_items: Arr
 	_update_target_selection()
 	
 	if enemies.is_empty():
-		await get_tree().create_timer(0.5).timeout
-		_show_scoreboard()
+		# Wave completed
+		if current_wave < total_waves:
+			# Advance to next wave
+			current_wave += 1
+			wave_progress.set_wave(current_wave, total_waves)
+			await get_tree().create_timer(0.5).timeout
+			spawn_random_enemies(1, enemies_per_wave, 1, 5)
+		else:
+			# All waves completed - show scoreboard
+			await get_tree().create_timer(0.5).timeout
+			_show_scoreboard()
 
 
 func _on_enemy_clicked(clicked_enemy: BattleEnemy) -> void:
