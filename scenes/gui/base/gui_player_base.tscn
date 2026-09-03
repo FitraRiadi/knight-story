@@ -4,7 +4,6 @@
 [ext_resource type="Script" uid="uid://biq0j4ve867kr" path="res://scripts/local/gui/base/gui_player_base.gd" id="2_8xriv"]
 [ext_resource type="FontFile" uid="uid://dx6ognpbk586" path="res://assets/ui/fonts/alagard.ttf" id="2_mi53y"]
 [ext_resource type="Texture2D" uid="uid://ubgv1comvtdg" path="res://assets/art/profile/player/Icon4.png" id="3_c2cj2"]
-[ext_resource type="Script" uid="uid://cvl34fqp2un1c" path="res://test.gd" id="4_lxysw"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dt4my"]
 bg_color = Color(0.08066759, 0.35231295, 0.20111734, 1)
@@ -25,6 +24,13 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lxysw"]
+bg_color = Color(0, 0, 0, 0.572)
+corner_radius_top_left = 100
+corner_radius_top_right = 100
+corner_radius_bottom_right = 100
+corner_radius_bottom_left = 100
+
 [node name="gui-player-base" type="Control" unique_id=962594343]
 layout_mode = 3
 anchors_preset = 0
@@ -38,7 +44,7 @@ offset_right = 802.0
 offset_bottom = 38.0
 theme_override_fonts/font = ExtResource("2_mi53y")
 theme_override_font_sizes/font_size = 24
-text = "Vilagge Title"
+text = "Lotus Village"
 horizontal_alignment = 1
 
 [node name="base-subtitle" type="Label" parent="base-title" unique_id=1393368100]
@@ -55,6 +61,7 @@ vertical_alignment = 1
 autowrap_mode = 1
 
 [node name="bar-information" type="Control" parent="." unique_id=825928901]
+visible = false
 anchors_preset = 0
 offset_left = 4.0
 offset_right = 44.0
@@ -308,35 +315,24 @@ anchors_preset = 0
 offset_right = 40.0
 offset_bottom = 40.0
 
-[node name="playBtn" type="TextureButton" parent="bar-features" unique_id=1822062271]
+[node name="playBtn" type="Button" parent="bar-features" unique_id=357792684]
 layout_mode = 0
 offset_left = 597.0
 offset_top = 298.0
 offset_right = 1766.0
 offset_bottom = 636.0
 scale = Vector2(0.11773189, 0.111019455)
-texture_normal = ExtResource("1_2cotu")
-script = ExtResource("4_lxysw")
-
-[node name="Label" type="Label" parent="bar-features/playBtn" unique_id=591676330]
-layout_mode = 0
-offset_left = 43.468933
-offset_top = 77.9639
-offset_right = 1119.3157
-offset_bottom = 265.9639
-theme_override_fonts/font = ExtResource("2_mi53y")
 theme_override_font_sizes/font_size = 200
-text = "Play"
-horizontal_alignment = 1
+theme_override_styles/normal = SubResource("StyleBoxFlat_lxysw")
+text = "Journey"
 
-[node name="mapBtn" type="TextureButton" parent="bar-features" unique_id=1441154778]
+[node name="mapBtn" type="Button" parent="bar-features" unique_id=785582507]
 layout_mode = 0
 offset_left = 485.00003
 offset_top = 310.0
 offset_right = 1654.0
 offset_bottom = 648.0
 scale = Vector2(0.092020474, 0.07695869)
-texture_normal = ExtResource("1_2cotu")
 
 [node name="Label" type="Label" parent="bar-features/mapBtn" unique_id=1426007618]
 layout_mode = 0
@@ -349,14 +345,14 @@ theme_override_font_sizes/font_size = 200
 text = "Maps"
 horizontal_alignment = 1
 
-[node name="inventoryBtn" type="TextureButton" parent="bar-features" unique_id=1883077124]
+[node name="inventoryBtn" type="Button" parent="bar-features" unique_id=1401470415]
+visible = false
 layout_mode = 0
 offset_left = 376.00003
 offset_top = 310.0
 offset_right = 1545.0
 offset_bottom = 648.0
 scale = Vector2(0.092020474, 0.07695869)
-texture_normal = ExtResource("1_2cotu")
 
 [node name="Label" type="Label" parent="bar-features/inventoryBtn" unique_id=635907628]
 layout_mode = 0
@@ -369,14 +365,14 @@ theme_override_font_sizes/font_size = 200
 text = "Inventory"
 horizontal_alignment = 1
 
-[node name="craftingBtn" type="TextureButton" parent="bar-features" unique_id=192332052]
+[node name="craftingBtn" type="Button" parent="bar-features" unique_id=1478904820]
+visible = false
 layout_mode = 0
-offset_left = 265.99997
+offset_left = 266.99997
 offset_top = 310.0
-offset_right = 1435.0
+offset_right = 1436.0
 offset_bottom = 648.0
 scale = Vector2(0.092020474, 0.07695869)
-texture_normal = ExtResource("1_2cotu")
 
 [node name="Label" type="Label" parent="bar-features/craftingBtn" unique_id=828310388]
 layout_mode = 0

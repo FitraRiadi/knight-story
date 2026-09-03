@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://by25n7vk76fh1"
-path="res://.godot/imported/dfce96b0-922c-46ce-b054-3186a184.jpg-3e9eb1272b10819b0bcd2e53a0d01c5b.ctex"
+uid="uid://d2mcrobx2sllw"
+path="res://.godot/imported/02c7c34c-9b09-4b5d-91c6-222236088f33-removebg-preview.png-71b189ee9f28687ab4faafd7d253a331.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/art/backgrounds/location/map/forest_of_shadow/dfce96b0-922c-46ce-b054-3186a184.jpg"
-dest_files=["res://.godot/imported/dfce96b0-922c-46ce-b054-3186a184.jpg-3e9eb1272b10819b0bcd2e53a0d01c5b.ctex"]
+source_file="res://assets/ui/icons/02c7c34c-9b09-4b5d-91c6-222236088f33-removebg-preview.png"
+dest_files=["res://.godot/imported/02c7c34c-9b09-4b5d-91c6-222236088f33-removebg-preview.png-71b189ee9f28687ab4faafd7d253a331.ctex"]
 
 [params]
 

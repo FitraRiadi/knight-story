@@ -4,9 +4,9 @@ extends Control
 @onready var bar_features: Control = $"bar-features"
 
 # Ambil referensi tombol di dalam bar-features
-@onready var map_btn: TextureButton = $"bar-features/mapBtn"
-@onready var inventory_btn: TextureButton = $"bar-features/inventoryBtn"
-@onready var crafting_btn: TextureButton = $"bar-features/craftingBtn"
+@onready var map_btn: Button = $"bar-features/mapBtn"
+@onready var inventory_btn: Button = $"bar-features/inventoryBtn"
+@onready var crafting_btn: Button = $"bar-features/craftingBtn"
 
 # Bar Top Information
 @onready var profile: TextureRect = $"bar-information/profile"

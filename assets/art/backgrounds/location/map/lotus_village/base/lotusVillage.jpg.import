@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://3bdyb67jyyfj"
-path="res://.godot/imported/forest_of_shadow2.jpg-8f9ba36b30aefe60c21e0bc963e508f5.ctex"
+uid="uid://cknx1kt1q0ax0"
+path="res://.godot/imported/lotusVillage.jpg-c64b54a9ea2f06398ee38198ca19e2df.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/art/backgrounds/location/map/forest_of_shadow/forest_of_shadow2.jpg"
-dest_files=["res://.godot/imported/forest_of_shadow2.jpg-8f9ba36b30aefe60c21e0bc963e508f5.ctex"]
+source_file="res://assets/art/backgrounds/location/map/lotus_village/base/lotusVillage.jpg"
+dest_files=["res://.godot/imported/lotusVillage.jpg-c64b54a9ea2f06398ee38198ca19e2df.ctex"]
 
 [params]
 

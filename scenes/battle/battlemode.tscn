@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bu5hkr727us0p"]
 
 [ext_resource type="Script" uid="uid://bm15klo0yfmnk" path="res://scripts/local/battle/BattleManager.gd" id="1_i268m"]
-[ext_resource type="Texture2D" uid="uid://by25n7vk76fh1" path="res://assets/art/backgrounds/location/map/forest_of_shadow/dfce96b0-922c-46ce-b054-3186a184.jpg" id="2_gujcb"]
+[ext_resource type="Texture2D" uid="uid://by25n7vk76fh1" path="res://assets/art/backgrounds/location/map/forest_of_shadow/forest_of_shadow1.jpg" id="2_gujcb"]
 [ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="3_g2c4h"]
 [ext_resource type="FontFile" uid="uid://dx6ognpbk586" path="res://assets/ui/fonts/alagard.ttf" id="3_i268m"]
 [ext_resource type="Texture2D" uid="uid://ct3bvjqujdl0y" path="res://assets/art/playerHand/hand/right-left/base.png" id="4_3b2kv"]

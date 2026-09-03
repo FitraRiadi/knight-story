@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dh5p57n31a8yx"]
 
 [ext_resource type="Script" uid="uid://ciiglo1aqda0f" path="res://scripts/local/location/map/lotus_village/lotus_village.gd" id="1_6nqwu"]
-[ext_resource type="Texture2D" uid="uid://ip1fsfhyr7yv" path="res://assets/art/backgrounds/location/map/lotus_village/base/lotusVillage-day.jpg" id="1_8e2mh"]
+[ext_resource type="Texture2D" uid="uid://cknx1kt1q0ax0" path="res://assets/art/backgrounds/location/map/lotus_village/base/lotusVillage.jpg" id="2_876jf"]
 [ext_resource type="Script" uid="uid://def3lyy0apkjn" path="res://scripts/local/particles/village.gd" id="2_mh77y"]
 [ext_resource type="PackedScene" uid="uid://dhs37m24etxjf" path="res://scenes/gui/base/gui_player_base.tscn" id="2_vq0s2"]
 [ext_resource type="Texture2D" uid="uid://nwvidu1orhm2" path="res://assets/art/particles/smoke/Smoke2.png" id="3_8e2mh"]
@@ -225,6 +225,27 @@ animations = [{
 "speed": 5.0
 }]
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_876jf"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_eevpj"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_dx5u3"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ve7wr"]
+bg_color = Color(0, 0, 0, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_mi53y"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_4g2f1"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ekb16"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ve7wr"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_tomku"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_mp1cr"]
+
 [node name="lotus_village" type="Control" unique_id=1394436137]
 layout_mode = 3
 anchors_preset = 15
@@ -242,10 +263,11 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("1_8e2mh")
+texture = ExtResource("2_876jf")
 expand_mode = 1
 
 [node name="fog" type="GPUParticles2D" parent="bg" unique_id=1901301898]
+visible = false
 modulate = Color(0.95, 0.85, 0.6, 0.2)
 position = Vector2(352, 173)
 scale = Vector2(2.8207958, 1.5643944)
@@ -260,6 +282,7 @@ tipe_atmosfer = 0
 [node name="particles" type="Node2D" parent="bg" unique_id=1778466776]
 
 [node name="smoke" type="AnimatedSprite2D" parent="bg/particles" unique_id=774655535]
+visible = false
 modulate = Color(1, 0.5372549, 1, 0.3137255)
 position = Vector2(192, 107)
 scale = Vector2(0.3714341, 0.45107457)
@@ -269,6 +292,7 @@ autoplay = "smoke"
 frame_progress = 0.30874172
 
 [node name="smoke2" type="AnimatedSprite2D" parent="bg/particles" unique_id=2027210095]
+visible = false
 modulate = Color(1, 1, 1, 0.3372549)
 position = Vector2(665, 88.999985)
 scale = Vector2(0.75276476, 0.64392525)
@@ -278,6 +302,7 @@ autoplay = "smoke"
 frame_progress = 0.31732342
 
 [node name="smoke3" type="AnimatedSprite2D" parent="bg/particles" unique_id=1765630409]
+visible = false
 modulate = Color(1, 1, 1, 0.36078432)
 position = Vector2(625.00006, 59.000004)
 scale = Vector2(0.4286789, 0.64392525)
@@ -287,8 +312,8 @@ autoplay = "smoke"
 frame_progress = 0.16046445
 
 [node name="npc" type="AnimatedSprite2D" parent="bg/particles" unique_id=243993922]
-position = Vector2(191, 205)
-scale = Vector2(0.7847604, 0.89389116)
+position = Vector2(204, 184.00002)
+scale = Vector2(0.92640525, 0.93023247)
 sprite_frames = SubResource("SpriteFrames_moojr")
 animation = &"idle"
 autoplay = "idle"
@@ -325,27 +350,78 @@ text = "!"
 
 [node name="goBlackSmith" type="Button" parent="bg" unique_id=1411817861]
 layout_mode = 0
-offset_left = 609.0
-offset_top = 225.0
-offset_right = 700.0
-offset_bottom = 248.0
+offset_left = 465.0
+offset_top = 215.0
+offset_right = 556.0
+offset_bottom = 238.0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_876jf")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_eevpj")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_dx5u3")
 text = "BlackSmith"
+
+[node name="Panel" type="Panel" parent="bg/goBlackSmith" unique_id=1360455757]
+layout_mode = 0
+offset_top = 18.0
+offset_right = 88.0
+offset_bottom = 19.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_ve7wr")
 
 [node name="goQuestBoard" type="Button" parent="bg" unique_id=715537000]
 layout_mode = 0
-offset_left = 60.0
-offset_top = 218.0
-offset_right = 151.0
-offset_bottom = 241.0
+offset_left = 27.0
+offset_top = 281.0
+offset_right = 123.0
+offset_bottom = 304.0
+theme_override_styles/normal = SubResource("StyleBoxTexture_mi53y")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_4g2f1")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_ekb16")
 text = "Quest Board"
+
+[node name="Panel" type="Panel" parent="bg/goQuestBoard" unique_id=1976866059]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 18.0
+offset_right = 93.0
+offset_bottom = 19.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_ve7wr")
+
+[node name="goHome" type="Button" parent="bg" unique_id=222043764]
+layout_mode = 0
+offset_left = 94.0
+offset_top = 220.0
+offset_right = 190.0
+offset_bottom = 243.0
+theme_override_styles/normal = SubResource("StyleBoxTexture_mi53y")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_4g2f1")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_ekb16")
+text = "Your Home"
+
+[node name="Panel" type="Panel" parent="bg/goHome" unique_id=1198185456]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 18.0
+offset_right = 93.0
+offset_bottom = 19.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_ve7wr")
 
 [node name="goTavern" type="Button" parent="bg" unique_id=908539571]
 layout_mode = 0
-offset_left = 501.0
-offset_top = 203.0
-offset_right = 592.0
-offset_bottom = 226.0
+offset_left = 255.0
+offset_top = 187.0
+offset_right = 346.0
+offset_bottom = 210.0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_ve7wr")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_tomku")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_mp1cr")
 text = "Tavern"
+
+[node name="Panel" type="Panel" parent="bg/goTavern" unique_id=1021709803]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 18.0
+offset_right = 89.0
+offset_bottom = 19.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_ve7wr")
 
 [node name="prev1" type="Button" parent="bg" unique_id=1316886365]
 visible = false
