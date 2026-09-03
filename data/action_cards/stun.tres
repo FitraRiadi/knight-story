@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="StunCard" format=3]
+
+[ext_resource type="Script" path="res://scripts/local/battle/cards/StunCard.gd" id="1_card"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/statusEffect/stun.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_card")
+card_name = "Stun"
+description = "Stun enemy for 1 turn"
+icon = ExtResource("2_icon")
+stamina_cost = 50.0
+cooldown = 3
+accent_color = Color(1, 0.8, 0, 1)
+bg_color = Color(0.15, 0.12, 0.08, 0.95)
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_offset = Vector2(2, 4)
+shadow_size = 8
+active_shadow_color = Color(0, 0, 0, 0.6)
+active_shadow_offset = Vector2(0, 8)
+active_shadow_size = 16
+stun_duration = 1
+metadata/_custom_type_script = "StunCard"

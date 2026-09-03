@@ -328,10 +328,10 @@ text = "Journey"
 
 [node name="mapBtn" type="Button" parent="bar-features" unique_id=785582507]
 layout_mode = 0
-offset_left = 485.00003
-offset_top = 310.0
-offset_right = 1654.0
-offset_bottom = 648.0
+offset_left = 367.00003
+offset_top = 309.0
+offset_right = 1536.0
+offset_bottom = 647.0
 scale = Vector2(0.092020474, 0.07695869)
 
 [node name="Label" type="Label" parent="bar-features/mapBtn" unique_id=1426007618]
@@ -344,6 +344,16 @@ theme_override_fonts/font = ExtResource("2_mi53y")
 theme_override_font_sizes/font_size = 200
 text = "Maps"
 horizontal_alignment = 1
+
+[node name="mapBtn2" type="Button" parent="bar-features" unique_id=1907340363]
+layout_mode = 0
+offset_left = 483.00003
+offset_top = 309.0
+offset_right = 1652.0
+offset_bottom = 647.0
+scale = Vector2(0.092020474, 0.07695869)
+theme_override_font_sizes/font_size = 200
+text = "Bag"
 
 [node name="inventoryBtn" type="Button" parent="bar-features" unique_id=1401470415]
 visible = false
