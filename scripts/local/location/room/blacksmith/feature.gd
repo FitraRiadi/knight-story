@@ -87,7 +87,7 @@ func _ready() -> void:
 
 # Fungsi yang dipanggil saat closeBtn ditekan
 func _on_close_btn_pressed() -> void:
-	TransitionManager.pindah_scene(LOTUS_VILLAGE_SCENE)
+	TransitionManager.pindah_scene_with_zoom(LOTUS_VILLAGE_SCENE, close_btn)
 
 func _update_weapon_info() -> void:
 	if weapon_title_label:

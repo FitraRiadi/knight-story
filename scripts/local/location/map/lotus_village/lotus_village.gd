@@ -47,7 +47,7 @@ func hide_quest_popup() -> void:
 
 # Fungsi yang berjalan otomatis saat tombol goBlackSmith ditekan
 func _on_go_black_smith_pressed() -> void:
-	TransitionManager.pindah_scene("res://scenes/locations/room/blacksmith/blacksmith.tscn")
+	TransitionManager.pindah_scene_with_zoom("res://scenes/locations/room/blacksmith/blacksmith.tscn", go_black_smith)
 
 func _on_go_tavern_pressed() -> void:
-	TransitionManager.pindah_scene("res://scenes/locations/room/tavern/tavern.tscn")
+	TransitionManager.pindah_scene_with_zoom("res://scenes/locations/room/tavern/tavern.tscn", go_tavern)

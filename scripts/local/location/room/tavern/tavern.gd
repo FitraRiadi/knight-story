@@ -703,4 +703,4 @@ func _on_announcement_pressed() -> void:
 # ============================================================
 
 func _on_exit_tavern():
-	TransitionManager.pindah_scene("res://scenes/locations/maps/lotus_village/lotus_village.tscn")
+	TransitionManager.pindah_scene_with_zoom("res://scenes/locations/maps/lotus_village/lotus_village.tscn", exit)
