@@ -1317,6 +1317,12 @@ func _play_stun_visuals() -> void:
 	await animation_finished
 
 	# Lock di frame terakhir animasi hurt
+	_lock_hurt_frame()
+
+
+func _lock_hurt_frame() -> void:
+	"""Lock animasi hurt di frame terakhir (untuk multi-turn stun)"""
+	modulate = Color(0.45, 0.45, 0.55, 1.0)
 	var hurt_frame_count: int = get_sprite_frames().get_frame_count(&"hurt") if get_sprite_frames().has_animation(&"hurt") else 1
 	if hurt_frame_count > 1:
 		frame = hurt_frame_count - 1
@@ -1335,11 +1341,15 @@ func _execute_stun_turn(camera: Camera2D, default_camera_pos: Vector2) -> void:
 	# Kurangi stun turns
 	stun_turns_remaining -= 1
 	if stun_turns_remaining <= 0:
+		# Stun selesai → reset semua visual
 		is_stunned = false
 		_recover_morale_after_stun()
+		_play_idle_if_allowed()
+	else:
+		# Masih stunned → jaga animasi hurt + dark tint
+		_lock_hurt_frame()
 
 	_reset_camera_focus(camera, default_camera_pos)
-	_play_idle_if_allowed()
 	_update_status_effects()
 
 
