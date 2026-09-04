@@ -204,6 +204,10 @@ func _ready() -> void:
 	_setup_buff_particles()
 	_setup_crack_overlay()
 
+	# Sembunyi slash effect secara default
+	if slash:
+		slash.visible = false
+
 	if enemy_hit_icon:
 		enemy_hit_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		base_hit_icon_y = enemy_hit_icon.position.y
@@ -1454,9 +1458,18 @@ func _spawn_end_particle(buff_name: String) -> void:
 
 func play_slash_effect() -> void:
 	if slash:
+		slash.visible = true
 		slash.stop()
 		slash.frame = 0
 		slash.play("default")
+		# Sembunyi lagi pas animasi selesai
+		if not slash.animation_finished.is_connected(_on_slash_animation_finished):
+			slash.animation_finished.connect(_on_slash_animation_finished, CONNECT_ONE_SHOT)
+
+
+func _on_slash_animation_finished() -> void:
+	if slash:
+		slash.visible = false
 
 
 func _play_stun_visuals() -> void:
