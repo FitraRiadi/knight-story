@@ -416,12 +416,12 @@ func _process_buff_durations() -> void:
 		# Cleanup repeat particles for this buff
 		_cleanup_card_particles(buff_name)
 
-	# Cek apakah masih ada buff attack/defense/poison/bleed aktif
+	# Cek apakah masih ada buff attack/defense aktif (skip poison/bleed - handled by card particles)
 	if current_buff_particle_type != "":
 		var active_types: Array[String] = buff_manager.get_active_buff_types()
 		var still_has_buff: bool = false
 		for t in active_types:
-			if t == "attack_up" or t == "defense_up" or t == "generic" or t == "poison" or t == "bleed":
+			if t == "attack_up" or t == "defense_up" or t == "generic":
 				still_has_buff = true
 				if t != current_buff_particle_type:
 					_play_enemy_buff_visual(t)

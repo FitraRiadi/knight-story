@@ -55,6 +55,5 @@ func execute(target, battle_manager: Node) -> void:
 		})
 
 	# Visual feedback
-	target._play_enemy_buff_visual("bleed")
 	target._update_status_effects()
 	target.show_reaction_text("Bleeding!", Color(0.8, 0.0, 0.2), true)

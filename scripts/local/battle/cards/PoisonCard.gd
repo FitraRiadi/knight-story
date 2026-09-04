@@ -49,6 +49,5 @@ func execute(target: Node, battle_manager: Node) -> void:
 		})
 
 	# Visual feedback
-	target._play_enemy_buff_visual("poison")
 	target._update_status_effects()
 	target.show_reaction_text("Poisoned!", Color(0.3, 0.8, 0.2), true)
