@@ -45,11 +45,25 @@ position = Vector2(-13, -11)
 sprite_frames = SubResource("SpriteFrames_moojr")
 animation = &"onrun"
 autoplay = "onrun"
-frame_progress = 0.9825939
+frame_progress = 0.88577306
 
 [node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="." unique_id=1635181637]
 position = Vector2(13, 11)
 sprite_frames = SubResource("SpriteFrames_moojr")
 animation = &"onrun"
 autoplay = "onrun"
-frame_progress = 0.718164
+frame_progress = 0.6213429
+
+[node name="AnimatedSprite2D3" type="AnimatedSprite2D" parent="." unique_id=1925196765]
+position = Vector2(-10, -65)
+sprite_frames = SubResource("SpriteFrames_moojr")
+animation = &"onrun"
+autoplay = "onrun"
+frame_progress = 0.8452084
+
+[node name="AnimatedSprite2D4" type="AnimatedSprite2D" parent="." unique_id=1241456491]
+position = Vector2(15, -30)
+sprite_frames = SubResource("SpriteFrames_moojr")
+animation = &"onrun"
+autoplay = "onrun"
+frame_progress = 0.06277675

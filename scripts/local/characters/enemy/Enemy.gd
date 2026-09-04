@@ -1345,13 +1345,17 @@ func _cleanup_card_particles(buff_name: String) -> void:
 	var to_remove: Array = []
 	for p in particles:
 		if is_instance_valid(p):
-			if p.particle_type == "repeat":
-				p.stop()
-				to_remove.append(p)
-				# Spawn end particle if available
-				_spawn_end_particle(buff_name)
+			# Stop semua particle di dalamnya
+			for child in p.get_children():
+				if child is GPUParticles2D:
+					child.emitting = false
+				elif child is CPUParticles2D:
+					child.emitting = false
+			to_remove.append(p)
 		else:
 			to_remove.append(p)
+	# Spawn end particle
+	_spawn_end_particle(buff_name)
 	# Remove from meta
 	for p in to_remove:
 		particles.erase(p)
