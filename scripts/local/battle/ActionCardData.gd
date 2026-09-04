@@ -68,6 +68,22 @@ class_name ActionCardData
 
 
 # ============================================================
+# PARTICLE SCENES (3 Phase System)
+# ============================================================
+
+@export_group("Particle Scenes")
+
+## Intro particle — One-shot saat card pertama kali dipakai
+@export var intro_scene: PackedScene
+
+## Repeat particle — Loop selama effect masih aktif
+@export var repeat_scene: PackedScene
+
+## End particle — One-shot saat effect expired
+@export var end_scene: PackedScene
+
+
+# ============================================================
 # RARITY COLORS (Static)
 # ============================================================
 

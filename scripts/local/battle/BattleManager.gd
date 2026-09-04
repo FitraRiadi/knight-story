@@ -889,8 +889,23 @@ func _on_action_card_selected(index: int) -> void:
 
 	var target = enemies[selected_enemy_index]
 
+	# Spawn intro particle
+	_spawn_card_particle(card.intro_scene, target)
+
 	# Apply card effect via polymorphism
 	card.execute(target, self)
+
+	# Spawn repeat particle (looping)
+	if card.repeat_scene:
+		var repeat_instance: CardParticle = card.repeat_scene.instantiate() as CardParticle
+		if repeat_instance:
+			repeat_instance.particle_type = "repeat"
+			repeat_instance.auto_free = false
+			target.add_child(repeat_instance)
+			# Store reference for cleanup later
+			if not target.has_meta("card_particles"):
+				target.set_meta("card_particles", [])
+			target.get_meta("card_particles").append(repeat_instance)
 
 	# Tandai card sudah dipakai
 	card_used_this_session = true
@@ -901,6 +916,17 @@ func _on_action_card_selected(index: int) -> void:
 
 	# Set cooldown
 	action_card_cooldowns[index] = card.cooldown
+
+
+func _spawn_card_particle(scene: PackedScene, target: Node) -> void:
+	if not scene:
+		return
+	var instance: CardParticle = scene.instantiate() as CardParticle
+	if instance and is_instance_valid(target):
+		target.add_child(instance)
+		# Position at enemy center
+		if target is BattleEnemy:
+			instance.global_position = target.global_position
 
 
 func _on_action_card_closed() -> void:

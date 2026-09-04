@@ -6,8 +6,9 @@
 
 [resource]
 script = ExtResource("1_card")
+stun_duration = 2
 card_name = "Concussive Blow"
-description = "A mighty strike that stuns the enemy, leaving them dazed for 1 turn."
+description = "Stuns the enemy for 1 turn."
 card_art = ExtResource("1_em6f6")
 icon = ExtResource("2_icon")
 level = 2

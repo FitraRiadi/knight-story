@@ -413,6 +413,8 @@ func _process_buff_durations() -> void:
 
 	for buff_name in expired_buff_names:
 		show_reaction_text(buff_name + " Expired!", Color(0.8, 0.8, 0.8), false)
+		# Cleanup repeat particles for this buff
+		_cleanup_card_particles(buff_name)
 
 	# Cek apakah masih ada buff attack/defense/poison/bleed aktif
 	if current_buff_particle_type != "":
@@ -1332,7 +1334,47 @@ func _check_morale_stun() -> void:
 	if current_morale <= 0.0 and not is_stunned:
 		is_stunned = true
 		stun_turns_remaining = 1
-		_update_status_effects()
+	_update_status_effects()
+
+
+func _cleanup_card_particles(buff_name: String) -> void:
+	"""Cleanup repeat particles saat buff expired"""
+	if not has_meta("card_particles"):
+		return
+	var particles: Array = get_meta("card_particles")
+	var to_remove: Array = []
+	for p in particles:
+		if is_instance_valid(p):
+			if p.particle_type == "repeat":
+				p.stop()
+				to_remove.append(p)
+				# Spawn end particle if available
+				_spawn_end_particle(buff_name)
+		else:
+			to_remove.append(p)
+	# Remove from meta
+	for p in to_remove:
+		particles.erase(p)
+	if particles.is_empty():
+		remove_meta("card_particles")
+
+
+func _spawn_end_particle(buff_name: String) -> void:
+	"""Spawn end particle saat effect expired"""
+	# Find card by buff name
+	var card_paths: Array[String] = [
+		"res://data/action_cards/poison.tres",
+		"res://data/action_cards/stun.tres",
+		"res://data/action_cards/bleed.tres",
+	]
+	for path in card_paths:
+		var card: ActionCardData = load(path) as ActionCardData
+		if card and card.card_name == buff_name and card.end_scene:
+			var instance: CardParticle = card.end_scene.instantiate() as CardParticle
+			if instance:
+				add_child(instance)
+			break
+
 
 
 func _play_stun_visuals() -> void:

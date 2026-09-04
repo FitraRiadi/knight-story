@@ -142,7 +142,7 @@ func _create_card(data: ActionCardData, index: int, has_stamina: bool, is_on_coo
 
 	# Name
 	var name_label: Label = card.get_node("NameLabel")
-	name_label.text = data.card_name.to_upper()
+	name_label.text = data.card_name
 	name_label.add_theme_color_override("font_color", data.accent_color)
 
 	# Rarity

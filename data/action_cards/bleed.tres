@@ -7,7 +7,7 @@
 [resource]
 script = ExtResource("1_card")
 card_name = "Deep Wounds"
-description = "Inflict bleeding wounds. Enemy takes amplified damage, weakened attacks, and loses morale for 3 turns."
+description = "Bleeds the enemy. Weaker attacks, takes more damage."
 card_art = ExtResource("1_vmeys")
 icon = ExtResource("2_icon")
 level = 3
