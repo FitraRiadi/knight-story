@@ -8,13 +8,11 @@ const QUEST_MENU_SCENE: PackedScene = preload("res://scenes/gui/popup/quest/ques
 @onready var go_quest_board: Button = $bg/goQuestBoard
 @onready var go_tavern: Button = $bg/goTavern
 
-@onready var lotus_village_music: AudioStreamPlayer = $"lotus_village-music"
-
-# Variabel untuk menyimpan instansiasi popup quest aktif
 var active_quest_popup: Node = null
 
+const LOTUS_VILLAGE_BGM = "res://assets/audio/bgm/lotusVillage/lotus_village_bgm.mp3"
+
 func _ready() -> void:
-	# Hubungkan sinyal pressed tombol goBlackSmith dan goQuestBoard
 	if go_black_smith:
 		go_black_smith.pressed.connect(_on_go_black_smith_pressed)
 		
@@ -24,8 +22,7 @@ func _ready() -> void:
 	if go_tavern:
 		go_tavern.pressed.connect(_on_go_tavern_pressed)
 	
-	if lotus_village_music:
-		lotus_village_music.play()
+	MusicManager.play_music(LOTUS_VILLAGE_BGM)
 
 # Fungsi untuk memunculkan pop-up Quest Menu (sejajar dengan gui-player-base)
 func show_quest_popup() -> void:

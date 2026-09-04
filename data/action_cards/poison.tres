@@ -1,11 +1,25 @@
-[gd_resource type="Resource" script_class="PoisonCard" format=3 uid="uid://dotqpwon0ldba"]
+[gd_resource type="Resource" script_class="PoisonCard" format=3]
 
-[ext_resource type="Script" uid="uid://dhfll4ef2is66" path="res://scripts/local/battle/cards/PoisonCard.gd" id="1_card"]
-[ext_resource type="Texture2D" uid="uid://c736lhtawdjnm" path="res://assets/ui/icons/statusEffect/poison.png" id="2_icon"]
+[ext_resource type="Script" path="res://scripts/local/battle/cards/PoisonCard.gd" id="1_card"]
+[ext_resource type="Texture2D" path="res://assets/ui/icons/statusEffect/poison.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_card")
 card_name = "Poison"
 description = "Poison enemy for 3 turns (-10 HP/turn)"
 icon = ExtResource("2_icon")
+level = 1
+rarity = "Common"
+stamina_cost = 25.0
+cooldown = 3
 accent_color = Color(0.3, 0.8, 0.2, 1)
+bg_color = Color(0.12, 0.1, 0.15, 0.95)
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_offset = Vector2(2, 4)
+shadow_size = 8
+active_shadow_color = Color(0, 0, 0, 0.6)
+active_shadow_offset = Vector2(0, 8)
+active_shadow_size = 16
+poison_damage = 10.0
+poison_duration = 3
+metadata/_custom_type_script = "PoisonCard"

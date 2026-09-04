@@ -29,8 +29,12 @@ var active_panel: Control = null
 var is_switching: bool = false
 var is_returning_to_menu: bool = false
 
+const TAVERN_BGM = "res://assets/audio/bgm/lotusVillage/lotus_village_bgm.mp3"
+
 
 func _ready() -> void:
+	MusicManager.play_music(TAVERN_BGM)
+
 	# Mulai di hall
 	hall.visible = true
 	bar.visible = false

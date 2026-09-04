@@ -11,6 +11,8 @@ class_name ActionCardData
 @export var card_name: String = ""
 @export var description: String = ""
 @export var icon: Texture2D
+@export var level: int = 1
+@export_enum("Common", "Uncommon", "Rare", "Epic", "Legendary") var rarity: String = "Common"
 
 
 # ============================================================
@@ -62,6 +64,27 @@ class_name ActionCardData
 @export var active_shadow_color: Color = Color(0, 0, 0, 0.6)
 @export var active_shadow_offset: Vector2 = Vector2(0, 8)
 @export var active_shadow_size: int = 16
+
+
+# ============================================================
+# RARITY COLORS (Static)
+# ============================================================
+
+const RARITY_COLORS: Dictionary = {
+	"Common": Color(0.35, 0.35, 0.35),
+	"Uncommon": Color(0.49, 0.38, 0.32),
+	"Rare": Color(0.12, 0.38, 0.68),
+	"Epic": Color(0.45, 0.18, 0.58),
+	"Legendary": Color(0.75, 0.42, 0.08)
+}
+
+
+# ============================================================
+# HELPER
+# ============================================================
+
+func get_rarity_color() -> Color:
+	return RARITY_COLORS.get(rarity, Color(0.35, 0.35, 0.35))
 
 
 # ============================================================

@@ -7,7 +7,6 @@
 [ext_resource type="Texture2D" uid="uid://nwvidu1orhm2" path="res://assets/art/particles/smoke/Smoke2.png" id="3_8e2mh"]
 [ext_resource type="Texture2D" uid="uid://bi0q3e5o774s1" path="res://assets/art/sprites/Trader_3/Idle_3.png" id="5_876jf"]
 [ext_resource type="Texture2D" uid="uid://kneognevst8j" path="res://assets/art/sprites/npc/6 Girl/Girl_idle.png" id="6_k4ul1"]
-[ext_resource type="AudioStream" uid="uid://dwt4c8ycgkxbl" path="res://assets/audio/bgm/Medieval Music – Cobblestone Village_1730978799949.wav" id="8_876jf"]
 
 [sub_resource type="Gradient" id="Gradient_876jf"]
 colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
@@ -444,6 +443,3 @@ text = "Basalt >>"
 
 [node name="gui-player-base" parent="." unique_id=962594343 instance=ExtResource("2_vq0s2")]
 layout_mode = 0
-
-[node name="lotus_village-music" type="AudioStreamPlayer" parent="." unique_id=454742692]
-stream = ExtResource("8_876jf")

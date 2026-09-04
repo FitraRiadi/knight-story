@@ -116,15 +116,11 @@ func _create_card(data: ActionCardData, index: int, has_stamina: bool, is_on_coo
 	var fan_offset: float = index - center_index
 	card.rotation = fan_offset * deg_to_rad(FAN_ANGLE)
 
-	# BG Panel
-	var bg: Panel = card.get_node("BG")
-	var bg_style: StyleBoxFlat = bg.get_theme_stylebox("panel").duplicate()
-	bg_style.border_color = data.accent_color
-	bg.add_theme_stylebox_override("panel", bg_style)
+	# Card Art (icon)
+	var card_art: TextureRect = card.get_node("CardArt")
+	card_art.texture = data.icon
 
-	# BG Texture hidden
-	var bg_texture: TextureRect = card.get_node("BG/BGTexture")
-	bg_texture.visible = false
+	# Card Frame (cardPlaceholder.png) — already set in tscn
 
 	# Glow Panel
 	var glow: Panel = card.get_node("Glow")
@@ -136,40 +132,45 @@ func _create_card(data: ActionCardData, index: int, has_stamina: bool, is_on_coo
 	glow.modulate.a = 0.0
 	card_glow_panels.append(glow)
 
-	# Icon
-	var icon_tex: TextureRect = card.get_node("IconContainer/Icon")
-	icon_tex.texture = data.icon
-	if data.icon:
-		var placeholder: ColorRect = icon_tex.get_node_or_null("Placeholder")
-		if placeholder:
-			placeholder.visible = false
+	# Level (top-left)
+	var level_label: Label = card.get_node("LevelContainer/LevelLabel")
+	level_label.text = str(data.level)
+	var level_bg: Panel = card.get_node("LevelContainer/LevelBG")
+	var level_bg_style: StyleBoxFlat = StyleBoxFlat.new()
+	level_bg_style.bg_color = Color(0.2, 0.2, 0.2, 0.8)
+	level_bg_style.set_corner_radius_all(8)
+	level_bg_style.set_border_width_all(1)
+	level_bg_style.border_color = data.accent_color
+	level_bg.add_theme_stylebox_override("panel", level_bg_style)
+
+	# Cost (top-right)
+	var cost_label: Label = card.get_node("CostContainer/CostLabel")
+	cost_label.text = str(int(data.stamina_cost))
+	var cost_bg: Panel = card.get_node("CostContainer/CostBG")
+	var cost_bg_style: StyleBoxFlat = StyleBoxFlat.new()
+	if has_stamina and not is_on_cooldown:
+		cost_bg_style.bg_color = Color(0.94, 0.75, 0.25)
+		cost_bg_style.border_color = Color(0.82, 0.56, 0.13)
+	else:
+		cost_bg_style.bg_color = Color(0.4, 0.4, 0.4)
+		cost_bg_style.border_color = Color(0.3, 0.3, 0.3)
+	cost_bg_style.set_corner_radius_all(8)
+	cost_bg_style.set_border_width_all(2)
+	cost_bg.add_theme_stylebox_override("panel", cost_bg_style)
 
 	# Name
 	var name_label: Label = card.get_node("NameLabel")
 	name_label.text = data.card_name.to_upper()
+	name_label.add_theme_color_override("font_color", data.accent_color)
 
-	# Divider color
-	var divider: ColorRect = card.get_node("Divider")
-	divider.color = Color(data.accent_color.r, data.accent_color.g, data.accent_color.b, 0.3)
+	# Rarity
+	var rarity_label: Label = card.get_node("RarityLabel")
+	rarity_label.text = data.rarity
+	rarity_label.add_theme_color_override("font_color", data.get_rarity_color())
 
 	# Description
 	var desc_label: Label = card.get_node("DescLabel")
 	desc_label.text = data.description
-
-	# Badge
-	var badge_label: Label = card.get_node("BadgeContainer/BadgeLabel")
-	badge_label.text = str(int(data.stamina_cost))
-	var badge_bg: Panel = card.get_node("BadgeContainer/BadgeBG")
-	if has_stamina and not is_on_cooldown:
-		var badge_style: StyleBoxFlat = badge_bg.get_theme_stylebox("panel").duplicate()
-		badge_style.bg_color = Color(0.94, 0.75, 0.25)
-		badge_style.border_color = Color(0.82, 0.56, 0.13)
-		badge_bg.add_theme_stylebox_override("panel", badge_style)
-	else:
-		var badge_style: StyleBoxFlat = badge_bg.get_theme_stylebox("panel").duplicate()
-		badge_style.bg_color = Color(0.4, 0.4, 0.4)
-		badge_style.border_color = Color(0.3, 0.3, 0.3)
-		badge_bg.add_theme_stylebox_override("panel", badge_style)
 
 	# Cooldown overlay
 	var cd_overlay: Control = card.get_node("CooldownOverlay")
@@ -178,7 +179,7 @@ func _create_card(data: ActionCardData, index: int, has_stamina: bool, is_on_coo
 		var cd_number: Label = cd_overlay.get_node("CDNumber")
 		cd_number.text = str(cooldown_remaining)
 
-	# Greyed overlay (stamina kurang atau cooldown)
+	# Greyed overlay
 	var greyed: ColorRect = card.get_node("GreyedOverlay")
 	greyed.visible = not has_stamina or is_on_cooldown
 
