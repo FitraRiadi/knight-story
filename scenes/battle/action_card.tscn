@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://ctioncard001"]
 
 [ext_resource type="Script" uid="uid://dg2qfctt5x6d7" path="res://scripts/local/battle/ActionCardUI.gd" id="1_ui"]
-[ext_resource type="Texture2D" path="res://assets/art/card/cardPlaceholder.png" id="2_frame"]
+[ext_resource type="Texture2D" uid="uid://cdg8fiph4oayu" path="res://assets/art/card/cardPlaceholder.png" id="2_frame"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_glow"]
 bg_color = Color(1, 1, 1, 0.15)
@@ -17,7 +17,7 @@ corner_radius_bottom_left = 10
 shadow_color = Color(1, 1, 1, 0.5)
 shadow_size = 16
 
-[node name="ActionCard" type="Control"]
+[node name="ActionCard" type="Control" unique_id=432883745]
 custom_minimum_size = Vector2(110, 160)
 layout_mode = 3
 anchors_preset = 0
@@ -26,28 +26,28 @@ offset_bottom = 160.0
 pivot_offset = Vector2(55, 80)
 script = ExtResource("1_ui")
 
-[node name="CardArt" type="TextureRect" parent="."]
+[node name="CardArt" type="TextureRect" parent="." unique_id=1411344808]
+texture_filter = 1
 layout_mode = 0
 offset_left = 8.0
-offset_top = 8.0
+offset_top = 16.0
 offset_right = 102.0
-offset_bottom = 92.0
+offset_bottom = 111.0
 mouse_filter = 2
 expand_mode = 1
-stretch_mode = 5
 
-[node name="CardFrame" type="TextureRect" parent="."]
-layout_mode = 0
+[node name="CardFrame" type="TextureRect" parent="." unique_id=916782994]
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("2_frame")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Glow" type="Panel" parent="."]
+[node name="Glow" type="Panel" parent="." unique_id=230607672]
 visible = false
 layout_mode = 0
 anchor_right = 1.0
@@ -57,112 +57,103 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_glow")
 
-[node name="LevelContainer" type="Control" parent="."]
-layout_mode = 0
+[node name="LevelContainer" type="Control" parent="." unique_id=262270917]
+anchors_preset = 0
 offset_left = 2.0
 offset_top = 2.0
 offset_right = 30.0
 offset_bottom = 28.0
 mouse_filter = 2
 
-[node name="LevelBG" type="Panel" parent="LevelContainer"]
+[node name="LevelLabel" type="Label" parent="LevelContainer" unique_id=1073832467]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = 5.9999995
+offset_right = -8.0
+offset_bottom = -12.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 2
-
-[node name="LevelLabel" type="Label" parent="LevelContainer"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = 2.0
-offset_bottom = -2.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_font_sizes/font_size = 8
-text = "1"
+scale = Vector2(0.96376723, 1.1475892)
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 7
+text = "2"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="CostContainer" type="Control" parent="."]
-layout_mode = 0
+[node name="CostContainer" type="Control" parent="." unique_id=197626156]
+anchors_preset = 0
 offset_left = 80.0
 offset_top = -4.0
 offset_right = 112.0
 offset_bottom = 28.0
 mouse_filter = 2
 
-[node name="CostBG" type="Panel" parent="CostContainer"]
+[node name="CostLabel" type="Label" parent="CostContainer" unique_id=870939749]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-
-[node name="CostLabel" type="Label" parent="CostContainer"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+offset_left = 5.0
 offset_top = 1.0
+offset_right = 5.0
 offset_bottom = -1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 9
+scale = Vector2(1.0138445, 1.0018882)
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 7
 text = "50"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="NameLabel" type="Label" parent="."]
+[node name="NameLabel" type="Label" parent="." unique_id=554304986]
 layout_mode = 0
-offset_left = 4.0
-offset_top = 94.0
-offset_right = 106.0
-offset_bottom = 108.0
-theme_override_font_sizes/font_size = 10
-text = "CARD NAME"
-horizontal_alignment = 1
+offset_left = 19.0
+offset_top = 9.0
+offset_right = 86.0
+offset_bottom = 14.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 5
+text = "Poison Card"
 vertical_alignment = 1
 
-[node name="RarityLabel" type="Label" parent="."]
+[node name="RarityLabel" type="Label" parent="." unique_id=1997710627]
 layout_mode = 0
-offset_left = 4.0
+offset_left = 9.0
 offset_top = 108.0
-offset_right = 106.0
-offset_bottom = 120.0
-theme_override_font_sizes/font_size = 8
+offset_right = 103.0
+offset_bottom = 116.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 6
 text = "Common"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="DescLabel" type="Label" parent="."]
+[node name="DescLabel" type="Label" parent="." unique_id=1957108510]
 layout_mode = 0
-offset_left = 6.0
-offset_top = 124.0
-offset_right = 104.0
-offset_bottom = 156.0
-theme_override_font_sizes/font_size = 8
-text = "Card description here"
+offset_left = 8.0
+offset_top = 116.0
+offset_right = 103.0
+offset_bottom = 146.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 5
+text = "Card description hereefwevevwvewvewvwevewvwevwevwevervrvervvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
 horizontal_alignment = 1
 vertical_alignment = 1
-autowrap_mode = 2
+autowrap_mode = 3
 
-[node name="CooldownOverlay" type="Control" parent="."]
+[node name="CooldownOverlay" type="Control" parent="." unique_id=1685249260]
 visible = false
-layout_mode = 0
+anchors_preset = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="CDBackground" type="ColorRect" parent="CooldownOverlay"]
+[node name="CDBackground" type="ColorRect" parent="CooldownOverlay" unique_id=1503087382]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -172,7 +163,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0, 0, 0, 0.65)
 
-[node name="CDNumber" type="Label" parent="CooldownOverlay"]
+[node name="CDNumber" type="Label" parent="CooldownOverlay" unique_id=1391916868]
 layout_mode = 0
 offset_top = 30.0
 offset_right = 110.0
@@ -181,7 +172,7 @@ text = "2"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="CDLabel" type="Label" parent="CooldownOverlay"]
+[node name="CDLabel" type="Label" parent="CooldownOverlay" unique_id=1045264489]
 layout_mode = 0
 offset_top = 72.0
 offset_right = 110.0
@@ -190,7 +181,7 @@ text = "TURNS"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="GreyedOverlay" type="ColorRect" parent="."]
+[node name="GreyedOverlay" type="ColorRect" parent="." unique_id=448051941]
 visible = false
 layout_mode = 0
 anchor_right = 1.0

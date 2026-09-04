@@ -135,28 +135,10 @@ func _create_card(data: ActionCardData, index: int, has_stamina: bool, is_on_coo
 	# Level (top-left)
 	var level_label: Label = card.get_node("LevelContainer/LevelLabel")
 	level_label.text = str(data.level)
-	var level_bg: Panel = card.get_node("LevelContainer/LevelBG")
-	var level_bg_style: StyleBoxFlat = StyleBoxFlat.new()
-	level_bg_style.bg_color = Color(0.2, 0.2, 0.2, 0.8)
-	level_bg_style.set_corner_radius_all(8)
-	level_bg_style.set_border_width_all(1)
-	level_bg_style.border_color = data.accent_color
-	level_bg.add_theme_stylebox_override("panel", level_bg_style)
 
 	# Cost (top-right)
 	var cost_label: Label = card.get_node("CostContainer/CostLabel")
 	cost_label.text = str(int(data.stamina_cost))
-	var cost_bg: Panel = card.get_node("CostContainer/CostBG")
-	var cost_bg_style: StyleBoxFlat = StyleBoxFlat.new()
-	if has_stamina and not is_on_cooldown:
-		cost_bg_style.bg_color = Color(0.94, 0.75, 0.25)
-		cost_bg_style.border_color = Color(0.82, 0.56, 0.13)
-	else:
-		cost_bg_style.bg_color = Color(0.4, 0.4, 0.4)
-		cost_bg_style.border_color = Color(0.3, 0.3, 0.3)
-	cost_bg_style.set_corner_radius_all(8)
-	cost_bg_style.set_border_width_all(2)
-	cost_bg.add_theme_stylebox_override("panel", cost_bg_style)
 
 	# Name
 	var name_label: Label = card.get_node("NameLabel")
