@@ -900,9 +900,9 @@ func _on_action_card_selected(index: int) -> void:
 		var repeat_instance: Node2D = card.repeat_scene.instantiate() as Node2D
 		if repeat_instance and is_instance_valid(target):
 			target.add_child(repeat_instance)
-			# Position at enemy center (set AFTER add_child biar relatif ke parent)
+			# Position at enemy center (persis kayak buff_particles di Enemy.gd)
 			if target.enemy_collision:
-				repeat_instance.position = target.enemy_collision.position
+				repeat_instance.position = target.enemy_collision.position + target.enemy_collision.size / 2.0
 			else:
 				repeat_instance.position = Vector2.ZERO
 			# Store reference for cleanup later
@@ -927,9 +927,9 @@ func _spawn_card_particle(scene: PackedScene, target: Node) -> void:
 	var instance: Node2D = scene.instantiate() as Node2D
 	if instance and is_instance_valid(target):
 		target.add_child(instance)
-		# Position at enemy center (set AFTER add_child biar relatif ke parent)
+		# Position at enemy center (persis kayak buff_particles di Enemy.gd)
 		if target.enemy_collision:
-			instance.position = target.enemy_collision.position
+			instance.position = target.enemy_collision.position + target.enemy_collision.size / 2.0
 		else:
 			instance.position = Vector2.ZERO
 
