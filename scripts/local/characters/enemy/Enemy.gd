@@ -1339,10 +1339,13 @@ func _check_morale_stun() -> void:
 
 
 func _cleanup_card_particles(buff_name: String) -> void:
-	"""Cleanup repeat particles saat buff expired"""
+	"""Cleanup repeat particles untuk buff tertentu saat expired"""
 	if not has_meta("card_particles"):
 		return
-	var particles: Array = get_meta("card_particles")
+	var particles_dict: Dictionary = get_meta("card_particles")
+	if not particles_dict.has(buff_name):
+		return
+	var particles: Array = particles_dict[buff_name]
 	var to_remove: Array = []
 	for p in particles:
 		if is_instance_valid(p):
@@ -1359,10 +1362,9 @@ func _cleanup_card_particles(buff_name: String) -> void:
 			to_remove.append(p)
 	# Spawn end particle
 	_spawn_end_particle(buff_name)
-	# Remove from meta
-	for p in to_remove:
-		particles.erase(p)
-	if particles.is_empty():
+	# Remove from dict
+	particles_dict.erase(buff_name)
+	if particles_dict.is_empty():
 		remove_meta("card_particles")
 
 
@@ -1374,20 +1376,22 @@ func _stop_all_effects_on_death() -> void:
 
 	# 2. Fade out + stop card particles (poison, bleed, dll)
 	if has_meta("card_particles"):
-		var particles: Array = get_meta("card_particles")
-		for p in particles:
-			if is_instance_valid(p):
-				# Stop semua emitting
-				for child in p.get_children():
-					if child is GPUParticles2D:
-						child.emitting = false
-					elif child is CPUParticles2D:
-						child.emitting = false
-				# Fade out the Node2D itself
-				var tween: Tween = create_tween()
-				tween.tween_property(p, "modulate:a", 0.0, 0.5)
-				tween.tween_callback(p.queue_free)
-		particles.clear()
+		var particles_dict: Dictionary = get_meta("card_particles")
+		for buff_name in particles_dict:
+			var particles: Array = particles_dict[buff_name]
+			for p in particles:
+				if is_instance_valid(p):
+					# Stop semua emitting
+					for child in p.get_children():
+						if child is GPUParticles2D:
+							child.emitting = false
+						elif child is CPUParticles2D:
+							child.emitting = false
+					# Fade out the Node2D itself
+					var tween: Tween = create_tween()
+					tween.tween_property(p, "modulate:a", 0.0, 0.5)
+					tween.tween_callback(p.queue_free)
+		particles_dict.clear()
 		remove_meta("card_particles")
 
 	# 3. Fade out buff_particles (heal, attack potion, dll)

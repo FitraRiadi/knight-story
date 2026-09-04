@@ -905,10 +905,13 @@ func _on_action_card_selected(index: int) -> void:
 				repeat_instance.position = target.enemy_collision.position + target.enemy_collision.size / 2.0
 			else:
 				repeat_instance.position = Vector2.ZERO
-			# Store reference for cleanup later
+			# Store reference per buff_name (Dictionary, bukan Array)
 			if not target.has_meta("card_particles"):
-				target.set_meta("card_particles", [])
-			target.get_meta("card_particles").append(repeat_instance)
+				target.set_meta("card_particles", {})
+			var particles_dict: Dictionary = target.get_meta("card_particles")
+			if not particles_dict.has(card.card_name):
+				particles_dict[card.card_name] = []
+			particles_dict[card.card_name].append(repeat_instance)
 
 	# Tandai card sudah dipakai
 	card_used_this_session = true
