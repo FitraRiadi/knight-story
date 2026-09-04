@@ -1330,11 +1330,28 @@ func increase_morale_on_hit() -> void:
 	_update_smoke_intensity()
 
 
+const STUN_PARTICLE_SCENE: PackedScene = preload("res://scenes/battle/particle/stun/stunParticle.tscn")
+
+
 func _check_morale_stun() -> void:
 	"""Cek apakah morale habis -> trigger stun 1 turn"""
 	if current_morale <= 0.0 and not is_stunned:
 		is_stunned = true
 		stun_turns_remaining = 1
+		# Spawn stun repeat particle
+		if STUN_PARTICLE_SCENE:
+			var instance: Node2D = STUN_PARTICLE_SCENE.instantiate() as Node2D
+			if instance:
+				add_child(instance)
+				if enemy_collision:
+					instance.position = enemy_collision.position + enemy_collision.size / 2.0
+				else:
+					instance.position = Vector2.ZERO
+				# Store ke card_particles biar cleanup jalan
+				if not has_meta("card_particles"):
+					set_meta("card_particles", {})
+				var particles_dict: Dictionary = get_meta("card_particles")
+				particles_dict["Concussive Blow"] = [instance]
 	_update_status_effects()
 
 
