@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://djvvmfek4a5p2"
-path="res://.godot/imported/slash4_00005.png-3b59fa445d6e19a5af97caa90a1bcc19.ctex"
+uid="uid://b2r3xitnsnexu"
+path="res://.godot/imported/slash4_00003.png-9db908def60069124fb6cd9e4c14fd8f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/art/particles/slash4/png/slash4_00005.png"
-dest_files=["res://.godot/imported/slash4_00005.png-3b59fa445d6e19a5af97caa90a1bcc19.ctex"]
+source_file="res://assets/art/particles/slash/slash4_00003.png"
+dest_files=["res://.godot/imported/slash4_00003.png-9db908def60069124fb6cd9e4c14fd8f.ctex"]
 
 [params]
 

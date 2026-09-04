@@ -14,6 +14,18 @@
 [ext_resource type="Texture2D" uid="uid://bvn6tvox2at5e" path="res://assets/art/items/weapons/dagger_01.png" id="11_icfsp"]
 [ext_resource type="Texture2D" uid="uid://me2o2n8ea0mg" path="res://assets/ui/icons/statusEffect/attackUp.png" id="11_vkenx"]
 [ext_resource type="Texture2D" uid="uid://eeh1qrcceu17" path="res://assets/art/profile/enemy/grimward.jpg" id="12_vkenx"]
+[ext_resource type="Texture2D" uid="uid://b71q3uxlqegp0" path="res://assets/art/particles/slash/slash4_00001.png" id="15_0d3xp"]
+[ext_resource type="Texture2D" uid="uid://dxvgcqi4suo4t" path="res://assets/art/particles/slash/slash4_00002.png" id="16_ornea"]
+[ext_resource type="Texture2D" uid="uid://b2r3xitnsnexu" path="res://assets/art/particles/slash/slash4_00003.png" id="17_mu53l"]
+[ext_resource type="Texture2D" uid="uid://b13jxuq1nhwls" path="res://assets/art/particles/slash/slash4_00004.png" id="18_emon8"]
+[ext_resource type="Texture2D" uid="uid://cmg8wxp3xg4lc" path="res://assets/art/particles/slash/slash4_00005.png" id="19_24wpg"]
+[ext_resource type="Texture2D" uid="uid://idcdshmjcclm" path="res://assets/art/particles/slash/slash4_00006.png" id="20_bqpf2"]
+[ext_resource type="Texture2D" uid="uid://cmsqorvuk71au" path="res://assets/art/particles/slash/slash4_00007.png" id="21_nvmhu"]
+[ext_resource type="Texture2D" uid="uid://bjttc4y545g86" path="res://assets/art/particles/slash/slash4_00008.png" id="22_xvrla"]
+[ext_resource type="Texture2D" uid="uid://i2wl4bsob1ap" path="res://assets/art/particles/slash/slash4_00009.png" id="23_vnnbb"]
+[ext_resource type="Texture2D" uid="uid://cf7u1awo6y56r" path="res://assets/art/particles/slash/slash4_00010.png" id="24_nc007"]
+[ext_resource type="Texture2D" uid="uid://c76w8eadx3uua" path="res://assets/art/particles/slash/slash4_00011.png" id="25_uep1w"]
+[ext_resource type="Texture2D" uid="uid://bqd2hwgjud2b7" path="res://assets/art/particles/slash/slash4_00012.png" id="26_dlfsj"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_moojr"]
 animations = [{
@@ -121,6 +133,50 @@ corner_radius_top_left = 5
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_kylmi"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("15_0d3xp")
+}, {
+"duration": 1.0,
+"texture": ExtResource("16_ornea")
+}, {
+"duration": 1.0,
+"texture": ExtResource("17_mu53l")
+}, {
+"duration": 1.0,
+"texture": ExtResource("18_emon8")
+}, {
+"duration": 1.0,
+"texture": ExtResource("19_24wpg")
+}, {
+"duration": 1.0,
+"texture": ExtResource("20_bqpf2")
+}, {
+"duration": 1.0,
+"texture": ExtResource("21_nvmhu")
+}, {
+"duration": 1.0,
+"texture": ExtResource("22_xvrla")
+}, {
+"duration": 1.0,
+"texture": ExtResource("23_vnnbb")
+}, {
+"duration": 1.0,
+"texture": ExtResource("24_nc007")
+}, {
+"duration": 1.0,
+"texture": ExtResource("25_uep1w")
+}, {
+"duration": 1.0,
+"texture": ExtResource("26_dlfsj")
+}],
+"loop": 0,
+"name": &"default",
+"speed": 20.0
+}]
 
 [node name="Enemy" type="AnimatedSprite2D" unique_id=249455329]
 texture_filter = 1
@@ -289,3 +345,9 @@ mouse_behavior_recursive = 1
 text = "20"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="slash" type="AnimatedSprite2D" parent="." unique_id=2128481828]
+scale = Vector2(0.3138915, 0.33345816)
+sprite_frames = SubResource("SpriteFrames_kylmi")
+frame = 11
+frame_progress = 1.0

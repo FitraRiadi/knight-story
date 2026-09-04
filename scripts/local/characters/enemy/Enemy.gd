@@ -142,6 +142,7 @@ const DEFEND_DAMAGE_REDUCTION: float = 0.40
 @onready var enemy_target: TextureRect = $enemyTarget
 @onready var enemy_collision: TextureButton = $enemyCollision
 @onready var enemy_hit_icon: TextureRect = $enemyHitIcon
+@onready var slash: AnimatedSprite2D = $slash
 @onready var label_template: Label = $Label
 
 var audio_player: AudioStreamPlayer = null
@@ -1449,6 +1450,13 @@ func _spawn_end_particle(buff_name: String) -> void:
 						instance.queue_free()
 			break
 
+
+
+func play_slash_effect() -> void:
+	if slash:
+		slash.stop()
+		slash.frame = 0
+		slash.play("default")
 
 
 func _play_stun_visuals() -> void:
