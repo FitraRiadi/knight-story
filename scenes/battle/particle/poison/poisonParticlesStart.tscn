@@ -33,7 +33,7 @@ animations = [{
 "duration": 5.0,
 "texture": SubResource("AtlasTexture_u60px")
 }],
-"loop": 0,
+"loop": 1,
 "name": &"default",
 "speed": 8.0
 }]
@@ -44,5 +44,4 @@ animations = [{
 position = Vector2(2, -100)
 sprite_frames = SubResource("SpriteFrames_moojr")
 autoplay = "default"
-frame = 3
-frame_progress = 1.0
+frame_progress = 0.041753784

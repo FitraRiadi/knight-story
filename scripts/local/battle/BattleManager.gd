@@ -890,7 +890,7 @@ func _on_action_card_selected(index: int) -> void:
 	var target = enemies[selected_enemy_index]
 
 	# Spawn intro particle
-	_spawn_card_particle(card.intro_scene, target)
+	_spawn_card_particle(card.intro_scene, target, card.intro_duration)
 
 	# Apply card effect via polymorphism
 	card.execute(target, self)
@@ -921,7 +921,7 @@ func _on_action_card_selected(index: int) -> void:
 	action_card_cooldowns[index] = card.cooldown
 
 
-func _spawn_card_particle(scene: PackedScene, target: Node) -> void:
+func _spawn_card_particle(scene: PackedScene, target: Node, duration: float = 0.0) -> void:
 	if not scene:
 		return
 	var instance: Node2D = scene.instantiate() as Node2D
@@ -932,6 +932,16 @@ func _spawn_card_particle(scene: PackedScene, target: Node) -> void:
 			instance.position = target.enemy_collision.position + target.enemy_collision.size / 2.0
 		else:
 			instance.position = Vector2.ZERO
+		# Kalau ada duration → set one_shot + auto-free
+		if duration > 0.0:
+			for child in instance.get_children():
+				if child is GPUParticles2D:
+					child.one_shot = true
+				elif child is CPUParticles2D:
+					child.one_shot = true
+			await get_tree().create_timer(duration).timeout
+			if is_instance_valid(instance):
+				instance.queue_free()
 
 
 func _on_action_card_closed() -> void:

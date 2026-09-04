@@ -76,11 +76,17 @@ class_name ActionCardData
 ## Intro particle — One-shot saat card pertama kali dipakai
 @export var intro_scene: PackedScene
 
+## Durasi intro particle sebelum auto-free (detik)
+@export var intro_duration: float = 1.0
+
 ## Repeat particle — Loop selama effect masih aktif
 @export var repeat_scene: PackedScene
 
 ## End particle — One-shot saat effect expired
 @export var end_scene: PackedScene
+
+## Durasi end particle sebelum auto-free (detik)
+@export var end_duration: float = 1.0
 
 
 # ============================================================

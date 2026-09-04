@@ -1,69 +1,83 @@
 [gd_scene format=3 uid="uid://bx3f33s8c2tyr"]
 
-[ext_resource type="Texture2D" uid="uid://pytn3kq1pqei" path="res://assets/art/particles/1 Magic/4_2.png" id="1_c8e5c"]
+[ext_resource type="Texture2D" uid="uid://dnvkl4yw8pslt" path="res://assets/art/particles/1 Magic/5.png" id="2_nh2pm"]
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_nh2pm"]
-atlas = ExtResource("1_c8e5c")
+[sub_resource type="AtlasTexture" id="AtlasTexture_w2oog"]
+atlas = ExtResource("2_nh2pm")
 region = Rect2(0, 0, 72, 72)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_j37sn"]
-atlas = ExtResource("1_c8e5c")
+[sub_resource type="AtlasTexture" id="AtlasTexture_kjqvn"]
+atlas = ExtResource("2_nh2pm")
 region = Rect2(72, 0, 72, 72)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_witna"]
-atlas = ExtResource("1_c8e5c")
+[sub_resource type="AtlasTexture" id="AtlasTexture_mn6w8"]
+atlas = ExtResource("2_nh2pm")
 region = Rect2(144, 0, 72, 72)
 
-[sub_resource type="AtlasTexture" id="AtlasTexture_8jqlc"]
-atlas = ExtResource("1_c8e5c")
+[sub_resource type="AtlasTexture" id="AtlasTexture_2m053"]
+atlas = ExtResource("2_nh2pm")
 region = Rect2(216, 0, 72, 72)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_j0vlr"]
+atlas = ExtResource("2_nh2pm")
+region = Rect2(288, 0, 72, 72)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_4eu3i"]
+atlas = ExtResource("2_nh2pm")
+region = Rect2(360, 0, 72, 72)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_u3y8v"]
+atlas = ExtResource("2_nh2pm")
+region = Rect2(432, 0, 72, 72)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_yvt5y"]
+atlas = ExtResource("2_nh2pm")
+region = Rect2(504, 0, 72, 72)
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_moojr"]
 animations = [{
 "frames": [{
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_nh2pm")
+"texture": SubResource("AtlasTexture_w2oog")
 }, {
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_j37sn")
+"texture": SubResource("AtlasTexture_kjqvn")
 }, {
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_witna")
+"texture": SubResource("AtlasTexture_mn6w8")
 }, {
 "duration": 1.0,
-"texture": SubResource("AtlasTexture_8jqlc")
+"texture": SubResource("AtlasTexture_2m053")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_j0vlr")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_4eu3i")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_u3y8v")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_yvt5y")
 }],
 "loop": 1,
-"name": &"onrun",
+"name": &"onrun1",
 "speed": 10.0
 }]
 
 [node name="PoisonParticles" type="Node2D" unique_id=138318343]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=28235834]
-position = Vector2(-13, -11)
+position = Vector2(4, -93)
 sprite_frames = SubResource("SpriteFrames_moojr")
-animation = &"onrun"
-autoplay = "onrun"
-frame_progress = 0.88577306
+animation = &"onrun1"
+autoplay = "onrun1"
+frame_progress = 0.74803275
 
 [node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="." unique_id=1635181637]
-position = Vector2(13, 11)
+position = Vector2(-4, -75)
 sprite_frames = SubResource("SpriteFrames_moojr")
-animation = &"onrun"
-autoplay = "onrun"
-frame_progress = 0.6213429
-
-[node name="AnimatedSprite2D3" type="AnimatedSprite2D" parent="." unique_id=1925196765]
-position = Vector2(-10, -65)
-sprite_frames = SubResource("SpriteFrames_moojr")
-animation = &"onrun"
-autoplay = "onrun"
-frame_progress = 0.8452084
-
-[node name="AnimatedSprite2D4" type="AnimatedSprite2D" parent="." unique_id=1241456491]
-position = Vector2(15, -30)
-sprite_frames = SubResource("SpriteFrames_moojr")
-animation = &"onrun"
-autoplay = "onrun"
-frame_progress = 0.06277675
+animation = &"onrun1"
+autoplay = "onrun1"
+frame_progress = 0.7394593

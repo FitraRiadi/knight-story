@@ -1376,9 +1376,24 @@ func _spawn_end_particle(buff_name: String) -> void:
 	for path in card_paths:
 		var card: ActionCardData = load(path) as ActionCardData
 		if card and card.card_name == buff_name and card.end_scene:
-			var instance: CardParticle = card.end_scene.instantiate() as CardParticle
+			var instance: Node2D = card.end_scene.instantiate() as Node2D
 			if instance:
 				add_child(instance)
+				# Position at enemy center
+				if enemy_collision:
+					instance.position = enemy_collision.position + enemy_collision.size / 2.0
+				else:
+					instance.position = Vector2.ZERO
+				# Set one_shot + auto-free
+				if card.end_duration > 0.0:
+					for child in instance.get_children():
+						if child is GPUParticles2D:
+							child.one_shot = true
+						elif child is CPUParticles2D:
+							child.one_shot = true
+					await get_tree().create_timer(card.end_duration).timeout
+					if is_instance_valid(instance):
+						instance.queue_free()
 			break
 
 
