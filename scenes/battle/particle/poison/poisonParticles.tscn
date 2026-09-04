@@ -38,24 +38,18 @@ animations = [{
 "speed": 10.0
 }]
 
-[node name="PoisonParticles" type="Control" unique_id=574611440]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[node name="PoisonParticles" type="Node2D" unique_id=138318343]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=28235834]
-position = Vector2(-16, -7)
+position = Vector2(-13, -11)
 sprite_frames = SubResource("SpriteFrames_moojr")
 animation = &"onrun"
 autoplay = "onrun"
-frame_progress = 0.6791213
+frame_progress = 0.9825939
 
 [node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="." unique_id=1635181637]
-position = Vector2(10, 15)
+position = Vector2(13, 11)
 sprite_frames = SubResource("SpriteFrames_moojr")
 animation = &"onrun"
 autoplay = "onrun"
-frame_progress = 0.41469255
+frame_progress = 0.718164

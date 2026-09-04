@@ -899,12 +899,12 @@ func _on_action_card_selected(index: int) -> void:
 	if card.repeat_scene:
 		var repeat_instance: Node2D = card.repeat_scene.instantiate() as Node2D
 		if repeat_instance and is_instance_valid(target):
-			# Position at enemy center (enemyCollision position)
-			var enemy_center: Vector2 = target.global_position
-			if target.enemy_collision:
-				enemy_center = target.enemy_collision.global_position
-			repeat_instance.global_position = enemy_center
 			target.add_child(repeat_instance)
+			# Position at enemy center (set AFTER add_child biar relatif ke parent)
+			if target.enemy_collision:
+				repeat_instance.position = target.enemy_collision.position
+			else:
+				repeat_instance.position = Vector2.ZERO
 			# Store reference for cleanup later
 			if not target.has_meta("card_particles"):
 				target.set_meta("card_particles", [])
@@ -926,12 +926,12 @@ func _spawn_card_particle(scene: PackedScene, target: Node) -> void:
 		return
 	var instance: Node2D = scene.instantiate() as Node2D
 	if instance and is_instance_valid(target):
-		# Position at enemy center (enemyCollision position)
-		var enemy_center: Vector2 = target.global_position
-		if target.enemy_collision:
-			enemy_center = target.enemy_collision.global_position
-		instance.global_position = enemy_center
 		target.add_child(instance)
+		# Position at enemy center (set AFTER add_child biar relatif ke parent)
+		if target.enemy_collision:
+			instance.position = target.enemy_collision.position
+		else:
+			instance.position = Vector2.ZERO
 
 
 func _on_action_card_closed() -> void:
