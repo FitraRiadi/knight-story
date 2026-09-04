@@ -108,9 +108,8 @@ const MORALE_RECOVER_ON_STUN_END: float = 0.50
 var crack_overlay: Node2D = null
 var smoke_particles: CPUParticles2D = null
 
-# Buff & heal particles
+# Buff particles
 var buff_particles: CPUParticles2D = null
-var heal_particles: CPUParticles2D = null
 var current_buff_particle_type: String = ""
 
 
@@ -202,7 +201,6 @@ func _ready() -> void:
 	_setup_soul_particles()
 	_setup_smoke_particles()
 	_setup_buff_particles()
-	_setup_heal_particles()
 	_setup_crack_overlay()
 
 	if enemy_hit_icon:
@@ -1331,6 +1329,7 @@ func increase_morale_on_hit() -> void:
 
 
 const STUN_PARTICLE_SCENE: PackedScene = preload("res://scenes/battle/particle/stun/stunParticle.tscn")
+const HP_PARTICLE_SCENE: PackedScene = preload("res://scenes/battle/particle/health/hpParticle.tscn")
 
 
 func _check_morale_stun() -> void:
@@ -1417,12 +1416,6 @@ func _stop_all_effects_on_death() -> void:
 		var tween: Tween = create_tween()
 		tween.tween_property(buff_particles, "modulate:a", 0.0, 0.5)
 		tween.tween_callback(buff_particles.set.bind("emitting", false))
-
-	# 4. Fade out heal_particles
-	if heal_particles and heal_particles.emitting:
-		heal_particles.emitting = false
-		var tween: Tween = create_tween()
-		tween.tween_property(heal_particles, "modulate:a", 0.0, 0.5)
 
 
 func _spawn_end_particle(buff_name: String) -> void:
@@ -1738,35 +1731,23 @@ func _stop_buff_particles() -> void:
 
 
 # ============================================================
-# HEAL PARTICLES (One-shot burst)
+# HEAL VISUAL (Scene-based)
 # ============================================================
 
-func _setup_heal_particles() -> void:
-	heal_particles = CPUParticles2D.new()
-	add_child(heal_particles)
-	heal_particles.z_index = 50
-	heal_particles.amount = 10
-	heal_particles.lifetime = 0.6
-	heal_particles.one_shot = true
-	heal_particles.explosiveness = 0.9
-	heal_particles.emitting = false
-	heal_particles.direction = Vector2(0, -1)
-	heal_particles.spread = 60.0
-	heal_particles.gravity = Vector2(0, -200)
-	heal_particles.initial_velocity_min = 60.0
-	heal_particles.initial_velocity_max = 120.0
-	heal_particles.scale_amount_min = 2.0
-	heal_particles.scale_amount_max = 5.0
-	heal_particles.color = Color(0.2, 1.0, 0.3, 0.9)
-
-	if enemy_collision and is_instance_valid(enemy_collision):
-		heal_particles.position = enemy_collision.position + enemy_collision.size / 2.0
-
-
 func _play_enemy_heal_visual() -> void:
-	if not heal_particles:
-		return
-	heal_particles.restart()
+	# Spawn hpParticle scene
+	if HP_PARTICLE_SCENE:
+		var instance: Node2D = HP_PARTICLE_SCENE.instantiate() as Node2D
+		if instance:
+			add_child(instance)
+			if enemy_collision:
+				instance.position = enemy_collision.position + enemy_collision.size / 2.0
+			else:
+				instance.position = Vector2.ZERO
+			# Auto-free setelah 3.5 detik (sama kayak heal icon)
+			await get_tree().create_timer(3.5).timeout
+			if is_instance_valid(instance):
+				instance.queue_free()
 
 	# Flash hijau
 	var tween: Tween = create_tween()

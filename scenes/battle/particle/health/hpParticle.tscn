@@ -1,0 +1,75 @@
+[gd_scene format=3 uid="uid://dfbmxl6j7vq54"]
+
+[ext_resource type="Texture2D" uid="uid://c53k86d1jstgi" path="res://assets/art/particles/1 Magic/8.png" id="1_dxw6y"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_w73p3"]
+atlas = ExtResource("1_dxw6y")
+region = Rect2(0, 0, 72, 72)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_7bhqw"]
+atlas = ExtResource("1_dxw6y")
+region = Rect2(72, 0, 72, 72)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_n32pd"]
+atlas = ExtResource("1_dxw6y")
+region = Rect2(144, 0, 72, 72)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_n73a1"]
+atlas = ExtResource("1_dxw6y")
+region = Rect2(216, 0, 72, 72)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tb0ij"]
+atlas = ExtResource("1_dxw6y")
+region = Rect2(288, 0, 72, 72)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_s3opi"]
+atlas = ExtResource("1_dxw6y")
+region = Rect2(360, 0, 72, 72)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_5jjgo"]
+atlas = ExtResource("1_dxw6y")
+region = Rect2(432, 0, 72, 72)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_72bg7"]
+atlas = ExtResource("1_dxw6y")
+region = Rect2(504, 0, 72, 72)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_moojr"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_w73p3")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_7bhqw")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_n32pd")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_n73a1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_tb0ij")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_s3opi")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_5jjgo")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_72bg7")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 10.0
+}]
+
+[node name="HpParticle" type="Node2D" unique_id=366251641]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=1868396715]
+position = Vector2(0, -12.999999)
+scale = Vector2(2.1188226, 2.48604)
+sprite_frames = SubResource("SpriteFrames_moojr")
+frame_progress = 0.7267341
