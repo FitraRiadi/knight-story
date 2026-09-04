@@ -1,24 +1,17 @@
-[gd_resource type="Resource" script_class="StunCard" format=3]
+[gd_resource type="Resource" script_class="StunCard" format=3 uid="uid://d0qredm2hmige"]
 
-[ext_resource type="Script" path="res://scripts/local/battle/cards/StunCard.gd" id="1_card"]
-[ext_resource type="Texture2D" path="res://assets/ui/icons/statusEffect/stun.png" id="2_icon"]
+[ext_resource type="Script" uid="uid://cym7xo7x2cg30" path="res://scripts/local/battle/cards/StunCard.gd" id="1_card"]
+[ext_resource type="Texture2D" uid="uid://cflc5dfdo7hi6" path="res://assets/art/card/stunCard.jpg" id="1_em6f6"]
+[ext_resource type="Texture2D" uid="uid://bq6vonpsqje5d" path="res://assets/ui/icons/statusEffect/stun.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_card")
-card_name = "Stun"
-description = "Stun enemy for 1 turn"
+card_name = "Concussive Blow"
+description = "A mighty strike that stuns the enemy, leaving them dazed for 1 turn."
+card_art = ExtResource("1_em6f6")
 icon = ExtResource("2_icon")
 level = 2
 rarity = "Uncommon"
 stamina_cost = 50.0
-cooldown = 3
-accent_color = Color(1, 0.8, 0, 1)
+accent_color = Color(0.92099476, 0.9209946, 0.9209946, 1)
 bg_color = Color(0.15, 0.12, 0.08, 0.95)
-shadow_color = Color(0, 0, 0, 0.4)
-shadow_offset = Vector2(2, 4)
-shadow_size = 8
-active_shadow_color = Color(0, 0, 0, 0.6)
-active_shadow_offset = Vector2(0, 8)
-active_shadow_size = 16
-stun_duration = 1
-metadata/_custom_type_script = "StunCard"

@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://dg2qfctt5x6d7" path="res://scripts/local/battle/ActionCardUI.gd" id="1_ui"]
 [ext_resource type="Texture2D" uid="uid://cdg8fiph4oayu" path="res://assets/art/card/cardPlaceholder.png" id="2_frame"]
 [ext_resource type="Texture2D" uid="uid://be1xxtp13rlac" path="res://assets/art/card/poisonCard.jpg" id="2_oxuh2"]
+[ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="4_4ftbc"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_glow"]
 bg_color = Color(1, 1, 1, 0.15)
@@ -18,7 +19,11 @@ corner_radius_bottom_left = 10
 shadow_color = Color(1, 1, 1, 0.5)
 shadow_size = 16
 
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_oxuh2"]
+texture = ExtResource("4_4ftbc")
+
 [node name="ActionCard" type="Control" unique_id=432883745]
+texture_filter = 1
 custom_minimum_size = Vector2(110, 160)
 layout_mode = 3
 anchors_preset = 0
@@ -30,10 +35,10 @@ script = ExtResource("1_ui")
 [node name="CardArt" type="TextureRect" parent="." unique_id=1411344808]
 texture_filter = 1
 layout_mode = 0
-offset_left = -14.0
-offset_top = 7.0
+offset_left = -16.0
+offset_top = 6.0
 offset_right = 126.0
-offset_bottom = 134.0
+offset_bottom = 147.0
 mouse_filter = 2
 texture = ExtResource("2_oxuh2")
 expand_mode = 1
@@ -111,7 +116,7 @@ text = "50"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="NameLabel" type="Label" parent="." unique_id=554304986]
+[node name="RarityLabel" type="Label" parent="." unique_id=554304986]
 layout_mode = 0
 offset_left = 19.0
 offset_top = 9.0
@@ -119,18 +124,23 @@ offset_right = 86.0
 offset_bottom = 14.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 5
-text = "Poison Card"
+text = "Common
+"
 vertical_alignment = 1
 
-[node name="RarityLabel" type="Label" parent="." unique_id=1997710627]
+[node name="NameLabel" type="Label" parent="." unique_id=1997710627]
+texture_filter = 1
 layout_mode = 0
-offset_left = 9.0
+offset_left = 24.0
 offset_top = 108.0
-offset_right = 103.0
-offset_bottom = 116.0
-theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 6
-text = "Common"
+offset_right = 397.19543
+offset_bottom = 146.0
+scale = Vector2(0.16881235, 0.18163233)
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 40
+theme_override_styles/normal = SubResource("StyleBoxTexture_oxuh2")
+text = "Attack Card"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -139,10 +149,10 @@ layout_mode = 0
 offset_left = 8.0
 offset_top = 116.0
 offset_right = 103.0
-offset_bottom = 146.0
+offset_bottom = 149.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 5
-text = "Card description hereefwevevwvewvewvwevewvwevwevwevervrvervvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvvv"
+theme_override_font_sizes/font_size = 8
+text = "Card description hereefwevevwvewvewvwevewvwevwevwev"
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3

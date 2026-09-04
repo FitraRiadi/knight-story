@@ -1,17 +1,17 @@
 [gd_resource type="Resource" script_class="BleedCard" format=3 uid="uid://b72c7wfusyh57"]
 
 [ext_resource type="Script" uid="uid://bux7vpgleumja" path="res://scripts/local/battle/cards/BleedCard.gd" id="1_card"]
+[ext_resource type="Texture2D" uid="uid://jn0vxsnu73we" path="res://assets/art/card/bleedCard.jpg" id="1_vmeys"]
 [ext_resource type="Texture2D" uid="uid://me2o2n8ea0mg" path="res://assets/ui/icons/statusEffect/attackUp.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_card")
-card_name = "Bleed"
-description = "Bleed enemy: +20% damage, -30% attack, -10% morale/turn for 3 turns"
+card_name = "Deep Wounds"
+description = "Inflict bleeding wounds. Enemy takes amplified damage, weakened attacks, and loses morale for 3 turns."
+card_art = ExtResource("1_vmeys")
 icon = ExtResource("2_icon")
 level = 3
 rarity = "Rare"
 stamina_cost = 60.0
 cooldown = 6
-accent_color = Color(0.8, 0, 0.2, 1)
 bg_color = Color(0.18, 0.08, 0.08, 0.95)
-metadata/_custom_type_script = "BleedCard"

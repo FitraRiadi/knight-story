@@ -6,8 +6,8 @@
 
 [resource]
 script = ExtResource("1_card")
-card_name = "Poison"
-description = "Poison enemy for 3 turns (-10 HP/turn)"
+card_name = "Venomous Bite"
+description = "Coat your weapon in deadly venom. Enemy suffers poison damage for 3 turns."
+card_art = ExtResource("1_jnuhk")
 icon = ExtResource("2_icon")
-accent_color = Color(0.3, 0.8, 0.2, 1)
-bg_texture = ExtResource("1_jnuhk")
+accent_color = Color(0.6433194, 1, 0.6141107, 1)
