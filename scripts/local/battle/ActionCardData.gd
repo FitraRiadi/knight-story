@@ -10,6 +10,7 @@ class_name ActionCardData
 
 @export var card_name: String = ""
 @export var description: String = ""
+@export var card_art: Texture2D
 @export var icon: Texture2D
 @export var level: int = 1
 @export_enum("Common", "Uncommon", "Rare", "Epic", "Legendary") var rarity: String = "Common"

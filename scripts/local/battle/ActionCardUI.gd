@@ -116,9 +116,9 @@ func _create_card(data: ActionCardData, index: int, has_stamina: bool, is_on_coo
 	var fan_offset: float = index - center_index
 	card.rotation = fan_offset * deg_to_rad(FAN_ANGLE)
 
-	# Card Art (icon)
+	# Card Art (card_art property)
 	var card_art: TextureRect = card.get_node("CardArt")
-	card_art.texture = data.icon
+	card_art.texture = data.card_art
 
 	# Card Frame (cardPlaceholder.png) — already set in tscn
 
