@@ -40,7 +40,8 @@ const STATUS_ICONS: Dictionary = {
 	"attack_up": preload("res://assets/ui/icons/statusEffect/attackUp.png"),
 	"health_up": preload("res://assets/ui/icons/statusEffect/healthUp.png"),
 	"poison": preload("res://assets/ui/icons/statusEffect/poison.png"),
-	"stun": preload("res://assets/ui/icons/statusEffect/stun.png")
+	"stun": preload("res://assets/ui/icons/statusEffect/stun.png"),
+	"bleed": preload("res://assets/ui/icons/statusEffect/attackUp.png")
 }
 
 
@@ -395,17 +396,30 @@ func _process_buff_durations() -> void:
 			receive_damage(poison_dmg, false, false)
 			show_reaction_text("-" + str(int(poison_dmg)), Color(0.3, 0.8, 0.2), false)
 
+	# === BLEED: MORALE DRAIN -10% per turn ===
+	for buff in buff_manager.active_buffs:
+		if buff.get("type") == "bleed":
+			var drain: float = buff.get("morale_drain", 0.0)
+			if drain > 0.0 and scaled_max_morale > 0.0:
+				var drain_amount: float = scaled_max_morale * drain
+				current_morale = maxf(0.0, current_morale - drain_amount)
+				show_reaction_text("-Morale", Color(0.8, 0.0, 0.2), false)
+				_check_morale_stun()
+				_update_crack_overlay()
+				_update_smoke_intensity()
+			break
+
 	var expired_buff_names: Array[String] = buff_manager.process_turn_start()
 
 	for buff_name in expired_buff_names:
 		show_reaction_text(buff_name + " Expired!", Color(0.8, 0.8, 0.8), false)
 
-	# Cek apakah masih ada buff attack/defense/poison aktif
+	# Cek apakah masih ada buff attack/defense/poison/bleed aktif
 	if current_buff_particle_type != "":
 		var active_types: Array[String] = buff_manager.get_active_buff_types()
 		var still_has_buff: bool = false
 		for t in active_types:
-			if t == "attack_up" or t == "defense_up" or t == "generic" or t == "poison":
+			if t == "attack_up" or t == "defense_up" or t == "generic" or t == "poison" or t == "bleed":
 				still_has_buff = true
 				if t != current_buff_particle_type:
 					_play_enemy_buff_visual(t)
@@ -683,6 +697,15 @@ func _execute_attack(
 		return
 
 	var total_damage: float = (scaled_damage + buff_manager.get_total_attack_bonus()) * damage_multiplier
+
+	# BLEED: -attack reduction
+	for buff in buff_manager.active_buffs:
+		if buff.get("type") == "bleed":
+			var atk_reduc: float = buff.get("attack_reduction", 0.0)
+			if atk_reduc > 0.0:
+				total_damage *= (1.0 - atk_reduc)
+			break
+
 	attack_preparing.emit()
 
 	_focus_camera_to_me(camera, true)
@@ -986,6 +1009,14 @@ func receive_damage(
 	var was_defending: bool = is_defending
 	var total_defense: float = scaled_defense + buff_manager.get_total_defense_bonus()
 	var final_damage: float = maxf(1.0, amount - total_defense)
+
+	# BLEED: +damage taken amplification
+	for buff in buff_manager.active_buffs:
+		if buff.get("type") == "bleed":
+			var amp: float = buff.get("damage_amplification", 0.0)
+			if amp > 0.0:
+				final_damage *= (1.0 + amp)
+			break
 
 	if was_defending:
 		final_damage *= (1.0 - DEFEND_DAMAGE_REDUCTION)
@@ -1553,6 +1584,8 @@ func _play_enemy_buff_visual(buff_type: String) -> void:
 			buff_particles.color = Color(0.3, 0.6, 1.0, 0.8)
 		"poison":
 			buff_particles.color = Color(0.3, 0.8, 0.2, 0.8)
+		"bleed":
+			buff_particles.color = Color(0.8, 0.0, 0.2, 0.8)
 		_:
 			buff_particles.color = Color(1.0, 0.85, 0.2, 0.8)
 

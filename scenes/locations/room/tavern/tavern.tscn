@@ -1,13 +1,11 @@
 [gd_scene format=3 uid="uid://30s1gi4exl86"]
 
 [ext_resource type="Script" uid="uid://dw1tcpvsbdya6" path="res://scripts/local/location/room/tavern/tavern.gd" id="1_7ykne"]
-[ext_resource type="Texture2D" uid="uid://d2grcgfrh5v4q" path="res://assets/art/backgrounds/location/map/lotus_village/tavern/tavern-1.jpg" id="1_8lml3"]
-[ext_resource type="Texture2D" uid="uid://mmfn71ng3w2p" path="res://assets/art/backgrounds/location/map/lotus_village/tavern/tavern-2.jpg" id="2_ml0d6"]
-[ext_resource type="Texture2D" uid="uid://cean352dlvuac" path="res://assets/art/backgrounds/location/map/lotus_village/tavern/tavern-3.jpg" id="3_liswf"]
+[ext_resource type="Texture2D" uid="uid://dl1bxvbplhyb0" path="res://assets/art/backgrounds/location/map/lotus_village/tavern/robertTavern/robert_tavern_bar.jpg" id="2_7ykne"]
+[ext_resource type="Texture2D" uid="uid://cejkt1cggohon" path="res://assets/art/backgrounds/location/map/lotus_village/tavern/robertTavern/robert_tavern_hall.jpg" id="2_liswf"]
 [ext_resource type="FontFile" uid="uid://dx6ognpbk586" path="res://assets/ui/fonts/alagard.ttf" id="5_0t5g7"]
 [ext_resource type="Script" uid="uid://teyjnyhys4en" path="res://scripts/local/location/room/tavern/dialog.gd" id="6_0t5g7"]
 [ext_resource type="Texture2D" uid="uid://vc4tcdcsd57b" path="res://assets/art/items/consumable/potion/Icon46.png" id="7_8lml3"]
-[ext_resource type="Texture2D" uid="uid://dr1k8p4uyoodj" path="res://assets/art/backgrounds/location/map/lotus_village/tavern/tavern-7.jpg" id="7_ppr7d"]
 [ext_resource type="Texture2D" uid="uid://cpubo8cnux8y2" path="res://assets/art/items/consumable/potion/Icon4.png" id="8_5u3he"]
 [ext_resource type="Texture2D" uid="uid://c3wjbqxsjgaga" path="res://assets/art/items/weapons/iron_sword.png" id="9_ppr7d"]
 [ext_resource type="Texture2D" uid="uid://boqc5sesqvj8w" path="res://assets/art/items/materials/inkwell_01.png" id="11_gto35"]
@@ -16,43 +14,30 @@
 [sub_resource type="SpriteFrames" id="SpriteFrames_moojr"]
 animations = [{
 "frames": [{
-"duration": 6.0,
-"texture": ExtResource("1_8lml3")
-}, {
-"duration": 3.0,
-"texture": ExtResource("2_ml0d6")
-}, {
 "duration": 1.0,
-"texture": ExtResource("1_8lml3")
-}, {
-"duration": 1.0,
-"texture": ExtResource("3_liswf")
-}, {
-"duration": 7.0,
-"texture": ExtResource("2_ml0d6")
-}, {
-"duration": 1.2,
-"texture": ExtResource("7_ppr7d")
-}, {
-"duration": 1.0,
-"texture": ExtResource("2_ml0d6")
-}, {
-"duration": 1.0,
-"texture": ExtResource("2_ml0d6")
-}, {
-"duration": 1.0,
-"texture": ExtResource("2_ml0d6")
-}, {
-"duration": 1.0,
-"texture": ExtResource("2_ml0d6")
-}, {
-"duration": 1.0,
-"texture": ExtResource("2_ml0d6")
+"texture": ExtResource("2_7ykne")
 }],
 "loop": 1,
-"name": &"default",
+"name": &"bar",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("2_liswf")
+}],
+"loop": 1,
+"name": &"hall",
 "speed": 5.0
 }]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_liswf"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_7ykne"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_7tf6e"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_5u3he"]
+bg_color = Color(0, 0, 0, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0t5g7"]
 bg_color = Color(0, 0, 0, 0.56078434)
@@ -124,21 +109,10 @@ script = ExtResource("1_7ykne")
 position = Vector2(370.00003, 170)
 scale = Vector2(0.7226563, 0.7234042)
 sprite_frames = SubResource("SpriteFrames_moojr")
-autoplay = "default"
-frame_progress = 0.74493694
+animation = &"hall"
+autoplay = "hall"
 
-[node name="base-title" type="Label" parent="." unique_id=2095092758]
-layout_mode = 0
-offset_left = 498.0
-offset_top = 13.0
-offset_right = 826.0
-offset_bottom = 62.0
-theme_override_font_sizes/font_size = 24
-text = "Robert`s
-Tavern"
-horizontal_alignment = 1
-
-[node name="introDialog" type="Control" parent="." unique_id=92428346]
+[node name="hall" type="Control" parent="." unique_id=1754143668]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -146,7 +120,63 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="ColorRect" type="ColorRect" parent="introDialog" unique_id=1306633013]
+[node name="exitTavern" type="Button" parent="hall" unique_id=2096847533]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 287.0
+offset_right = 124.0
+offset_bottom = 310.0
+theme_override_styles/normal = SubResource("StyleBoxTexture_liswf")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_7ykne")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_7tf6e")
+text = "Exit Tavern"
+
+[node name="Panel" type="Panel" parent="hall/exitTavern" unique_id=796112746]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 18.0
+offset_right = 93.0
+offset_bottom = 19.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_5u3he")
+
+[node name="bartender" type="Button" parent="hall" unique_id=1706493619]
+layout_mode = 0
+offset_left = 262.0
+offset_top = 202.0
+offset_right = 358.0
+offset_bottom = 225.0
+theme_override_styles/normal = SubResource("StyleBoxTexture_liswf")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_7ykne")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_7tf6e")
+text = "Bartender"
+
+[node name="Panel" type="Panel" parent="hall/bartender" unique_id=888432234]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 18.0
+offset_right = 93.0
+offset_bottom = 19.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_5u3he")
+
+[node name="bar" type="Control" parent="." unique_id=1503447066]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="introDialog" type="Control" parent="bar" unique_id=92428346]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ColorRect" type="ColorRect" parent="bar/introDialog" unique_id=1306633013]
 layout_mode = 0
 offset_left = 1.0
 offset_top = 283.0
@@ -154,7 +184,7 @@ offset_right = 741.0
 offset_bottom = 340.0
 color = Color(0.16462399, 0.16462399, 0.16462399, 0.80784315)
 
-[node name="dialog" type="Label" parent="introDialog" unique_id=1176377254]
+[node name="dialog" type="Label" parent="bar/introDialog" unique_id=1176377254]
 layout_mode = 0
 offset_left = 1.0
 offset_top = 284.0
@@ -168,7 +198,7 @@ theme_override_font_sizes/font_size = 15
 autowrap_mode = 1
 script = ExtResource("6_0t5g7")
 
-[node name="nameSpeaking" type="Label" parent="introDialog" unique_id=2070858807]
+[node name="nameSpeaking" type="Label" parent="bar/introDialog" unique_id=2070858807]
 layout_mode = 0
 offset_left = 7.0
 offset_top = 269.0
@@ -178,14 +208,15 @@ theme_override_colors/font_color = Color(1, 1, 0.2, 1)
 theme_override_font_sizes/font_size = 23
 text = "Robert"
 
-[node name="feature" type="Control" parent="." unique_id=1408928092]
+[node name="feature" type="Control" parent="bar" unique_id=1408928092]
+visible = false
 anchors_preset = 0
 offset_left = 35.0
 offset_top = 21.0
 offset_right = 473.0
 offset_bottom = 301.0
 
-[node name="container" type="Panel" parent="feature" unique_id=701886620]
+[node name="container" type="Panel" parent="bar/feature" unique_id=701886620]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -195,7 +226,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_0t5g7")
 
-[node name="BuyItemBtn" type="Button" parent="feature" unique_id=1904119812]
+[node name="BuyItemBtn" type="Button" parent="bar/feature" unique_id=1904119812]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -207,7 +238,7 @@ grow_vertical = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_dt4my")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_ioold")
 
-[node name="TextureRect" type="TextureRect" parent="feature/BuyItemBtn" unique_id=522013124]
+[node name="TextureRect" type="TextureRect" parent="bar/feature/BuyItemBtn" unique_id=522013124]
 texture_filter = 1
 layout_mode = 0
 offset_left = 18.0
@@ -216,7 +247,7 @@ offset_right = 117.0
 offset_bottom = 101.0
 texture = ExtResource("8_5u3he")
 
-[node name="Label" type="Label" parent="feature/BuyItemBtn" unique_id=779835069]
+[node name="Label" type="Label" parent="bar/feature/BuyItemBtn" unique_id=779835069]
 layout_mode = 0
 offset_left = 39.0
 offset_top = 107.0
@@ -224,7 +255,7 @@ offset_right = 103.0
 offset_bottom = 122.0
 text = "Buy Item"
 
-[node name="TavernBtn" type="Button" parent="feature" unique_id=1807390888]
+[node name="TavernBtn" type="Button" parent="bar/feature" unique_id=1807390888]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -237,7 +268,7 @@ grow_vertical = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_jncy7")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_0qvnb")
 
-[node name="TextureRect" type="TextureRect" parent="feature/TavernBtn" unique_id=653934868]
+[node name="TextureRect" type="TextureRect" parent="bar/feature/TavernBtn" unique_id=653934868]
 texture_filter = 1
 layout_mode = 0
 offset_left = 73.0
@@ -246,7 +277,7 @@ offset_right = 172.0
 offset_bottom = 101.0
 texture = ExtResource("9_ppr7d")
 
-[node name="Label" type="Label" parent="feature/TavernBtn" unique_id=748679934]
+[node name="Label" type="Label" parent="bar/feature/TavernBtn" unique_id=748679934]
 layout_mode = 0
 offset_left = 70.0
 offset_top = 100.0
@@ -254,7 +285,7 @@ offset_right = 174.0
 offset_bottom = 115.0
 text = "Tavern Games"
 
-[node name="SellingItemBtn" type="Button" parent="feature" unique_id=1435223237]
+[node name="SellingItemBtn" type="Button" parent="bar/feature" unique_id=1435223237]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -267,7 +298,7 @@ grow_vertical = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_xncs8")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_iyfge")
 
-[node name="TextureRect" type="TextureRect" parent="feature/SellingItemBtn" unique_id=772516289]
+[node name="TextureRect" type="TextureRect" parent="bar/feature/SellingItemBtn" unique_id=772516289]
 texture_filter = 1
 layout_mode = 0
 offset_left = 20.0
@@ -276,7 +307,7 @@ offset_right = 112.0
 offset_bottom = 88.0
 texture = ExtResource("7_8lml3")
 
-[node name="Label" type="Label" parent="feature/SellingItemBtn" unique_id=2057822427]
+[node name="Label" type="Label" parent="bar/feature/SellingItemBtn" unique_id=2057822427]
 layout_mode = 0
 offset_left = 12.0
 offset_top = 90.0
@@ -286,7 +317,7 @@ text = "Selling Your Item"
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="exit" type="Button" parent="feature" unique_id=910802179]
+[node name="exit" type="Button" parent="bar/feature" unique_id=910802179]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -299,7 +330,7 @@ grow_vertical = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_mnmqb")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_l843g")
 
-[node name="Label" type="Label" parent="feature/exit" unique_id=375047977]
+[node name="Label" type="Label" parent="bar/feature/exit" unique_id=375047977]
 layout_mode = 0
 offset_left = 18.0
 offset_top = 94.0
@@ -309,7 +340,7 @@ rotation = -1.5729856
 theme_override_font_sizes/font_size = 26
 text = "Exit"
 
-[node name="container4" type="Button" parent="feature" unique_id=1762677275]
+[node name="container4" type="Button" parent="bar/feature" unique_id=1762677275]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -323,7 +354,7 @@ grow_vertical = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_2l1gk")
 
-[node name="Label" type="Label" parent="feature/container4" unique_id=1398651049]
+[node name="Label" type="Label" parent="bar/feature/container4" unique_id=1398651049]
 layout_mode = 0
 offset_left = 37.0
 offset_top = 96.0
@@ -331,7 +362,7 @@ offset_right = 78.0
 offset_bottom = 111.0
 text = "Quest"
 
-[node name="TextureRect" type="TextureRect" parent="feature/container4" unique_id=1213461507]
+[node name="TextureRect" type="TextureRect" parent="bar/feature/container4" unique_id=1213461507]
 layout_mode = 0
 offset_left = 20.0
 offset_top = 14.0
@@ -340,7 +371,7 @@ offset_bottom = 86.0
 texture = ExtResource("11_gto35")
 expand_mode = 1
 
-[node name="container7" type="Button" parent="feature" unique_id=368502916]
+[node name="container7" type="Button" parent="bar/feature" unique_id=368502916]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -353,7 +384,7 @@ grow_vertical = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_kylmi")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_fbpj2")
 
-[node name="TextureRect" type="TextureRect" parent="feature/container7" unique_id=732996581]
+[node name="TextureRect" type="TextureRect" parent="bar/feature/container7" unique_id=732996581]
 layout_mode = 0
 offset_left = 55.0
 offset_top = 17.0
@@ -362,10 +393,59 @@ offset_bottom = 82.0
 texture = ExtResource("12_ex6xx")
 expand_mode = 1
 
-[node name="Label" type="Label" parent="feature/container7" unique_id=1475494195]
+[node name="Label" type="Label" parent="bar/feature/container7" unique_id=1475494195]
 layout_mode = 0
 offset_left = 40.0
 offset_top = 96.0
 offset_right = 150.0
 offset_bottom = 111.0
 text = "Announcement"
+
+[node name="backHall" type="Button" parent="bar" unique_id=986912114]
+layout_mode = 0
+offset_left = 621.0
+offset_top = 285.0
+offset_right = 718.0
+offset_bottom = 308.0
+theme_override_styles/normal = SubResource("StyleBoxTexture_liswf")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_7ykne")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_7tf6e")
+text = "Back"
+
+[node name="Panel" type="Panel" parent="bar/backHall" unique_id=1584645283]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 18.0
+offset_right = 93.0
+offset_bottom = 19.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_5u3he")
+
+[node name="bartender" type="Button" parent="bar" unique_id=432462731]
+layout_mode = 0
+offset_left = 381.0
+offset_top = 195.0
+offset_right = 477.0
+offset_bottom = 218.0
+theme_override_styles/normal = SubResource("StyleBoxTexture_liswf")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_7ykne")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_7tf6e")
+text = "Robert"
+
+[node name="Panel" type="Panel" parent="bar/bartender" unique_id=1816589571]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 18.0
+offset_right = 93.0
+offset_bottom = 19.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_5u3he")
+
+[node name="base-title" type="Label" parent="." unique_id=2095092758]
+layout_mode = 0
+offset_left = 498.0
+offset_top = 13.0
+offset_right = 826.0
+offset_bottom = 62.0
+theme_override_font_sizes/font_size = 24
+text = "Robert`s
+Tavern"
+horizontal_alignment = 1

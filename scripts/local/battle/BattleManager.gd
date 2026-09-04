@@ -827,6 +827,7 @@ func _load_action_cards() -> void:
 	var card_paths: Array[String] = [
 		"res://data/action_cards/poison.tres",
 		"res://data/action_cards/stun.tres",
+		"res://data/action_cards/bleed.tres",
 	]
 
 	for path in card_paths:

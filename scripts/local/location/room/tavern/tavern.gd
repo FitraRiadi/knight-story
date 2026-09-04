@@ -3,17 +3,25 @@ extends Control
 
 # ============================================================
 # TAVERN CONTROLLER
-# Mengelola fitur tavern: Shop, Games, Dialog.
-# Handle panel switching dengan animasi.
+# Mengelola flow: Hall → Bar → Dialog → Feature Panel.
+# Handle panel switching, navigasi, dan animasi.
 # ============================================================
 
-@onready var exit: Button = $feature/exit
-@onready var buy_item_btn: Button = $feature/BuyItemBtn
-@onready var tavern_btn: Button = $feature/TavernBtn
-@onready var selling_btn: Button = $feature/SellingItemBtn
-@onready var quest_btn: Button = $feature/container4
-@onready var announcement_btn: Button = $feature/container7
-@onready var feature: Control = $feature
+@onready var animated_sprite: AnimatedSprite2D = $AnimatedSprite2D
+@onready var hall: Control = $hall
+@onready var hall_bartender_btn: Button = $hall/bartender
+@onready var hall_exit_btn: Button = $hall/exitTavern
+@onready var bar: Control = $bar
+@onready var bar_bartender_btn: Button = $bar/bartender
+@onready var bar_back_btn: Button = $bar/backHall
+@onready var feature: Control = $bar/feature
+@onready var feature_exit_btn: Button = $bar/feature/exit
+@onready var buy_item_btn: Button = $bar/feature/BuyItemBtn
+@onready var tavern_btn: Button = $bar/feature/TavernBtn
+@onready var selling_btn: Button = $bar/feature/SellingItemBtn
+@onready var quest_btn: Button = $bar/feature/container4
+@onready var announcement_btn: Button = $bar/feature/container7
+@onready var dialog_label: Label = $bar/introDialog/dialog
 
 var gold_label: Label
 var gold_display: Panel
@@ -23,25 +31,142 @@ var is_returning_to_menu: bool = false
 
 
 func _ready() -> void:
-	# Sembunyikan feature panel di awal (seperti blacksmith)
+	# Mulai di hall
+	hall.visible = true
+	bar.visible = false
 	feature.position.x -= 800
 	feature.visible = true
 
-	if exit:
-		exit.pressed.connect(_on_exit_tavern)
-	if buy_item_btn:
-		buy_item_btn.pressed.connect(_on_buy_item_pressed)
-	if tavern_btn:
-		tavern_btn.pressed.connect(_on_tavern_games_pressed)
-	if selling_btn:
-		selling_btn.pressed.connect(_on_selling_pressed)
-	if quest_btn:
-		quest_btn.pressed.connect(_on_quest_pressed)
-	if announcement_btn:
-		announcement_btn.pressed.connect(_on_announcement_pressed)
+	# Connect hall buttons
+	hall_bartender_btn.pressed.connect(_on_hall_bartender_pressed)
+	hall_exit_btn.pressed.connect(_on_exit_tavern)
+
+	# Connect bar buttons
+	bar_bartender_btn.pressed.connect(_on_robert_pressed)
+	bar_back_btn.pressed.connect(_on_bar_back_pressed)
+
+	# Connect feature buttons
+	feature_exit_btn.pressed.connect(_on_feature_exit_pressed)
+	buy_item_btn.pressed.connect(_on_buy_item_pressed)
+	tavern_btn.pressed.connect(_on_tavern_games_pressed)
+	selling_btn.pressed.connect(_on_selling_pressed)
+	quest_btn.pressed.connect(_on_quest_pressed)
+	announcement_btn.pressed.connect(_on_announcement_pressed)
 
 	_create_gold_display()
 	gold_display.visible = false
+
+
+# ============================================================
+# NAVIGATION: HALL ↔ BAR
+# ============================================================
+
+func _on_hall_bartender_pressed() -> void:
+	if is_switching:
+		return
+	is_switching = true
+
+	# Fade out hall
+	var tween = create_tween().set_parallel(true)
+	tween.set_trans(Tween.TRANS_CIRC)
+	tween.set_ease(Tween.EASE_IN)
+	tween.tween_property(hall, "modulate:a", 0.0, 0.3)
+
+	await tween.finished
+
+	hall.visible = false
+	animated_sprite.play("bar")
+
+	# Fade in bar
+	bar.modulate.a = 0.0
+	bar.visible = true
+
+	var tween_in = create_tween().set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+	tween_in.tween_property(bar, "modulate:a", 1.0, 0.3)
+	await tween_in.finished
+
+	is_switching = false
+
+
+func _on_bar_back_pressed() -> void:
+	if is_switching:
+		return
+	is_switching = true
+
+	# Tutup feature kalau masih terbuka
+	_hide_feature()
+
+	# Fade out bar
+	var tween = create_tween().set_parallel(true)
+	tween.set_trans(Tween.TRANS_CIRC)
+	tween.set_ease(Tween.EASE_IN)
+	tween.tween_property(bar, "modulate:a", 0.0, 0.3)
+
+	await tween.finished
+
+	bar.visible = false
+	animated_sprite.play("hall")
+
+	# Fade in hall + enable buttons
+	hall.modulate.a = 0.0
+	hall.visible = true
+
+	_set_hall_buttons_enabled(true)
+
+	var tween_in = create_tween().set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+	tween_in.tween_property(hall, "modulate:a", 1.0, 0.3)
+	await tween_in.finished
+
+	is_switching = false
+
+
+func _on_robert_pressed() -> void:
+	if is_switching:
+		return
+	is_switching = true
+
+	# Sembunyikan tombol Robert + Back
+	bar_bartender_btn.visible = false
+	bar_back_btn.visible = false
+
+	# Mulai dialog (feature muncul otomatis setelah dialog selesai)
+	dialog_label.start()
+	is_switching = false
+
+
+func _on_feature_exit_pressed() -> void:
+	if is_switching:
+		return
+	is_switching = true
+
+	# Slide feature keluar ke kiri
+	var tween = create_tween().set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
+	tween.tween_property(feature, "position:x", feature.position.x - 800, 0.4)
+	tween.tween_property(gold_display, "modulate:a", 0.0, 0.3)
+	await tween.finished
+
+	feature.visible = false
+	gold_display.visible = false
+
+	# Tampilkan lagi tombol Robert + Back
+	bar_bartender_btn.visible = true
+	bar_back_btn.visible = true
+
+	is_switching = false
+
+
+# ============================================================
+# HALL BUTTONS: DISABLE / ENABLE + FADE
+# ============================================================
+
+func _set_hall_buttons_enabled(enabled: bool) -> void:
+	hall_bartender_btn.disabled = not enabled
+	hall_exit_btn.disabled = not enabled
+
+	var target_alpha := 1.0 if enabled else 0.3
+	var tween = create_tween().set_trans(Tween.TRANS_CIRC)
+	tween.tween_property(hall_bartender_btn, "modulate:a", target_alpha, 0.25)
+	tween.parallel().tween_property(hall_exit_btn, "modulate:a", target_alpha, 0.25)
 
 
 # ============================================================
@@ -101,10 +226,15 @@ func _show_feature() -> void:
 
 
 func _show_feature_slide_in() -> void:
-	# Slide feature dari kiri ke kanan (seperti blacksmith intro)
+	# Reset feature posisi ke kiri (off-screen)
+	feature.visible = true
+	feature.position.x = 35.0 - 800.0
 	gold_display.visible = true
+	gold_display.modulate.a = 1.0
+
+	# Slide feature dari kiri ke kanan
 	var tween = create_tween().set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
-	tween.tween_property(feature, "position:x", feature.position.x + 800, 0.5)
+	tween.tween_property(feature, "position:x", 35.0, 0.5)
 
 
 # ============================================================
@@ -115,7 +245,6 @@ func _close_active_panel() -> void:
 	if active_panel and is_instance_valid(active_panel):
 		var panel_to_close = active_panel
 		active_panel = null
-		# Call outro if it exists, otherwise just free
 		if panel_to_close.has_method("_play_outro"):
 			panel_to_close._play_outro()
 		else:
@@ -150,7 +279,6 @@ func _on_buy_item_pressed() -> void:
 		return
 	is_switching = true
 
-	# Close current panel if any
 	await _close_active_panel_and_wait()
 
 	_hide_feature()
@@ -445,22 +573,18 @@ func _on_card_game_selected(game_menu: Control) -> void:
 		return
 	is_switching = true
 
-	# Cek gold
 	if PlayerDataManager.get_gold() < 3:
 		_show_floating_text(game_menu, "Not enough gold!", Color(1, 0.4, 0.3))
 		is_switching = false
 		return
 
-	# Deduct fee
 	PlayerDataManager.spend_gold(3)
 	_update_gold_display()
 
-	# Close game selection dengan animasi
 	if game_menu and is_instance_valid(game_menu):
 		_play_panel_outro(game_menu)
 		await game_menu.tree_exited
 
-	# Buka card game
 	var game = TavernCardGame.new()
 	game.back_to_menu.connect(_on_game_back_to_menu)
 	game.game_won.connect(_on_game_won.bind("Find The Card"))
@@ -473,22 +597,18 @@ func _on_word_chain_selected(game_menu: Control) -> void:
 		return
 	is_switching = true
 
-	# Cek gold
 	if PlayerDataManager.get_gold() < 3:
 		_show_floating_text(game_menu, "Not enough gold!", Color(1, 0.4, 0.3))
 		is_switching = false
 		return
 
-	# Deduct fee
 	PlayerDataManager.spend_gold(3)
 	_update_gold_display()
 
-	# Close game selection dengan animasi
 	if game_menu and is_instance_valid(game_menu):
 		_play_panel_outro(game_menu)
 		await game_menu.tree_exited
 
-	# Buka word chain game
 	var game = TavernWordChain.new()
 	game.back_to_menu.connect(_on_game_back_to_menu)
 	game.game_won.connect(_on_game_won.bind("Word Chain"))
@@ -501,22 +621,18 @@ func _on_drink_mix_selected(game_menu: Control) -> void:
 		return
 	is_switching = true
 
-	# Cek gold
 	if PlayerDataManager.get_gold() < 3:
 		_show_floating_text(game_menu, "Not enough gold!", Color(1, 0.4, 0.3))
 		is_switching = false
 		return
 
-	# Deduct fee
 	PlayerDataManager.spend_gold(3)
 	_update_gold_display()
 
-	# Close game selection dengan animasi
 	if game_menu and is_instance_valid(game_menu):
 		_play_panel_outro(game_menu)
 		await game_menu.tree_exited
 
-	# Buka drink mix game
 	var game = TavernDrinkMix.new()
 	game.back_to_menu.connect(_on_game_back_to_menu)
 	game.game_won.connect(_on_game_won.bind("Brew Challenge"))
@@ -530,13 +646,11 @@ func _on_game_back_to_menu() -> void:
 	is_switching = true
 	is_returning_to_menu = true
 
-	# Tunggu game selesai outro
 	if active_panel and is_instance_valid(active_panel):
 		await active_panel.tree_exited
 
 	active_panel = null
 
-	# Buka game selection menu lagi
 	var menu = _create_game_selection_menu()
 	active_panel = menu
 	add_child(menu)
@@ -614,11 +728,9 @@ func _on_game_menu_close(menu: Control) -> void:
 # ============================================================
 
 func _play_panel_intro(menu: Control, overlay: Control, panel: Panel) -> void:
-	# Overlay fade in
 	var tween_overlay = create_tween()
 	tween_overlay.tween_property(overlay, "modulate:a", 1.0, 0.25)
 
-	# Panel slide up dari bawah
 	var target_y = panel.position.y
 	panel.position.y = target_y + 300
 	panel.modulate.a = 0.0
@@ -634,7 +746,6 @@ func _play_panel_outro(menu: Control) -> void:
 	if not is_instance_valid(menu):
 		return
 
-	# Cari panel child (index 1 = overlay + panel)
 	if menu.get_child_count() < 2:
 		menu.queue_free()
 		return
@@ -642,7 +753,6 @@ func _play_panel_outro(menu: Control) -> void:
 	var overlay = menu.get_child(0)
 	var panel = menu.get_child(1)
 
-	# Panel slide down + fade
 	var tween = create_tween().set_parallel(true)
 	tween.set_trans(Tween.TRANS_CIRC)
 	tween.set_ease(Tween.EASE_IN)
@@ -665,7 +775,7 @@ func _on_panel_closed() -> void:
 
 
 # ============================================================
-# PLACEHOLDER BUTTONS
+# SELL / QUEST / ANNOUNCEMENT
 # ============================================================
 
 func _on_selling_pressed() -> void:
@@ -681,6 +791,7 @@ func _on_selling_pressed() -> void:
 	_open_panel(sell_panel)
 	is_switching = false
 
+
 func _on_quest_pressed() -> void:
 	if is_switching:
 		return
@@ -694,6 +805,7 @@ func _on_quest_pressed() -> void:
 	_open_panel(quest_panel)
 	is_switching = false
 
+
 func _on_announcement_pressed() -> void:
 	pass
 
@@ -703,4 +815,4 @@ func _on_announcement_pressed() -> void:
 # ============================================================
 
 func _on_exit_tavern():
-	TransitionManager.pindah_scene_with_zoom("res://scenes/locations/maps/lotus_village/lotus_village.tscn", exit)
+	TransitionManager.pindah_scene_with_zoom("res://scenes/locations/maps/lotus_village/lotus_village.tscn", hall_exit_btn)

@@ -1,7 +1,7 @@
 extends Node
 
 # Path file audio klik Anda (Sesuaikan dengan folder aset .wav atau .mp3 Anda)
-const CLICK_SOUND_PATH: String = "res://assets/audio/effects/battle/ui/attackQte-close.mp3"
+const CLICK_SOUND_PATH: String = "uid://dl4yf4hktppo5"
 
 var audio_player: AudioStreamPlayer
 
