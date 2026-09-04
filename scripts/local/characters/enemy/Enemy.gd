@@ -1351,6 +1351,8 @@ func _cleanup_card_particles(buff_name: String) -> void:
 					child.emitting = false
 				elif child is CPUParticles2D:
 					child.emitting = false
+			# Free node dari scene tree
+			p.queue_free()
 			to_remove.append(p)
 		else:
 			to_remove.append(p)

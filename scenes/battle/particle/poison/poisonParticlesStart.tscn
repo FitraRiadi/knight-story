@@ -1,3 +1,48 @@
 [gd_scene format=3 uid="uid://b048hpvn3254r"]
 
+[ext_resource type="Texture2D" uid="uid://b140np2mdmxqi" path="res://assets/art/particles/1 Magic/6_2.png" id="1_6k22w"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_imobq"]
+atlas = ExtResource("1_6k22w")
+region = Rect2(0, 0, 72, 72)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_n6n6r"]
+atlas = ExtResource("1_6k22w")
+region = Rect2(72, 0, 72, 72)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_y5nur"]
+atlas = ExtResource("1_6k22w")
+region = Rect2(144, 0, 72, 72)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_u60px"]
+atlas = ExtResource("1_6k22w")
+region = Rect2(216, 0, 72, 72)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_moojr"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_imobq")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_n6n6r")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_y5nur")
+}, {
+"duration": 5.0,
+"texture": SubResource("AtlasTexture_u60px")
+}],
+"loop": 0,
+"name": &"default",
+"speed": 8.0
+}]
+
 [node name="PoisonParticlesStart" type="Node2D" unique_id=1582991804]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=147421994]
+position = Vector2(2, -100)
+sprite_frames = SubResource("SpriteFrames_moojr")
+autoplay = "default"
+frame = 3
+frame_progress = 1.0
