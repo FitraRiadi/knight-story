@@ -6,6 +6,7 @@
 [ext_resource type="Resource" uid="uid://c0sv4kwsteft7" path="res://data/enemies/abilities/tactical_attack.tres" id="2_6qdrg"]
 [ext_resource type="Texture2D" uid="uid://d2altnflbpbe3" path="res://assets/art/sprites/enemy/warewolf/idle1-removebg-preview (1).png" id="2_8o2hm"]
 [ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="2_t7j65"]
+[ext_resource type="Resource" uid="uid://cq041xql6bmcc" path="res://data/enemies/abilities/life_steal.tres" id="3_5eh5s"]
 [ext_resource type="Texture2D" uid="uid://dprj4c65ff6jj" path="res://assets/art/sprites/enemy/warewolf/idle2-removebg-preview (1).png" id="3_akbxh"]
 [ext_resource type="Texture2D" uid="uid://c0fy4ed3vlpvi" path="res://assets/art/sprites/enemy/warewolf/attack1.png" id="4_7fsbw"]
 [ext_resource type="Texture2D" uid="uid://cmogtqcyr6ts3" path="res://assets/art/sprites/enemy/warewolf/attack2-removebg-preview.png" id="5_0gqwf"]
@@ -91,5 +92,5 @@ sprite_frames = SubResource("SpriteFrames_8puy6")
 max_hp = 90.0
 damage_to_player = 25.0
 exp_reward = 10
-abilities = Array[ExtResource("1_0gqwf")]([ExtResource("2_6qdrg")])
+abilities = Array[ExtResource("1_0gqwf")]([ExtResource("2_6qdrg"), ExtResource("3_5eh5s")])
 metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"

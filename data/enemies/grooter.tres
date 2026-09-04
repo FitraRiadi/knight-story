@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="2_yo2og"]
 [ext_resource type="Resource" uid="uid://c0sv4kwsteft7" path="res://data/enemies/abilities/tactical_attack.tres" id="3_nqphn"]
 [ext_resource type="Texture2D" uid="uid://b77h5eoduna8q" path="res://assets/art/sprites/enemy/grooter/idle1.png" id="3_yaoiv"]
+[ext_resource type="Resource" uid="uid://cq041xql6bmcc" path="res://data/enemies/abilities/life_steal.tres" id="4_8xh3w"]
 [ext_resource type="Texture2D" uid="uid://bsderxif8r56i" path="res://assets/art/sprites/enemy/grooter/idle2.png" id="4_ocbkr"]
 [ext_resource type="Texture2D" uid="uid://bar7568hd75ol" path="res://assets/art/sprites/enemy/grooter/attack1.png" id="5_nqphn"]
 [ext_resource type="Texture2D" uid="uid://bo0x6x4vi2lxp" path="res://assets/art/sprites/enemy/grooter/attack2.png" id="6_ebytt"]
@@ -92,5 +93,5 @@ sprite_frames = SubResource("SpriteFrames_3hfl1")
 max_hp = 150.0
 damage_to_player = 10.0
 exp_reward = 10
-abilities = Array[ExtResource("1_ocbkr")]([ExtResource("11_ab2"), ExtResource("3_nqphn")])
+abilities = Array[ExtResource("1_ocbkr")]([ExtResource("11_ab2"), ExtResource("3_nqphn"), ExtResource("4_8xh3w")])
 metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"

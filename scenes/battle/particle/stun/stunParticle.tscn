@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://db85oddxsl1ya"]
+
+[ext_resource type="Texture2D" uid="uid://dnv6hkjjixuyl" path="res://assets/art/particles/1 Magic/6.png" id="1_t5hoi"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_b5m5f"]
+atlas = ExtResource("1_t5hoi")
+region = Rect2(0, 0, 72, 72)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_cuqrx"]
+atlas = ExtResource("1_t5hoi")
+region = Rect2(72, 0, 72, 72)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ll321"]
+atlas = ExtResource("1_t5hoi")
+region = Rect2(144, 0, 72, 72)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_ymk3n"]
+atlas = ExtResource("1_t5hoi")
+region = Rect2(216, 0, 72, 72)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_moojr"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_b5m5f")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_cuqrx")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ll321")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_ymk3n")
+}],
+"loop": 1,
+"name": &"default",
+"speed": 20.0
+}]
+
+[node name="StunParticle" type="Node2D" unique_id=1654164528]
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=812657497]
+position = Vector2(0, -33)
+sprite_frames = SubResource("SpriteFrames_moojr")
+autoplay = "default"
+frame_progress = 0.7589893

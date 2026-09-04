@@ -21,6 +21,17 @@ func execute(target, battle_manager: Node) -> void:
 	# Apply stun ke enemy
 	target.is_stunned = true
 	target.stun_turns_remaining = stun_duration
+
+	# Add buff ke buff_manager supaya cleanup system jalan
+	target.buff_manager.active_buffs.append({
+		"name": card_name,
+		"type": "stun",
+		"duration": stun_duration,
+		"attack_bonus": 0.0,
+		"defense_bonus": 0.0,
+		"damage_reduction": 0.0,
+		"is_new": true
+	})
 	
 	# Visual feedback
 	target._play_stun_visuals()

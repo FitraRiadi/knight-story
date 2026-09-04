@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://cym7xo7x2cg30" path="res://scripts/local/battle/cards/StunCard.gd" id="1_card"]
 [ext_resource type="Texture2D" uid="uid://cflc5dfdo7hi6" path="res://assets/art/card/stunCard.jpg" id="1_em6f6"]
 [ext_resource type="Texture2D" uid="uid://bq6vonpsqje5d" path="res://assets/ui/icons/statusEffect/stun.png" id="2_icon"]
+[ext_resource type="PackedScene" uid="uid://db85oddxsl1ya" path="res://scenes/battle/particle/stun/stunParticle.tscn" id="3_638ck"]
 
 [resource]
 script = ExtResource("1_card")
@@ -16,3 +17,4 @@ rarity = "Uncommon"
 stamina_cost = 50.0
 accent_color = Color(0.92099476, 0.9209946, 0.9209946, 1)
 bg_color = Color(0.15, 0.12, 0.08, 0.95)
+repeat_scene = ExtResource("3_638ck")
