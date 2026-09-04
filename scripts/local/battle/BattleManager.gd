@@ -183,6 +183,7 @@ var card_used_this_session: bool = false
 var drop_layer: CanvasLayer
 var item_cache: Dictionary = {}  # item_id -> ItemData
 const ITEMS_FOLDER: String = "res://data/items/"
+const SLASH_PARTICLE_SCENE: PackedScene = preload("res://scenes/battle/particle/slash/slashParticle.tscn")
 
 # EXP DROP SYSTEM
 var level_up_label: Label
@@ -947,6 +948,23 @@ func _spawn_card_particle(scene: PackedScene, target: Node, duration: float = 0.
 				instance.queue_free()
 
 
+func _spawn_slash_particle(target: Node) -> void:
+	if not SLASH_PARTICLE_SCENE:
+		return
+	var instance: Node2D = SLASH_PARTICLE_SCENE.instantiate() as Node2D
+	if instance and is_instance_valid(target):
+		target.add_child(instance)
+		# Position at enemy center
+		if target.enemy_collision:
+			instance.position = target.enemy_collision.position + target.enemy_collision.size / 2.0
+		else:
+			instance.position = Vector2.ZERO
+		# Auto-free setelah animasi selesai (~0.7s = 12 frames / 18 FPS)
+		await get_tree().create_timer(0.7).timeout
+		if is_instance_valid(instance):
+			instance.queue_free()
+
+
 func _on_action_card_closed() -> void:
 	is_card_ui_open = false
 	_reset_hand_to_original(0.4)
@@ -1489,6 +1507,10 @@ func _execute_actual_attack(result: AttackResult) -> void:
 			enemy.enemy_collision.disabled = true
 	
 	var target_enemy = enemies[selected_enemy_index]
+	
+	# Spawn slash particle (LOW/MID/CRITICAL aja)
+	if result != AttackResult.MISS:
+		_spawn_slash_particle(target_enemy)
 	
 	# Hitung damage dengan buff bonus
 	var total_damage: float = player_damage + _get_player_attack_bonus()
