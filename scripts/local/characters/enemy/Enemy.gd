@@ -1499,11 +1499,12 @@ func _execute_stun_turn(camera: Camera2D, default_camera_pos: Vector2) -> void:
 		is_stunned = false
 		_recover_morale_after_stun()
 		_play_idle_if_allowed()
-		# Cleanup stun card particles + remove stun buff
+		# Cleanup stun card particles
+		_cleanup_card_particles("Concussive Blow")
+		# Hapus stun buff dari buff_manager (kalau ada)
 		if buff_manager:
 			for buff in buff_manager.active_buffs:
 				if buff.get("type") == "stun":
-					_cleanup_card_particles(buff.get("name", ""))
 					buff_manager.active_buffs.erase(buff)
 					break
 	else:
