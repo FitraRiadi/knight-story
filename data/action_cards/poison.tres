@@ -4,13 +4,16 @@
 [ext_resource type="Texture2D" uid="uid://be1xxtp13rlac" path="res://assets/art/card/poisonCard.jpg" id="1_jnuhk"]
 [ext_resource type="Texture2D" uid="uid://c736lhtawdjnm" path="res://assets/ui/icons/statusEffect/poison.png" id="2_icon"]
 [ext_resource type="PackedScene" uid="uid://bx3f33s8c2tyr" path="res://scenes/battle/particle/poison/poisonParticles.tscn" id="3_e3che"]
+[ext_resource type="PackedScene" uid="uid://b048hpvn3254r" path="res://scenes/battle/particle/poison/poisonParticlesStart.tscn" id="3_r3wqf"]
 
 [resource]
 script = ExtResource("1_card")
-poison_damage = 25.0
+poison_damage = 35.0
 card_name = "Venomous Bite"
-description = "Poisons the enemy. -25 HP/turn for 3 turns."
+description = "Poisons the enemy. -35 HP/turn for 3 turns."
 card_art = ExtResource("1_jnuhk")
 icon = ExtResource("2_icon")
 accent_color = Color(0.6433194, 1, 0.6141107, 1)
+intro_scene = ExtResource("3_r3wqf")
+intro_duration = 0.5
 repeat_scene = ExtResource("3_e3che")

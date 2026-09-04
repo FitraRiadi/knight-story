@@ -973,6 +973,7 @@ func _on_death() -> void:
 	if enemy_collision: enemy_collision.disabled = true
 
 	_stop_buff_particles()
+	_stop_all_effects_on_death()
 	play("death")
 	_play_sound("death")
 
@@ -1363,6 +1364,44 @@ func _cleanup_card_particles(buff_name: String) -> void:
 		particles.erase(p)
 	if particles.is_empty():
 		remove_meta("card_particles")
+
+
+func _stop_all_effects_on_death() -> void:
+	"""Matikan semua effect (card particles, potion, buff) saat enemy mati — fade out"""
+	# 1. Clear active buffs supaya gak diproses lagi
+	if buff_manager:
+		buff_manager.active_buffs.clear()
+
+	# 2. Fade out + stop card particles (poison, bleed, dll)
+	if has_meta("card_particles"):
+		var particles: Array = get_meta("card_particles")
+		for p in particles:
+			if is_instance_valid(p):
+				# Stop semua emitting
+				for child in p.get_children():
+					if child is GPUParticles2D:
+						child.emitting = false
+					elif child is CPUParticles2D:
+						child.emitting = false
+				# Fade out the Node2D itself
+				var tween: Tween = create_tween()
+				tween.tween_property(p, "modulate:a", 0.0, 0.5)
+				tween.tween_callback(p.queue_free)
+		particles.clear()
+		remove_meta("card_particles")
+
+	# 3. Fade out buff_particles (heal, attack potion, dll)
+	if buff_particles and buff_particles.emitting:
+		buff_particles.emitting = false
+		var tween: Tween = create_tween()
+		tween.tween_property(buff_particles, "modulate:a", 0.0, 0.5)
+		tween.tween_callback(buff_particles.set.bind("emitting", false))
+
+	# 4. Fade out heal_particles
+	if heal_particles and heal_particles.emitting:
+		heal_particles.emitting = false
+		var tween: Tween = create_tween()
+		tween.tween_property(heal_particles, "modulate:a", 0.0, 0.5)
 
 
 func _spawn_end_particle(buff_name: String) -> void:

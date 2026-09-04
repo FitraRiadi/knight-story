@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://bux7vpgleumja" path="res://scripts/local/battle/cards/BleedCard.gd" id="1_card"]
 [ext_resource type="Texture2D" uid="uid://jn0vxsnu73we" path="res://assets/art/card/bleedCard.jpg" id="1_vmeys"]
 [ext_resource type="Texture2D" uid="uid://me2o2n8ea0mg" path="res://assets/ui/icons/statusEffect/attackUp.png" id="2_icon"]
+[ext_resource type="PackedScene" uid="uid://bsxabnv7cu2kj" path="res://scenes/battle/particle/bleed/bleedParticle.tscn" id="3_c4rle"]
 
 [resource]
 script = ExtResource("1_card")
@@ -15,3 +16,4 @@ rarity = "Rare"
 stamina_cost = 60.0
 cooldown = 6
 bg_color = Color(0.18, 0.08, 0.08, 0.95)
+repeat_scene = ExtResource("3_c4rle")

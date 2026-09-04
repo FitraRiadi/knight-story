@@ -33,7 +33,7 @@ animations = [{
 "duration": 5.0,
 "texture": SubResource("AtlasTexture_u60px")
 }],
-"loop": 1,
+"loop": 0,
 "name": &"default",
 "speed": 8.0
 }]
@@ -41,7 +41,9 @@ animations = [{
 [node name="PoisonParticlesStart" type="Node2D" unique_id=1582991804]
 
 [node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=147421994]
-position = Vector2(2, -100)
+position = Vector2(0, 10.000001)
+scale = Vector2(2.8593245, 3.2768104)
 sprite_frames = SubResource("SpriteFrames_moojr")
 autoplay = "default"
-frame_progress = 0.041753784
+frame = 3
+frame_progress = 1.0
