@@ -1,0 +1,61 @@
+[gd_scene format=3 uid="uid://bx3f33s8c2tyr"]
+
+[ext_resource type="Texture2D" uid="uid://pytn3kq1pqei" path="res://assets/art/particles/1 Magic/4_2.png" id="1_c8e5c"]
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_nh2pm"]
+atlas = ExtResource("1_c8e5c")
+region = Rect2(0, 0, 72, 72)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_j37sn"]
+atlas = ExtResource("1_c8e5c")
+region = Rect2(72, 0, 72, 72)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_witna"]
+atlas = ExtResource("1_c8e5c")
+region = Rect2(144, 0, 72, 72)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_8jqlc"]
+atlas = ExtResource("1_c8e5c")
+region = Rect2(216, 0, 72, 72)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_moojr"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_nh2pm")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_j37sn")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_witna")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_8jqlc")
+}],
+"loop": 1,
+"name": &"onrun",
+"speed": 10.0
+}]
+
+[node name="PoisonParticles" type="Control" unique_id=574611440]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="." unique_id=28235834]
+position = Vector2(-16, -7)
+sprite_frames = SubResource("SpriteFrames_moojr")
+animation = &"onrun"
+autoplay = "onrun"
+frame_progress = 0.6791213
+
+[node name="AnimatedSprite2D2" type="AnimatedSprite2D" parent="." unique_id=1635181637]
+position = Vector2(10, 15)
+sprite_frames = SubResource("SpriteFrames_moojr")
+animation = &"onrun"
+autoplay = "onrun"
+frame_progress = 0.41469255

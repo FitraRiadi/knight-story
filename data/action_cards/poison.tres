@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://dhfll4ef2is66" path="res://scripts/local/battle/cards/PoisonCard.gd" id="1_card"]
 [ext_resource type="Texture2D" uid="uid://be1xxtp13rlac" path="res://assets/art/card/poisonCard.jpg" id="1_jnuhk"]
 [ext_resource type="Texture2D" uid="uid://c736lhtawdjnm" path="res://assets/ui/icons/statusEffect/poison.png" id="2_icon"]
+[ext_resource type="PackedScene" uid="uid://bx3f33s8c2tyr" path="res://scenes/battle/particle/poison/poisonParticles.tscn" id="3_e3che"]
 
 [resource]
 script = ExtResource("1_card")
@@ -12,3 +13,4 @@ description = "Poisons the enemy. -25 HP/turn for 3 turns."
 card_art = ExtResource("1_jnuhk")
 icon = ExtResource("2_icon")
 accent_color = Color(0.6433194, 1, 0.6141107, 1)
+repeat_scene = ExtResource("3_e3che")
