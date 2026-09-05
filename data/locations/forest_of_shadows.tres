@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="LocationData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/location_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+location_id = "forestOfShadows"
+location_name = "Forest of Shadows"
+description = "Hutan gelap yang penuh dengan bayangan bergerak. Cahaya matahari tidak pernah menembus dedaunannya."
+lore = "Forest of Shadows adalah hutan tertua di wilayah ini. Pohon-pohonnya begitu tinggi hingga cabang-cabangnya saling bersentuhan, membentuk kanopi gelap yang abadi. Penduduk setempat percaya bahwa bayangan di hutan ini bukan sekadar pantulan cahaya, melainkan entitas yang hidup. Mereka berburu jiwa-jiwa tersesat yang berani masuk terlalu dalam. Bahkan para pencuri pun menolak untuk masuk ke sini."

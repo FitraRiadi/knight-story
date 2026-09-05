@@ -27,6 +27,7 @@ EventBus="*res://scripts/global/event_bus.gd"
 QuestTracker="*res://scripts/global/quest_tracker.gd"
 PlayerDataManager="*res://scripts/global/player_data_manager.gd"
 MusicManager="*res://scripts/global/music_manager.gd"
+LocationDatabase="*res://scripts/data/location_database.gd"
 
 [display]
 

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="LocationData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/location_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+location_id = "haskalVillage"
+location_name = "Hascal Village"
+description = "Desa pertambangan yang tersembunyi di lembah. Emas dan batu permata menjadi sumber kehidupan penduduknya."
+lore = "Hascal Village didirikan oleh para penambang yang menemukan vein emas terbesar di wilayah ini. Namun kekayaan yang mereka dapatkan datang dengan harga yang mahal. Gua-gua tambang yang terlalu dalam membuka pintu ke dimensi lain yang penuh dengan makhluk aneh. Penduduk desa harus berjuang setiap hari untuk melindungi tambang mereka dari ancaman yang datang dari kegelapan."

@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="LocationData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/location_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+location_id = "colloseum"
+location_name = "Colosseum"
+description = "Arena pertempuran kuno yang masih berdiri kokoh. Darah dan kemenangan menjadi tarian abadi di sini."
+lore = "Colosseum dulunya adalah tempat hiburan bagi para bangsawan kerajaan yang telah lama runtuh. Sekarang, arena ini menjadi tempat para petarung tak dikenal menguji keberanian mereka. Tidak ada yang tahu siapa yang membangunnya, atau mengapa arena ini tidak pernah hancur meskipun kerajaan yang membangunnya sudah lenyap. Yang pasti, darah yang tertumpah di sini tidak pernah benar-benar mengering."

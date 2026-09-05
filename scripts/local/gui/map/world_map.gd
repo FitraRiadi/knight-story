@@ -5,7 +5,8 @@ extends TextureRect
 
 # Location Info Panel
 @onready var location_info_panel: Panel = $LocationUI/locationInfoPanel
-@onready var info_label: Label = $LocationUI/locationInfoPanel/Label
+@onready var info_name_label: Label = $LocationUI/locationInfoPanel/nameLocation
+@onready var info_lore_label: Label = $LocationUI/locationInfoPanel/loreInfo
 @onready var info_panel_1: Panel = $LocationUI/locationInfoPanel/Panel
 @onready var info_panel_2: Panel = $LocationUI/locationInfoPanel/Panel2
 @onready var info_panel_3: Panel = $LocationUI/locationInfoPanel/Panel3
@@ -39,31 +40,15 @@ var label_hidden_bottom: float = 50.0
 var label_visible_top: float = -30.0
 var label_visible_bottom: float = 10.0
 
-# Location names
-var location_names: Dictionary = {
-	"lotusVillage": "Lotus Village",
-	"colloseum": "Colosseum",
-	"deathLand": "Death Land",
-	"forestOfShadows": "Forest of Shadows",
-	"shadowMountain": "Shadow Mountain",
-	"haskalVillage": "Hascal Village",
-	"darkRuin": "Dark Ruin"
-}
-
 func _ready():
 	camera.make_current()
 	
-	# Setup active button style
 	_setup_active_style()
 	
-	# Setup label awal (hidden)
 	location_label.offset_top = label_hidden_top
 	location_label.offset_bottom = label_hidden_bottom
 	
-	# Setup panel awal (hidden)
 	_setup_panel_hidden()
-	
-	# Connect click signals untuk semua button
 	_connect_location_buttons()
 	
 	if texture:
@@ -90,7 +75,6 @@ func _setup_active_style():
 	active_style.corner_radius_bottom_left = 20
 	active_style.corner_radius_bottom_right = 20
 	
-	# Simpen style asli tiap button (normal + hover)
 	var all_buttons: Array[Button] = [
 		btn_lotus_village, btn_colloseum, btn_death_land,
 		btn_forest_of_shadows, btn_shadow_mountain,
@@ -121,7 +105,8 @@ func _setup_panel_hidden():
 	info_panel_1.modulate.a = 0.0
 	info_panel_2.modulate.a = 0.0
 	info_panel_3.modulate.a = 0.0
-	info_label.modulate.a = 0.0
+	info_name_label.modulate.a = 0.0
+	info_lore_label.modulate.a = 0.0
 
 func _connect_location_buttons():
 	btn_lotus_village.pressed.connect(_on_location_pressed.bind("lotusVillage"))
@@ -133,19 +118,21 @@ func _connect_location_buttons():
 	btn_dark_ruin.pressed.connect(_on_location_pressed.bind("darkRuin"))
 
 func _on_location_pressed(location_id: String):
-	if location_names.has(location_id):
-		# Apply active style ke button yang diklik
-		match location_id:
-			"lotusVillage": _apply_active_style(btn_lotus_village)
-			"colloseum": _apply_active_style(btn_colloseum)
-			"deathLand": _apply_active_style(btn_death_land)
-			"forestOfShadows": _apply_active_style(btn_forest_of_shadows)
-			"shadowMountain": _apply_active_style(btn_shadow_mountain)
-			"haskalVillage": _apply_active_style(btn_haskal_village)
-			"darkRuin": _apply_active_style(btn_dark_ruin)
-		
-		_show_label(location_names[location_id])
-		_show_info_panel(location_names[location_id])
+	var loc_data = LocationDatabase.get_location(location_id)
+	if not loc_data:
+		return
+	
+	match location_id:
+		"lotusVillage": _apply_active_style(btn_lotus_village)
+		"colloseum": _apply_active_style(btn_colloseum)
+		"deathLand": _apply_active_style(btn_death_land)
+		"forestOfShadows": _apply_active_style(btn_forest_of_shadows)
+		"shadowMountain": _apply_active_style(btn_shadow_mountain)
+		"haskalVillage": _apply_active_style(btn_haskal_village)
+		"darkRuin": _apply_active_style(btn_dark_ruin)
+	
+	_show_label(loc_data.location_name)
+	_show_info_panel(loc_data.location_name, loc_data.lore)
 
 func _show_label(location_name: String):
 	location_label.text = location_name
@@ -172,7 +159,7 @@ func _hide_label():
 	label_tween.tween_property(location_label, "offset_top", label_hidden_top, 0.3)
 	label_tween.parallel().tween_property(location_label, "offset_bottom", label_hidden_bottom, 0.3)
 
-func _show_info_panel(location_name: String):
+func _show_info_panel(loc_name: String, lore: String):
 	if panel_tween:
 		panel_tween.kill()
 	
@@ -180,11 +167,13 @@ func _show_info_panel(location_name: String):
 	location_info_panel.pivot_offset = location_info_panel.size / 2
 	location_info_panel.scale = Vector2(0.5, 0.5)
 	location_info_panel.modulate.a = 1.0
-	info_label.text = location_name
+	info_name_label.text = loc_name
+	info_lore_label.text = lore
 	info_panel_1.modulate.a = 0.0
 	info_panel_2.modulate.a = 0.0
 	info_panel_3.modulate.a = 0.0
-	info_label.modulate.a = 0.0
+	info_name_label.modulate.a = 0.0
+	info_lore_label.modulate.a = 0.0
 	
 	panel_tween = create_tween()
 	panel_tween.set_parallel(true)
@@ -192,7 +181,8 @@ func _show_info_panel(location_name: String):
 	panel_tween.tween_property(info_panel_1, "modulate:a", 1.0, 0.3).set_delay(0.1).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
 	panel_tween.tween_property(info_panel_2, "modulate:a", 1.0, 0.3).set_delay(0.2).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
 	panel_tween.tween_property(info_panel_3, "modulate:a", 1.0, 0.3).set_delay(0.3).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
-	panel_tween.tween_property(info_label, "modulate:a", 1.0, 0.3).set_delay(0.4).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+	panel_tween.tween_property(info_name_label, "modulate:a", 1.0, 0.3).set_delay(0.4).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+	panel_tween.tween_property(info_lore_label, "modulate:a", 1.0, 0.3).set_delay(0.5).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
 
 func _hide_info_panel():
 	if panel_tween:
@@ -204,13 +194,13 @@ func _hide_info_panel():
 	panel_tween.tween_property(info_panel_1, "modulate:a", 0.0, 0.2).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
 	panel_tween.tween_property(info_panel_2, "modulate:a", 0.0, 0.2).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
 	panel_tween.tween_property(info_panel_3, "modulate:a", 0.0, 0.2).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
-	panel_tween.tween_property(info_label, "modulate:a", 0.0, 0.2).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
+	panel_tween.tween_property(info_name_label, "modulate:a", 0.0, 0.2).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
+	panel_tween.tween_property(info_lore_label, "modulate:a", 0.0, 0.2).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
 	
 	await panel_tween.finished
 	location_info_panel.visible = false
 
 func _input(event):
-	# Mouse drag
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			is_dragging = event.pressed
@@ -227,7 +217,6 @@ func _input(event):
 		camera.position.x = clampf(camera.position.x, camera.limit_left, camera.limit_right)
 		camera.position.y = clampf(camera.position.y, camera.limit_top, camera.limit_bottom)
 	
-	# Touch drag
 	if event is InputEventScreenTouch:
 		is_dragging = event.pressed
 		if is_dragging:

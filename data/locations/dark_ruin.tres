@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="LocationData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/location_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+location_id = "darkRuin"
+location_name = "Dark Ruin"
+description = "Runtuhan kuno yang menyimpan rahasia masa lalu. Energi gelap masih mengalir di antara reruntuhan."
+lore = "Dark Ruin adalah sisa-sisa peradaban kuno yang lenyap dalam semalam. Tidak ada catatan sejarah yang menjelaskan apa yang terjadi di sini. Yang tersisa hanyalah reruntuhan batu yang diukir dengan simbol-simbol yang tidak bisa dibaca. Energi gelap yang mengalir di tempat ini begitu kuat hingga bisa membuat siapa pun yang terlalu lama berada di sini kehilangan akal sehatnya. Para petualang yang berani masuk biasanya tidak pernah kembali, atau jika mereka kembali, mereka bukan lagi orang yang sama."

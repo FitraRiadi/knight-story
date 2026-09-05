@@ -1,0 +1,10 @@
+[gd_resource type="Resource" script_class="LocationData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/location_data.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+location_id = "lotusVillage"
+location_name = "Lotus Village"
+description = "Desa terpencil yang dikelilingi oleh bunga lotus putih. Tempat perlindungan terakhir bagi para musafir yang kelelahan."
+lore = "Lotus Village dibangun di atas reruntuhan kuil kuno yang didedikasikan untuk dewa perjalanan. Penduduknya percaya bahwa bunga lotus yang mekar di malam hari adalah arwah para musafir yang telah tiada, menjaga desa dari bahaya. Sudah berabad--abad desa ini menjadi satu-satunya tempat aman di tengah hutan yang gelap."
