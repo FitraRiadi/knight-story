@@ -211,7 +211,6 @@ func _on_location_pressed(location_id: String):
 
 func _on_more_info_pressed():
 	_hide_info_panel()
-	await panel_tween.finished
 	
 	var loc_data = LocationDatabase.get_location(current_location_id)
 	if loc_data:
@@ -309,6 +308,8 @@ func _hide_info_panel():
 	if panel_tween:
 		panel_tween.kill()
 	
+	location_info_panel.visible = false
+	
 	panel_tween = create_tween()
 	panel_tween.set_parallel(true)
 	panel_tween.tween_property(location_info_panel, "scale", Vector2(0.5, 0.5), 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
@@ -318,9 +319,6 @@ func _hide_info_panel():
 	panel_tween.tween_property(info_name_label, "modulate:a", 0.0, 0.2).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
 	panel_tween.tween_property(info_lore_label, "modulate:a", 0.0, 0.2).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
 	panel_tween.tween_property(btn_more_info, "modulate:a", 0.0, 0.2).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
-	
-	await panel_tween.finished
-	location_info_panel.visible = false
 
 func _show_popup(events: Array[EventData]):
 	if popup_tween:
