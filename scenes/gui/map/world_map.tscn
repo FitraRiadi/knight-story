@@ -1,17 +1,264 @@
 [gd_scene format=3 uid="uid://d12o0cdoccxk4"]
 
-[node name="worldMap" type="Control" unique_id=1796659499]
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
+[ext_resource type="Texture2D" uid="uid://ttjv2mesgwd4" path="res://assets/art/map/worldMap.jpg" id="1_1f65f"]
+[ext_resource type="Script" uid="uid://dqhxk322ar22k" path="res://scripts/local/gui/map/world_map.gd" id="2_script"]
+[ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="3_jips5"]
 
-[node name="map" type="TextureRect" parent="." unique_id=604697985]
-layout_mode = 1
-anchors_preset = 15
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jips5"]
+bg_color = Color(0.07846785, 0.07846785, 0.07846785, 0.80100006)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+shadow_size = 5
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_mnmqb"]
+texture = ExtResource("3_jips5")
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_moojr"]
+bg_color = Color(0, 0, 0, 0.45200002)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_moojr"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_v8twt"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_xncs8"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_hdopt"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_kylmi"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_iiu5v"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_mnmqb"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_2ujja"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_dt4my"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_1qqxr"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_jncy7"]
+
+[node name="worldMap" type="TextureRect" unique_id=880282057]
+texture = ExtResource("1_1f65f")
+script = ExtResource("2_script")
+
+[node name="playerCamera" type="Camera2D" parent="." unique_id=2096753341]
+position = Vector2(1364, 739)
+
+[node name="LocationUI" type="CanvasLayer" parent="." unique_id=1027666976]
+
+[node name="locationSellectName" type="Label" parent="LocationUI" unique_id=366578330]
+anchors_preset = 12
+anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_top = -40.0
+offset_right = -534.0
 grow_horizontal = 2
-grow_vertical = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxFlat_jips5")
+text = "Location Name"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="TextureRect3" type="TextureRect" parent="LocationUI" unique_id=1799501923]
+offset_left = 241.0
+offset_top = -11.0
+offset_right = 519.0
+offset_bottom = 17.0
+texture = ExtResource("3_jips5")
+expand_mode = 1
+
+[node name="TextureRect2" type="TextureRect" parent="LocationUI" unique_id=1106882332]
+offset_right = 278.0
+offset_bottom = 28.0
+texture = ExtResource("3_jips5")
+expand_mode = 1
+
+[node name="TextureRect" type="Button" parent="LocationUI" unique_id=114474871]
+offset_right = 199.0
+offset_bottom = 40.0
+mouse_filter = 2
+mouse_behavior_recursive = 1
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxTexture_mnmqb")
+text = "World Map"
+
+[node name="Button" type="Button" parent="LocationUI" unique_id=700550021]
+offset_left = 677.0
+offset_top = 7.0
+offset_right = 732.0
+offset_bottom = 49.0
+theme_override_font_sizes/font_size = 35
+text = ">>"
+
+[node name="locationInfoPanel" type="Panel" parent="LocationUI" unique_id=751407311]
+offset_left = 500.0
+offset_top = 251.0
+offset_right = 738.0
+offset_bottom = 337.0
+
+[node name="Label" type="Label" parent="LocationUI/locationInfoPanel" unique_id=85037651]
+layout_mode = 0
+offset_left = 38.0
+offset_top = -17.0
+offset_right = 192.0
+offset_bottom = -2.0
+theme_override_font_sizes/font_size = 10
+theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
+text = "Location Jnformation"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Panel" type="Panel" parent="LocationUI/locationInfoPanel" unique_id=1627036734]
+layout_mode = 0
+offset_left = 22.0
+offset_top = 23.0
+offset_right = 62.0
+offset_bottom = 63.0
+
+[node name="Panel2" type="Panel" parent="LocationUI/locationInfoPanel" unique_id=1308522708]
+layout_mode = 0
+offset_left = 99.0
+offset_top = 25.0
+offset_right = 139.0
+offset_bottom = 65.0
+
+[node name="Panel3" type="Panel" parent="LocationUI/locationInfoPanel" unique_id=1111443130]
+layout_mode = 0
+offset_left = 175.0
+offset_top = 25.0
+offset_right = 215.0
+offset_bottom = 65.0
+
+[node name="lotusVillage" type="Button" parent="." unique_id=727461163]
+layout_mode = 0
+offset_left = 1560.0
+offset_top = 527.0
+offset_right = 1772.0
+offset_bottom = 592.0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_moojr")
+theme_override_styles/normal_mirrored = SubResource("StyleBoxTexture_v8twt")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_xncs8")
+theme_override_styles/pressed_mirrored = SubResource("StyleBoxEmpty_hdopt")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_kylmi")
+theme_override_styles/hover_mirrored = SubResource("StyleBoxEmpty_iiu5v")
+theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_mnmqb")
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxEmpty_2ujja")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_dt4my")
+theme_override_styles/disabled_mirrored = SubResource("StyleBoxEmpty_1qqxr")
+theme_override_styles/focus = SubResource("StyleBoxTexture_jncy7")
+
+[node name="colloseum" type="Button" parent="." unique_id=1631219665]
+layout_mode = 0
+offset_left = 1617.0
+offset_top = 468.0
+offset_right = 1829.0
+offset_bottom = 533.0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_moojr")
+theme_override_styles/normal_mirrored = SubResource("StyleBoxTexture_v8twt")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_xncs8")
+theme_override_styles/pressed_mirrored = SubResource("StyleBoxEmpty_hdopt")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_kylmi")
+theme_override_styles/hover_mirrored = SubResource("StyleBoxEmpty_iiu5v")
+theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_mnmqb")
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxEmpty_2ujja")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_dt4my")
+theme_override_styles/disabled_mirrored = SubResource("StyleBoxEmpty_1qqxr")
+theme_override_styles/focus = SubResource("StyleBoxTexture_jncy7")
+
+[node name="deathLand" type="Button" parent="." unique_id=650878342]
+layout_mode = 0
+offset_left = 1613.0
+offset_top = 664.0
+offset_right = 1707.0
+offset_bottom = 805.0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_moojr")
+theme_override_styles/normal_mirrored = SubResource("StyleBoxTexture_v8twt")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_xncs8")
+theme_override_styles/pressed_mirrored = SubResource("StyleBoxEmpty_hdopt")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_kylmi")
+theme_override_styles/hover_mirrored = SubResource("StyleBoxEmpty_iiu5v")
+theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_mnmqb")
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxEmpty_2ujja")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_dt4my")
+theme_override_styles/disabled_mirrored = SubResource("StyleBoxEmpty_1qqxr")
+theme_override_styles/focus = SubResource("StyleBoxTexture_jncy7")
+
+[node name="forestOfShadows" type="Button" parent="." unique_id=385687369]
+layout_mode = 0
+offset_left = 1305.0
+offset_top = 819.0
+offset_right = 1577.0
+offset_bottom = 898.0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_moojr")
+theme_override_styles/normal_mirrored = SubResource("StyleBoxTexture_v8twt")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_xncs8")
+theme_override_styles/pressed_mirrored = SubResource("StyleBoxEmpty_hdopt")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_kylmi")
+theme_override_styles/hover_mirrored = SubResource("StyleBoxEmpty_iiu5v")
+theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_mnmqb")
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxEmpty_2ujja")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_dt4my")
+theme_override_styles/disabled_mirrored = SubResource("StyleBoxEmpty_1qqxr")
+theme_override_styles/focus = SubResource("StyleBoxTexture_jncy7")
+
+[node name="shadowMountain" type="Button" parent="." unique_id=1389908613]
+layout_mode = 0
+offset_left = 1331.0
+offset_top = 710.0
+offset_right = 1523.0
+offset_bottom = 774.0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_moojr")
+theme_override_styles/normal_mirrored = SubResource("StyleBoxTexture_v8twt")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_xncs8")
+theme_override_styles/pressed_mirrored = SubResource("StyleBoxEmpty_hdopt")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_kylmi")
+theme_override_styles/hover_mirrored = SubResource("StyleBoxEmpty_iiu5v")
+theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_mnmqb")
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxEmpty_2ujja")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_dt4my")
+theme_override_styles/disabled_mirrored = SubResource("StyleBoxEmpty_1qqxr")
+theme_override_styles/focus = SubResource("StyleBoxTexture_jncy7")
+
+[node name="haskalVillage" type="Button" parent="." unique_id=1706214017]
+layout_mode = 0
+offset_left = 1212.0
+offset_top = 795.0
+offset_right = 1334.0
+offset_bottom = 831.0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_moojr")
+theme_override_styles/normal_mirrored = SubResource("StyleBoxTexture_v8twt")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_xncs8")
+theme_override_styles/pressed_mirrored = SubResource("StyleBoxEmpty_hdopt")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_kylmi")
+theme_override_styles/hover_mirrored = SubResource("StyleBoxEmpty_iiu5v")
+theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_mnmqb")
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxEmpty_2ujja")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_dt4my")
+theme_override_styles/disabled_mirrored = SubResource("StyleBoxEmpty_1qqxr")
+theme_override_styles/focus = SubResource("StyleBoxTexture_jncy7")
+
+[node name="darkRuin" type="Button" parent="." unique_id=1495998726]
+layout_mode = 0
+offset_left = 1237.0
+offset_top = 925.0
+offset_right = 1359.0
+offset_bottom = 961.0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_moojr")
+theme_override_styles/normal_mirrored = SubResource("StyleBoxTexture_v8twt")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_xncs8")
+theme_override_styles/pressed_mirrored = SubResource("StyleBoxEmpty_hdopt")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_kylmi")
+theme_override_styles/hover_mirrored = SubResource("StyleBoxEmpty_iiu5v")
+theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_mnmqb")
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxEmpty_2ujja")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_dt4my")
+theme_override_styles/disabled_mirrored = SubResource("StyleBoxEmpty_1qqxr")
+theme_override_styles/focus = SubResource("StyleBoxTexture_jncy7")
