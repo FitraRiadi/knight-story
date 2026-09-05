@@ -7,4 +7,4 @@ script = ExtResource("1_script")
 location_id = "deathLand"
 location_name = "Death Land"
 description = "A dead land shrouded in thick fog. No life lasts long here."
-lore = "Death Land was once fertile farmland before the Great War destroyed everything. The fire that scorched this land burned so hot it froze the souls trapped within. The fog that blankets it is not mere vapor, but the weeping of restless spirits. Anyone who enters here must be prepared to never return."
+lore = "Once fertile farmland before the Great War destroyed everything. The fire that scorched this land burned so hot it froze the souls within. The fog that blankets it is the weeping of restless spirits. Anyone who enters must be prepared to never return."

@@ -7,4 +7,4 @@ script = ExtResource("1_script")
 location_id = "haskalVillage"
 location_name = "Hascal Village"
 description = "A hidden mining village tucked in the valley. Gold and gemstones fuel the lives of its people."
-lore = "Hascal Village was founded by miners who discovered the largest gold vein in the region. But the wealth they gained came at a terrible price. Mines dug too deep opened a gateway to another dimension filled with strange creatures. The villagers must fight every day to protect their mines from the threats emerging from the darkness below."
+lore = "Founded by miners who discovered the largest gold vein in the region. But mines dug too deep opened a gateway to another dimension. Strange creatures now emerge from below. The villagers fight every day to protect what remains of their home."

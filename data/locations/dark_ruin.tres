@@ -7,4 +7,4 @@ script = ExtResource("1_script")
 location_id = "darkRuin"
 location_name = "Dark Ruin"
 description = "Ancient ruins hiding secrets of the past. Dark energy still flows between the rubble."
-lore = "Dark Ruin is all that remains of a civilization that vanished overnight. No historical record explains what happened here. All that's left are crumbling stones carved with symbols no one can read. The dark energy flowing through this place is so strong it can drive anyone who stays too long to madness. The adventurers brave enough to enter usually never return, or if they do, they are no longer the same."
+lore = "All that remains of a civilization that vanished overnight. No record explains what happened here. The dark energy flowing through this place can drive anyone to madness. Adventurers who enter usually never return."
