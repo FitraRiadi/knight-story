@@ -73,7 +73,14 @@ func _ready():
 		camera.limit_right = int(map_size.x)
 		camera.limit_top = 0
 		camera.limit_bottom = int(map_size.y)
-		camera.zoom = Vector2(0.8, 0.8)
+		camera.zoom = Vector2(0.1, 0.1)
+		_play_intro_zoom()
+
+func _play_intro_zoom():
+	var tween = create_tween()
+	tween.set_trans(Tween.TRANS_CIRC)
+	tween.set_ease(Tween.EASE_OUT)
+	tween.tween_property(camera, "zoom", Vector2(0.8, 0.8), 1.0)
 
 func _setup_active_style():
 	active_style = StyleBoxFlat.new()

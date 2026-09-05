@@ -4,6 +4,9 @@
 [ext_resource type="Script" uid="uid://dqhxk322ar22k" path="res://scripts/local/gui/map/world_map.gd" id="2_script"]
 [ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="3_jips5"]
 [ext_resource type="Texture2D" uid="uid://q1e7hbeqot6h" path="res://assets/ui/popup/basic/paper.png" id="4_lmcfd"]
+[ext_resource type="Texture2D" uid="uid://bv8vjkhgb081a" path="res://assets/art/map/locationBadge/misterius.png" id="5_fitem"]
+[ext_resource type="Texture2D" uid="uid://41hr2lwjtbek" path="res://assets/art/map/locationBadge/soulVasal.png" id="6_kdf4v"]
+[ext_resource type="Texture2D" uid="uid://cmtpbt1bh5pkp" path="res://assets/art/map/locationBadge/ruinned.png" id="7_jygbb"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jips5"]
 bg_color = Color(0.07846785, 0.07846785, 0.07846785, 0.80100006)
@@ -23,6 +26,15 @@ corner_radius_top_left = 5
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_kdf4v"]
+texture = ExtResource("5_fitem")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_jygbb"]
+texture = ExtResource("6_kdf4v")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_cwpjt"]
+texture = ExtResource("7_jygbb")
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kylmi"]
 bg_color = Color(0, 0, 0, 0.693)
@@ -132,7 +144,7 @@ offset_right = 740.0
 offset_bottom = 339.0
 theme_override_styles/panel = SubResource("StyleBoxTexture_moojr")
 
-[node name="Label" type="Label" parent="LocationUI/locationInfoPanel" unique_id=85037651]
+[node name="nameLocation" type="Label" parent="LocationUI/locationInfoPanel" unique_id=85037651]
 layout_mode = 0
 offset_left = 44.0
 offset_top = 10.0
@@ -151,6 +163,7 @@ offset_left = 38.0
 offset_top = 47.0
 offset_right = 78.0
 offset_bottom = 87.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_kdf4v")
 
 [node name="Panel2" type="Panel" parent="LocationUI/locationInfoPanel" unique_id=1308522708]
 layout_mode = 0
@@ -158,6 +171,7 @@ offset_left = 100.0
 offset_top = 48.0
 offset_right = 140.0
 offset_bottom = 88.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_jygbb")
 
 [node name="Panel3" type="Panel" parent="LocationUI/locationInfoPanel" unique_id=1111443130]
 layout_mode = 0
@@ -165,8 +179,9 @@ offset_left = 160.0
 offset_top = 48.0
 offset_right = 200.0
 offset_bottom = 88.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_cwpjt")
 
-[node name="Label2" type="Label" parent="LocationUI/locationInfoPanel" unique_id=1876464309]
+[node name="loreInfo" type="Label" parent="LocationUI/locationInfoPanel" unique_id=1876464309]
 layout_mode = 0
 offset_left = 33.0
 offset_top = 129.0
@@ -210,7 +225,7 @@ offset_right = 196.0
 offset_bottom = 105.0
 theme_override_font_sizes/font_size = 10
 theme_override_styles/normal = SubResource("StyleBoxFlat_xncs8")
-text = "More Info"
+text = "More Info ->"
 
 [node name="lotusVillage" type="Button" parent="." unique_id=727461163]
 layout_mode = 0
