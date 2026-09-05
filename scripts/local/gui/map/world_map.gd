@@ -374,8 +374,9 @@ func _hide_popup():
 func _input(event):
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
-			# Jangan proses drag kalau klik di atas UI control
-			if get_viewport().gui_get_hovered_control() != null:
+			# Jangan proses drag kalau klik di atas button/interaktif UI
+			var hovered = get_viewport().gui_get_hovered_control()
+			if hovered and hovered is BaseButton:
 				return
 			is_dragging = event.pressed
 			if is_dragging:
@@ -392,7 +393,8 @@ func _input(event):
 		camera.position.y = clampf(camera.position.y, camera.limit_top, camera.limit_bottom)
 	
 	if event is InputEventScreenTouch:
-		if get_viewport().gui_get_hovered_control() != null:
+		var hovered = get_viewport().gui_get_hovered_control()
+		if hovered and hovered is BaseButton:
 			return
 		is_dragging = event.pressed
 		if is_dragging:
