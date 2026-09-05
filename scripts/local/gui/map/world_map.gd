@@ -26,11 +26,17 @@ var last_mouse_position: Vector2 = Vector2.ZERO
 var label_tween: Tween
 var panel_tween: Tween
 
+# Active button style
+var active_style: StyleBoxFlat
+var original_styles: Dictionary = {}
+var original_hover_styles: Dictionary = {}
+var active_button: Button = null
+
 # Label hidden position (di bawah viewport)
 var label_hidden_top: float = 10.0
 var label_hidden_bottom: float = 50.0
 # Label visible position (lebih ke bawah)
-var label_visible_top: float = -50.0
+var label_visible_top: float = -30.0
 var label_visible_bottom: float = 10.0
 
 # Location names
@@ -47,6 +53,9 @@ var location_names: Dictionary = {
 func _ready():
 	camera.make_current()
 	
+	# Setup active button style
+	_setup_active_style()
+	
 	# Setup label awal (hidden)
 	location_label.offset_top = label_hidden_top
 	location_label.offset_bottom = label_hidden_bottom
@@ -59,21 +68,49 @@ func _ready():
 	
 	if texture:
 		var map_size = texture.get_size()
-		
-		# Set TextureRect size ke ukuran texture asli
 		size = map_size
-		
-		# Set camera limits berdasarkan ukuran map
 		camera.limit_left = 0
 		camera.limit_right = int(map_size.x)
 		camera.limit_top = 0
 		camera.limit_bottom = int(map_size.y)
-		
-		# Zoom out biar map keliatan lebih lebar
-		camera.zoom = Vector2(0.5, 0.5)
+		camera.zoom = Vector2(0.8, 0.8)
+
+func _setup_active_style():
+	active_style = StyleBoxFlat.new()
+	active_style.bg_color = Color(0, 0, 0, 0.7)
+	active_style.corner_radius_top_left = 20
+	active_style.corner_radius_top_right = 20
+	active_style.corner_radius_bottom_left = 20
+	active_style.corner_radius_bottom_right = 20
+	
+	# Simpen style asli tiap button (normal + hover)
+	var all_buttons: Array[Button] = [
+		btn_lotus_village, btn_colloseum, btn_death_land,
+		btn_forest_of_shadows, btn_shadow_mountain,
+		btn_haskal_village, btn_dark_ruin
+	]
+	for btn in all_buttons:
+		original_styles[btn] = btn.get_theme_stylebox("normal")
+		original_hover_styles[btn] = btn.get_theme_stylebox("hover")
+
+func _apply_active_style(button: Button):
+	_remove_all_active_styles()
+	button.add_theme_stylebox_override("normal", active_style)
+	button.add_theme_stylebox_override("hover", active_style)
+	button.add_theme_stylebox_override("hover_pressed", active_style)
+	active_button = button
+
+func _remove_all_active_styles():
+	for btn in original_styles:
+		btn.add_theme_stylebox_override("normal", original_styles[btn])
+		btn.add_theme_stylebox_override("hover", original_hover_styles[btn])
+		btn.add_theme_stylebox_override("hover_pressed", original_hover_styles[btn])
+	active_button = null
 
 func _setup_panel_hidden():
 	location_info_panel.visible = false
+	location_info_panel.scale = Vector2(0.5, 0.5)
+	location_info_panel.pivot_offset = location_info_panel.size / 2
 	info_panel_1.modulate.a = 0.0
 	info_panel_2.modulate.a = 0.0
 	info_panel_3.modulate.a = 0.0
@@ -90,6 +127,16 @@ func _connect_location_buttons():
 
 func _on_location_pressed(location_id: String):
 	if location_names.has(location_id):
+		# Apply active style ke button yang diklik
+		match location_id:
+			"lotusVillage": _apply_active_style(btn_lotus_village)
+			"colloseum": _apply_active_style(btn_colloseum)
+			"deathLand": _apply_active_style(btn_death_land)
+			"forestOfShadows": _apply_active_style(btn_forest_of_shadows)
+			"shadowMountain": _apply_active_style(btn_shadow_mountain)
+			"haskalVillage": _apply_active_style(btn_haskal_village)
+			"darkRuin": _apply_active_style(btn_dark_ruin)
+		
 		_show_label(location_names[location_id])
 		_show_info_panel(location_names[location_id])
 
@@ -122,26 +169,23 @@ func _show_info_panel(location_name: String):
 	if panel_tween:
 		panel_tween.kill()
 	
-	# Setup awal
 	location_info_panel.visible = true
+	location_info_panel.pivot_offset = location_info_panel.size / 2
+	location_info_panel.scale = Vector2(0.5, 0.5)
+	location_info_panel.modulate.a = 1.0
 	info_label.text = location_name
 	info_panel_1.modulate.a = 0.0
 	info_panel_2.modulate.a = 0.0
 	info_panel_3.modulate.a = 0.0
 	info_label.modulate.a = 0.0
 	
-	# Stagger animation: muncul satu per satu dengan delay
 	panel_tween = create_tween()
 	panel_tween.set_parallel(true)
-	
-	# Panel 1 muncul duluan
-	panel_tween.tween_property(info_panel_1, "modulate:a", 1.0, 0.3).set_delay(0.0).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
-	# Panel 2 muncul setelah 0.1 detik
-	panel_tween.tween_property(info_panel_2, "modulate:a", 1.0, 0.3).set_delay(0.1).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
-	# Panel 3 muncul setelah 0.2 detik
-	panel_tween.tween_property(info_panel_3, "modulate:a", 1.0, 0.3).set_delay(0.2).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
-	# Label muncul paling akhir
-	panel_tween.tween_property(info_label, "modulate:a", 1.0, 0.3).set_delay(0.3).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+	panel_tween.tween_property(location_info_panel, "scale", Vector2(1.0, 1.0), 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	panel_tween.tween_property(info_panel_1, "modulate:a", 1.0, 0.3).set_delay(0.1).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+	panel_tween.tween_property(info_panel_2, "modulate:a", 1.0, 0.3).set_delay(0.2).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+	panel_tween.tween_property(info_panel_3, "modulate:a", 1.0, 0.3).set_delay(0.3).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+	panel_tween.tween_property(info_label, "modulate:a", 1.0, 0.3).set_delay(0.4).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
 
 func _hide_info_panel():
 	if panel_tween:
@@ -149,8 +193,7 @@ func _hide_info_panel():
 	
 	panel_tween = create_tween()
 	panel_tween.set_parallel(true)
-	
-	# Semua elemen hilang barengan (atau bisa stagger juga)
+	panel_tween.tween_property(location_info_panel, "scale", Vector2(0.5, 0.5), 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 	panel_tween.tween_property(info_panel_1, "modulate:a", 0.0, 0.2).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
 	panel_tween.tween_property(info_panel_2, "modulate:a", 0.0, 0.2).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
 	panel_tween.tween_property(info_panel_3, "modulate:a", 0.0, 0.2).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
@@ -168,6 +211,7 @@ func _input(event):
 				last_mouse_position = event.position
 				_hide_label()
 				_hide_info_panel()
+				_remove_all_active_styles()
 	
 	if event is InputEventMouseMotion and is_dragging:
 		var delta = event.position - last_mouse_position
@@ -183,6 +227,7 @@ func _input(event):
 			last_mouse_position = event.position
 			_hide_label()
 			_hide_info_panel()
+			_remove_all_active_styles()
 	
 	if event is InputEventScreenDrag and is_dragging:
 		var delta = event.position - last_mouse_position
