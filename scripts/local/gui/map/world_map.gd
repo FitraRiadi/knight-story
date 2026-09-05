@@ -218,6 +218,11 @@ func _on_more_info_pressed():
 
 func _on_close_popup_pressed():
 	_hide_popup()
+	await popup_tween.finished
+	
+	var loc_data = LocationDatabase.get_location(current_location_id)
+	if loc_data:
+		_show_info_panel(loc_data)
 
 func _get_active_location_id() -> String:
 	if active_button == btn_lotus_village: return "lotusVillage"
