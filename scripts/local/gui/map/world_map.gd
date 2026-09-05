@@ -69,6 +69,7 @@ var active_style: StyleBoxFlat
 var original_styles: Dictionary = {}
 var original_hover_styles: Dictionary = {}
 var active_button: Button = null
+var current_location_id: String = ""
 
 # Event icon original styles (for hiding/showing)
 var event_icon_original_styles: Dictionary = {}
@@ -194,6 +195,8 @@ func _on_location_pressed(location_id: String):
 	if not loc_data:
 		return
 	
+	current_location_id = location_id
+	
 	match location_id:
 		"lotusVillage": _apply_active_style(btn_lotus_village)
 		"colloseum": _apply_active_style(btn_colloseum)
@@ -210,7 +213,7 @@ func _on_more_info_pressed():
 	_hide_info_panel()
 	await panel_tween.finished
 	
-	var loc_data = LocationDatabase.get_location(_get_active_location_id())
+	var loc_data = LocationDatabase.get_location(current_location_id)
 	if loc_data:
 		_show_popup(loc_data.events)
 
@@ -371,6 +374,9 @@ func _hide_popup():
 func _input(event):
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
+			# Jangan proses drag kalau klik di atas UI control
+			if get_viewport().gui_get_hovered_control() != null:
+				return
 			is_dragging = event.pressed
 			if is_dragging:
 				last_mouse_position = event.position
@@ -386,6 +392,8 @@ func _input(event):
 		camera.position.y = clampf(camera.position.y, camera.limit_top, camera.limit_bottom)
 	
 	if event is InputEventScreenTouch:
+		if get_viewport().gui_get_hovered_control() != null:
+			return
 		is_dragging = event.pressed
 		if is_dragging:
 			last_mouse_position = event.position
