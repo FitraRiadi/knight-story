@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 location_id = "colloseum"
 location_name = "Colosseum"
-description = "Arena pertempuran kuno yang masih berdiri kokoh. Darah dan kemenangan menjadi tarian abadi di sini."
-lore = "Colosseum dulunya adalah tempat hiburan bagi para bangsawan kerajaan yang telah lama runtuh. Sekarang, arena ini menjadi tempat para petarung tak dikenal menguji keberanian mereka. Tidak ada yang tahu siapa yang membangunnya, atau mengapa arena ini tidak pernah hancur meskipun kerajaan yang membangunnya sudah lenyap. Yang pasti, darah yang tertumpah di sini tidak pernah benar-benar mengering."
+description = "An ancient battle arena that still stands strong. Blood and victory dance here for eternity."
+lore = "The Colosseum was once a place of entertainment for the nobles of a long-collapsed kingdom. Now, it serves as a proving ground for nameless fighters seeking glory. No one knows who built it, or why this arena has never crumbled while the kingdom that raised it has vanished. What is certain is that the blood spilled here never truly dries."

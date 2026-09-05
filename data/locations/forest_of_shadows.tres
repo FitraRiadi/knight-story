@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 location_id = "forestOfShadows"
 location_name = "Forest of Shadows"
-description = "Hutan gelap yang penuh dengan bayangan bergerak. Cahaya matahari tidak pernah menembus dedaunannya."
-lore = "Forest of Shadows adalah hutan tertua di wilayah ini. Pohon-pohonnya begitu tinggi hingga cabang-cabangnya saling bersentuhan, membentuk kanopi gelap yang abadi. Penduduk setempat percaya bahwa bayangan di hutan ini bukan sekadar pantulan cahaya, melainkan entitas yang hidup. Mereka berburu jiwa-jiwa tersesat yang berani masuk terlalu dalam. Bahkan para pencuri pun menolak untuk masuk ke sini."
+description = "A dark forest filled with moving shadows. Sunlight never pierces through its canopy."
+lore = "The Forest of Shadows is the oldest forest in this region. Its trees grow so tall that their branches touch, forming an eternal dark canopy. Locals believe the shadows in this forest are not mere reflections of light, but living entities. They hunt lost souls who venture too deep. Even thieves refuse to enter here."

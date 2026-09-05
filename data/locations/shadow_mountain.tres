@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 location_id = "shadowMountain"
 location_name = "Shadow Mountain"
-description = "Gunung yang diselimuti kegelapan abadi. Puncaknya tidak pernah terlihat dari kejauhan."
-lore = "Shadow Mountain adalah gunung tertinggi di wilayah ini, namun puncaknya selalu tertutup awan gelap yang tidak pernah bergerak. Konon, gunung ini adalah tempat tinggal seorang penyihir kuno yang mengorbankan penglihatannya untuk melihat dunia lain. Energi dari dunia lain merembes keluar dari gunung ini, menciptakan bayangan yang hidup dan bergerak sendiri. Penduduk percaya bahwa siapa pun yang mencapai puncak akan mendapatkan kekuatan untuk menguasai bayangan."
+description = "A mountain shrouded in eternal darkness. Its peak is never visible from afar."
+lore = "Shadow Mountain is the tallest peak in this region, yet its summit is forever hidden beneath unmoving dark clouds. Legend says this mountain was home to an ancient sorcerer who sacrificed his sight to see into other worlds. The energy from those realms seeps out, creating shadows that move and live on their own. The villagers believe that anyone who reaches the top will gain the power to command the shadows."

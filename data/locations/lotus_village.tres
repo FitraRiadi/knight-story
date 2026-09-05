@@ -6,5 +6,5 @@
 script = ExtResource("1_script")
 location_id = "lotusVillage"
 location_name = "Lotus Village"
-description = "Desa terpencil yang dikelilingi oleh bunga lotus putih. Tempat perlindungan terakhir bagi para musafir yang kelelahan."
-lore = "Lotus Village dibangun di atas reruntuhan kuil kuno yang didedikasikan untuk dewa perjalanan. Penduduknya percaya bahwa bunga lotus yang mekar di malam hari adalah arwah para musafir yang telah tiada, menjaga desa dari bahaya. Sudah berabad--abad desa ini menjadi satu-satunya tempat aman di tengah hutan yang gelap."
+description = "A remote village surrounded by white lotus flowers. The last shelter for weary travelers."
+lore = "Lotus Village was built upon the ruins of an ancient temple dedicated to the god of journeys. Its people believe that the lotus flowers blooming at night are the spirits of travelers long gone, watching over the village from harm. For centuries, this village has been the only safe haven in the heart of a dark forest."
