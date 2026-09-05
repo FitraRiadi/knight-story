@@ -27,4 +27,4 @@ class_name LocationData
 
 @export_group("Events")
 
-@export var events: Array[String] = []
+@export var events: Array[EventData] = []

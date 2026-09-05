@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://47c46f05ef9c"]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c5b2henefc0b8" path="res://assets/art/map/locationBadge/creep.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+event_id = "hv_mine_creature"
+event_name = "Mine Creature"
+description = "Strange sounds echo from the deepest tunnels."
+icon = ExtResource("2_icon")

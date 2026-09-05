@@ -1,6 +1,12 @@
-[gd_resource type="Resource" script_class="LocationData" format=3]
+[gd_resource type="Resource" script_class="LocationData" format=3 uid="uid://b13avxli008sb"]
 
-[ext_resource type="Script" path="res://scripts/data/location_data.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://g5pyf71q7sva" path="res://scripts/data/location_data.gd" id="1_script"]
+[ext_resource type="Resource" uid="uid://46815d1d56fb" path="res://data/events/col_mysterious_patron.tres" id="2_event"]
+[ext_resource type="Resource" uid="uid://3194b57fe87d" path="res://data/events/col_gladiator_challenge.tres" id="3_event"]
+[ext_resource type="Resource" uid="uid://6150f01cb931" path="res://data/events/col_ghost_fighter.tres" id="4_event"]
+[ext_resource type="Resource" uid="uid://1dba3cff06db" path="res://data/events/col_broken_trophy.tres" id="5_event"]
+[ext_resource type="Resource" uid="uid://ef2c626eec9e" path="res://data/events/col_blood_arena.tres" id="6_event"]
+[ext_resource type="Resource" uid="uid://a998ceeda394" path="res://data/events/col_ancient_relic.tres" id="7_event"]
 
 [resource]
 script = ExtResource("1_script")
@@ -8,3 +14,4 @@ location_id = "colloseum"
 location_name = "Colosseum"
 description = "An ancient battle arena that still stands strong. Blood and victory dance here for eternity."
 lore = "Once a place of entertainment for the nobles of a long-collapsed kingdom. Now it serves as a proving ground for nameless fighters. No one knows who built it, or why it still stands while the kingdom vanished. The blood spilled here never truly dries."
+events = Array[ExtResource("2_event")]([ExtResource("2_event"), ExtResource("3_event"), ExtResource("4_event"), ExtResource("5_event"), ExtResource("6_event"), ExtResource("7_event")])

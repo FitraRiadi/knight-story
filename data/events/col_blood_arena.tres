@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://ef2c626eec9e"]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://blxtksu1quvaj" path="res://assets/art/map/locationBadge/altar.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+event_id = "col_blood_arena"
+event_name = "Blood Arena"
+description = "The arena floor is stained with the battles of a thousand warriors."
+icon = ExtResource("2_icon")

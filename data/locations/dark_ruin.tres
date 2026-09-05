@@ -1,6 +1,12 @@
-[gd_resource type="Resource" script_class="LocationData" format=3]
+[gd_resource type="Resource" script_class="LocationData" format=3 uid="uid://dkahwmvu1o5jc"]
 
-[ext_resource type="Script" path="res://scripts/data/location_data.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://g5pyf71q7sva" path="res://scripts/data/location_data.gd" id="1_script"]
+[ext_resource type="Resource" uid="uid://d6366f69da69" path="res://data/events/dr_whispering_walls.tres" id="2_event"]
+[ext_resource type="Resource" uid="uid://32d9a9443390" path="res://data/events/dr_void_gate.tres" id="3_event"]
+[ext_resource type="Resource" uid="uid://bef311581111" path="res://data/events/dr_soul_crystal.tres" id="4_event"]
+[ext_resource type="Resource" uid="uid://9f3f0f9c3ca8" path="res://data/events/dr_shadow_figure.tres" id="5_event"]
+[ext_resource type="Resource" uid="uid://1d45e39327db" path="res://data/events/dr_memory_echo.tres" id="6_event"]
+[ext_resource type="Resource" uid="uid://58a12de233c9" path="res://data/events/dr_crumbling_tower.tres" id="7_event"]
 
 [resource]
 script = ExtResource("1_script")
@@ -8,3 +14,4 @@ location_id = "darkRuin"
 location_name = "Dark Ruin"
 description = "Ancient ruins hiding secrets of the past. Dark energy still flows between the rubble."
 lore = "All that remains of a civilization that vanished overnight. No record explains what happened here. The dark energy flowing through this place can drive anyone to madness. Adventurers who enter usually never return."
+events = Array[ExtResource("2_event")]([ExtResource("2_event"), ExtResource("3_event"), ExtResource("4_event"), ExtResource("5_event"), ExtResource("6_event"), ExtResource("7_event")])

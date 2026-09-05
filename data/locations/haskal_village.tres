@@ -1,6 +1,12 @@
 [gd_resource type="Resource" script_class="LocationData" format=3]
 
 [ext_resource type="Script" path="res://scripts/data/location_data.gd" id="1_script"]
+[ext_resource type="Resource" uid="uid://161627496856" path="res://data/events/hv_strange_light.tres" id="2_event"]
+[ext_resource type="Resource" uid="uid://a1e994291c1c" path="res://data/events/hv_lost_miner.tres" id="3_event"]
+[ext_resource type="Resource" uid="uid://47c46f05ef9c" path="res://data/events/hv_mine_creature.tres" id="4_event"]
+[ext_resource type="Resource" uid="uid://155f604feab2" path="res://data/events/hv_gold_vein.tres" id="5_event"]
+[ext_resource type="Resource" uid="uid://81788562d577" path="res://data/events/hv_collapsed_tunnel.tres" id="6_event"]
+[ext_resource type="Resource" uid="uid://890e8223ca4a" path="res://data/events/hv_underground_lake.tres" id="7_event"]
 
 [resource]
 script = ExtResource("1_script")
@@ -8,3 +14,4 @@ location_id = "haskalVillage"
 location_name = "Hascal Village"
 description = "A hidden mining village tucked in the valley. Gold and gemstones fuel the lives of its people."
 lore = "Founded by miners who discovered the largest gold vein in the region. But mines dug too deep opened a gateway to another dimension. Strange creatures now emerge from below. The villagers fight every day to protect what remains of their home."
+events = Array[ExtResource("2_event")]([ExtResource("2_event"), ExtResource("3_event"), ExtResource("4_event"), ExtResource("5_event"), ExtResource("6_event"), ExtResource("7_event")])

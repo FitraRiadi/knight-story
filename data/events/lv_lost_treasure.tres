@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://a3979007b89d"]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://blxtksu1quvaj" path="res://assets/art/map/locationBadge/altar.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+event_id = "lv_lost_treasure"
+event_name = "Lost Treasure"
+description = "Rumors speak of a hidden cache beneath the old temple ruins."
+icon = ExtResource("2_icon")

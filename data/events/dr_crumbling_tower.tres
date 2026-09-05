@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://58a12de233c9"]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cmtpbt1bh5pkp" path="res://assets/art/map/locationBadge/ruinned.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+event_id = "dr_crumbling_tower"
+event_name = "Crumbling Tower"
+description = "The tower stands despite centuries of decay."
+icon = ExtResource("2_icon")

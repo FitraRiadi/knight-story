@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://46815d1d56fb"]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bv8vjkhgb081a" path="res://assets/art/map/locationBadge/misterius.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+event_id = "col_mysterious_patron"
+event_name = "Mysterious Patron"
+description = "A cloaked figure offers great rewards for a specific victory."
+icon = ExtResource("2_icon")

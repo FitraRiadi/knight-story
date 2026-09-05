@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://1dba3cff06db"]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cmtpbt1bh5pkp" path="res://assets/art/map/locationBadge/ruinned.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+event_id = "col_broken_trophy"
+event_name = "Broken Trophy"
+description = "The champion's trophy shattered. Its pieces hold forgotten power."
+icon = ExtResource("2_icon")

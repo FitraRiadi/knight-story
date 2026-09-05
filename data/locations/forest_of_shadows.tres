@@ -1,6 +1,12 @@
-[gd_resource type="Resource" script_class="LocationData" format=3]
+[gd_resource type="Resource" script_class="LocationData" format=3 uid="uid://4y8jtnm4e5di"]
 
-[ext_resource type="Script" path="res://scripts/data/location_data.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://g5pyf71q7sva" path="res://scripts/data/location_data.gd" id="1_script"]
+[ext_resource type="Resource" uid="uid://76c298faddc2" path="res://data/events/fs_whispering_wind.tres" id="2_event"]
+[ext_resource type="Resource" uid="uid://aabdb27465f9" path="res://data/events/fs_wandering_light.tres" id="3_event"]
+[ext_resource type="Resource" uid="uid://f45d2fb27bea" path="res://data/events/fs_spirit_pool.tres" id="4_event"]
+[ext_resource type="Resource" uid="uid://d54f4156b0df" path="res://data/events/fs_shadow_stalker.tres" id="5_event"]
+[ext_resource type="Resource" uid="uid://f11086506a11" path="res://data/events/fs_broken_shrine.tres" id="6_event"]
+[ext_resource type="Resource" uid="uid://c8c77e087e9c" path="res://data/events/fs_ancient_tree.tres" id="7_event"]
 
 [resource]
 script = ExtResource("1_script")
@@ -8,3 +14,4 @@ location_id = "forestOfShadows"
 location_name = "Forest of Shadows"
 description = "A dark forest filled with moving shadows. Sunlight never pierces through its canopy."
 lore = "The Forest of Shadows is the oldest forest in this region. Its trees grow so tall that their branches touch, forming an eternal dark canopy. Locals believe the shadows in this forest are not mere reflections of light, but living entities. They hunt lost souls who venture too deep. Even thieves refuse to enter here."
+events = Array[ExtResource("2_event")]([ExtResource("2_event"), ExtResource("3_event"), ExtResource("4_event"), ExtResource("5_event"), ExtResource("6_event"), ExtResource("7_event")])

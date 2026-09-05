@@ -1,6 +1,12 @@
 [gd_resource type="Resource" script_class="LocationData" format=3]
 
 [ext_resource type="Script" path="res://scripts/data/location_data.gd" id="1_script"]
+[ext_resource type="Resource" uid="uid://1a0c1f0b2c56" path="res://data/events/dl_silent_warning.tres" id="2_event"]
+[ext_resource type="Resource" uid="uid://df5927d8bf74" path="res://data/events/dl_lost_souls.tres" id="3_event"]
+[ext_resource type="Resource" uid="uid://9b4880f36f55" path="res://data/events/dl_fog_walker.tres" id="4_event"]
+[ext_resource type="Resource" uid="uid://5351feddbc79" path="res://data/events/dl_cursed_ground.tres" id="5_event"]
+[ext_resource type="Resource" uid="uid://87f55525e39e" path="res://data/events/dl_crumbled_gate.tres" id="6_event"]
+[ext_resource type="Resource" uid="uid://9316e775e0d8" path="res://data/events/dl_burning_soul.tres" id="7_event"]
 
 [resource]
 script = ExtResource("1_script")
@@ -8,3 +14,4 @@ location_id = "deathLand"
 location_name = "Death Land"
 description = "A dead land shrouded in thick fog. No life lasts long here."
 lore = "Once fertile farmland before the Great War destroyed everything. The fire that scorched this land burned so hot it froze the souls within. The fog that blankets it is the weeping of restless spirits. Anyone who enters must be prepared to never return."
+events = Array[ExtResource("2_event")]([ExtResource("2_event"), ExtResource("3_event"), ExtResource("4_event"), ExtResource("5_event"), ExtResource("6_event"), ExtResource("7_event")])

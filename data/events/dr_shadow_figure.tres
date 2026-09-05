@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://9f3f0f9c3ca8"]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c4o65y6r35x8i" path="res://assets/art/map/locationBadge/wandering.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+event_id = "dr_shadow_figure"
+event_name = "Shadow Figure"
+description = "A dark silhouette moves through the corridors."
+icon = ExtResource("2_icon")

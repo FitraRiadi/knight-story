@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://5351feddbc79"]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://blxtksu1quvaj" path="res://assets/art/map/locationBadge/altar.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+event_id = "dl_cursed_ground"
+event_name = "Cursed Ground"
+description = "The earth itself rejects life. Nothing grows here."
+icon = ExtResource("2_icon")

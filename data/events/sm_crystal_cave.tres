@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://0b621ae7affa"]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://41hr2lwjtbek" path="res://assets/art/map/locationBadge/soulVasal.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+event_id = "sm_crystal_cave"
+event_name = "Crystal Cave"
+description = "A cave filled with crystals that pulse with dark energy."
+icon = ExtResource("2_icon")

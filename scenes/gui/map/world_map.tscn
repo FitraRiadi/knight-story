@@ -5,8 +5,12 @@
 [ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="3_jips5"]
 [ext_resource type="Texture2D" uid="uid://q1e7hbeqot6h" path="res://assets/ui/popup/basic/paper.png" id="4_lmcfd"]
 [ext_resource type="Texture2D" uid="uid://bv8vjkhgb081a" path="res://assets/art/map/locationBadge/misterius.png" id="5_fitem"]
+[ext_resource type="Texture2D" uid="uid://blxtksu1quvaj" path="res://assets/art/map/locationBadge/altar.png" id="5_kdf4v"]
 [ext_resource type="Texture2D" uid="uid://41hr2lwjtbek" path="res://assets/art/map/locationBadge/soulVasal.png" id="6_kdf4v"]
 [ext_resource type="Texture2D" uid="uid://cmtpbt1bh5pkp" path="res://assets/art/map/locationBadge/ruinned.png" id="7_jygbb"]
+[ext_resource type="Texture2D" uid="uid://cwua55jm1rlt" path="res://assets/ui/popup/basic/Ui - 2.png" id="8_kdf4v"]
+[ext_resource type="Texture2D" uid="uid://c5b2henefc0b8" path="res://assets/art/map/locationBadge/creep.png" id="9_cwpjt"]
+[ext_resource type="Texture2D" uid="uid://c4o65y6r35x8i" path="res://assets/art/map/locationBadge/wandering.png" id="11_8qnqn"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jips5"]
 bg_color = Color(0.07846785, 0.07846785, 0.07846785, 0.80100006)
@@ -28,7 +32,7 @@ corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_kdf4v"]
-texture = ExtResource("5_fitem")
+texture = ExtResource("5_kdf4v")
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_jygbb"]
 texture = ExtResource("6_kdf4v")
@@ -49,6 +53,15 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_8qnqn"]
+texture = ExtResource("9_cwpjt")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_k10j3"]
+texture = ExtResource("5_fitem")
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_sedo8"]
+texture = ExtResource("11_8qnqn")
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_jips5"]
 
@@ -189,8 +202,9 @@ offset_right = 206.0
 offset_bottom = 232.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 9
-text = "Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet  Loremdimsum sip amet "
-autowrap_mode = 1
+text = "Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet  Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet "
+autowrap_mode = 3
+text_overrun_behavior = 6
 
 [node name="Label3" type="Label" parent="LocationUI/locationInfoPanel" unique_id=16048751]
 layout_mode = 0
@@ -217,7 +231,7 @@ offset_top = 6.0
 offset_right = 114.0
 offset_bottom = 11.0
 
-[node name="Button" type="Button" parent="LocationUI/locationInfoPanel" unique_id=1624636116]
+[node name="moreInfo" type="Button" parent="LocationUI/locationInfoPanel" unique_id=1624636116]
 layout_mode = 0
 offset_left = 43.0
 offset_top = 93.0
@@ -226,6 +240,266 @@ offset_bottom = 105.0
 theme_override_font_sizes/font_size = 10
 theme_override_styles/normal = SubResource("StyleBoxFlat_xncs8")
 text = "More Info ->"
+
+[node name="popupInfoAllEvent" type="Control" parent="LocationUI" unique_id=518873694]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="infoAllEvent" type="TextureRect" parent="LocationUI/popupInfoAllEvent" unique_id=334082733]
+layout_mode = 0
+offset_left = 87.0
+offset_top = -87.0
+offset_right = 661.0
+offset_bottom = 372.0
+texture = ExtResource("8_kdf4v")
+expand_mode = 1
+
+[node name="nameLocation" type="Label" parent="LocationUI/popupInfoAllEvent/infoAllEvent" unique_id=593999331]
+layout_mode = 0
+offset_left = 139.0
+offset_top = 157.0
+offset_right = 427.0
+offset_bottom = 186.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_fitem")
+text = "All Events"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="event" type="Panel" parent="LocationUI/popupInfoAllEvent/infoAllEvent" unique_id=1038200032]
+layout_mode = 0
+offset_left = 43.0
+offset_top = 210.0
+offset_right = 83.0
+offset_bottom = 250.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_8qnqn")
+
+[node name="Panel" type="Panel" parent="LocationUI/popupInfoAllEvent/infoAllEvent/event" unique_id=690596524]
+layout_mode = 0
+offset_left = 40.0
+offset_right = 236.0
+offset_bottom = 40.0
+
+[node name="nameEvent" type="Label" parent="LocationUI/popupInfoAllEvent/infoAllEvent/event" unique_id=939526856]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 3.0
+offset_right = 230.0
+offset_bottom = 13.0
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+theme_override_font_sizes/font_size = 10
+text = "Mysterious"
+
+[node name="nameEvent2" type="Label" parent="LocationUI/popupInfoAllEvent/infoAllEvent/event" unique_id=1408427675]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 13.0
+offset_right = 499.61942
+offset_bottom = 79.1344
+scale = Vector2(0.41043028, 0.37801796)
+theme_override_colors/font_color = Color(0.9533047, 0.9535901, 0.9996248, 1)
+theme_override_font_sizes/font_size = 20
+text = "Lorep ipsum dolar si amet Lorep ipsum dolar si amet Lorep ipsum dolar si ametLorep ipsum dolar si ametLorep ipsum dolar si ametgdfbfbgfn Lorep ipsum dolar si ametLorep ipsum dolar si ametLorep ipsum dolar si ametLorep ipsum dolar si amet "
+autowrap_mode = 1
+text_overrun_behavior = 3
+
+[node name="event2" type="Panel" parent="LocationUI/popupInfoAllEvent/infoAllEvent" unique_id=798397234]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 266.0
+offset_right = 84.0
+offset_bottom = 306.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_k10j3")
+
+[node name="Panel" type="Panel" parent="LocationUI/popupInfoAllEvent/infoAllEvent/event2" unique_id=745197720]
+layout_mode = 0
+offset_left = 40.0
+offset_right = 236.0
+offset_bottom = 40.0
+
+[node name="nameEvent" type="Label" parent="LocationUI/popupInfoAllEvent/infoAllEvent/event2" unique_id=2019415596]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 3.0
+offset_right = 229.0
+offset_bottom = 13.0
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+theme_override_font_sizes/font_size = 10
+text = "Mysterious"
+
+[node name="nameEvent2" type="Label" parent="LocationUI/popupInfoAllEvent/infoAllEvent/event2" unique_id=1851928044]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 13.0
+offset_right = 499.61942
+offset_bottom = 79.1344
+scale = Vector2(0.41043028, 0.37801796)
+theme_override_colors/font_color = Color(0.9533047, 0.9535901, 0.9996248, 1)
+theme_override_font_sizes/font_size = 20
+text = "Lorep ipsum dolar si amet Lorep ipsum dolar si amet Lorep ipsum dolar si ametLorep ipsum dolar si ametLorep ipsum dolar si ametgdfbfbgfn Lorep ipsum dolar si ametLorep ipsum dolar si ametLorep ipsum dolar si ametLorep ipsum dolar si amet "
+autowrap_mode = 1
+text_overrun_behavior = 3
+
+[node name="event3" type="Panel" parent="LocationUI/popupInfoAllEvent/infoAllEvent" unique_id=572593018]
+layout_mode = 0
+offset_left = 45.0
+offset_top = 321.0
+offset_right = 85.0
+offset_bottom = 361.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_sedo8")
+
+[node name="Panel" type="Panel" parent="LocationUI/popupInfoAllEvent/infoAllEvent/event3" unique_id=803409360]
+layout_mode = 0
+offset_left = 40.0
+offset_right = 236.0
+offset_bottom = 40.0
+
+[node name="nameEvent" type="Label" parent="LocationUI/popupInfoAllEvent/infoAllEvent/event3" unique_id=603292154]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 3.0
+offset_right = 229.0
+offset_bottom = 13.0
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+theme_override_font_sizes/font_size = 10
+text = "Mysterious"
+
+[node name="nameEvent2" type="Label" parent="LocationUI/popupInfoAllEvent/infoAllEvent/event3" unique_id=721337280]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 13.0
+offset_right = 499.61942
+offset_bottom = 79.1344
+scale = Vector2(0.41043028, 0.37801796)
+theme_override_colors/font_color = Color(0.9533047, 0.9535901, 0.9996248, 1)
+theme_override_font_sizes/font_size = 20
+text = "Lorep ipsum dolar si amet Lorep ipsum dolar si amet Lorep ipsum dolar si ametLorep ipsum dolar si ametLorep ipsum dolar si ametgdfbfbgfn Lorep ipsum dolar si ametLorep ipsum dolar si ametLorep ipsum dolar si ametLorep ipsum dolar si amet "
+autowrap_mode = 1
+text_overrun_behavior = 3
+
+[node name="event4" type="Panel" parent="LocationUI/popupInfoAllEvent/infoAllEvent" unique_id=6767218]
+layout_mode = 0
+offset_left = 282.0
+offset_top = 210.0
+offset_right = 322.0
+offset_bottom = 250.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_kdf4v")
+
+[node name="Panel" type="Panel" parent="LocationUI/popupInfoAllEvent/infoAllEvent/event4" unique_id=1773869405]
+layout_mode = 0
+offset_left = 40.0
+offset_right = 236.0
+offset_bottom = 40.0
+
+[node name="nameEvent" type="Label" parent="LocationUI/popupInfoAllEvent/infoAllEvent/event4" unique_id=479307271]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 3.0
+offset_right = 228.0
+offset_bottom = 13.0
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+theme_override_font_sizes/font_size = 10
+text = "Mysterious"
+
+[node name="nameEvent2" type="Label" parent="LocationUI/popupInfoAllEvent/infoAllEvent/event4" unique_id=718557292]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 13.0
+offset_right = 499.61942
+offset_bottom = 79.1344
+scale = Vector2(0.41043028, 0.37801796)
+theme_override_colors/font_color = Color(0.9533047, 0.9535901, 0.9996248, 1)
+theme_override_font_sizes/font_size = 20
+text = "Lorep ipsum dolar si amet Lorep ipsum dolar si amet Lorep ipsum dolar si ametLorep ipsum dolar si ametLorep ipsum dolar si ametgdfbfbgfn Lorep ipsum dolar si ametLorep ipsum dolar si ametLorep ipsum dolar si ametLorep ipsum dolar si amet "
+autowrap_mode = 1
+text_overrun_behavior = 3
+
+[node name="event5" type="Panel" parent="LocationUI/popupInfoAllEvent/infoAllEvent" unique_id=803513230]
+layout_mode = 0
+offset_left = 283.0
+offset_top = 266.0
+offset_right = 323.0
+offset_bottom = 306.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_jygbb")
+
+[node name="Panel" type="Panel" parent="LocationUI/popupInfoAllEvent/infoAllEvent/event5" unique_id=2116300642]
+layout_mode = 0
+offset_left = 40.0
+offset_right = 236.0
+offset_bottom = 40.0
+
+[node name="nameEvent" type="Label" parent="LocationUI/popupInfoAllEvent/infoAllEvent/event5" unique_id=1938918616]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 3.0
+offset_right = 231.0
+offset_bottom = 13.0
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+theme_override_font_sizes/font_size = 10
+text = "Mysterious"
+
+[node name="nameEvent2" type="Label" parent="LocationUI/popupInfoAllEvent/infoAllEvent/event5" unique_id=1528873710]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 13.0
+offset_right = 499.61942
+offset_bottom = 79.1344
+scale = Vector2(0.41043028, 0.37801796)
+theme_override_colors/font_color = Color(0.9533047, 0.9535901, 0.9996248, 1)
+theme_override_font_sizes/font_size = 20
+text = "Lorep ipsum dolar si amet Lorep ipsum dolar si amet Lorep ipsum dolar si ametLorep ipsum dolar si ametLorep ipsum dolar si ametgdfbfbgfn Lorep ipsum dolar si ametLorep ipsum dolar si ametLorep ipsum dolar si ametLorep ipsum dolar si amet "
+autowrap_mode = 1
+text_overrun_behavior = 3
+
+[node name="event6" type="Panel" parent="LocationUI/popupInfoAllEvent/infoAllEvent" unique_id=522174935]
+layout_mode = 0
+offset_left = 284.0
+offset_top = 321.0
+offset_right = 324.0
+offset_bottom = 361.0
+theme_override_styles/panel = SubResource("StyleBoxTexture_cwpjt")
+
+[node name="Panel" type="Panel" parent="LocationUI/popupInfoAllEvent/infoAllEvent/event6" unique_id=1893853617]
+layout_mode = 0
+offset_left = 40.0
+offset_right = 236.0
+offset_bottom = 40.0
+
+[node name="nameEvent" type="Label" parent="LocationUI/popupInfoAllEvent/infoAllEvent/event6" unique_id=1435395657]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 3.0
+offset_right = 227.0
+offset_bottom = 13.0
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+theme_override_font_sizes/font_size = 10
+text = "Mysterious"
+
+[node name="nameEvent2" type="Label" parent="LocationUI/popupInfoAllEvent/infoAllEvent/event6" unique_id=71801801]
+layout_mode = 0
+offset_left = 44.0
+offset_top = 13.0
+offset_right = 499.61942
+offset_bottom = 79.1344
+scale = Vector2(0.41043028, 0.37801796)
+theme_override_colors/font_color = Color(0.9533047, 0.9535901, 0.9996248, 1)
+theme_override_font_sizes/font_size = 20
+text = "Lorep ipsum dolar si amet Lorep ipsum dolar si amet Lorep ipsum dolar si ametLorep ipsum dolar si ametLorep ipsum dolar si ametgdfbfbgfn Lorep ipsum dolar si ametLorep ipsum dolar si ametLorep ipsum dolar si ametLorep ipsum dolar si amet "
+autowrap_mode = 1
+text_overrun_behavior = 3
+
+[node name="ButtonClose" type="Button" parent="LocationUI/popupInfoAllEvent/infoAllEvent" unique_id=420272466]
+layout_mode = 0
+offset_left = 444.0
+offset_top = 159.0
+offset_right = 489.0
+offset_bottom = 182.0
+text = "Close"
 
 [node name="lotusVillage" type="Button" parent="." unique_id=727461163]
 layout_mode = 0

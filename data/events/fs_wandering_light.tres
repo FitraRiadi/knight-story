@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://aabdb27465f9"]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c4o65y6r35x8i" path="res://assets/art/map/locationBadge/wandering.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+event_id = "fs_wandering_light"
+event_name = "Wandering Light"
+description = "A faint glow drifts deeper into the darkness, luring travelers."
+icon = ExtResource("2_icon")

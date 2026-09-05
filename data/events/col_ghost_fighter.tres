@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://6150f01cb931"]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c4o65y6r35x8i" path="res://assets/art/map/locationBadge/wandering.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+event_id = "col_ghost_fighter"
+event_name = "Ghost Fighter"
+description = "A spectral warrior haunts the arena, seeking a rematch."
+icon = ExtResource("2_icon")

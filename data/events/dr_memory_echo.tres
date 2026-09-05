@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://1d45e39327db"]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bv8vjkhgb081a" path="res://assets/art/map/locationBadge/misterius.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+event_id = "dr_memory_echo"
+event_name = "Memory Echo"
+description = "Visions of the past replay in the air like ghosts."
+icon = ExtResource("2_icon")

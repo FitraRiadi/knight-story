@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://87f55525e39e"]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cmtpbt1bh5pkp" path="res://assets/art/map/locationBadge/ruinned.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+event_id = "dl_crumbled_gate"
+event_name = "Crumbled Gate"
+description = "The gate to a forgotten city stands half-buried in ash."
+icon = ExtResource("2_icon")

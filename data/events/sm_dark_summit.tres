@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://a4ab3107cc89"]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c5b2henefc0b8" path="res://assets/art/map/locationBadge/creep.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+event_id = "sm_dark_summit"
+event_name = "Dark Summit"
+description = "The peak remains hidden. None who climb ever return."
+icon = ExtResource("2_icon")

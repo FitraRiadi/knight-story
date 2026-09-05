@@ -1,6 +1,12 @@
 [gd_resource type="Resource" script_class="LocationData" format=3]
 
 [ext_resource type="Script" path="res://scripts/data/location_data.gd" id="1_script"]
+[ext_resource type="Resource" uid="uid://658b5ac447e1" path="res://data/events/sm_twisted_path.tres" id="2_event"]
+[ext_resource type="Resource" uid="uid://30fa9ef8bb84" path="res://data/events/sm_sorcerer_trace.tres" id="3_event"]
+[ext_resource type="Resource" uid="uid://c3efea3e64ec" path="res://data/events/sm_shadow_beast.tres" id="4_event"]
+[ext_resource type="Resource" uid="uid://7cde0604eb6d" path="res://data/events/sm_fallen_camp.tres" id="5_event"]
+[ext_resource type="Resource" uid="uid://a4ab3107cc89" path="res://data/events/sm_dark_summit.tres" id="6_event"]
+[ext_resource type="Resource" uid="uid://0b621ae7affa" path="res://data/events/sm_crystal_cave.tres" id="7_event"]
 
 [resource]
 script = ExtResource("1_script")
@@ -8,3 +14,4 @@ location_id = "shadowMountain"
 location_name = "Shadow Mountain"
 description = "A mountain shrouded in eternal darkness. Its peak is never visible from afar."
 lore = "The tallest peak in this region, yet its summit is forever hidden beneath dark clouds. Legend says an ancient sorcerer sacrificed his sight here to see into other worlds. The energy from those realms seeps out, creating shadows that move on their own."
+events = Array[ExtResource("2_event")]([ExtResource("2_event"), ExtResource("3_event"), ExtResource("4_event"), ExtResource("5_event"), ExtResource("6_event"), ExtResource("7_event")])

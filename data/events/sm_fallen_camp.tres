@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://7cde0604eb6d"]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://cmtpbt1bh5pkp" path="res://assets/art/map/locationBadge/ruinned.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+event_id = "sm_fallen_camp"
+event_name = "Fallen Camp"
+description = "An abandoned expedition camp. Their fate is unknown."
+icon = ExtResource("2_icon")
