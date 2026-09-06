@@ -2,7 +2,6 @@ extends Control
 class_name ChargeAttackUI
 
 signal charge_complete(multiplier: float)
-signal charge_cancelled
 
 # ============================================================
 # NODE REFERENCES
@@ -20,11 +19,12 @@ signal charge_cancelled
 # ============================================================
 
 var is_charging: bool = false
-var charge_value: float = 0.0  # 0.0 = bottom, 1.0 = top
-var charge_speed: float = 1.8  # per second
-var charge_direction: float = 1.0  # 1 = up, -1 = down (bouncing)
+var charge_value: float = 0.0
+var charge_speed: float = 1.8
+var charge_direction: float = 1.0
 var max_charge_time: float = 2.0
 var hold_timer: float = 0.0
+var canvas_layer: CanvasLayer = null
 
 # ============================================================
 # ZONE MULTIPLIERS
@@ -34,11 +34,6 @@ const ZONE_HIGH_MULTIPLIER: float = 2.0
 const ZONE_NORMAL_MULTIPLIER: float = 1.5
 const ZONE_LOW_MULTIPLIER: float = 1.0
 
-# Progress bar bounds (dari scene layout)
-const PROGRESS_TOP: float = 63.46927
-const PROGRESS_BOTTOM: float = 173.0
-const PROGRESS_FULL_HEIGHT: float = PROGRESS_BOTTOM - PROGRESS_TOP  # ~109.5
-
 # ============================================================
 # LIFECYCLE
 # ============================================================
@@ -47,9 +42,7 @@ func _ready() -> void:
 	visible = false
 	button_charge.button_down.connect(_on_button_down)
 	button_charge.button_up.connect(_on_button_up)
-
-	# Reparent ke Camera2D biar ikut zoom
-	_reparent_to_camera()
+	_move_to_canvas_layer()
 
 
 func _process(delta: float) -> void:
@@ -57,12 +50,10 @@ func _process(delta: float) -> void:
 		return
 
 	hold_timer += delta
-
 	if hold_timer >= max_charge_time:
 		_stop_charge()
 		return
 
-	# Bouncing charge
 	charge_value += charge_direction * charge_speed * delta
 	if charge_value >= 1.0:
 		charge_value = 1.0
@@ -75,23 +66,25 @@ func _process(delta: float) -> void:
 
 
 # ============================================================
-# REPARENT
+# CANVAS LAYER
 # ============================================================
 
-func _reparent_to_camera() -> void:
-	var camera: Camera2D = get_viewport().get_camera_2d()
-	if camera:
-		# Reparent ke Camera2D
-		var parent = get_parent()
-		if parent:
-			parent.remove_child(self)
-		camera.add_child(self)
-		# Reset position biar fill viewport dari center
-		anchors_preset = Control.PRESET_FULL_RECT
-		offset_left = 0.0
-		offset_top = 0.0
-		offset_right = 0.0
-		offset_bottom = 0.0
+func _move_to_canvas_layer() -> void:
+	canvas_layer = CanvasLayer.new()
+	canvas_layer.layer = 100
+	var root = get_tree().current_scene
+	root.add_child(canvas_layer)
+
+	var old_parent = get_parent()
+	if old_parent:
+		old_parent.remove_child(self)
+	canvas_layer.add_child(self)
+
+	set_anchors_preset(Control.PRESET_FULL_RECT)
+	offset_left = 0.0
+	offset_top = 0.0
+	offset_right = 0.0
+	offset_bottom = 0.0
 
 
 # ============================================================
@@ -106,7 +99,6 @@ func show_charge() -> void:
 	is_charging = false
 	_update_progress_bar()
 
-	# Pop-in
 	modulate.a = 0.0
 	scale = Vector2(0.5, 0.5)
 	var tw := create_tween().set_parallel(true)
@@ -179,15 +171,19 @@ func _get_zone_multiplier(zone: String) -> float:
 # ============================================================
 
 func _update_progress_bar() -> void:
-	if not charge_progress:
+	if not charge_progress or not charge_panel:
 		return
 
-	# Fill dari bawah ke atas
-	var fill_height: float = PROGRESS_FULL_HEIGHT * charge_value
-	charge_progress.size.y = max(fill_height, 1.0)
-	charge_progress.position.y = PROGRESS_BOTTOM - fill_height
+	# Hitung berdasarkan ukuran actual chargePanel
+	var panel_size: Vector2 = charge_panel.size
+	var progress_top: float = 63.46927
+	var progress_bottom: float = panel_size.y
+	var full_height: float = progress_bottom - progress_top
 
-	# Warna sesuai zone
+	var fill_height: float = full_height * charge_value
+	charge_progress.size.y = max(fill_height, 1.0)
+	charge_progress.position.y = progress_bottom - fill_height
+
 	if charge_value >= 0.7:
 		charge_progress.modulate = Color(1.0, 0.95, 0.3, 1.0)
 	elif charge_value >= 0.3:
