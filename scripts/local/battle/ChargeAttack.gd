@@ -25,9 +25,10 @@ var charge_direction: float = 1.0
 var max_charge_time: float = 2.0
 var hold_timer: float = 0.0
 
-# Simpan bounds sekali dari scene
+# Simpan bounds & size sekali dari scene
 var progress_top: float = 0.0
 var progress_bottom: float = 0.0
+var panel_size_cache: Vector2 = Vector2.ZERO
 
 # ============================================================
 # ZONE MULTIPLIERS
@@ -49,6 +50,13 @@ func _ready() -> void:
 	if charge_progress:
 		progress_top = charge_progress.offset_top
 		progress_bottom = charge_progress.offset_bottom
+
+	# Cache original panel size
+	if charge_panel:
+		panel_size_cache = Vector2(
+			charge_panel.offset_right - charge_panel.offset_left,
+			charge_panel.offset_bottom - charge_panel.offset_top
+		)
 
 
 func _process(delta: float) -> void:
@@ -76,6 +84,13 @@ func _process(delta: float) -> void:
 # ============================================================
 
 func show_charge() -> void:
+	# Center chargePanel di viewport — SAMA PERSIS kayak attackQte
+	var viewport_size = get_viewport().get_visible_rect().size
+	charge_panel.offset_left = (viewport_size.x - panel_size_cache.x) * 0.5
+	charge_panel.offset_top = (viewport_size.y - panel_size_cache.y) * 0.5
+	charge_panel.offset_right = charge_panel.offset_left + panel_size_cache.x
+	charge_panel.offset_bottom = charge_panel.offset_top + panel_size_cache.y
+
 	visible = true
 	move_to_front()
 
@@ -84,7 +99,7 @@ func show_charge() -> void:
 	hold_timer = 0.0
 	is_charging = false
 
-	# Reset progress bar ke ukuran original
+	# Reset progress bar
 	if charge_progress:
 		charge_progress.position.y = progress_top
 		charge_progress.size.y = progress_bottom - progress_top

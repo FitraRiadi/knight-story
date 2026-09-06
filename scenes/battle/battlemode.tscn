@@ -1028,10 +1028,10 @@ script = ExtResource("charge_attack")
 
 [node name="chargePanel" type="Panel" parent="chargeAttack" unique_id=85154610]
 layout_mode = 0
-offset_left = 343.0
-offset_top = 83.0
-offset_right = 397.0
-offset_bottom = 256.47
+offset_left = 501.0
+offset_top = 48.0
+offset_right = 555.0
+offset_bottom = 221.47
 theme_override_styles/panel = SubResource("StyleBoxFlat_iiu5v")
 
 [node name="Panel" type="Panel" parent="chargeAttack/chargePanel" unique_id=2056881222]
