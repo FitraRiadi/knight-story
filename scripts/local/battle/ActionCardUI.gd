@@ -165,7 +165,10 @@ func _create_card(data: ActionCardData, index: int, has_stamina: bool, is_on_coo
 		var desc_label: Label = card.get_node("Label")
 		desc_label.text = data.description
 
-		# Attack card gak ada Glow, Level, Rarity, Cooldown, Greyed — skip
+		# Greyed overlay
+		var greyed: ColorRect = card.get_node("GreyedOverlay")
+		greyed.visible = not has_stamina
+
 		# Tambah dummy ke array supaya index gak geser
 		card_glow_panels.append(null)
 	else:
@@ -472,7 +475,7 @@ func _move_to_indicator(card: Control) -> void:
 
 	# Pindah ke pojok kiri atas (scale kecil)
 	var indicator_pos: Vector2 = Vector2(10, 10)
-	var indicator_scale: Vector2 = Vector2(0.5, 0.5)
+	var indicator_scale: Vector2 = Vector2(0.95, 0.95)
 
 	var tw := create_tween().set_parallel(true)
 	tw.tween_property(card, "position", indicator_pos, 0.3)\
