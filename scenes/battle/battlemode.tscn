@@ -1017,6 +1017,7 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_hdopt")
 text = "Continue"
 
 [node name="chargeAttack" type="Control" parent="." unique_id=975934097]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -1025,31 +1026,39 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("charge_attack")
 
-[node name="chargePanel" type="Panel" parent="chargeAttack" unique_id=85154610]
+[node name="Control" type="Control" parent="chargeAttack" unique_id=1098845858]
+anchors_preset = 0
+offset_left = 156.0
+offset_top = 31.0
+offset_right = 602.0
+offset_bottom = 331.0
+
+[node name="chargePanel" type="Panel" parent="chargeAttack/Control" unique_id=85154610]
 layout_mode = 0
-offset_left = 501.0
-offset_top = 48.0
-offset_right = 555.0
-offset_bottom = 221.47
+offset_left = 347.0
+offset_top = 33.0
+offset_right = 401.0
+offset_bottom = 206.47
 theme_override_styles/panel = SubResource("StyleBoxFlat_iiu5v")
 
-[node name="Panel" type="Panel" parent="chargeAttack/chargePanel" unique_id=2056881222]
+[node name="Panel" type="Panel" parent="chargeAttack/Control/chargePanel" unique_id=2056881222]
 layout_mode = 0
 offset_left = -19.0
 offset_top = 61.0
 offset_right = -13.0
 offset_bottom = 155.0
 
-[node name="title" type="Label" parent="chargeAttack/chargePanel" unique_id=1183745422]
+[node name="title" type="Label" parent="chargeAttack/Control/chargePanel" unique_id=1183745422]
 layout_mode = 0
 offset_left = -173.0
 offset_top = 146.0
 offset_right = -64.0
 offset_bottom = 161.0
 theme_override_colors/font_color = Color(0.93078136, 0.92321503, 1.540184e-06, 1)
+theme_override_colors/font_shadow_color = Color(0.106126174, 0.106126174, 0.106126174, 1)
 text = "Attack Charge!"
 
-[node name="text2" type="Label" parent="chargeAttack/chargePanel/title" unique_id=770071761]
+[node name="text2" type="Label" parent="chargeAttack/Control/chargePanel/title" unique_id=770071761]
 layout_mode = 0
 offset_left = -5.0
 offset_top = 19.0
@@ -1062,7 +1071,7 @@ text = "Hold and pass!"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="low" type="Panel" parent="chargeAttack/chargePanel" unique_id=1337386833]
+[node name="low" type="Panel" parent="chargeAttack/Control/chargePanel" unique_id=1337386833]
 layout_mode = 0
 offset_left = 1.0
 offset_top = 141.0
@@ -1070,7 +1079,7 @@ offset_right = 55.0
 offset_bottom = 164.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_hsfr7")
 
-[node name="reachPoint" type="Panel" parent="chargeAttack/chargePanel/low" unique_id=249224209]
+[node name="reachPoint" type="Panel" parent="chargeAttack/Control/chargePanel/low" unique_id=249224209]
 layout_mode = 0
 offset_left = -27.0
 offset_top = 4.0
@@ -1078,7 +1087,7 @@ offset_right = -7.0
 offset_bottom = 23.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_uudxr")
 
-[node name="normal" type="Panel" parent="chargeAttack/chargePanel" unique_id=1865266302]
+[node name="normal" type="Panel" parent="chargeAttack/Control/chargePanel" unique_id=1865266302]
 layout_mode = 0
 offset_left = 1.0
 offset_top = 96.0
@@ -1086,7 +1095,7 @@ offset_right = 55.0
 offset_bottom = 144.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_kxutv")
 
-[node name="reachPoint" type="Panel" parent="chargeAttack/chargePanel/normal" unique_id=145301758]
+[node name="reachPoint" type="Panel" parent="chargeAttack/Control/chargePanel/normal" unique_id=145301758]
 layout_mode = 0
 offset_left = -27.0
 offset_top = 6.0
@@ -1094,7 +1103,7 @@ offset_right = -7.0
 offset_bottom = 25.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_uudxr")
 
-[node name="high" type="Panel" parent="chargeAttack/chargePanel" unique_id=1226375337]
+[node name="high" type="Panel" parent="chargeAttack/Control/chargePanel" unique_id=1226375337]
 layout_mode = 0
 offset_left = 1.0
 offset_top = 43.999992
@@ -1102,7 +1111,7 @@ offset_right = 55.0
 offset_bottom = 91.99999
 theme_override_styles/panel = SubResource("StyleBoxFlat_1orl3")
 
-[node name="reachPoint" type="Panel" parent="chargeAttack/chargePanel/high" unique_id=561479472]
+[node name="reachPoint" type="Panel" parent="chargeAttack/Control/chargePanel/high" unique_id=561479472]
 layout_mode = 0
 offset_left = -27.0
 offset_top = 10.000008
@@ -1110,13 +1119,13 @@ offset_right = -7.0
 offset_bottom = 29.000008
 theme_override_styles/panel = SubResource("StyleBoxFlat_uudxr")
 
-[node name="chargeProgress" type="Panel" parent="chargeAttack/chargePanel" unique_id=1568347120]
+[node name="chargeProgress" type="Panel" parent="chargeAttack/Control/chargePanel" unique_id=1568347120]
 layout_mode = 0
 offset_right = 54.0
 offset_bottom = 173.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_lsh83")
 
-[node name="ButtonCharge" type="Button" parent="chargeAttack/chargePanel" unique_id=1734818675]
+[node name="ButtonCharge" type="Button" parent="chargeAttack/Control/chargePanel" unique_id=1734818675]
 layout_mode = 0
 offset_left = -219.0
 offset_top = 191.0

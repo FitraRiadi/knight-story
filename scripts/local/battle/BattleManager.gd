@@ -1453,9 +1453,18 @@ func _start_attack_charge() -> void:
 	# Connect signal
 	if not charge_attack_ui.charge_complete.is_connected(_on_charge_complete):
 		charge_attack_ui.charge_complete.connect(_on_charge_complete)
+	if not charge_attack_ui.charge_started.is_connected(_on_charge_shake_start):
+		charge_attack_ui.charge_started.connect(_on_charge_shake_start)
+	if not charge_attack_ui.charge_ended.is_connected(_on_charge_shake_stop):
+		charge_attack_ui.charge_ended.connect(_on_charge_shake_stop)
 
-	# Tampilkan charge UI — PERSIS kayak attackQte, langsung show
-	charge_attack_ui.show_charge()
+	# Tampilkan charge UI — pass active_enemy buat offset wrapper
+	var active_enemy_ref = null
+	if enemies.size() > 0 and selected_enemy_index < enemies.size():
+		var ae = enemies[selected_enemy_index]
+		if is_instance_valid(ae):
+			active_enemy_ref = ae
+	charge_attack_ui.show_charge(active_enemy_ref)
 
 
 func _on_charge_complete(multiplier: float) -> void:
@@ -1486,6 +1495,43 @@ func _on_charge_complete(multiplier: float) -> void:
 		result = AttackResult.LOW
 
 	_execute_actual_attack(result)
+
+
+var _charge_shake_tween: Tween
+var _is_charge_shaking: bool = false
+
+func _on_charge_shake_start() -> void:
+	if not camera:
+		return
+	_is_charge_shaking = true
+	_do_charge_shake()
+
+
+func _do_charge_shake() -> void:
+	if not _is_charge_shaking or not camera:
+		return
+	var intensity := 2.5
+	var offset := Vector2(
+		randf_range(-intensity * 0.3, intensity * 0.1),
+		randf_range(-intensity * 0.1, intensity * 0.3)
+	)
+	if _charge_shake_tween and _charge_shake_tween.is_running():
+		_charge_shake_tween.kill()
+	_charge_shake_tween = create_tween()
+	_charge_shake_tween.set_ignore_time_scale(true)
+	_charge_shake_tween.tween_property(camera, "offset", camera.offset + offset, 0.04)
+	_charge_shake_tween.tween_property(camera, "offset", camera.offset, 0.04).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_charge_shake_tween.tween_callback(_do_charge_shake)
+
+
+func _on_charge_shake_stop() -> void:
+	_is_charge_shaking = false
+	if _charge_shake_tween and _charge_shake_tween.is_running():
+		_charge_shake_tween.kill()
+	if camera:
+		var reset_tw := create_tween()
+		reset_tw.set_ignore_time_scale(true)
+		reset_tw.tween_property(camera, "offset", Vector2.ZERO, 0.08).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
 func _check_is_overlapping(runner: Panel, target: Panel) -> bool:

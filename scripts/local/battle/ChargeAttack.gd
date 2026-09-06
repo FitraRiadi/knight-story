@@ -2,13 +2,20 @@ extends Control
 class_name ChargeAttackUI
 
 signal charge_complete(multiplier: float)
+signal charge_started
+signal charge_ended
 
-@onready var charge_panel: Panel = $chargePanel
-@onready var button_charge: Button = $chargePanel/ButtonCharge
-@onready var charge_progress: Panel = $chargePanel/chargeProgress
-@onready var zone_high: Panel = $chargePanel/high
-@onready var zone_normal: Panel = $chargePanel/normal
-@onready var zone_low: Panel = $chargePanel/low
+@onready var charge_panel: Panel = $Control/chargePanel
+@onready var button_charge: Button = $Control/chargePanel/ButtonCharge
+@onready var charge_progress: Panel = $Control/chargePanel/chargeProgress
+@onready var zone_high: Panel = $Control/chargePanel/high
+@onready var zone_normal: Panel = $Control/chargePanel/normal
+@onready var zone_low: Panel = $Control/chargePanel/low
+@onready var wrapper: Control = $Control
+@onready var title_text2: Label = $Control/chargePanel/title/text2
+
+var _text2_pulse_tween: Tween
+var _button_hold_tween: Tween
 
 var is_charging: bool = false
 var charge_value: float = 0.0
@@ -24,6 +31,11 @@ const ZONE_HIGH_MULTIPLIER: float = 2.0
 const ZONE_NORMAL_MULTIPLIER: float = 1.5
 const ZONE_LOW_MULTIPLIER: float = 1.0
 
+const CENTER_SPAWN := Vector2(380, 180)
+
+# Default wrapper offsets dari scene
+var _default_wrapper_offsets: Vector4 = Vector4.ZERO
+
 func _ready() -> void:
 	visible = false
 	button_charge.button_down.connect(_on_button_down)
@@ -32,6 +44,15 @@ func _ready() -> void:
 	if charge_progress:
 		progress_top = charge_progress.offset_top
 		progress_bottom = charge_progress.offset_bottom
+
+	# Cache default wrapper offsets
+	if wrapper:
+		_default_wrapper_offsets = Vector4(
+			wrapper.offset_left,
+			wrapper.offset_top,
+			wrapper.offset_right,
+			wrapper.offset_bottom
+		)
 
 
 func _process(delta: float) -> void:
@@ -54,20 +75,25 @@ func _process(delta: float) -> void:
 	_update_progress_bar()
 
 
-func show_charge() -> void:
-	# PERSIS kayak attackQte: position SELF (parent), bukan child
-	var viewport_size = get_viewport().get_visible_rect().size
-	var target_pos = (viewport_size - size) * 0.5
-	position = target_pos
-
-	modulate.a = 0.0
-	scale = Vector2(0.5, 0.5)
+func show_charge(enemy: Node2D = null) -> void:
 	visible = true
 	move_to_front()
 
-	var tw := create_tween().set_parallel(true)
-	tw.tween_property(self, "modulate:a", 1.0, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	tw.tween_property(self, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	# Set pivot ke center biar scale dari tengah
+	if button_charge:
+		var btn_size := Vector2(
+			button_charge.offset_right - button_charge.offset_left,
+			button_charge.offset_bottom - button_charge.offset_top
+		)
+		button_charge.pivot_offset = btn_size * 0.5
+
+	# Offset wrapper berdasarkan posisi enemy dari center spawn
+	if wrapper and enemy and is_instance_valid(enemy):
+		var enemy_offset: Vector2 = enemy.global_position - CENTER_SPAWN
+		wrapper.offset_left = _default_wrapper_offsets.x + enemy_offset.x
+		wrapper.offset_top = _default_wrapper_offsets.y + enemy_offset.y
+		wrapper.offset_right = _default_wrapper_offsets.z + enemy_offset.x
+		wrapper.offset_bottom = _default_wrapper_offsets.w + enemy_offset.y
 
 	charge_value = 0.0
 	charge_direction = 1.0
@@ -79,15 +105,60 @@ func show_charge() -> void:
 		charge_progress.offset_bottom = progress_bottom
 	_update_progress_bar()
 
+	# SFX charge attack muncul
+	var sfx: AudioStream = load("res://assets/audio/effects/battle/ui/attackQte-open.mp3")
+	if sfx:
+		var sfx_player := AudioStreamPlayer.new()
+		sfx_player.stream = sfx
+		sfx_player.volume_db = -3.0
+		add_child(sfx_player)
+		sfx_player.play()
+		sfx_player.finished.connect(sfx_player.queue_free)
+
+	modulate.a = 0.0
+	scale = Vector2(0.5, 0.5)
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(self, "modulate:a", 1.0, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tw.tween_property(self, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+	# Mulai pulse text2
+	_start_text2_pulse()
+
 
 func hide_charge() -> void:
+	# Stop text2 pulse
+	_stop_text2_pulse()
+
 	var tw := create_tween().set_parallel(true)
 	tw.tween_property(self, "modulate:a", 0.0, 0.15)
 	tw.tween_property(self, "scale", Vector2(0.8, 0.8), 0.15)
 	tw.tween_callback(func() -> void:
 		visible = false
 		is_charging = false
+		# Reset wrapper ke posisi default
+		if wrapper:
+			wrapper.offset_left = _default_wrapper_offsets.x
+			wrapper.offset_top = _default_wrapper_offsets.y
+			wrapper.offset_right = _default_wrapper_offsets.z
+			wrapper.offset_bottom = _default_wrapper_offsets.w
 	)
+
+
+func _start_text2_pulse() -> void:
+	if not title_text2:
+		return
+	if _text2_pulse_tween and _text2_pulse_tween.is_running():
+		_text2_pulse_tween.kill()
+	_text2_pulse_tween = create_tween().set_loops()
+	_text2_pulse_tween.tween_property(title_text2, "modulate:a", 0.3, 0.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_text2_pulse_tween.tween_property(title_text2, "modulate:a", 1.0, 0.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _stop_text2_pulse() -> void:
+	if _text2_pulse_tween and _text2_pulse_tween.is_running():
+		_text2_pulse_tween.kill()
+	if title_text2:
+		title_text2.modulate.a = 1.0
 
 
 func _on_button_down() -> void:
@@ -95,9 +166,22 @@ func _on_button_down() -> void:
 	charge_value = 0.0
 	charge_direction = 1.0
 	hold_timer = 0.0
+	charge_started.emit()
+
+	# Button scale up smooth saat hold
+	if _button_hold_tween and _button_hold_tween.is_running():
+		_button_hold_tween.kill()
+	_button_hold_tween = create_tween()
+	_button_hold_tween.tween_property(button_charge, "scale", Vector2(1.12, 1.12), 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 func _on_button_up() -> void:
+	# Button scale back smooth saat release
+	if _button_hold_tween and _button_hold_tween.is_running():
+		_button_hold_tween.kill()
+	_button_hold_tween = create_tween()
+	_button_hold_tween.tween_property(button_charge, "scale", Vector2.ONE, 0.1).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	charge_ended.emit()
 	_stop_charge()
 
 
