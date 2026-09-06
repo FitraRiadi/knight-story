@@ -1017,7 +1017,6 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_hdopt")
 text = "Continue"
 
 [node name="chargeAttack" type="Control" parent="." unique_id=975934097]
-visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

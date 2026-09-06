@@ -19,7 +19,6 @@ var hold_timer: float = 0.0
 
 var progress_top: float = 0.0
 var progress_bottom: float = 0.0
-var panel_size_cache: Vector2 = Vector2.ZERO
 
 const ZONE_HIGH_MULTIPLIER: float = 2.0
 const ZONE_NORMAL_MULTIPLIER: float = 1.5
@@ -27,9 +26,16 @@ const ZONE_LOW_MULTIPLIER: float = 1.0
 
 const VIEWPORT_SIZE := Vector2(740, 340)
 
-var _cl: CanvasLayer = null
-var _original_parent: Node = null
-var _original_index: int = -1
+# Visual bounding box dari chargePanel + semua children
+var _viz_left: float = 0.0
+var _viz_top: float = 0.0
+var _viz_right: float = 0.0
+var _viz_bottom: float = 0.0
+var _viz_size: Vector2 = Vector2.ZERO
+var _viz_center_offset: Vector2 = Vector2.ZERO
+
+# Original offsets dari chargePanel (dari scene)
+var _orig_offsets: Vector4 = Vector4.ZERO
 
 func _ready() -> void:
 	visible = false
@@ -40,11 +46,70 @@ func _ready() -> void:
 		progress_top = charge_progress.offset_top
 		progress_bottom = charge_progress.offset_bottom
 
-	if charge_panel:
-		panel_size_cache = Vector2(
-			charge_panel.offset_right - charge_panel.offset_left,
-			charge_panel.offset_bottom - charge_panel.offset_top
-		)
+	# Simpan original offsets
+	_orig_offsets = Vector4(
+		charge_panel.offset_left,
+		charge_panel.offset_top,
+		charge_panel.offset_right,
+		charge_panel.offset_bottom
+	)
+
+	# Hitung visual bounding box (panel + semua children recursive)
+	_calc_visual_bounds()
+
+
+func _calc_visual_bounds() -> void:
+	# Mulai dari batas chargePanel sendiri
+	_viz_left = charge_panel.offset_left
+	_viz_top = charge_panel.offset_top
+	_viz_right = charge_panel.offset_right
+	_viz_bottom = charge_panel.offset_bottom
+
+	# Expand dengan semua children recursive
+	_calc_node_bounds(charge_panel)
+
+	_viz_size = Vector2(_viz_right - _viz_left, _viz_bottom - _viz_top)
+
+	# Offset dari pusat bounding box ke pusat chargePanel
+	var panel_cx: float = (_orig_offsets.x + _orig_offsets.z) * 0.5
+	var panel_cy: float = (_orig_offsets.y + _orig_offsets.w) * 0.5
+	var bbox_cx: float = (_viz_left + _viz_right) * 0.5
+	var bbox_cy: float = (_viz_top + _viz_bottom) * 0.5
+	_viz_center_offset = Vector2(panel_cx - bbox_cx, panel_cy - bbox_cy)
+
+
+func _calc_node_bounds(node: Node) -> void:
+	for child in node.get_children():
+		if child is Control:
+			var c: Control = child
+			# Hitung offset child RELATIVE ke chargePanel
+			var rel_left: float = c.offset_left
+			var rel_top: float = c.offset_top
+			var rel_right: float = c.offset_right
+			var rel_bottom: float = c.offset_bottom
+
+			# Traverse hierarchy: offset parent bertambah
+			var p = c.get_parent()
+			while p != null and p != charge_panel and p is Control:
+				rel_left += p.offset_left
+				rel_top += p.offset_top
+				rel_right += p.offset_right
+				rel_bottom += p.offset_bottom
+				p = p.get_parent()
+
+			# Expand bounds
+			if rel_left < _viz_left:
+				_viz_left = rel_left
+			if rel_top < _viz_top:
+				_viz_top = rel_top
+			if rel_right > _viz_right:
+				_viz_right = rel_right
+			if rel_bottom > _viz_bottom:
+				_viz_bottom = rel_bottom
+
+		# Recursive
+		if child.get_child_count() > 0:
+			_calc_node_bounds(child)
 
 
 func _process(delta: float) -> void:
@@ -68,27 +133,24 @@ func _process(delta: float) -> void:
 
 
 func show_charge() -> void:
-	# Pindah chargePanel ke CanvasLayer biar gak terpengaruh Camera2D
-	if not _cl:
-		_cl = CanvasLayer.new()
-		_cl.layer = 10
-		get_tree().current_scene.add_child(_cl)
+	# Reset chargePanel ke posisi original dulu
+	charge_panel.offset_left = _orig_offsets.x
+	charge_panel.offset_top = _orig_offsets.y
+	charge_panel.offset_right = _orig_offsets.z
+	charge_panel.offset_bottom = _orig_offsets.w
 
-	if charge_panel.get_parent() != _cl:
-		_original_parent = charge_panel.get_parent()
-		_original_parent.remove_child(charge_panel)
-		_cl.add_child(charge_panel)
+	# Shift chargePanel supaya pusat visual bounding box = pusat viewport
+	# Posisi yang dibutuhkan: viewport_center - bbox_center
+	# Tapi karena offset relatif ke parent, shift-nya adalah:
+	var shift: Vector2 = Vector2(
+		(VIEWPORT_SIZE.x - _viz_size.x) * 0.5 - _viz_left,
+		(VIEWPORT_SIZE.y - _viz_size.y) * 0.5 - _viz_top
+	)
 
-	# Reset layout biar gak anchor-dependent
-	charge_panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
-
-	# Set offset langsung (position DULU baru size, atau set 4 offset manual)
-	var cx: float = (VIEWPORT_SIZE.x - panel_size_cache.x) * 0.5
-	var cy: float = (VIEWPORT_SIZE.y - panel_size_cache.y) * 0.5
-	charge_panel.offset_left = cx
-	charge_panel.offset_top = cy
-	charge_panel.offset_right = cx + panel_size_cache.x
-	charge_panel.offset_bottom = cy + panel_size_cache.y
+	charge_panel.offset_left += shift.x
+	charge_panel.offset_top += shift.y
+	charge_panel.offset_right += shift.x
+	charge_panel.offset_bottom += shift.y
 
 	visible = true
 	move_to_front()
@@ -99,13 +161,13 @@ func show_charge() -> void:
 	is_charging = false
 
 	if charge_progress:
-		charge_progress.position.y = progress_top
-		charge_progress.size.y = progress_bottom - progress_top
+		charge_progress.offset_top = progress_top
+		charge_progress.offset_bottom = progress_bottom
 	_update_progress_bar()
 
+	pivot_offset = VIEWPORT_SIZE * 0.5
 	modulate.a = 0.0
 	scale = Vector2(0.5, 0.5)
-	pivot_offset = VIEWPORT_SIZE * 0.5
 	var tw := create_tween().set_parallel(true)
 	tw.tween_property(self, "modulate:a", 1.0, 0.15)
 	tw.tween_property(self, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
@@ -118,12 +180,11 @@ func hide_charge() -> void:
 	tw.tween_callback(func() -> void:
 		visible = false
 		is_charging = false
-		# Balikin chargePanel ke parent asal
-		if _cl and is_instance_valid(_cl) and charge_panel.get_parent() == _cl:
-			_cl.remove_child(charge_panel)
-			if is_instance_valid(_original_parent):
-				_original_parent.add_child(charge_panel)
-				charge_panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
+		# Reset ke original
+		charge_panel.offset_left = _orig_offsets.x
+		charge_panel.offset_top = _orig_offsets.y
+		charge_panel.offset_right = _orig_offsets.z
+		charge_panel.offset_bottom = _orig_offsets.w
 	)
 
 
