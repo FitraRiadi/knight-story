@@ -17,8 +17,8 @@
 [ext_resource type="Texture2D" uid="uid://bqa1jdoqm6fsq" path="res://assets/ui/icons/skilBtn.png" id="12_yyr2t"]
 [ext_resource type="Texture2D" uid="uid://toj1si5imisd" path="res://assets/ui/icons/parryBtn.png" id="13_kngoi"]
 [ext_resource type="Texture2D" uid="uid://crm3m4q1wtttx" path="res://assets/ui/icons/timingCircle.png" id="14_qpju5"]
+[ext_resource type="Script" uid="uid://djbf4rxh2wv3a" path="res://scripts/local/battle/ChargeAttack.gd" id="charge_attack"]
 [ext_resource type="Script" uid="uid://dalxm83qgh3oh" path="res://scripts/local/battle/WaveProgress.gd" id="wave_progress"]
-[ext_resource type="Script" path="res://scripts/local/battle/ChargeAttack.gd" id="charge_attack"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_moojr"]
 bg_color = Color(0, 0, 0, 0.66800004)
@@ -1177,13 +1177,13 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_hdopt")
 text = "Continue"
 
 [node name="chargeAttack" type="Control" parent="." unique_id=975934097]
-script = ExtResource("charge_attack")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("charge_attack")
 
 [node name="chargePanel" type="Panel" parent="chargeAttack" unique_id=85154610]
 layout_mode = 0

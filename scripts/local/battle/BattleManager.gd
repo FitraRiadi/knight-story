@@ -1479,7 +1479,7 @@ func _on_charge_complete(multiplier: float) -> void:
 	# HIGH=2.0, NORMAL=1.5, LOW=1.0
 	var result: AttackResult
 	if multiplier >= 2.0:
-		result = AttackResult.SUCCESS
+		result = AttackResult.CRITICAL
 	elif multiplier >= 1.5:
 		result = AttackResult.MID
 	else:
