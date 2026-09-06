@@ -3,20 +3,12 @@ class_name ChargeAttackUI
 
 signal charge_complete(multiplier: float)
 
-# ============================================================
-# NODE REFERENCES
-# ============================================================
-
 @onready var charge_panel: Panel = $chargePanel
 @onready var button_charge: Button = $chargePanel/ButtonCharge
 @onready var charge_progress: Panel = $chargePanel/chargeProgress
 @onready var zone_high: Panel = $chargePanel/high
 @onready var zone_normal: Panel = $chargePanel/normal
 @onready var zone_low: Panel = $chargePanel/low
-
-# ============================================================
-# STATE
-# ============================================================
 
 var is_charging: bool = false
 var charge_value: float = 0.0
@@ -25,22 +17,13 @@ var charge_direction: float = 1.0
 var max_charge_time: float = 2.0
 var hold_timer: float = 0.0
 
-# Simpan bounds & size sekali dari scene
 var progress_top: float = 0.0
 var progress_bottom: float = 0.0
 var panel_size_cache: Vector2 = Vector2.ZERO
 
-# ============================================================
-# ZONE MULTIPLIERS
-# ============================================================
-
 const ZONE_HIGH_MULTIPLIER: float = 2.0
 const ZONE_NORMAL_MULTIPLIER: float = 1.5
 const ZONE_LOW_MULTIPLIER: float = 1.0
-
-# ============================================================
-# LIFECYCLE
-# ============================================================
 
 func _ready() -> void:
 	visible = false
@@ -51,27 +34,11 @@ func _ready() -> void:
 		progress_top = charge_progress.offset_top
 		progress_bottom = charge_progress.offset_bottom
 
-	# Cache original panel size
 	if charge_panel:
 		panel_size_cache = Vector2(
 			charge_panel.offset_right - charge_panel.offset_left,
 			charge_panel.offset_bottom - charge_panel.offset_top
 		)
-
-	# Wrap in CanvasLayer biar gak terpengaruh Camera2D zoom
-	var cl := CanvasLayer.new()
-	cl.layer = 10
-	get_parent().add_child(cl)
-	get_parent().remove_child(self)
-	cl.add_child(self)
-
-	# CanvasLayer bukan Control, jadi anchors gak work — set manual
-	var viewport_size = get_viewport().get_visible_rect().size
-	position = Vector2.ZERO
-	size = viewport_size
-	anchors_preset = 0
-	anchor_right = 0.0
-	anchor_bottom = 0.0
 
 
 func _process(delta: float) -> void:
@@ -94,15 +61,19 @@ func _process(delta: float) -> void:
 	_update_progress_bar()
 
 
-# ============================================================
-# SHOW / HIDE
-# ============================================================
-
 func show_charge() -> void:
-	# Center chargePanel di viewport — SAMA PERSIS kayak attackQte
-	var viewport_size = get_viewport().get_visible_rect().size
-	charge_panel.offset_left = (viewport_size.x - panel_size_cache.x) * 0.5
-	charge_panel.offset_top = (viewport_size.y - panel_size_cache.y) * 0.5
+	# Posisi chargePanel di canvas coords supaya muncul di tengah layar
+	# Camera2D zoom bikin canvas transform, jadi pakai camera.global_position
+	# sebagai referensi titik tengah layar
+	var center: Vector2
+	var cam = get_viewport().get_camera_2d()
+	if cam:
+		center = cam.global_position
+	else:
+		center = get_viewport().get_visible_rect().size * 0.5
+
+	charge_panel.offset_left = center.x - panel_size_cache.x * 0.5
+	charge_panel.offset_top = center.y - panel_size_cache.y * 0.5
 	charge_panel.offset_right = charge_panel.offset_left + panel_size_cache.x
 	charge_panel.offset_bottom = charge_panel.offset_top + panel_size_cache.y
 
@@ -114,7 +85,6 @@ func show_charge() -> void:
 	hold_timer = 0.0
 	is_charging = false
 
-	# Reset progress bar
 	if charge_progress:
 		charge_progress.position.y = progress_top
 		charge_progress.size.y = progress_bottom - progress_top
@@ -136,10 +106,6 @@ func hide_charge() -> void:
 		is_charging = false
 	)
 
-
-# ============================================================
-# CHARGE LOGIC
-# ============================================================
 
 func _on_button_down() -> void:
 	is_charging = true
@@ -166,10 +132,6 @@ func _stop_charge() -> void:
 	charge_complete.emit(multiplier)
 
 
-# ============================================================
-# ZONE DETECTION
-# ============================================================
-
 func _detect_zone() -> String:
 	if charge_value >= 0.7:
 		return "high"
@@ -190,10 +152,6 @@ func _get_zone_multiplier(zone: String) -> float:
 		_:
 			return ZONE_LOW_MULTIPLIER
 
-
-# ============================================================
-# VISUAL
-# ============================================================
 
 func _update_progress_bar() -> void:
 	if not charge_progress:
