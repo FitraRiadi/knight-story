@@ -71,8 +71,10 @@ func show_charge() -> void:
 	visible = true
 	move_to_front()
 
+	# Center chargePanel di viewport (bukan chargeAttack — itu full rect)
 	var viewport_size = get_viewport().get_visible_rect().size
-	position = (viewport_size - size) * 0.5
+	var panel_size: Vector2 = charge_panel.size
+	charge_panel.position = (viewport_size - panel_size) * 0.5
 
 	charge_value = 0.0
 	charge_direction = 1.0
