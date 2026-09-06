@@ -128,6 +128,11 @@ func _create_card(data: ActionCardData, index: int, has_stamina: bool, is_on_coo
 	# Pilih scene berdasarkan mode
 	if card_mode == CardMode.ATTACK:
 		card = ATTACK_CARD_SCENE.instantiate()
+		# Override ukuran kayak action card (110x160)
+		card.set_anchors_preset(Control.PRESET_TOP_LEFT)
+		card.custom_minimum_size = Vector2(CARD_WIDTH, CARD_HEIGHT)
+		card.size = Vector2(CARD_WIDTH, CARD_HEIGHT)
+		card.pivot_offset = Vector2(CARD_WIDTH / 2.0, CARD_HEIGHT / 2.0)
 	else:
 		card = CARD_SCENE.instantiate()
 
