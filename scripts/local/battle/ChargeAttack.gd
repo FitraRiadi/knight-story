@@ -16,13 +16,12 @@ signal charge_ended
 
 var _text2_pulse_tween: Tween
 var _button_hold_tween: Tween
+var _button_velocity_tween: Tween
 
 var is_charging: bool = false
 var charge_value: float = 0.0
 var charge_speed: float = 1.8
 var charge_direction: float = 1.0
-var max_charge_time: float = 2.0
-var hold_timer: float = 0.0
 
 var progress_top: float = 0.0
 var progress_bottom: float = 0.0
@@ -38,8 +37,7 @@ var _default_wrapper_offsets: Vector4 = Vector4.ZERO
 
 func _ready() -> void:
 	visible = false
-	button_charge.button_down.connect(_on_button_down)
-	button_charge.button_up.connect(_on_button_up)
+	button_charge.gui_input.connect(_on_button_gui_input)
 
 	if charge_progress:
 		progress_top = charge_progress.offset_top
@@ -57,11 +55,6 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if not is_charging:
-		return
-
-	hold_timer += delta
-	if hold_timer >= max_charge_time:
-		_stop_charge()
 		return
 
 	charge_value += charge_direction * charge_speed * delta
@@ -86,6 +79,7 @@ func show_charge(enemy: Node2D = null) -> void:
 			button_charge.offset_bottom - button_charge.offset_top
 		)
 		button_charge.pivot_offset = btn_size * 0.5
+		button_charge.scale = Vector2.ONE
 
 	# Offset wrapper berdasarkan posisi enemy dari center spawn
 	if wrapper and enemy and is_instance_valid(enemy):
@@ -97,7 +91,6 @@ func show_charge(enemy: Node2D = null) -> void:
 
 	charge_value = 0.0
 	charge_direction = 1.0
-	hold_timer = 0.0
 	is_charging = false
 
 	if charge_progress:
@@ -161,28 +154,36 @@ func _stop_text2_pulse() -> void:
 		title_text2.modulate.a = 1.0
 
 
-func _on_button_down() -> void:
-	is_charging = true
-	charge_value = 0.0
-	charge_direction = 1.0
-	hold_timer = 0.0
-	charge_started.emit()
+func _on_button_gui_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				is_charging = true
+				charge_value = 0.0
+				charge_direction = 1.0
+				charge_started.emit()
 
-	# Button scale up smooth saat hold
-	if _button_hold_tween and _button_hold_tween.is_running():
-		_button_hold_tween.kill()
-	_button_hold_tween = create_tween()
-	_button_hold_tween.tween_property(button_charge, "scale", Vector2(1.12, 1.12), 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+				# Button scale up smooth saat hold
+				if _button_hold_tween and _button_hold_tween.is_running():
+					_button_hold_tween.kill()
+				_button_hold_tween = create_tween()
+				_button_hold_tween.tween_property(button_charge, "scale", Vector2(1.12, 1.12), 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
-
-func _on_button_up() -> void:
-	# Button scale back smooth saat release
-	if _button_hold_tween and _button_hold_tween.is_running():
-		_button_hold_tween.kill()
-	_button_hold_tween = create_tween()
-	_button_hold_tween.tween_property(button_charge, "scale", Vector2.ONE, 0.1).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	charge_ended.emit()
-	_stop_charge()
+				# Velocity: scale pelan-pelan naik terus
+				if _button_velocity_tween and _button_velocity_tween.is_running():
+					_button_velocity_tween.kill()
+				_button_velocity_tween = create_tween().set_loops()
+				_button_velocity_tween.tween_property(button_charge, "scale", Vector2(1.25, 1.25), 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+				_button_velocity_tween.tween_property(button_charge, "scale", Vector2(1.12, 1.12), 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+			else:
+				# Button scale back smooth saat release
+				if _button_hold_tween and _button_hold_tween.is_running():
+					_button_hold_tween.kill()
+				if _button_velocity_tween and _button_velocity_tween.is_running():
+					_button_velocity_tween.kill()
+				button_charge.scale = Vector2.ONE
+				charge_ended.emit()
+				_stop_charge()
 
 
 func _stop_charge() -> void:
