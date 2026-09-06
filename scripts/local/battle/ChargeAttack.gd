@@ -25,7 +25,7 @@ var charge_direction: float = 1.0
 var max_charge_time: float = 2.0
 var hold_timer: float = 0.0
 
-# Simpan bounds sekali, jangan baca tiap frame (offset_bottom berubah kalau size.y diubah)
+# Simpan bounds sekali dari scene
 var progress_top: float = 0.0
 var progress_bottom: float = 0.0
 
@@ -46,7 +46,6 @@ func _ready() -> void:
 	button_charge.button_down.connect(_on_button_down)
 	button_charge.button_up.connect(_on_button_up)
 
-	# Simpan bounds original dari scene SEBELUM ada yang ngubah
 	if charge_progress:
 		progress_top = charge_progress.offset_top
 		progress_bottom = charge_progress.offset_bottom
@@ -80,12 +79,6 @@ func show_charge() -> void:
 	visible = true
 	move_to_front()
 
-	# Center chargePanel di viewport
-	var viewport_size = get_viewport().get_visible_rect().size
-	var panel_size: Vector2 = charge_panel.size
-	charge_panel.position = (viewport_size - panel_size) * 0.5
-
-	# Reset
 	charge_value = 0.0
 	charge_direction = 1.0
 	hold_timer = 0.0
@@ -97,7 +90,6 @@ func show_charge() -> void:
 		charge_progress.size.y = progress_bottom - progress_top
 	_update_progress_bar()
 
-	# Pop-in
 	modulate.a = 0.0
 	scale = Vector2(0.5, 0.5)
 	var tw := create_tween().set_parallel(true)
