@@ -46,6 +46,7 @@ var enemy_scene: PackedScene
 
 # --- WAVE SYSTEM ---
 @onready var wave_progress: WaveProgress = $bg/WaveProgress
+@onready var charge_attack_ui: ChargeAttackUI = $chargeAttack
 var total_waves: int = 3
 var current_wave: int = 1
 var enemies_per_wave: int = 2
@@ -848,12 +849,16 @@ func _load_attack_cards() -> void:
 	attack_hand.clear()
 	attack_discard.clear()
 
-	var card_path: String = "res://data/action_cards/attack_cards/basic_attack.tres"
-	var card: AttackCardData = load(card_path) as AttackCardData
-	if card:
-		# Mulai dengan 3 basic attack cards
+	var basic_card_path: String = "res://data/action_cards/attack_cards/basic_attack.tres"
+	var basic_card: AttackCardData = load(basic_card_path) as AttackCardData
+	if basic_card:
 		for i in range(3):
-			attack_hand.append(card.duplicate())
+			attack_hand.append(basic_card.duplicate())
+
+	var charge_card_path: String = "res://data/action_cards/attack_cards/charge_attack.tres"
+	var charge_card: AttackCardData = load(charge_card_path) as AttackCardData
+	if charge_card:
+		attack_hand.append(charge_card.duplicate())
 
 
 func open_attack_card_ui() -> void:
@@ -911,7 +916,7 @@ func _on_attack_card_selected(index: int) -> void:
 		"Basic":
 			_start_attack_qte()
 		"Charge":
-			_start_attack_qte()  # placeholder — nanti ganti ke charge
+			_start_attack_charge()
 		"Rapid":
 			_start_attack_qte()  # placeholder — nanti ganti ke rapid
 
@@ -1415,6 +1420,72 @@ func _on_reset_target_pressed() -> void:
 	
 	is_player_turn = true
 	_set_buttons_active(true)
+
+
+func _start_attack_charge() -> void:
+	"""Mulai charge attack mechanic"""
+	if not charge_attack_ui:
+		_execute_actual_attack(AttackResult.MID)
+		return
+
+	is_player_turn = false
+	_set_buttons_active(false)
+
+	# Camera zoom ke enemy
+	if camera and enemies.size() > 0 and selected_enemy_index < enemies.size():
+		var active_enemy = enemies[selected_enemy_index]
+		if is_instance_valid(active_enemy):
+			var viewport_size = get_viewport().get_visible_rect().size
+			var target_zoom = Vector2(1.25, 1.25)
+			var half_width: float = viewport_size.x / target_zoom.x * 0.5
+			var half_height: float = viewport_size.y / target_zoom.y * 0.5
+			var clamped_x: float = clampf(active_enemy.global_position.x, half_width, viewport_size.x - half_width)
+			var clamped_y: float = clampf(active_enemy.global_position.y, half_height, viewport_size.y - half_height)
+			var target_focus_pos = Vector2(clamped_x, clamped_y)
+
+			var cam_tw = create_tween().set_parallel(true)
+			cam_tw.tween_property(camera, "global_position", target_focus_pos, 0.35).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			cam_tw.tween_property(camera, "zoom", target_zoom, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			cam_tw.set_ignore_time_scale(true)
+
+	_show_attack_shadow()
+
+	# Connect signal
+	if not charge_attack_ui.charge_complete.is_connected(_on_charge_complete):
+		charge_attack_ui.charge_complete.connect(_on_charge_complete)
+
+	# Tampilkan charge UI
+	charge_attack_ui.show_charge()
+
+
+func _on_charge_complete(multiplier: float) -> void:
+	"""Dipanggil setelah charge selesai"""
+	# Disconnect signal
+	if charge_attack_ui.charge_complete.is_connected(_on_charge_complete):
+		charge_attack_ui.charge_complete.disconnect(_on_charge_complete)
+
+	# Hide charge UI
+	charge_attack_ui.hide_charge()
+
+	# Camera reset
+	_hide_attack_shadow()
+	if camera:
+		var cam_tw = create_tween().set_parallel(true)
+		cam_tw.tween_property(camera, "zoom", Vector2(1.0, 1.0), 0.3).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN_OUT)
+		cam_tw.tween_property(camera, "global_position", default_camera_pos, 0.3).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN_OUT)
+		cam_tw.set_ignore_time_scale(true)
+
+	# Execute attack dengan multiplier
+	# HIGH=2.0, NORMAL=1.5, LOW=1.0
+	var result: AttackResult
+	if multiplier >= 2.0:
+		result = AttackResult.SUCCESS
+	elif multiplier >= 1.5:
+		result = AttackResult.MID
+	else:
+		result = AttackResult.LOW
+
+	_execute_actual_attack(result)
 
 
 func _check_is_overlapping(runner: Panel, target: Panel) -> bool:

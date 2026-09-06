@@ -1,0 +1,200 @@
+extends Control
+class_name ChargeAttackUI
+
+signal charge_complete(multiplier: float)
+signal charge_cancelled
+
+# ============================================================
+# NODE REFERENCES
+# ============================================================
+
+@onready var charge_panel: Panel = $chargePanel
+@onready var button_charge: Button = $chargePanel/ButtonCharge
+@onready var charge_progress: Panel = $chargePanel/chargeProgress
+@onready var zone_high: Panel = $chargePanel/high
+@onready var zone_normal: Panel = $chargePanel/normal
+@onready var zone_low: Panel = $chargePanel/low
+
+# ============================================================
+# STATE
+# ============================================================
+
+var is_charging: bool = false
+var charge_value: float = 0.0  # 0.0 = bottom, 1.0 = top
+var charge_speed: float = 1.8  # per second (full charge in ~0.55s)
+var charge_direction: float = 1.0  # 1 = up, -1 = down (bouncing)
+var max_charge_time: float = 2.0  # max hold time
+var hold_timer: float = 0.0
+
+var charge_tween: Tween = null
+
+# ============================================================
+# ZONE MULTIPLIERS
+# ============================================================
+
+const ZONE_HIGH_MULTIPLIER: float = 2.0
+const ZONE_NORMAL_MULTIPLIER: float = 1.5
+const ZONE_LOW_MULTIPLIER: float = 1.0
+
+# ============================================================
+# LIFECYCLE
+# ============================================================
+
+func _ready() -> void:
+	visible = false
+	button_charge.button_down.connect(_on_button_down)
+	button_charge.button_up.connect(_on_button_up)
+
+
+func _process(delta: float) -> void:
+	if not is_charging:
+		return
+
+	hold_timer += delta
+
+	# Auto stop kalau kepanjangan
+	if hold_timer >= max_charge_time:
+		_stop_charge()
+		return
+
+	# Naikkan charge value (bouncing)
+	charge_value += charge_direction * charge_speed * delta
+	if charge_value >= 1.0:
+		charge_value = 1.0
+		charge_direction = -1.0
+	elif charge_value <= 0.0:
+		charge_value = 0.0
+		charge_direction = 1.0
+
+	_update_progress_bar()
+
+
+# ============================================================
+# CHARGE LOGIC
+# ============================================================
+
+func show_charge() -> void:
+	visible = true
+	charge_value = 0.0
+	charge_direction = 1.0
+	hold_timer = 0.0
+	is_charging = false
+	_update_progress_bar()
+
+	# Pop-in animation
+	modulate.a = 0.0
+	scale = Vector2(0.5, 0.5)
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(self, "modulate:a", 1.0, 0.15)
+	tw.tween_property(self, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+func hide_charge() -> void:
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(self, "modulate:a", 0.0, 0.15)
+	tw.tween_property(self, "scale", Vector2(0.8, 0.8), 0.15)
+	tw.tween_callback(func() -> void:
+		visible = false
+		is_charging = false
+	)
+
+
+func _on_button_down() -> void:
+	is_charging = true
+	charge_value = 0.0
+	charge_direction = 1.0
+	hold_timer = 0.0
+
+
+func _on_button_up() -> void:
+	_stop_charge()
+
+
+func _stop_charge() -> void:
+	if not is_charging:
+		return
+
+	is_charging = false
+	var zone := _detect_zone()
+	var multiplier := _get_zone_multiplier(zone)
+
+	# Flash zone yang kena
+	_flash_zone(zone)
+
+	# Tunggu sebentar, lalu emit signal
+	await get_tree().create_timer(0.3).timeout
+	charge_complete.emit(multiplier)
+
+
+# ============================================================
+# ZONE DETECTION
+# ============================================================
+
+func _detect_zone() -> String:
+	# high = top 30%, normal = middle 40%, low = bottom 30%
+	if charge_value >= 0.7:
+		return "high"
+	elif charge_value >= 0.3:
+		return "normal"
+	else:
+		return "low"
+
+
+func _get_zone_multiplier(zone: String) -> float:
+	match zone:
+		"high":
+			return ZONE_HIGH_MULTIPLIER
+		"normal":
+			return ZONE_NORMAL_MULTIPLIER
+		"low":
+			return ZONE_LOW_MULTIPLIER
+		_:
+			return ZONE_LOW_MULTIPLIER
+
+
+# ============================================================
+# VISUAL
+# ============================================================
+
+func _update_progress_bar() -> void:
+	if not charge_progress:
+		return
+
+	# Progress bar fill dari bawah ke atas
+	var panel_height: float = charge_panel.size.y - 63.46927  # offset_top of chargeProgress
+	var fill_height: float = panel_height * charge_value
+	charge_progress.size.y = max(fill_height, 1.0)
+	charge_progress.position.y = 63.46927 + (panel_height - fill_height)
+
+	# Warnanya berubah sesuai zone
+	if charge_value >= 0.7:
+		# High zone — kuning/bright
+		charge_progress.modulate = Color(1.0, 0.95, 0.3, 1.0)
+	elif charge_value >= 0.3:
+		# Normal zone — oranye
+		charge_progress.modulate = Color(1.0, 0.6, 0.2, 1.0)
+	else:
+		# Low zone — merah
+		charge_progress.modulate = Color(0.9, 0.2, 0.2, 1.0)
+
+
+func _flash_zone(zone: String) -> void:
+	var zone_node: Panel
+	match zone:
+		"high":
+			zone_node = zone_high
+		"normal":
+			zone_node = zone_normal
+		"low":
+			zone_node = zone_low
+		_:
+			return
+
+	if not zone_node:
+		return
+
+	# Flash putih
+	var original_color: Color = zone_node.modulate
+	zone_node.modulate = Color.WHITE * 2.0
+	var tw := create_tween()
+	tw.tween_property(zone_node, "modulate", original_color, 0.3)
