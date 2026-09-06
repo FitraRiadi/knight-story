@@ -65,6 +65,14 @@ func _ready() -> void:
 	get_parent().remove_child(self)
 	cl.add_child(self)
 
+	# CanvasLayer bukan Control, jadi anchors gak work — set manual
+	var viewport_size = get_viewport().get_visible_rect().size
+	position = Vector2.ZERO
+	size = viewport_size
+	anchors_preset = 0
+	anchor_right = 0.0
+	anchor_bottom = 0.0
+
 
 func _process(delta: float) -> void:
 	if not is_charging:
