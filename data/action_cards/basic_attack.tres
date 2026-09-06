@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="AttackCardData" format=3]
+
+[ext_resource type="Script" path="res://scripts/local/battle/AttackCardData.gd" id="1_card"]
+[ext_resource type="Texture2D" path="res://assets/art/card/attackCard/attackCard_placeholder.png" id="1_art"]
+
+[resource]
+script = ExtResource("1_card")
+card_name = "Basic Attack"
+description = "Basic QTE attack to single target"
+card_art = ExtResource("1_art")
+level = 1
+rarity = "Common"
+stamina_cost = 25.0
+cooldown = 0
+attack_type = "Basic"
+hit_count = 1

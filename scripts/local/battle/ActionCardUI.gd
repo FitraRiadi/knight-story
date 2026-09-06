@@ -8,6 +8,7 @@ class_name ActionCardUI
 
 signal card_selected(index: int)
 signal card_closed()
+signal attack_indicator_ready()
 
 
 # ============================================================
@@ -55,6 +56,12 @@ var canvas_layer: CanvasLayer
 var bg_overlay: ColorRect
 var float_tweens: Array[Tween] = []
 
+# Attack mode
+enum CardMode { SKILL, ATTACK }
+var card_mode: CardMode = CardMode.SKILL
+var attack_indicator: Control = null
+var waiting_for_mechanic: bool = false
+
 
 # ============================================================
 # SETUP
@@ -64,6 +71,13 @@ func setup(cards: Array[ActionCardData], cooldowns: Array[int], stamina: float) 
 	cards_data = cards
 	card_cooldowns = cooldowns
 	current_stamina = stamina
+
+
+func setup_attack_mode(cards: Array[ActionCardData], stamina: float) -> void:
+	cards_data = cards
+	card_cooldowns = []
+	current_stamina = stamina
+	card_mode = CardMode.ATTACK
 
 
 # ============================================================
@@ -378,20 +392,77 @@ func _select_card(index: int) -> void:
 			.set_ease(Tween.EASE_IN)
 		other_tw.parallel().tween_property(other, "scale", Vector2(0.7, 0.7), 0.2).set_delay(delay)
 
-	# Hold, then close
-	tw.tween_interval(0.6)
-	tw.tween_callback(func() -> void:
-		card_selected.emit(selected_index)
-		var close_tw := create_tween()
-		close_tw.tween_property(card, "modulate:a", 0.0, 0.2)
-		close_tw.parallel().tween_property(card, "scale", Vector2(0.5, 0.5), 0.25)\
+	# ATTACK MODE: pindah ke pojok kiri atas sebagai indicator
+	if card_mode == CardMode.ATTACK:
+		tw.tween_interval(0.3)
+		tw.tween_callback(func() -> void:
+			_move_to_indicator(card)
+		)
+	else:
+		# SKILL MODE: hold, then close (sama kayak sekarang)
+		tw.tween_interval(0.6)
+		tw.tween_callback(func() -> void:
+			card_selected.emit(selected_index)
+			var close_tw := create_tween()
+			close_tw.tween_property(card, "modulate:a", 0.0, 0.2)
+			close_tw.parallel().tween_property(card, "scale", Vector2(0.5, 0.5), 0.25)\
+				.set_trans(Tween.TRANS_CUBIC)\
+				.set_ease(Tween.EASE_IN)
+			close_tw.tween_callback(func() -> void:
+				_cleanup()
+				card_closed.emit()
+			)
+		)
+
+
+# ============================================================
+# ATTACK INDICATOR
+# ============================================================
+
+func _move_to_indicator(card: Control) -> void:
+	"""Pindah card ke pojok kiri atas sebagai indikator selected"""
+	attack_indicator = card
+	waiting_for_mechanic = true
+
+	# Hide bg overlay
+	if bg_overlay:
+		bg_overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var bg_tw := create_tween()
+		bg_tw.tween_property(bg_overlay, "modulate:a", 0.0, 0.2)
+
+	# Pindah ke pojok kiri atas (scale kecil)
+	var indicator_pos: Vector2 = Vector2(10, 10)
+	var indicator_scale: Vector2 = Vector2(0.5, 0.5)
+
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(card, "position", indicator_pos, 0.3)\
+		.set_trans(Tween.TRANS_CUBIC)\
+		.set_ease(Tween.EASE_OUT)
+	tw.tween_property(card, "scale", indicator_scale, 0.3)\
+		.set_trans(Tween.TRANS_CUBIC)\
+		.set_ease(Tween.EASE_OUT)
+	tw.tween_property(card, "rotation", 0.0, 0.2)
+
+	# Emit selected
+	card_selected.emit(selected_index)
+	attack_indicator_ready.emit()
+
+
+func finish_attack_indicator() -> void:
+	"""Fade out indicator card setelah mechanic selesai"""
+	if attack_indicator and is_instance_valid(attack_indicator):
+		var tw := create_tween()
+		tw.tween_property(attack_indicator, "modulate:a", 0.0, 0.3)
+		tw.parallel().tween_property(attack_indicator, "scale", Vector2(0.3, 0.3), 0.3)\
 			.set_trans(Tween.TRANS_CUBIC)\
 			.set_ease(Tween.EASE_IN)
-		close_tw.tween_callback(func() -> void:
+		tw.tween_callback(func() -> void:
 			_cleanup()
 			card_closed.emit()
 		)
-	)
+	else:
+		_cleanup()
+		card_closed.emit()
 
 
 # ============================================================
