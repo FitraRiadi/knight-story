@@ -159,9 +159,8 @@ func _update_progress_bar() -> void:
 	if not charge_progress or not charge_panel:
 		return
 
-	# Bounds dari scene: chargeProgress offset_top ke offset_bottom
-	var progress_top: float = charge_progress.position.y if charge_value == 0.0 else 63.46927
-	var progress_bottom: float = 173.0
+	var progress_top: float = charge_progress.offset_top
+	var progress_bottom: float = charge_progress.offset_bottom
 	var full_height: float = progress_bottom - progress_top
 
 	var fill_height: float = full_height * charge_value

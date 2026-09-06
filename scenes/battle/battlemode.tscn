@@ -1018,7 +1018,6 @@ text = "Continue"
 
 [node name="chargeAttack" type="Control" parent="." unique_id=975934097]
 visible = false
-script = ExtResource("charge_attack")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
