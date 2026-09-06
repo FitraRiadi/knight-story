@@ -69,7 +69,7 @@ func _process(delta: float) -> void:
 
 func show_charge() -> void:
 	visible = true
-	raise()
+	move_to_front()
 
 	var viewport_size = get_viewport().get_visible_rect().size
 	position = (viewport_size - size) * 0.5
