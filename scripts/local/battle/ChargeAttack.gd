@@ -25,6 +25,10 @@ var charge_direction: float = 1.0
 var max_charge_time: float = 2.0
 var hold_timer: float = 0.0
 
+# Simpan bounds sekali, jangan baca tiap frame (offset_bottom berubah kalau size.y diubah)
+var progress_top: float = 0.0
+var progress_bottom: float = 0.0
+
 # ============================================================
 # ZONE MULTIPLIERS
 # ============================================================
@@ -41,6 +45,11 @@ func _ready() -> void:
 	visible = false
 	button_charge.button_down.connect(_on_button_down)
 	button_charge.button_up.connect(_on_button_up)
+
+	# Simpan bounds original dari scene SEBELUM ada yang ngubah
+	if charge_progress:
+		progress_top = charge_progress.offset_top
+		progress_bottom = charge_progress.offset_bottom
 
 
 func _process(delta: float) -> void:
@@ -64,24 +73,31 @@ func _process(delta: float) -> void:
 
 
 # ============================================================
-# SHOW / HIDE — persis kayak attackQte
+# SHOW / HIDE
 # ============================================================
 
 func show_charge() -> void:
 	visible = true
 	move_to_front()
 
-	# Center chargePanel di viewport (bukan chargeAttack — itu full rect)
+	# Center chargePanel di viewport
 	var viewport_size = get_viewport().get_visible_rect().size
 	var panel_size: Vector2 = charge_panel.size
 	charge_panel.position = (viewport_size - panel_size) * 0.5
 
+	# Reset
 	charge_value = 0.0
 	charge_direction = 1.0
 	hold_timer = 0.0
 	is_charging = false
+
+	# Reset progress bar ke ukuran original
+	if charge_progress:
+		charge_progress.position.y = progress_top
+		charge_progress.size.y = progress_bottom - progress_top
 	_update_progress_bar()
 
+	# Pop-in
 	modulate.a = 0.0
 	scale = Vector2(0.5, 0.5)
 	var tw := create_tween().set_parallel(true)
@@ -158,14 +174,12 @@ func _get_zone_multiplier(zone: String) -> float:
 # ============================================================
 
 func _update_progress_bar() -> void:
-	if not charge_progress or not charge_panel:
+	if not charge_progress:
 		return
 
-	var progress_top: float = charge_progress.offset_top
-	var progress_bottom: float = charge_progress.offset_bottom
 	var full_height: float = progress_bottom - progress_top
-
 	var fill_height: float = full_height * charge_value
+
 	charge_progress.size.y = max(fill_height, 1.0)
 	charge_progress.position.y = progress_bottom - fill_height
 
