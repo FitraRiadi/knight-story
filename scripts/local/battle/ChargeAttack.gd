@@ -109,11 +109,11 @@ func show_charge(enemy: Node2D = null) -> void:
 
 	# Reset reachPoints to dim state
 	if reach_low:
-		reach_low.modulate = Color(1.0, 1.0, 1.0, 0.5)
+		reach_low.modulate = Color("#2d2d2d")
 	if reach_normal:
-		reach_normal.modulate = Color(1.0, 1.0, 1.0, 0.5)
+		reach_normal.modulate = Color("#2d2d2d")
 	if reach_high:
-		reach_high.modulate = Color(1.0, 1.0, 1.0, 0.5)
+		reach_high.modulate = Color("#2d2d2d")
 
 	# SFX charge attack muncul
 	var sfx: AudioStream = load("res://assets/audio/effects/battle/ui/attackQte-open.mp3")
@@ -286,21 +286,21 @@ func _update_reach_points() -> void:
 		if charge_value >= 0.3:
 			reach_low.modulate = Color(1.0, 0.95, 0.2, 1.0)  # Yellow
 		else:
-			reach_low.modulate = Color(1.0, 1.0, 1.0, 0.5)   # Dim/default
+			reach_low.modulate = Color("#2d2d2d")
 
 	# Normal zone (0.7 threshold) - lights up when charge >= 0.7
 	if reach_normal:
 		if charge_value >= 0.7:
 			reach_normal.modulate = Color(1.0, 0.95, 0.2, 1.0)
 		else:
-			reach_normal.modulate = Color(1.0, 1.0, 1.0, 0.5)
+			reach_normal.modulate = Color("#2d2d2d")
 
 	# High zone (1.0 threshold / max) - lights up when charge == 1.0
 	if reach_high:
 		if charge_value >= 1.0:
 			reach_high.modulate = Color(1.0, 0.95, 0.2, 1.0)
 		else:
-			reach_high.modulate = Color(1.0, 1.0, 1.0, 0.5)
+			reach_high.modulate = Color("#2d2d2d")
 
 
 func _flash_zone(zone: String) -> void:
