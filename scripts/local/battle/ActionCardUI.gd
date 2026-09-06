@@ -56,6 +56,7 @@ var selected_index: int = -1
 var canvas_layer: CanvasLayer
 var bg_overlay: ColorRect
 var float_tweens: Array[Tween] = []
+var spawn_tween: Tween  # Track spawn tween to kill on early select
 
 # Attack mode
 enum CardMode { SKILL, ATTACK }
@@ -253,6 +254,7 @@ func _animate_spawn() -> void:
 			.set_trans(Tween.TRANS_BACK)\
 			.set_ease(Tween.EASE_OUT)
 
+	spawn_tween = tw
 	tw.chain().tween_callback(_start_idle_float)
 
 
@@ -387,7 +389,16 @@ func _select_card(index: int) -> void:
 	selected_index = index
 	_stop_idle_float()
 
+	# Kill spawn tween if still running to prevent position:y conflict
+	if spawn_tween and spawn_tween.is_running():
+		spawn_tween.kill()
+
 	var card: Control = card_nodes[index]
+
+	# Snap card to final spawn position to avoid jump from partial spawn anim
+	card.position.y = CARD_Y
+	card.scale = Vector2.ONE
+	card.rotation = 0.0
 
 	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
 	var center_pos: Vector2 = Vector2(
