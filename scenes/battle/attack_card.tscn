@@ -7,7 +7,7 @@
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_moojr"]
 texture = ExtResource("3_6lapk")
 
-[node name="attackCard" type="Control"]
+[node name="attackCard" type="Control" unique_id=716207600]
 texture_filter = 1
 custom_minimum_size = Vector2(110, 160)
 layout_mode = 3
@@ -16,17 +16,17 @@ offset_right = 110.0
 offset_bottom = 160.0
 pivot_offset = Vector2(55, 80)
 
-[node name="art" type="TextureRect" parent="."]
+[node name="art" type="TextureRect" parent="." unique_id=1262272456]
 layout_mode = 0
-offset_left = -16.0
+offset_left = -10.0
 offset_top = 6.0
-offset_right = 126.0
-offset_bottom = 147.0
+offset_right = 120.0
+offset_bottom = 141.0
 texture = ExtResource("1_gy83j")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="placeholder" type="TextureRect" parent="."]
+[node name="placeholder" type="TextureRect" parent="." unique_id=287736877]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -37,12 +37,12 @@ texture = ExtResource("1_x1cis")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="title" type="Label" parent="."]
+[node name="title" type="Label" parent="." unique_id=1734292063]
 layout_mode = 0
 offset_left = 24.0
-offset_top = 108.0
+offset_top = -5.0
 offset_right = 86.0
-offset_bottom = 146.0
+offset_bottom = 33.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 10
@@ -50,25 +50,25 @@ text = "Basic Attack"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="staminaCost" type="Label" parent="."]
+[node name="staminaCost" type="Label" parent="." unique_id=1409701298]
 layout_mode = 0
-offset_left = 80.0
-offset_top = -4.0
-offset_right = 112.0
-offset_bottom = 28.0
+offset_left = 35.0
+offset_top = 97.0
+offset_right = 76.0
+offset_bottom = 110.0
 theme_override_colors/font_color = Color(1, 1, 0.34237343, 1)
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 10
 theme_override_styles/normal = SubResource("StyleBoxTexture_moojr")
 text = "25"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Label" type="Label" parent="."]
+[node name="Label" type="Label" parent="." unique_id=2083259107]
 layout_mode = 0
 offset_left = 8.0
-offset_top = 116.0
+offset_top = 110.0
 offset_right = 103.0
-offset_bottom = 149.0
+offset_bottom = 148.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 8
 text = "Attack Basic Qte to Single Target"

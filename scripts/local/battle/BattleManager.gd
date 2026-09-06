@@ -848,7 +848,7 @@ func _load_attack_cards() -> void:
 	attack_hand.clear()
 	attack_discard.clear()
 
-	var card_path: String = "res://data/action_cards/basic_attack.tres"
+	var card_path: String = "res://data/action_cards/attack_cards/basic_attack.tres"
 	var card: AttackCardData = load(card_path) as AttackCardData
 	if card:
 		# Mulai dengan 3 basic attack cards
