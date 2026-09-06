@@ -30,6 +30,7 @@ var max_exp: float = 300.0      # Batas angka EXP maksimal
 var current_exp: float = 300.0  # Angka EXP pemain saat ini
 
 func _ready() -> void:
+	map_btn.pressed.connect(_on_map_btn_pressed)
 	inventory_btn.pressed.connect(_open_combined_inventory)
 	if exp_progress:
 		# 1. Simpan batas visual full (100%) dari lebar Panel di Editor
@@ -146,3 +147,6 @@ func _open_combined_inventory() -> void:
 	var inv := CombinedInventory.new()
 	inv.set_anchors_preset(Control.PRESET_FULL_RECT)
 	add_child(inv)
+
+func _on_map_btn_pressed() -> void:
+	TransitionManager.pindah_scene("res://scenes/gui/map/world_map.tscn")
