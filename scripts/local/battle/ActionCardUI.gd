@@ -144,9 +144,12 @@ func _create_card(data: ActionCardData, index: int, has_stamina: bool, is_on_coo
 
 	if card_mode == CardMode.ATTACK:
 		# === ATTACK CARD SCENE MAPPING ===
-		# art → CardArt
+		# art → CardArt (kosong kalau gak ada art)
 		var art: TextureRect = card.get_node("art")
-		art.texture = data.card_art
+		if data.card_art:
+			art.texture = data.card_art
+		else:
+			art.texture = null
 
 		# placeholder → CardFrame (sudah ada default)
 
