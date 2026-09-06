@@ -81,10 +81,14 @@ func show_charge() -> void:
 
 	# Reset layout biar gak anchor-dependent
 	charge_panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	charge_panel.size = panel_size_cache
 
-	# Center di viewport (hardcoded 740x340, gak terpengaruh camera)
-	charge_panel.position = (VIEWPORT_SIZE - panel_size_cache) * 0.5
+	# Set offset langsung (position DULU baru size, atau set 4 offset manual)
+	var cx: float = (VIEWPORT_SIZE.x - panel_size_cache.x) * 0.5
+	var cy: float = (VIEWPORT_SIZE.y - panel_size_cache.y) * 0.5
+	charge_panel.offset_left = cx
+	charge_panel.offset_top = cy
+	charge_panel.offset_right = cx + panel_size_cache.x
+	charge_panel.offset_bottom = cy + panel_size_cache.y
 
 	visible = true
 	move_to_front()
