@@ -25,6 +25,12 @@ const ZONE_HIGH_MULTIPLIER: float = 2.0
 const ZONE_NORMAL_MULTIPLIER: float = 1.5
 const ZONE_LOW_MULTIPLIER: float = 1.0
 
+const VIEWPORT_SIZE := Vector2(740, 340)
+
+var _cl: CanvasLayer = null
+var _original_parent: Node = null
+var _original_index: int = -1
+
 func _ready() -> void:
 	visible = false
 	button_charge.button_down.connect(_on_button_down)
@@ -62,20 +68,23 @@ func _process(delta: float) -> void:
 
 
 func show_charge() -> void:
-	# Posisi chargePanel di canvas coords supaya muncul di tengah layar
-	# Camera2D zoom bikin canvas transform, jadi pakai camera.global_position
-	# sebagai referensi titik tengah layar
-	var center: Vector2
-	var cam = get_viewport().get_camera_2d()
-	if cam:
-		center = cam.global_position
-	else:
-		center = get_viewport().get_visible_rect().size * 0.5
+	# Pindah chargePanel ke CanvasLayer biar gak terpengaruh Camera2D
+	if not _cl:
+		_cl = CanvasLayer.new()
+		_cl.layer = 10
+		get_tree().current_scene.add_child(_cl)
 
-	charge_panel.offset_left = center.x - panel_size_cache.x * 0.5
-	charge_panel.offset_top = center.y - panel_size_cache.y * 0.5
-	charge_panel.offset_right = charge_panel.offset_left + panel_size_cache.x
-	charge_panel.offset_bottom = charge_panel.offset_top + panel_size_cache.y
+	if charge_panel.get_parent() != _cl:
+		_original_parent = charge_panel.get_parent()
+		_original_parent.remove_child(charge_panel)
+		_cl.add_child(charge_panel)
+
+	# Reset layout biar gak anchor-dependent
+	charge_panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	charge_panel.size = panel_size_cache
+
+	# Center di viewport (hardcoded 740x340, gak terpengaruh camera)
+	charge_panel.position = (VIEWPORT_SIZE - panel_size_cache) * 0.5
 
 	visible = true
 	move_to_front()
@@ -92,6 +101,7 @@ func show_charge() -> void:
 
 	modulate.a = 0.0
 	scale = Vector2(0.5, 0.5)
+	pivot_offset = VIEWPORT_SIZE * 0.5
 	var tw := create_tween().set_parallel(true)
 	tw.tween_property(self, "modulate:a", 1.0, 0.15)
 	tw.tween_property(self, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
@@ -104,6 +114,12 @@ func hide_charge() -> void:
 	tw.tween_callback(func() -> void:
 		visible = false
 		is_charging = false
+		# Balikin chargePanel ke parent asal
+		if _cl and is_instance_valid(_cl) and charge_panel.get_parent() == _cl:
+			_cl.remove_child(charge_panel)
+			if is_instance_valid(_original_parent):
+				_original_parent.add_child(charge_panel)
+				charge_panel.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	)
 
 
