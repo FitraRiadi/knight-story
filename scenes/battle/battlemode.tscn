@@ -188,6 +188,64 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_iiu5v"]
+bg_color = Color(0.106126174, 0.106126174, 0.106126174, 0.837)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gw8qx"]
+bg_color = Color(0.6789437, 0.6789437, 0.6789436, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hsfr7"]
+bg_color = Color(0.40161076, 0.1428257, 0.28918967, 0.47000003)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uudxr"]
+bg_color = Color(0.17641908, 0.17641911, 0.17641899, 1)
+corner_radius_top_left = 50
+corner_radius_top_right = 50
+corner_radius_bottom_right = 50
+corner_radius_bottom_left = 50
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kxutv"]
+bg_color = Color(0.22658296, 0.22658296, 0.22658296, 0.22900002)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1orl3"]
+bg_color = Color(0.30353206, 0.25030932, 0.07846785, 0.35500002)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lsh83"]
+bg_color = Color(0.106126174, 1, 0.106126174, 0.837)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6dwjw"]
+bg_color = Color(0, 0, 0, 0.735)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_344p7"]
+bg_color = Color(0.17449641, 0.12444509, 0.021864586, 0.73333335)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ix6kw"]
+bg_color = Color(0, 0, 0, 0.735)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
 [node name="battlemode" type="Control" unique_id=184345478]
 layout_mode = 3
 anchors_preset = 15
@@ -1116,3 +1174,115 @@ scale = Vector2(0.8569655, 0.78637534)
 theme_override_font_sizes/font_size = 30
 theme_override_styles/normal = SubResource("StyleBoxFlat_hdopt")
 text = "Continue"
+
+[node name="chargeAttack" type="Control" parent="." unique_id=975934097]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="chargePanel" type="Panel" parent="chargeAttack" unique_id=85154610]
+layout_mode = 0
+offset_left = 541.0
+offset_top = 85.53072
+offset_right = 595.0
+offset_bottom = 259.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_iiu5v")
+
+[node name="Panel" type="Panel" parent="chargeAttack/chargePanel" unique_id=2056881222]
+layout_mode = 0
+offset_left = -20.0
+offset_top = 36.469276
+offset_right = -14.0
+offset_bottom = 130.46927
+
+[node name="title" type="Label" parent="chargeAttack/chargePanel" unique_id=1183745422]
+layout_mode = 0
+offset_left = -26.0
+offset_top = -39.530724
+offset_right = 78.0
+offset_bottom = -24.530724
+theme_override_colors/font_color = Color(0.93078136, 0.92321503, 1.540184e-06, 1)
+text = "Attack Charge!"
+
+[node name="text2" type="Label" parent="chargeAttack/chargePanel/title" unique_id=770071761]
+layout_mode = 0
+offset_left = -5.0
+offset_top = 19.0
+offset_right = 108.0
+offset_bottom = 34.0
+theme_override_colors/font_color = Color(0, 0, 0, 0.627451)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("StyleBoxFlat_gw8qx")
+text = "Hold and pass!"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="low" type="Panel" parent="chargeAttack/chargePanel" unique_id=1337386833]
+layout_mode = 0
+offset_top = 116.46928
+offset_right = 54.0
+offset_bottom = 139.46927
+theme_override_styles/panel = SubResource("StyleBoxFlat_hsfr7")
+
+[node name="reachPoint" type="Panel" parent="chargeAttack/chargePanel/low" unique_id=249224209]
+layout_mode = 0
+offset_left = -27.0
+offset_top = 4.0
+offset_right = -7.0
+offset_bottom = 23.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_uudxr")
+
+[node name="normal" type="Panel" parent="chargeAttack/chargePanel" unique_id=1865266302]
+layout_mode = 0
+offset_top = 71.46928
+offset_right = 54.0
+offset_bottom = 119.46928
+theme_override_styles/panel = SubResource("StyleBoxFlat_kxutv")
+
+[node name="reachPoint" type="Panel" parent="chargeAttack/chargePanel/normal" unique_id=145301758]
+layout_mode = 0
+offset_left = -27.0
+offset_top = 6.0
+offset_right = -7.0
+offset_bottom = 25.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_uudxr")
+
+[node name="high" type="Panel" parent="chargeAttack/chargePanel" unique_id=1226375337]
+layout_mode = 0
+offset_top = 19.469269
+offset_right = 54.0
+offset_bottom = 67.46927
+theme_override_styles/panel = SubResource("StyleBoxFlat_1orl3")
+
+[node name="reachPoint" type="Panel" parent="chargeAttack/chargePanel/high" unique_id=561479472]
+layout_mode = 0
+offset_left = -27.0
+offset_top = 10.000008
+offset_right = -7.0
+offset_bottom = 29.000008
+theme_override_styles/panel = SubResource("StyleBoxFlat_uudxr")
+
+[node name="chargeProgress" type="Panel" parent="chargeAttack/chargePanel" unique_id=1568347120]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 63.46927
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_lsh83")
+
+[node name="ButtonCharge" type="Button" parent="chargeAttack/chargePanel" unique_id=1734818675]
+layout_mode = 0
+offset_left = -288.0
+offset_top = 162.46927
+offset_right = -90.0
+offset_bottom = 216.46927
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_6dwjw")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_344p7")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ix6kw")
+text = "Charge!"
