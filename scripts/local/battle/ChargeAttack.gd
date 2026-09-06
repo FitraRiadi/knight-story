@@ -72,9 +72,11 @@ func show_charge(enemy: Node2D = null) -> void:
 	visible = true
 	move_to_front()
 
-	# Kill any existing velocity tween from previous charge
-	if _button_velocity_tween and _button_velocity_tween.is_running():
-		_button_velocity_tween.kill()
+	# Force kill any existing velocity tween from previous charge
+	if _button_velocity_tween:
+		if _button_velocity_tween.is_running():
+			_button_velocity_tween.kill()
+		_button_velocity_tween = null
 
 	# Set pivot ke center biar scale dari tengah
 	if button_charge:
@@ -126,9 +128,15 @@ func hide_charge() -> void:
 	# Stop text2 pulse
 	_stop_text2_pulse()
 
-	# Kill velocity tween if still running
-	if _button_velocity_tween and _button_velocity_tween.is_running():
-		_button_velocity_tween.kill()
+	# Force kill velocity tween
+	if _button_velocity_tween:
+		if _button_velocity_tween.is_running():
+			_button_velocity_tween.kill()
+		_button_velocity_tween = null
+
+	# Reset button scale immediately
+	if button_charge:
+		button_charge.scale = Vector2.ONE
 
 	var tw := create_tween().set_parallel(true)
 	tw.tween_property(self, "modulate:a", 0.0, 0.15)
@@ -200,9 +208,15 @@ func _stop_charge() -> void:
 
 	is_charging = false
 
-	# Ensure velocity tween is killed
-	if _button_velocity_tween and _button_velocity_tween.is_running():
-		_button_velocity_tween.kill()
+	# Force kill velocity tween and reset button
+	if _button_velocity_tween:
+		if _button_velocity_tween.is_running():
+			_button_velocity_tween.kill()
+		_button_velocity_tween = null
+	if _button_hold_tween and _button_hold_tween.is_running():
+		_button_hold_tween.kill()
+	if button_charge:
+		button_charge.scale = Vector2.ONE
 
 	var zone := _detect_zone()
 	var multiplier := _get_zone_multiplier(zone)

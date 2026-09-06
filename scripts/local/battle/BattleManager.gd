@@ -1494,7 +1494,8 @@ func _on_charge_complete(multiplier: float) -> void:
 	else:
 		result = AttackResult.LOW
 
-	_execute_actual_attack(result)
+	# Charge attack gets bonus damage multiplier (1.25x base on top of zone)
+	_execute_actual_attack(result, true, multiplier)
 
 
 var _charge_shake_tween: Tween
@@ -1698,7 +1699,7 @@ func _apply_hit_stop(duration: float) -> void:
 	Engine.time_scale = 1.0
 
 
-func _execute_actual_attack(result: AttackResult) -> void:
+func _execute_actual_attack(result: AttackResult, is_charge_attack: bool = false, charge_multiplier: float = 1.0) -> void:
 	_play_juicy_hand_attack_animation()
 	
 	# Stamina sudah di-deduct oleh attack card system, skip kalau ada attack_card_ui
@@ -1719,17 +1720,23 @@ func _execute_actual_attack(result: AttackResult) -> void:
 	# Hitung damage dengan buff bonus
 	var total_damage: float = player_damage + _get_player_attack_bonus()
 	
+	# Charge attack bonus: 25% extra damage on top of zone multiplier
+	var charge_bonus: float = 1.0
+	if is_charge_attack:
+		charge_bonus = 1.25
+	
 	# Normal single target attack
 	match result:
 		AttackResult.MISS:
 			target_enemy.receive_damage(0.0, false, true)
 		AttackResult.LOW:
-			var low_damage = total_damage * 0.4
+			var low_damage = total_damage * 0.4 * charge_bonus
 			target_enemy.receive_damage(low_damage, false, false)
 		AttackResult.MID:
-			target_enemy.receive_damage(total_damage, false, false)
+			var mid_damage = total_damage * charge_bonus
+			target_enemy.receive_damage(mid_damage, false, false)
 		AttackResult.CRITICAL:
-			var crit_damage = total_damage + player_crit_damage
+			var crit_damage = (total_damage + player_crit_damage) * charge_bonus
 			target_enemy.receive_damage(crit_damage, true, false)
 	
 	await get_tree().create_timer(0.8).timeout
