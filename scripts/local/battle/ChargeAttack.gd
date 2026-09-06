@@ -159,13 +159,14 @@ func _update_progress_bar() -> void:
 	if not charge_progress or not charge_panel:
 		return
 
-	var panel_size: Vector2 = charge_panel.size
-	var progress_top: float = 63.46927
-	var full_height: float = panel_size.y - progress_top
+	# Bounds dari scene: chargeProgress offset_top ke offset_bottom
+	var progress_top: float = charge_progress.position.y if charge_value == 0.0 else 63.46927
+	var progress_bottom: float = 173.0
+	var full_height: float = progress_bottom - progress_top
 
 	var fill_height: float = full_height * charge_value
 	charge_progress.size.y = max(fill_height, 1.0)
-	charge_progress.position.y = panel_size.y - fill_height
+	charge_progress.position.y = progress_bottom - fill_height
 
 	if charge_value >= 0.7:
 		charge_progress.modulate = Color(1.0, 0.95, 0.3, 1.0)
