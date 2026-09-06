@@ -20,47 +20,6 @@
 [ext_resource type="Script" uid="uid://djbf4rxh2wv3a" path="res://scripts/local/battle/ChargeAttack.gd" id="charge_attack"]
 [ext_resource type="Script" uid="uid://dalxm83qgh3oh" path="res://scripts/local/battle/WaveProgress.gd" id="wave_progress"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_moojr"]
-bg_color = Color(0, 0, 0, 0.66800004)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(1, 0.8972449, 0.85390323, 1)
-corner_radius_bottom_right = 50
-corner_radius_bottom_left = 50
-corner_detail = 1
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_y6eqr"]
-bg_color = Color(0.23753911, 0.23753914, 0.23753911, 0.6666667)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(1, 0.8972449, 0.85390323, 1)
-corner_radius_bottom_right = 50
-corner_radius_bottom_left = 50
-corner_detail = 1
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ve2ux"]
-bg_color = Color(0, 0, 0, 0.48200002)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(1, 0.8972449, 0.85390323, 1)
-corner_radius_bottom_right = 50
-corner_radius_bottom_left = 50
-corner_detail = 1
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8svm1"]
-bg_color = Color(0.15002713, 0.1434347, 0.13129857, 1)
-corner_radius_top_left = 1
-corner_radius_top_right = 1
-corner_radius_bottom_right = 1
-corner_radius_bottom_left = 1
-corner_detail = 1
-
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ymp2q"]
 bg_color = Color(0.54, 0.052650016, 0.027000008, 1)
 corner_radius_top_left = 5
@@ -334,125 +293,6 @@ offset_bottom = 170.0
 mouse_filter = 2
 texture = ExtResource("4_3b2kv")
 expand_mode = 1
-
-[node name="attackControl" type="Control" parent="Camera2D" unique_id=1412604909]
-visible = false
-layout_mode = 3
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = -370.0
-offset_top = -170.0
-offset_right = -370.0
-offset_bottom = -170.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="Button" type="Button" parent="Camera2D/attackControl" unique_id=1659512871]
-layout_mode = 0
-offset_left = 292.0
-offset_top = 23.0
-offset_right = 451.0
-offset_bottom = 131.0
-theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_y6eqr")
-theme_override_styles/hover = SubResource("StyleBoxFlat_ve2ux")
-
-[node name="Label" type="Label" parent="Camera2D/attackControl/Button" unique_id=1984239440]
-layout_mode = 0
-offset_left = 36.0
-offset_top = 5.0
-offset_right = 125.0
-offset_bottom = 20.0
-text = "Basic Attack"
-
-[node name="Button2" type="Button" parent="Camera2D/attackControl" unique_id=1660667046]
-layout_mode = 0
-offset_left = 451.0
-offset_top = 299.0
-offset_right = 610.0
-offset_bottom = 407.0
-rotation = -3.1449683
-theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_y6eqr")
-theme_override_styles/hover = SubResource("StyleBoxFlat_ve2ux")
-
-[node name="Label" type="Label" parent="Camera2D/attackControl/Button2" unique_id=849503614]
-layout_mode = 0
-offset_left = 123.93512
-offset_top = 19.418518
-offset_right = 227.93512
-offset_bottom = 34.418518
-rotation = -3.143007
-text = "Charge Attack"
-
-[node name="Button3" type="Button" parent="Camera2D/attackControl" unique_id=1046779830]
-layout_mode = 0
-offset_left = 506.99997
-offset_top = 82.0
-offset_right = 666.0
-offset_bottom = 190.0
-rotation = -4.7045565
-theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_y6eqr")
-theme_override_styles/hover = SubResource("StyleBoxFlat_ve2ux")
-
-[node name="Label" type="Label" parent="Camera2D/attackControl/Button3" unique_id=1652044468]
-layout_mode = 0
-offset_left = 123.93512
-offset_top = 19.418518
-offset_right = 227.93512
-offset_bottom = 34.418518
-rotation = -3.143007
-text = "Rapid Attack"
-
-[node name="Button4" type="Button" parent="Camera2D/attackControl" unique_id=545003268]
-layout_mode = 0
-offset_left = 236.0
-offset_top = 240.0
-offset_right = 395.00006
-offset_bottom = 348.0
-rotation = -1.5642327
-theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_y6eqr")
-theme_override_styles/hover = SubResource("StyleBoxFlat_ve2ux")
-
-[node name="Label" type="Label" parent="Camera2D/attackControl/Button4" unique_id=890101223]
-layout_mode = 0
-offset_left = 123.93512
-offset_top = 19.418518
-offset_right = 227.93512
-offset_bottom = 34.418518
-rotation = -3.143007
-text = "Combo Attack"
-
-[node name="panel" type="Panel" parent="Camera2D/attackControl" unique_id=2131551636]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = 343.0
-offset_top = 130.0
-offset_right = 372.0
-offset_bottom = 161.0
-grow_horizontal = 2
-grow_vertical = 2
-scale = Vector2(2, 2)
-theme_override_styles/panel = SubResource("StyleBoxFlat_8svm1")
-
-[node name="TextureRect" type="TextureRect" parent="Camera2D/attackControl/panel" unique_id=475408271]
-modulate = Color(0.73300546, 0.7330054, 0.7330054, 1)
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-texture = ExtResource("9_5wo1c")
-expand_mode = 1
-stretch_mode = 5
 
 [node name="player-information" type="Control" parent="." unique_id=791426165]
 texture_filter = 1
@@ -1177,6 +1017,8 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_hdopt")
 text = "Continue"
 
 [node name="chargeAttack" type="Control" parent="." unique_id=975934097]
+visible = false
+script = ExtResource("charge_attack")
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
