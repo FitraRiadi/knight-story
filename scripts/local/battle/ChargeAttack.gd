@@ -58,6 +58,13 @@ func _ready() -> void:
 			charge_panel.offset_bottom - charge_panel.offset_top
 		)
 
+	# Wrap in CanvasLayer biar gak terpengaruh Camera2D zoom
+	var cl := CanvasLayer.new()
+	cl.layer = 10
+	get_parent().add_child(cl)
+	get_parent().remove_child(self)
+	cl.add_child(self)
+
 
 func _process(delta: float) -> void:
 	if not is_charging:

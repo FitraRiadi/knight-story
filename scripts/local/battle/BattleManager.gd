@@ -1455,7 +1455,7 @@ func _start_attack_charge() -> void:
 		charge_attack_ui.charge_complete.connect(_on_charge_complete)
 
 	# Tunggu zoom selesai, baru tampilkan charge UI di tengah camera
-	await get_tree().create_timer(1.5).timeout
+	await get_tree().create_timer(0.5).timeout
 	charge_attack_ui.show_charge()
 
 
