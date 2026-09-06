@@ -1268,13 +1268,11 @@ offset_bottom = 29.000008
 theme_override_styles/panel = SubResource("StyleBoxFlat_uudxr")
 
 [node name="chargeProgress" type="Panel" parent="chargeAttack/chargePanel" unique_id=1568347120]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
+layout_mode = 0
+offset_left = 0.0
 offset_top = 63.46927
-grow_horizontal = 2
-grow_vertical = 2
+offset_right = 54.0
+offset_bottom = 173.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_lsh83")
 
 [node name="ButtonCharge" type="Button" parent="chargeAttack/chargePanel" unique_id=1734818675]

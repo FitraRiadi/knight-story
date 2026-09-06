@@ -21,12 +21,10 @@ signal charge_cancelled
 
 var is_charging: bool = false
 var charge_value: float = 0.0  # 0.0 = bottom, 1.0 = top
-var charge_speed: float = 1.8  # per second (full charge in ~0.55s)
+var charge_speed: float = 1.8  # per second
 var charge_direction: float = 1.0  # 1 = up, -1 = down (bouncing)
-var max_charge_time: float = 2.0  # max hold time
+var max_charge_time: float = 2.0
 var hold_timer: float = 0.0
-
-var charge_tween: Tween = null
 
 # ============================================================
 # ZONE MULTIPLIERS
@@ -35,6 +33,11 @@ var charge_tween: Tween = null
 const ZONE_HIGH_MULTIPLIER: float = 2.0
 const ZONE_NORMAL_MULTIPLIER: float = 1.5
 const ZONE_LOW_MULTIPLIER: float = 1.0
+
+# Progress bar bounds (dari scene layout)
+const PROGRESS_TOP: float = 63.46927
+const PROGRESS_BOTTOM: float = 173.0
+const PROGRESS_FULL_HEIGHT: float = PROGRESS_BOTTOM - PROGRESS_TOP  # ~109.5
 
 # ============================================================
 # LIFECYCLE
@@ -45,6 +48,9 @@ func _ready() -> void:
 	button_charge.button_down.connect(_on_button_down)
 	button_charge.button_up.connect(_on_button_up)
 
+	# Reparent ke Camera2D biar ikut zoom
+	_reparent_to_camera()
+
 
 func _process(delta: float) -> void:
 	if not is_charging:
@@ -52,12 +58,11 @@ func _process(delta: float) -> void:
 
 	hold_timer += delta
 
-	# Auto stop kalau kepanjangan
 	if hold_timer >= max_charge_time:
 		_stop_charge()
 		return
 
-	# Naikkan charge value (bouncing)
+	# Bouncing charge
 	charge_value += charge_direction * charge_speed * delta
 	if charge_value >= 1.0:
 		charge_value = 1.0
@@ -67,6 +72,26 @@ func _process(delta: float) -> void:
 		charge_direction = 1.0
 
 	_update_progress_bar()
+
+
+# ============================================================
+# REPARENT
+# ============================================================
+
+func _reparent_to_camera() -> void:
+	var camera: Camera2D = get_viewport().get_camera_2d()
+	if camera:
+		# Reparent ke Camera2D
+		var parent = get_parent()
+		if parent:
+			parent.remove_child(self)
+		camera.add_child(self)
+		# Reset position biar fill viewport dari center
+		anchors_preset = Control.PRESET_FULL_RECT
+		offset_left = 0.0
+		offset_top = 0.0
+		offset_right = 0.0
+		offset_bottom = 0.0
 
 
 # ============================================================
@@ -81,7 +106,7 @@ func show_charge() -> void:
 	is_charging = false
 	_update_progress_bar()
 
-	# Pop-in animation
+	# Pop-in
 	modulate.a = 0.0
 	scale = Vector2(0.5, 0.5)
 	var tw := create_tween().set_parallel(true)
@@ -118,10 +143,8 @@ func _stop_charge() -> void:
 	var zone := _detect_zone()
 	var multiplier := _get_zone_multiplier(zone)
 
-	# Flash zone yang kena
 	_flash_zone(zone)
 
-	# Tunggu sebentar, lalu emit signal
 	await get_tree().create_timer(0.3).timeout
 	charge_complete.emit(multiplier)
 
@@ -131,7 +154,6 @@ func _stop_charge() -> void:
 # ============================================================
 
 func _detect_zone() -> String:
-	# high = top 30%, normal = middle 40%, low = bottom 30%
 	if charge_value >= 0.7:
 		return "high"
 	elif charge_value >= 0.3:
@@ -160,21 +182,17 @@ func _update_progress_bar() -> void:
 	if not charge_progress:
 		return
 
-	# Progress bar fill dari bawah ke atas
-	var panel_height: float = charge_panel.size.y - 63.46927  # offset_top of chargeProgress
-	var fill_height: float = panel_height * charge_value
+	# Fill dari bawah ke atas
+	var fill_height: float = PROGRESS_FULL_HEIGHT * charge_value
 	charge_progress.size.y = max(fill_height, 1.0)
-	charge_progress.position.y = 63.46927 + (panel_height - fill_height)
+	charge_progress.position.y = PROGRESS_BOTTOM - fill_height
 
-	# Warnanya berubah sesuai zone
+	# Warna sesuai zone
 	if charge_value >= 0.7:
-		# High zone — kuning/bright
 		charge_progress.modulate = Color(1.0, 0.95, 0.3, 1.0)
 	elif charge_value >= 0.3:
-		# Normal zone — oranye
 		charge_progress.modulate = Color(1.0, 0.6, 0.2, 1.0)
 	else:
-		# Low zone — merah
 		charge_progress.modulate = Color(0.9, 0.2, 0.2, 1.0)
 
 
@@ -193,7 +211,6 @@ func _flash_zone(zone: String) -> void:
 	if not zone_node:
 		return
 
-	# Flash putih
 	var original_color: Color = zone_node.modulate
 	zone_node.modulate = Color.WHITE * 2.0
 	var tw := create_tween()
