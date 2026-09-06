@@ -11,6 +11,7 @@ extends TextureRect
 @onready var info_panel_2: Panel = $LocationUI/locationInfoPanel/Panel2
 @onready var info_panel_3: Panel = $LocationUI/locationInfoPanel/Panel3
 @onready var btn_more_info: Button = $LocationUI/locationInfoPanel/moreInfo
+@onready var btn_close_map: Button = $LocationUI/Button
 
 # Popup All Events
 @onready var popup_all_events: Control = $LocationUI/popupInfoAllEvent
@@ -189,6 +190,7 @@ func _connect_location_buttons():
 func _connect_ui_buttons():
 	btn_more_info.pressed.connect(_on_more_info_pressed)
 	btn_close_popup.pressed.connect(_on_close_popup_pressed)
+	btn_close_map.pressed.connect(_on_close_map_pressed)
 
 func _on_location_pressed(location_id: String):
 	var loc_data = LocationDatabase.get_location(location_id)
@@ -223,6 +225,9 @@ func _on_close_popup_pressed():
 	var loc_data = LocationDatabase.get_location(current_location_id)
 	if loc_data:
 		_show_info_panel(loc_data)
+
+func _on_close_map_pressed():
+	TransitionManager.pindah_scene("res://scenes/locations/maps/lotus_village/lotus_village.tscn")
 
 func _get_active_location_id() -> String:
 	if active_button == btn_lotus_village: return "lotusVillage"
