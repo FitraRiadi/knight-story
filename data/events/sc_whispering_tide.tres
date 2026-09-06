@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://bv8vjkhgb081a" path="res://assets/art/map/locationBadge/misterius.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+event_id = "sc_whispering_tide"
+event_name = "Whispering Tide"
+description = "The waves carry voices of the ancient city's citizens."
+icon = ExtResource("2_icon")

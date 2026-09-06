@@ -1,6 +1,6 @@
-[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://ef2c626eec9e"]
+[gd_resource type="Resource" script_class="EventData" format=3 uid="uid://ef2c626eedae"]
 
-[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://2wc1xcjcd1bv" path="res://scripts/data/event_data.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://blxtksu1quvaj" path="res://assets/art/map/locationBadge/altar.png" id="2_icon"]
 
 [resource]

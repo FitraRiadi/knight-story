@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="LocationData" format=3]
+
+[ext_resource type="Script" uid="uid://b5y8ef5w4n4ab" path="res://scripts/data/location_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/events/gh_abandoned_farm.tres" id="2_event"]
+[ext_resource type="Resource" path="res://data/events/gh_bandit_ambush.tres" id="3_event"]
+[ext_resource type="Resource" path="res://data/events/gh_ghost_farmer.tres" id="4_event"]
+[ext_resource type="Resource" path="res://data/events/gh_harvest_festival.tres" id="5_event"]
+[ext_resource type="Resource" path="res://data/events/gh_mysterious_crop.tres" id="6_event"]
+[ext_resource type="Resource" path="res://data/events/gh_sacred_stone.tres" id="7_event"]
+
+[resource]
+script = ExtResource("1_script")
+location_id = "graymoreHill"
+location_name = "Graymore Hill"
+description = "Rolling hills outside Graymore, home to farmers and scattered homesteads."
+lore = "The gentle slopes of Graymore Hill stretch for miles beyond the city walls. Small farming communities dot the landscape, producing grain and livestock. bandits occasionally raid the isolated homesteads, making travel dangerous after dark."
+events = Array[ExtResource("2_event")]([ExtResource("2_event"), ExtResource("3_event"), ExtResource("4_event"), ExtResource("5_event"), ExtResource("6_event"), ExtResource("7_event")])

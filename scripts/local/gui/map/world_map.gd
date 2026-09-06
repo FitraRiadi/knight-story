@@ -11,7 +11,7 @@ extends TextureRect
 @onready var info_panel_2: Panel = $LocationUI/locationInfoPanel/Panel2
 @onready var info_panel_3: Panel = $LocationUI/locationInfoPanel/Panel3
 @onready var btn_more_info: Button = $LocationUI/locationInfoPanel/moreInfo
-@onready var btn_close_map: Button = $LocationUI/Button
+@onready var btn_close_map: Button = $LocationUI/btnCloseMap
 
 # Popup All Events
 @onready var popup_all_events: Control = $LocationUI/popupInfoAllEvent
@@ -56,6 +56,13 @@ extends TextureRect
 @onready var btn_shadow_mountain: Button = $shadowMountain
 @onready var btn_haskal_village: Button = $haskalVillage
 @onready var btn_dark_ruin: Button = $darkRuin
+@onready var btn_graymore: Button = $graymore
+@onready var btn_graymore_hill: Button = $graymoreHill
+@onready var btn_gray_altar: Button = $grayAltar
+@onready var btn_asylum_town: Button = $asylumTown
+@onready var btn_asylum_land: Button = $asylumLand
+@onready var btn_sunken_groto: Button = $sunkenGroto
+@onready var btn_sunken_city: Button = $sunkenCity
 
 var is_dragging: bool = false
 var last_mouse_position: Vector2 = Vector2.ZERO
@@ -128,7 +135,10 @@ func _setup_active_style():
 	var all_buttons: Array[Button] = [
 		btn_lotus_village, btn_colloseum, btn_death_land,
 		btn_forest_of_shadows, btn_shadow_mountain,
-		btn_haskal_village, btn_dark_ruin
+		btn_haskal_village, btn_dark_ruin,
+		btn_graymore, btn_graymore_hill, btn_gray_altar,
+		btn_asylum_town, btn_asylum_land,
+		btn_sunken_groto, btn_sunken_city
 	]
 	for btn in all_buttons:
 		original_styles[btn] = btn.get_theme_stylebox("normal")
@@ -186,6 +196,13 @@ func _connect_location_buttons():
 	btn_shadow_mountain.pressed.connect(_on_location_pressed.bind("shadowMountain"))
 	btn_haskal_village.pressed.connect(_on_location_pressed.bind("haskalVillage"))
 	btn_dark_ruin.pressed.connect(_on_location_pressed.bind("darkRuin"))
+	btn_graymore.pressed.connect(_on_location_pressed.bind("graymore"))
+	btn_graymore_hill.pressed.connect(_on_location_pressed.bind("graymoreHill"))
+	btn_gray_altar.pressed.connect(_on_location_pressed.bind("grayAltar"))
+	btn_asylum_town.pressed.connect(_on_location_pressed.bind("asylumTown"))
+	btn_asylum_land.pressed.connect(_on_location_pressed.bind("asylumLand"))
+	btn_sunken_groto.pressed.connect(_on_location_pressed.bind("sunkenGroto"))
+	btn_sunken_city.pressed.connect(_on_location_pressed.bind("sunkenCity"))
 
 func _connect_ui_buttons():
 	btn_more_info.pressed.connect(_on_more_info_pressed)
@@ -207,6 +224,13 @@ func _on_location_pressed(location_id: String):
 		"shadowMountain": _apply_active_style(btn_shadow_mountain)
 		"haskalVillage": _apply_active_style(btn_haskal_village)
 		"darkRuin": _apply_active_style(btn_dark_ruin)
+		"graymore": _apply_active_style(btn_graymore)
+		"graymoreHill": _apply_active_style(btn_graymore_hill)
+		"grayAltar": _apply_active_style(btn_gray_altar)
+		"asylumTown": _apply_active_style(btn_asylum_town)
+		"asylumLand": _apply_active_style(btn_asylum_land)
+		"sunkenGroto": _apply_active_style(btn_sunken_groto)
+		"sunkenCity": _apply_active_style(btn_sunken_city)
 	
 	_show_label(loc_data.location_name)
 	_show_info_panel(loc_data)

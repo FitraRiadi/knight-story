@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://c5b2henefc0b8" path="res://assets/art/map/locationBadge/creep.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+event_id = "al_shadow_stalker"
+event_name = "Shadow Stalker"
+description = "A dark creature follows travelers across the plains."
+icon = ExtResource("2_icon")

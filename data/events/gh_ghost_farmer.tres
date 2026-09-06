@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="EventData" format=3]
+
+[ext_resource type="Script" path="res://scripts/data/event_data.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://41hr2lwjtbek" path="res://assets/art/map/locationBadge/soulVasal.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+event_id = "gh_ghost_farmer"
+event_name = "Ghost Farmer"
+description = "The spirit of a dead farmer wanders the fields."
+icon = ExtResource("2_icon")

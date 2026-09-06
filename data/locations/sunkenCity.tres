@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="LocationData" format=3]
+
+[ext_resource type="Script" uid="uid://b5y8ef5w4n4ab" path="res://scripts/data/location_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/events/sc_broken_palace.tres" id="2_event"]
+[ext_resource type="Resource" path="res://data/events/sc_deep_lurker.tres" id="3_event"]
+[ext_resource type="Resource" path="res://data/events/sc_lost_fleet.tres" id="4_event"]
+[ext_resource type="Resource" path="res://data/events/sc_shattered_gate.tres" id="5_event"]
+[ext_resource type="Resource" path="res://data/events/sc_throne_room.tres" id="6_event"]
+[ext_resource type="Resource" path="res://data/events/sc_whispering_tide.tres" id="7_event"]
+
+[resource]
+script = ExtResource("1_script")
+location_id = "sunkenCity"
+location_name = "Sunken City"
+description = "The remains of a once-great city, now half-submerged in dark waters."
+lore = "Sunken City was the capital of an ancient empire that ruled the seas. Its towers pierce the water's surface like broken teeth. Beneath the waves lie treasures and dangers in equal measure. Few return from expeditions into the city's depths unchanged."
+events = Array[ExtResource("2_event")]([ExtResource("2_event"), ExtResource("3_event"), ExtResource("4_event"), ExtResource("5_event"), ExtResource("6_event"), ExtResource("7_event")])

@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="LocationData" format=3]
+
+[ext_resource type="Script" uid="uid://b5y8ef5w4n4ab" path="res://scripts/data/location_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/events/al_abandoned_ruins.tres" id="2_event"]
+[ext_resource type="Resource" path="res://data/events/al_broken_tower.tres" id="3_event"]
+[ext_resource type="Resource" path="res://data/events/al_eerie_fog.tres" id="4_event"]
+[ext_resource type="Resource" path="res://data/events/al_lost_wanderer.tres" id="5_event"]
+[ext_resource type="Resource" path="res://data/events/al_shadow_stalker.tres" id="6_event"]
+[ext_resource type="Resource" path="res://data/events/al_spirit_shrine.tres" id="7_event"]
+
+[resource]
+script = ExtResource("1_script")
+location_id = "asylumLand"
+location_name = "Asylum Land"
+description = "Vast plains surrounding Asylum Town, dotted with abandoned structures."
+lore = "The lands around Asylum Town are haunted by echoes of the past. Abandoned buildings stand as reminders of a forgotten era. Strange creatures roam the plains under the cover of night. Travelers are advised to carry protective talismans when venturing beyond the town walls."
+events = Array[ExtResource("2_event")]([ExtResource("2_event"), ExtResource("3_event"), ExtResource("4_event"), ExtResource("5_event"), ExtResource("6_event"), ExtResource("7_event")])

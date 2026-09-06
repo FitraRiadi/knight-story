@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="LocationData" format=3]
+
+[ext_resource type="Script" uid="uid://b5y8ef5w4n4ab" path="res://scripts/data/location_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/events/at_broken_fence.tres" id="2_event"]
+[ext_resource type="Resource" path="res://data/events/at_fever_patients.tres" id="3_event"]
+[ext_resource type="Resource" path="res://data/events/at_forgotten_patient.tres" id="4_event"]
+[ext_resource type="Resource" path="res://data/events/at_healing_ceremony.tres" id="5_event"]
+[ext_resource type="Resource" path="res://data/events/at_pure_spring.tres" id="6_event"]
+[ext_resource type="Resource" path="res://data/events/at_strange_sound.tres" id="7_event"]
+
+[resource]
+script = ExtResource("1_script")
+location_id = "asylumTown"
+location_name = "Asylum Town"
+description = "A settlement built around a asylum for the afflicted and the cursed."
+lore = "Asylum Town grew from a simple hospital into a bustling community. The healers here specialize in treating magical afflictions. The town square features a fountain said to purify those who drink from it. Many seek refuge here, hoping for a cure to their ailments."
+events = Array[ExtResource("2_event")]([ExtResource("2_event"), ExtResource("3_event"), ExtResource("4_event"), ExtResource("5_event"), ExtResource("6_event"), ExtResource("7_event")])

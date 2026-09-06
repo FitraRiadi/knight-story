@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="LocationData" format=3]
+
+[ext_resource type="Script" uid="uid://b5y8ef5w4n4ab" path="res://scripts/data/location_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/events/ga_crystal_vision.tres" id="2_event"]
+[ext_resource type="Resource" path="res://data/events/ga_cursed_offering.tres" id="3_event"]
+[ext_resource type="Resource" path="res://data/events/ga_ritual_glow.tres" id="4_event"]
+[ext_resource type="Resource" path="res://data/events/ga_ruined_pillar.tres" id="5_event"]
+[ext_resource type="Resource" path="res://data/events/ga_spirit_summon.tres" id="6_event"]
+[ext_resource type="Resource" path="res://data/events/ga_void_portal.tres" id="7_event"]
+
+[resource]
+script = ExtResource("1_script")
+location_id = "grayAltar"
+location_name = "Gray Altar"
+description = "An ancient stone altar hidden deep within the hills, radiating faint energy."
+lore = "The Gray Altar predates Graymore by millennia. Its origin remains a mystery to scholars. Strange phenomena occur during the equinox, with lights dancing above the stones. Some believe it serves as a gateway to another realm."
+events = Array[ExtResource("2_event")]([ExtResource("2_event"), ExtResource("3_event"), ExtResource("4_event"), ExtResource("5_event"), ExtResource("6_event"), ExtResource("7_event")])

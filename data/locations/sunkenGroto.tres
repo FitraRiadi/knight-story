@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="LocationData" format=3]
+
+[ext_resource type="Script" uid="uid://b5y8ef5w4n4ab" path="res://scripts/data/location_data.gd" id="1_script"]
+[ext_resource type="Resource" path="res://data/events/sg_ancient_altar.tres" id="2_event"]
+[ext_resource type="Resource" path="res://data/events/sg_cave_in.tres" id="3_event"]
+[ext_resource type="Resource" path="res://data/events/sg_drowned_soul.tres" id="4_event"]
+[ext_resource type="Resource" path="res://data/events/sg_glowing_crystal.tres" id="5_event"]
+[ext_resource type="Resource" path="res://data/events/sg_tide_current.tres" id="6_event"]
+[ext_resource type="Resource" path="res://data/events/sg_water_creature.tres" id="7_event"]
+
+[resource]
+script = ExtResource("1_script")
+location_id = "sunkenGroto"
+location_name = "Sunken Groto"
+description = "A network of flooded caves beneath the eastern cliffs, filled with ancient relics."
+lore = "The Sunken Groto was once a thriving underground city. Earthquakes caused the caves to flood, submerging most of the structures. Divers report seeing glowing crystals in the deepest chambers. Some believe the groto holds the key to restoring a lost civilization."
+events = Array[ExtResource("2_event")]([ExtResource("2_event"), ExtResource("3_event"), ExtResource("4_event"), ExtResource("5_event"), ExtResource("6_event"), ExtResource("7_event")])
