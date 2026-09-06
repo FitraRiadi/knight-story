@@ -11,6 +11,9 @@ signal charge_ended
 @onready var zone_high: Panel = $Control/chargePanel/high
 @onready var zone_normal: Panel = $Control/chargePanel/normal
 @onready var zone_low: Panel = $Control/chargePanel/low
+@onready var reach_high: Panel = $Control/chargePanel/high/reachPoint
+@onready var reach_normal: Panel = $Control/chargePanel/normal/reachPoint
+@onready var reach_low: Panel = $Control/chargePanel/low/reachPoint
 @onready var wrapper: Control = $Control
 @onready var title_text2: Label = $Control/chargePanel/title/text2
 
@@ -103,6 +106,14 @@ func show_charge(enemy: Node2D = null) -> void:
 		charge_progress.offset_top = progress_top
 		charge_progress.offset_bottom = progress_bottom
 	_update_progress_bar()
+
+	# Reset reachPoints to dim state
+	if reach_low:
+		reach_low.modulate = Color(1.0, 1.0, 1.0, 0.5)
+	if reach_normal:
+		reach_normal.modulate = Color(1.0, 1.0, 1.0, 0.5)
+	if reach_high:
+		reach_high.modulate = Color(1.0, 1.0, 1.0, 0.5)
 
 	# SFX charge attack muncul
 	var sfx: AudioStream = load("res://assets/audio/effects/battle/ui/attackQte-open.mp3")
@@ -264,6 +275,32 @@ func _update_progress_bar() -> void:
 		charge_progress.modulate = Color(1.0, 0.6, 0.2, 1.0)
 	else:
 		charge_progress.modulate = Color(0.9, 0.2, 0.2, 1.0)
+
+	# Light up reachPoints when charge passes each zone
+	_update_reach_points()
+
+
+func _update_reach_points() -> void:
+	# Low zone (0.3 threshold) - lights up when charge >= 0.3
+	if reach_low:
+		if charge_value >= 0.3:
+			reach_low.modulate = Color(1.0, 0.95, 0.2, 1.0)  # Yellow
+		else:
+			reach_low.modulate = Color(1.0, 1.0, 1.0, 0.5)   # Dim/default
+
+	# Normal zone (0.7 threshold) - lights up when charge >= 0.7
+	if reach_normal:
+		if charge_value >= 0.7:
+			reach_normal.modulate = Color(1.0, 0.95, 0.2, 1.0)
+		else:
+			reach_normal.modulate = Color(1.0, 1.0, 1.0, 0.5)
+
+	# High zone (1.0 threshold / max) - lights up when charge == 1.0
+	if reach_high:
+		if charge_value >= 1.0:
+			reach_high.modulate = Color(1.0, 0.95, 0.2, 1.0)
+		else:
+			reach_high.modulate = Color(1.0, 1.0, 1.0, 0.5)
 
 
 func _flash_zone(zone: String) -> void:
