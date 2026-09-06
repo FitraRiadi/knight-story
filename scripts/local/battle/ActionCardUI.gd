@@ -35,6 +35,7 @@ const FLOAT_SPEED: float = 2.5
 # ============================================================
 
 const CARD_SCENE: PackedScene = preload("res://scenes/battle/action_card.tscn")
+const ATTACK_CARD_SCENE: PackedScene = preload("res://scenes/battle/attack_card.tscn")
 
 
 # ============================================================
@@ -122,7 +123,13 @@ func _build_ui() -> void:
 
 
 func _create_card(data: ActionCardData, index: int, has_stamina: bool, is_on_cooldown: bool, cooldown_remaining: int) -> Control:
-	var card: Control = CARD_SCENE.instantiate()
+	var card: Control
+
+	# Pilih scene berdasarkan mode
+	if card_mode == CardMode.ATTACK:
+		card = ATTACK_CARD_SCENE.instantiate()
+	else:
+		card = CARD_SCENE.instantiate()
 
 	# Fan rotation
 	var fan_count: int = cards_data.size()
@@ -130,54 +137,79 @@ func _create_card(data: ActionCardData, index: int, has_stamina: bool, is_on_coo
 	var fan_offset: float = index - center_index
 	card.rotation = fan_offset * deg_to_rad(FAN_ANGLE)
 
-	# Card Art (card_art property)
-	var card_art: TextureRect = card.get_node("CardArt")
-	card_art.texture = data.card_art
+	if card_mode == CardMode.ATTACK:
+		# === ATTACK CARD SCENE MAPPING ===
+		# art → CardArt
+		var art: TextureRect = card.get_node("art")
+		art.texture = data.card_art
 
-	# Card Frame (cardPlaceholder.png) — already set in tscn
+		# placeholder → CardFrame (sudah ada default)
 
-	# Glow Panel
-	var glow: Panel = card.get_node("Glow")
-	var glow_style: StyleBoxFlat = glow.get_theme_stylebox("panel").duplicate()
-	glow_style.bg_color = Color(data.accent_color.r, data.accent_color.g, data.accent_color.b, 0.15)
-	glow_style.border_color = data.accent_color
-	glow_style.set_shadow_color(Color(data.accent_color.r, data.accent_color.g, data.accent_color.b, 0.5))
-	glow.add_theme_stylebox_override("panel", glow_style)
-	glow.modulate.a = 0.0
-	card_glow_panels.append(glow)
+		# title → NameLabel
+		var title_label: Label = card.get_node("title")
+		title_label.text = data.card_name
 
-	# Level (top-left)
-	var level_label: Label = card.get_node("LevelContainer/LevelLabel")
-	level_label.text = str(data.level)
+		# staminaCost → CostLabel
+		var cost_label: Label = card.get_node("staminaCost")
+		cost_label.text = str(int(data.stamina_cost))
 
-	# Cost (top-right)
-	var cost_label: Label = card.get_node("CostContainer/CostLabel")
-	cost_label.text = str(int(data.stamina_cost))
+		# Label → DescLabel
+		var desc_label: Label = card.get_node("Label")
+		desc_label.text = data.description
 
-	# Name
-	var name_label: Label = card.get_node("NameLabel")
-	name_label.text = data.card_name
-	name_label.add_theme_color_override("font_color", data.accent_color)
+		# Attack card gak ada Glow, Level, Rarity, Cooldown, Greyed — skip
+		# Tambah dummy ke array supaya index gak geser
+		card_glow_panels.append(null)
+	else:
+		# === SKILL CARD SCENE MAPPING ===
+		# Card Art (card_art property)
+		var card_art: TextureRect = card.get_node("CardArt")
+		card_art.texture = data.card_art
 
-	# Rarity
-	var rarity_label: Label = card.get_node("RarityLabel")
-	rarity_label.text = data.rarity
-	rarity_label.add_theme_color_override("font_color", data.get_rarity_color())
+		# Card Frame (cardPlaceholder.png) — already set in tscn
 
-	# Description
-	var desc_label: Label = card.get_node("DescLabel")
-	desc_label.text = data.description
+		# Glow Panel
+		var glow: Panel = card.get_node("Glow")
+		var glow_style: StyleBoxFlat = glow.get_theme_stylebox("panel").duplicate()
+		glow_style.bg_color = Color(data.accent_color.r, data.accent_color.g, data.accent_color.b, 0.15)
+		glow_style.border_color = data.accent_color
+		glow_style.set_shadow_color(Color(data.accent_color.r, data.accent_color.g, data.accent_color.b, 0.5))
+		glow.add_theme_stylebox_override("panel", glow_style)
+		glow.modulate.a = 0.0
+		card_glow_panels.append(glow)
 
-	# Cooldown overlay
-	var cd_overlay: Control = card.get_node("CooldownOverlay")
-	cd_overlay.visible = is_on_cooldown
-	if is_on_cooldown:
-		var cd_number: Label = cd_overlay.get_node("CDNumber")
-		cd_number.text = str(cooldown_remaining)
+		# Level (top-left)
+		var level_label: Label = card.get_node("LevelContainer/LevelLabel")
+		level_label.text = str(data.level)
 
-	# Greyed overlay
-	var greyed: ColorRect = card.get_node("GreyedOverlay")
-	greyed.visible = not has_stamina or is_on_cooldown
+		# Cost (top-right)
+		var cost_label: Label = card.get_node("CostContainer/CostLabel")
+		cost_label.text = str(int(data.stamina_cost))
+
+		# Name
+		var name_label: Label = card.get_node("NameLabel")
+		name_label.text = data.card_name
+		name_label.add_theme_color_override("font_color", data.accent_color)
+
+		# Rarity
+		var rarity_label: Label = card.get_node("RarityLabel")
+		rarity_label.text = data.rarity
+		rarity_label.add_theme_color_override("font_color", data.get_rarity_color())
+
+		# Description
+		var desc_label: Label = card.get_node("DescLabel")
+		desc_label.text = data.description
+
+		# Cooldown overlay
+		var cd_overlay: Control = card.get_node("CooldownOverlay")
+		cd_overlay.visible = is_on_cooldown
+		if is_on_cooldown:
+			var cd_number: Label = cd_overlay.get_node("CDNumber")
+			cd_number.text = str(cooldown_remaining)
+
+		# Greyed overlay
+		var greyed: ColorRect = card.get_node("GreyedOverlay")
+		greyed.visible = not has_stamina or is_on_cooldown
 
 	# Connect input
 	card.gui_input.connect(_on_card_input.bind(index))
@@ -261,7 +293,7 @@ func _on_card_hover(index: int) -> void:
 		.set_trans(Tween.TRANS_BACK)\
 		.set_ease(Tween.EASE_OUT)
 
-	if index < card_glow_panels.size():
+	if index < card_glow_panels.size() and card_glow_panels[index]:
 		tw.tween_property(card_glow_panels[index], "modulate:a", 1.0, 0.2)
 
 
@@ -287,7 +319,7 @@ func _on_card_unhover(index: int) -> void:
 		.set_trans(Tween.TRANS_BACK)\
 		.set_ease(Tween.EASE_OUT)
 
-	if index < card_glow_panels.size():
+	if index < card_glow_panels.size() and card_glow_panels[index]:
 		tw.tween_property(card_glow_panels[index], "modulate:a", 0.0, 0.2)
 
 	_restart_float(index)
@@ -371,7 +403,7 @@ func _select_card(index: int) -> void:
 		.set_ease(Tween.EASE_OUT)
 
 	# Full glow
-	if index < card_glow_panels.size():
+	if index < card_glow_panels.size() and card_glow_panels[index]:
 		tw.parallel().tween_property(card_glow_panels[index], "modulate:a", 1.0, 0.15)
 
 	# Reset rotation
