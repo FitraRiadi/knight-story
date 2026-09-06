@@ -1,0 +1,77 @@
+[gd_scene format=3 uid="uid://pbxnv4qxuej"]
+
+[ext_resource type="Texture2D" uid="uid://be1xxtp13rlac" path="res://assets/art/card/poisonCard.jpg" id="1_gy83j"]
+[ext_resource type="Texture2D" uid="uid://ctu0rgm3jod6i" path="res://assets/art/card/attackCard/attackCard_placeholder.png" id="1_x1cis"]
+[ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="3_6lapk"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_moojr"]
+texture = ExtResource("3_6lapk")
+
+[node name="attackCard" type="Control" unique_id=1034050425]
+texture_filter = 1
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -585.0
+offset_bottom = -131.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="art" type="TextureRect" parent="." unique_id=1407239600]
+layout_mode = 0
+offset_left = -9.0
+offset_top = 11.0
+offset_right = 166.0
+offset_bottom = 198.0
+texture = ExtResource("1_gy83j")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="placeholder" type="TextureRect" parent="." unique_id=699348189]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1_x1cis")
+expand_mode = 1
+
+[node name="title" type="Label" parent="." unique_id=1867707846]
+layout_mode = 0
+offset_left = 23.0
+offset_top = 9.0
+offset_right = 135.0
+offset_bottom = 25.0
+theme_override_font_sizes/font_size = 14
+text = "Basic Attack"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="staminaCost" type="Label" parent="." unique_id=1227149887]
+layout_mode = 0
+offset_left = 50.0
+offset_top = 131.0
+offset_right = 108.0
+offset_bottom = 146.0
+theme_override_colors/font_color = Color(1, 1, 0.34237343, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxTexture_moojr")
+text = "50"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label" type="Label" parent="." unique_id=731234407]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 146.0
+offset_right = 141.0
+offset_bottom = 191.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 10
+text = "Attack Basic Qte to Sigle Target"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+text_overrun_behavior = 3

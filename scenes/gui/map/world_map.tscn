@@ -142,7 +142,7 @@ theme_override_font_sizes/font_size = 20
 theme_override_styles/normal = SubResource("StyleBoxTexture_mnmqb")
 text = "World Map"
 
-[node name="Button" type="Button" parent="LocationUI" unique_id=700550021]
+[node name="btnCloseMap" type="Button" parent="LocationUI" unique_id=700550021]
 offset_left = 8.0
 offset_top = 43.0
 offset_right = 82.0
@@ -684,3 +684,192 @@ offset_left = 2.0
 offset_top = 29.0
 offset_right = 119.0
 offset_bottom = 33.0
+
+[node name="graymore" type="Button" parent="." unique_id=1671709192]
+layout_mode = 0
+offset_left = 1005.0
+offset_top = 1122.0
+offset_right = 1127.0
+offset_bottom = 1147.0
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxEmpty_moojr")
+theme_override_styles/normal_mirrored = SubResource("StyleBoxTexture_v8twt")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_xncs8")
+theme_override_styles/pressed_mirrored = SubResource("StyleBoxEmpty_hdopt")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_kylmi")
+theme_override_styles/hover_mirrored = SubResource("StyleBoxEmpty_iiu5v")
+theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_mnmqb")
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxEmpty_2ujja")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_dt4my")
+theme_override_styles/disabled_mirrored = SubResource("StyleBoxEmpty_1qqxr")
+theme_override_styles/focus = SubResource("StyleBoxTexture_jncy7")
+text = "Graymore"
+
+[node name="Panel" type="Panel" parent="graymore" unique_id=147153725]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 29.0
+offset_right = 119.0
+offset_bottom = 33.0
+
+[node name="graymoreHill" type="Button" parent="." unique_id=1609245800]
+layout_mode = 0
+offset_left = 1047.0
+offset_top = 1021.0
+offset_right = 1169.0
+offset_bottom = 1046.0
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxEmpty_moojr")
+theme_override_styles/normal_mirrored = SubResource("StyleBoxTexture_v8twt")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_xncs8")
+theme_override_styles/pressed_mirrored = SubResource("StyleBoxEmpty_hdopt")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_kylmi")
+theme_override_styles/hover_mirrored = SubResource("StyleBoxEmpty_iiu5v")
+theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_mnmqb")
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxEmpty_2ujja")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_dt4my")
+theme_override_styles/disabled_mirrored = SubResource("StyleBoxEmpty_1qqxr")
+theme_override_styles/focus = SubResource("StyleBoxTexture_jncy7")
+text = "Graymore Hill"
+
+[node name="Panel" type="Panel" parent="graymoreHill" unique_id=484708023]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 29.0
+offset_right = 119.0
+offset_bottom = 33.0
+
+[node name="grayAltar" type="Button" parent="." unique_id=972586382]
+layout_mode = 0
+offset_left = 846.0
+offset_top = 1164.0
+offset_right = 972.0
+offset_bottom = 1189.0
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxEmpty_moojr")
+theme_override_styles/normal_mirrored = SubResource("StyleBoxTexture_v8twt")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_xncs8")
+theme_override_styles/pressed_mirrored = SubResource("StyleBoxEmpty_hdopt")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_kylmi")
+theme_override_styles/hover_mirrored = SubResource("StyleBoxEmpty_iiu5v")
+theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_mnmqb")
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxEmpty_2ujja")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_dt4my")
+theme_override_styles/disabled_mirrored = SubResource("StyleBoxEmpty_1qqxr")
+theme_override_styles/focus = SubResource("StyleBoxTexture_jncy7")
+text = "Gray Altar"
+
+[node name="Panel" type="Panel" parent="grayAltar" unique_id=1511134734]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 29.0
+offset_right = 119.0
+offset_bottom = 33.0
+
+[node name="asylumTown" type="Button" parent="." unique_id=514192345]
+layout_mode = 0
+offset_left = 796.0
+offset_top = 768.0
+offset_right = 922.0
+offset_bottom = 793.0
+theme_override_font_sizes/font_size = 20
+theme_override_styles/normal = SubResource("StyleBoxEmpty_moojr")
+theme_override_styles/normal_mirrored = SubResource("StyleBoxTexture_v8twt")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_xncs8")
+theme_override_styles/pressed_mirrored = SubResource("StyleBoxEmpty_hdopt")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_kylmi")
+theme_override_styles/hover_mirrored = SubResource("StyleBoxEmpty_iiu5v")
+theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_mnmqb")
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxEmpty_2ujja")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_dt4my")
+theme_override_styles/disabled_mirrored = SubResource("StyleBoxEmpty_1qqxr")
+theme_override_styles/focus = SubResource("StyleBoxTexture_jncy7")
+text = "Asylum Town"
+
+[node name="Panel" type="Panel" parent="asylumTown" unique_id=400998359]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 29.0
+offset_right = 119.0
+offset_bottom = 33.0
+
+[node name="asylumLand" type="Button" parent="." unique_id=143936735]
+layout_mode = 0
+offset_left = 916.0
+offset_top = 616.0
+offset_right = 1077.0
+offset_bottom = 643.0
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleBoxEmpty_moojr")
+theme_override_styles/normal_mirrored = SubResource("StyleBoxTexture_v8twt")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_xncs8")
+theme_override_styles/pressed_mirrored = SubResource("StyleBoxEmpty_hdopt")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_kylmi")
+theme_override_styles/hover_mirrored = SubResource("StyleBoxEmpty_iiu5v")
+theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_mnmqb")
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxEmpty_2ujja")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_dt4my")
+theme_override_styles/disabled_mirrored = SubResource("StyleBoxEmpty_1qqxr")
+theme_override_styles/focus = SubResource("StyleBoxTexture_jncy7")
+text = "Asylum Land"
+
+[node name="Panel" type="Panel" parent="asylumLand" unique_id=1126706158]
+layout_mode = 0
+offset_left = 25.0
+offset_top = 29.0
+offset_right = 142.0
+offset_bottom = 33.0
+
+[node name="sunkenGroto" type="Button" parent="." unique_id=227094328]
+layout_mode = 0
+offset_left = 1357.0
+offset_top = 244.0
+offset_right = 1578.0
+offset_bottom = 278.0
+theme_override_font_sizes/font_size = 35
+theme_override_styles/normal = SubResource("StyleBoxEmpty_moojr")
+theme_override_styles/normal_mirrored = SubResource("StyleBoxTexture_v8twt")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_xncs8")
+theme_override_styles/pressed_mirrored = SubResource("StyleBoxEmpty_hdopt")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_kylmi")
+theme_override_styles/hover_mirrored = SubResource("StyleBoxEmpty_iiu5v")
+theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_mnmqb")
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxEmpty_2ujja")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_dt4my")
+theme_override_styles/disabled_mirrored = SubResource("StyleBoxEmpty_1qqxr")
+theme_override_styles/focus = SubResource("StyleBoxTexture_jncy7")
+text = "Sunken Groto"
+
+[node name="Panel" type="Panel" parent="sunkenGroto" unique_id=1949192141]
+layout_mode = 0
+offset_left = 45.0
+offset_top = 36.0
+offset_right = 162.0
+offset_bottom = 40.0
+
+[node name="sunkenCity" type="Button" parent="." unique_id=2059186815]
+layout_mode = 0
+offset_left = 1600.0
+offset_top = 64.0
+offset_right = 1821.0
+offset_bottom = 98.0
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxEmpty_moojr")
+theme_override_styles/normal_mirrored = SubResource("StyleBoxTexture_v8twt")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_xncs8")
+theme_override_styles/pressed_mirrored = SubResource("StyleBoxEmpty_hdopt")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_kylmi")
+theme_override_styles/hover_mirrored = SubResource("StyleBoxEmpty_iiu5v")
+theme_override_styles/hover_pressed = SubResource("StyleBoxEmpty_mnmqb")
+theme_override_styles/hover_pressed_mirrored = SubResource("StyleBoxEmpty_2ujja")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_dt4my")
+theme_override_styles/disabled_mirrored = SubResource("StyleBoxEmpty_1qqxr")
+theme_override_styles/focus = SubResource("StyleBoxTexture_jncy7")
+text = "Sunken City"
+
+[node name="Panel" type="Panel" parent="sunkenCity" unique_id=328076554]
+layout_mode = 0
+offset_left = 53.0
+offset_top = 36.0
+offset_right = 170.0
+offset_bottom = 40.0

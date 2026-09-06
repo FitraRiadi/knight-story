@@ -342,7 +342,7 @@ offset_right = 1119.3157
 offset_bottom = 265.9639
 theme_override_fonts/font = ExtResource("2_mi53y")
 theme_override_font_sizes/font_size = 200
-text = "Maps"
+text = "Map"
 horizontal_alignment = 1
 
 [node name="mapBtn2" type="Button" parent="bar-features" unique_id=1907340363]

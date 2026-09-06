@@ -137,16 +137,16 @@ corner_radius_bottom_left = 5
 [sub_resource type="SpriteFrames" id="SpriteFrames_kylmi"]
 animations = [{
 "frames": [{
-"duration": 1.0,
+"duration": 0.1,
 "texture": ExtResource("15_0d3xp")
 }, {
-"duration": 1.0,
+"duration": 0.5,
 "texture": ExtResource("16_ornea")
 }, {
-"duration": 1.0,
+"duration": 0.5,
 "texture": ExtResource("17_mu53l")
 }, {
-"duration": 1.0,
+"duration": 0.5,
 "texture": ExtResource("18_emon8")
 }, {
 "duration": 1.0,
@@ -158,7 +158,7 @@ animations = [{
 "duration": 1.0,
 "texture": ExtResource("21_nvmhu")
 }, {
-"duration": 3.0,
+"duration": 1.0,
 "texture": ExtResource("22_xvrla")
 }, {
 "duration": 1.0,
@@ -349,8 +349,8 @@ vertical_alignment = 1
 
 [node name="slash" type="AnimatedSprite2D" parent="." unique_id=2128481828]
 texture_filter = 1
-position = Vector2(5.5555553, 1.111111)
-scale = Vector2(0.6, 0.637)
+position = Vector2(12.222223, 7.777778)
+scale = Vector2(0.4, 0.425)
 sprite_frames = SubResource("SpriteFrames_kylmi")
 frame = 11
 frame_progress = 1.0

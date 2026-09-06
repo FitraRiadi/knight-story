@@ -8,17 +8,17 @@
 [ext_resource type="Texture2D" uid="uid://bi0q3e5o774s1" path="res://assets/art/sprites/Trader_3/Idle_3.png" id="5_876jf"]
 [ext_resource type="Texture2D" uid="uid://kneognevst8j" path="res://assets/art/sprites/npc/6 Girl/Girl_idle.png" id="6_k4ul1"]
 
-[sub_resource type="Gradient" id="Gradient_876jf"]
+[sub_resource type="Gradient" id="Gradient_k4ul1"]
 colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
 
-[sub_resource type="GradientTexture2D" id="GradientTexture2D_dx5u3"]
-gradient = SubResource("Gradient_876jf")
+[sub_resource type="GradientTexture2D" id="GradientTexture2D_876jf"]
+gradient = SubResource("Gradient_k4ul1")
 width = 16
 height = 16
 fill = 1
 fill_from = Vector2(0.5, 0.5)
 
-[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_eevpj"]
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_dx5u3"]
 emission_shape = 3
 emission_box_extents = Vector3(1200, 600, 1)
 initial_velocity_min = 5.0
@@ -271,10 +271,10 @@ modulate = Color(0.95, 0.85, 0.6, 0.2)
 position = Vector2(352, 173)
 scale = Vector2(2.8207958, 1.5643944)
 amount = 500
-texture = SubResource("GradientTexture2D_dx5u3")
+texture = SubResource("GradientTexture2D_876jf")
 lifetime = 8.0
 preprocess = 6.0
-process_material = SubResource("ParticleProcessMaterial_eevpj")
+process_material = SubResource("ParticleProcessMaterial_dx5u3")
 script = ExtResource("2_mh77y")
 tipe_atmosfer = 0
 
@@ -396,6 +396,25 @@ theme_override_styles/hover = SubResource("StyleBoxEmpty_ekb16")
 text = "Your Home"
 
 [node name="Panel" type="Panel" parent="bg/goHome" unique_id=1198185456]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 18.0
+offset_right = 93.0
+offset_bottom = 19.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_ve7wr")
+
+[node name="goColloseum" type="Button" parent="bg" unique_id=755529951]
+layout_mode = 0
+offset_left = 347.0
+offset_top = 123.0
+offset_right = 443.0
+offset_bottom = 146.0
+theme_override_styles/normal = SubResource("StyleBoxTexture_mi53y")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_4g2f1")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_ekb16")
+text = "Colloseum"
+
+[node name="Panel" type="Panel" parent="bg/goColloseum" unique_id=1893095303]
 layout_mode = 0
 offset_left = 5.0
 offset_top = 18.0
