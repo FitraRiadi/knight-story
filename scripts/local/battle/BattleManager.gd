@@ -183,6 +183,7 @@ var card_used_this_session: bool = false
 var attack_hand: Array[ActionCardData] = []
 var attack_discard: Array[ActionCardData] = []
 var attack_card_ui: ActionCardUI = null
+var attack_card_used_this_session: bool = false
 const MAX_ATTACK_HAND: int = 5
 
 # ITEM DROP SYSTEM
@@ -901,6 +902,9 @@ func _on_attack_card_selected(index: int) -> void:
 	current_stamina = maxf(0.0, current_stamina - card.stamina_cost)
 	_animate_stamina_change()
 
+	# Tandai card sudah dipakai
+	attack_card_used_this_session = true
+
 	# Trigger attack mechanic berdasarkan tipe
 	var attack_type: String = card.get("attack_type") if card.has_method("get") else "Basic"
 	match attack_type:
@@ -923,11 +927,17 @@ func _on_attack_card_closed() -> void:
 	attack_card_ui = null
 	_reset_hand_to_original(0.4)
 
-	# End turn
-	is_player_turn = false
-	_set_buttons_active(false)
-	await get_tree().create_timer(0.3).timeout
-	_start_enemies_turn()
+	if attack_card_used_this_session:
+		# Card dipakai → enemy turn
+		attack_card_used_this_session = false
+		is_player_turn = false
+		_set_buttons_active(false)
+		await get_tree().create_timer(0.3).timeout
+		_start_enemies_turn()
+	else:
+		# Cancel → balik ke player turn
+		is_player_turn = true
+		_set_buttons_active(true)
 
 
 func _on_skill_pressed() -> void:
