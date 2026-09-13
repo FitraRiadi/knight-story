@@ -19,6 +19,7 @@
 [ext_resource type="Texture2D" uid="uid://crm3m4q1wtttx" path="res://assets/ui/icons/timingCircle.png" id="14_qpju5"]
 [ext_resource type="Script" uid="uid://djbf4rxh2wv3a" path="res://scripts/local/battle/ChargeAttack.gd" id="charge_attack"]
 [ext_resource type="Script" uid="uid://dalxm83qgh3oh" path="res://scripts/local/battle/WaveProgress.gd" id="wave_progress"]
+[ext_resource type="Script" path="res://scripts/local/battle/RapidAttack.gd" id="rapid_attack"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ymp2q"]
 bg_color = Color(0.54, 0.052650016, 0.027000008, 1)
@@ -1153,3 +1154,13 @@ offset_bottom = 44.0
 rotation = 1.5699024
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.78300005)
 text = "Charge Progress"
+
+[node name="rapidAttack" type="Control" parent="." unique_id=982134098]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("rapid_attack")
