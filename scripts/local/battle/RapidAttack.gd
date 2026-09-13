@@ -6,7 +6,7 @@ class_name RapidAttackUI
 # SIGNALS
 # ============================================================
 
-signal rapid_complete(results: Array[Dictionary])
+signal rapid_complete(results: Array)
 signal rapid_started
 signal rapid_ended
 
