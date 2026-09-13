@@ -1561,9 +1561,12 @@ func _start_attack_rapid() -> void:
 		_execute_actual_attack(AttackResult.MISS)
 		return
 
-	# Highlight semua enemy yang hidup
+	# Highlight semua enemy yang hidup + force enable collision
 	for enemy in living_enemies:
 		enemy.set_highlight(true)
+		if enemy.enemy_collision:
+			enemy.enemy_collision.disabled = false
+			enemy.enemy_collision.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	# Get hit_count dari card terakhir yang di-discard
 	var card_hit_count: int = 5
@@ -1593,6 +1596,33 @@ func _on_rapid_started() -> void:
 
 func _on_rapid_ended() -> void:
 	pass
+
+
+func _play_rapid_slash() -> void:
+	"""Quick hand slash untuk rapid tap — lebih cepat dari full attack"""
+	_stop_hand_breathing()
+
+	# SFX
+	var sfx: AudioStream = load("res://assets/audio/effects/battle/sword/sword-attack.mp3")
+	if sfx:
+		var sfx_player := AudioStreamPlayer.new()
+		sfx_player.stream = sfx
+		sfx_player.volume_db = -3.0
+		add_child(sfx_player)
+		sfx_player.play()
+		sfx_player.finished.connect(sfx_player.queue_free)
+
+	# Quick slash — lebih cepat dari full attack
+	if hand_right:
+		var tw := create_tween()
+		tw.tween_property(hand_right, "position", original_hand_pos + Vector2(25.0, -10.0), 0.04)
+		tw.tween_property(hand_right, "position", original_hand_pos + Vector2(-160.0, 15.0), 0.05)
+		tw.tween_callback(func() -> void:
+			trigger_camera_shake_and_blood(6.0, 0.15, 0.3)
+		)
+		tw.tween_interval(0.03)
+		tw.tween_property(hand_right, "position", original_hand_pos, 0.15).set_trans(Tween.TRANS_SPRING)
+		tw.chain().tween_callback(_start_hand_breathing)
 
 
 func _on_rapid_complete(results: Array[Dictionary]) -> void:
@@ -3062,7 +3092,14 @@ func _on_enemy_clicked(clicked_enemy: BattleEnemy) -> void:
 	if is_rapid_active and rapid_attack_ui and rapid_attack_ui.is_active:
 		var index = enemies.find(clicked_enemy)
 		if index != -1:
-			rapid_attack_ui.register_hit(index)
+			var hit := rapid_attack_ui.register_hit(index)
+			if hit:
+				_play_rapid_slash()
+				# Flash enemy kuning sebentar biar juicy
+				var orig_color: Color = clicked_enemy.modulate
+				clicked_enemy.modulate = Color(1.5, 1.5, 0.5, 1.0)
+				var flash_tw := create_tween()
+				flash_tw.tween_property(clicked_enemy, "modulate", orig_color, 0.15)
 		return
 
 	if not is_player_turn:
