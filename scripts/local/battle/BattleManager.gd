@@ -2097,7 +2097,7 @@ func _start_attack_raptive() -> void:
 	_is_rapid_active = true
 	_rapid_timer_global = 5.0
 	_rapid_timer_per_btn = 1.0
-	_rapid_damage_per_hit = player_damage * 0.3
+	_rapid_damage_per_hit = player_damage * 0.15
 	_rapid_hits = 0
 	_rapid_enemy_index = selected_enemy_index
 
