@@ -2226,6 +2226,20 @@ func _on_raptive_btn_pressed() -> void:
 	# Combo counter
 	_add_combo(1)
 
+	# Kalau enemy mati, _on_enemy_defeated sudah handle _finish_raptive()
+	if not _is_rapid_active:
+		return
+
+	# Langsung pindah ke enemy berikutnya
+	_hide_raptive_btn()
+	_rapid_enemy_index += 1
+	var next_enemy := _get_next_raptive_enemy()
+	if next_enemy:
+		_spawn_raptive_btn_on_enemy(next_enemy)
+		_zoom_camera_to_enemy(next_enemy, 1.10)
+	else:
+		_finish_raptive()
+
 
 func _spawn_rapid_popup_text(spawn_pos: Vector2, text_msg: String = "Hit!") -> void:
 	var popup_label := Label.new()
