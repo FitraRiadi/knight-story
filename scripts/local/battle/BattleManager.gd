@@ -2198,6 +2198,20 @@ func _on_raptive_btn_pressed() -> void:
 	_rapid_current_enemy.receive_damage(_rapid_damage_per_hit, false, false)
 	_rapid_hits += 1
 
+	# Kalau enemy mati, skip visual effects
+	if _rapid_current_enemy.current_hp <= 0:
+		if not _is_raptive_active:
+			return
+		_hide_raptive_btn()
+		_rapid_enemy_index += 1
+		var next_enemy := _get_next_raptive_enemy()
+		if next_enemy:
+			_spawn_raptive_btn_on_enemy(next_enemy)
+			_zoom_camera_to_enemy(next_enemy, 1.10)
+		else:
+			_finish_raptive()
+		return
+
 	# Enemy flash merah
 	var original_modulate := _rapid_current_enemy.modulate
 	_rapid_current_enemy.modulate = Color(10, 10, 10)
@@ -2343,9 +2357,9 @@ func _finish_raptive() -> void:
 	if _rapid_timing_tween and _rapid_timing_tween.is_running():
 		_rapid_timing_tween.kill()
 
-	# Re-enable enemy collision
+	# Re-enable enemy collision (cuma yang masih hidup)
 	for e in enemies:
-		if is_instance_valid(e) and e.enemy_collision:
+		if is_instance_valid(e) and e.current_hp > 0 and e.enemy_collision:
 			e.enemy_collision.disabled = false
 
 	if camera:
