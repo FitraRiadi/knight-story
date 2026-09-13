@@ -1564,9 +1564,19 @@ func _start_attack_rapid() -> void:
 	# Highlight semua enemy yang hidup + force enable collision
 	for enemy in living_enemies:
 		enemy.set_highlight(true)
+		enemy.z_index = 10
 		if enemy.enemy_collision:
 			enemy.enemy_collision.disabled = false
 			enemy.enemy_collision.mouse_filter = Control.MOUSE_FILTER_STOP
+
+	# Rapid UI harus di atas semua tapi gak block input
+	if rapid_attack_ui:
+		rapid_attack_ui.z_index = 20
+		rapid_attack_ui.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		# Pastikan semua child juga gak block input
+		for child in rapid_attack_ui.get_children():
+			if child is Control:
+				child.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	# Get hit_count dari card terakhir yang di-discard
 	var card_hit_count: int = 5
@@ -1599,7 +1609,7 @@ func _on_rapid_ended() -> void:
 
 
 func _play_rapid_slash() -> void:
-	"""Quick hand slash untuk rapid tap — lebih cepat dari full attack"""
+	"""Quick hand slash untuk rapid tap — super cepat"""
 	_stop_hand_breathing()
 
 	# SFX
@@ -1607,26 +1617,25 @@ func _play_rapid_slash() -> void:
 	if sfx:
 		var sfx_player := AudioStreamPlayer.new()
 		sfx_player.stream = sfx
-		sfx_player.volume_db = -3.0
+		sfx_player.volume_db = -5.0
 		add_child(sfx_player)
 		sfx_player.play()
 		sfx_player.finished.connect(sfx_player.queue_free)
 
-	# Quick slash — lebih cepat dari full attack
+	# Super quick slash — instant feel
 	if hand_right:
 		var tw := create_tween()
-		tw.tween_property(hand_right, "position", original_hand_pos + Vector2(25.0, -10.0), 0.04)
-		tw.tween_property(hand_right, "position", original_hand_pos + Vector2(-160.0, 15.0), 0.05)
+		tw.tween_property(hand_right, "position", original_hand_pos + Vector2(25.0, -10.0), 0.02)
+		tw.tween_property(hand_right, "position", original_hand_pos + Vector2(-160.0, 15.0), 0.03)
 		tw.tween_callback(func() -> void:
-			trigger_camera_shake_and_blood(6.0, 0.15, 0.3)
+			trigger_camera_shake_and_blood(5.0, 0.1, 0.2)
 		)
-		tw.tween_interval(0.03)
-		tw.tween_property(hand_right, "position", original_hand_pos, 0.15).set_trans(Tween.TRANS_SPRING)
+		tw.tween_property(hand_right, "position", original_hand_pos, 0.10).set_trans(Tween.TRANS_SPRING)
 		tw.chain().tween_callback(_start_hand_breathing)
 
 
 func _on_rapid_complete(results: Array[Dictionary]) -> void:
-	"""Dipanggil setelah rapid selesai"""
+	"""Dipanggil setelah rapid selesai — cleanup only, damage sudah di-apply per tap"""
 	is_rapid_active = false
 
 	# Disconnect signals
@@ -1637,119 +1646,13 @@ func _on_rapid_complete(results: Array[Dictionary]) -> void:
 	if rapid_attack_ui.rapid_ended.is_connected(_on_rapid_ended):
 		rapid_attack_ui.rapid_ended.disconnect(_on_rapid_ended)
 
-	# Unhighlight semua enemy
+	# Unhighlight semua enemy + reset z_index
 	for enemy in enemies:
 		if is_instance_valid(enemy):
 			enemy.set_highlight(false)
+			enemy.z_index = 0
 
-	# Hitung damage
-	var hit_count_actual: int = results.size()
-	var perfect_count: int = 0
-	var good_count: int = 0
-	for r in results:
-		if r.quality == "perfect":
-			perfect_count += 1
-		elif r.quality == "good":
-			good_count += 1
-
-	# Hitung jumlah enemy hidup
-	var living_count: int = 0
-	for enemy in enemies:
-		if is_instance_valid(enemy) and enemy.current_hp > 0:
-			living_count += 1
-
-	if living_count == 0:
-		_execute_actual_attack(AttackResult.MISS)
-		return
-
-	# Determine AttackResult berdasarkan success rate
-	var success_rate: float = float(hit_count_actual) / float(living_count)
-	var result: AttackResult
-	if success_rate >= 0.8 and perfect_count >= living_count * 0.5:
-		result = AttackResult.CRITICAL
-	elif success_rate >= 0.5:
-		result = AttackResult.MID
-	elif hit_count_actual > 0:
-		result = AttackResult.LOW
-	else:
-		result = AttackResult.MISS
-
-	# Execute multi-target attack — damage dibagi rata
-	_execute_rapid_attack(result, results)
-
-
-func _execute_rapid_attack(result: AttackResult, results: Array[Dictionary]) -> void:
-	"""Execute rapid attack — multi-target, damage dibagi"""
-	_play_juicy_hand_attack_animation()
-
-	# Disable collision semua enemy
-	for enemy in enemies:
-		if enemy.enemy_collision:
-			enemy.enemy_collision.disabled = true
-
-	# Hitung total damage
-	var total_damage: float = player_damage + _get_player_attack_bonus()
-
-	# Hitung jumlah enemy yang di-hit
-	var living_enemies: Array = []
-	for enemy in enemies:
-		if is_instance_valid(enemy) and enemy.current_hp > 0:
-			living_enemies.append(enemy)
-
-	var target_count: int = living_enemies.size()
-	if target_count == 0:
-		_execute_actual_attack(AttackResult.MISS)
-		return
-
-	# Damage dibagi rata ke semua target
-	var damage_per_target: float = 0.0
-	match result:
-		AttackResult.MISS:
-			damage_per_target = 0.0
-		AttackResult.LOW:
-			damage_per_target = (total_damage * 0.4) / target_count
-		AttackResult.MID:
-			damage_per_target = total_damage / target_count
-		AttackResult.CRITICAL:
-			damage_per_target = (total_damage + player_crit_damage) / target_count
-
-	# Apply damage ke semua enemy dengan delay cascade
-	for i in range(living_enemies.size()):
-		var enemy = living_enemies[i]
-		if not is_instance_valid(enemy):
-			continue
-
-		# Slash effect
-		if result != AttackResult.MISS:
-			enemy.play_slash_effect()
-
-		# Delay cascade biar keliatan sequential
-		await get_tree().create_timer(0.15 * i).timeout
-
-		if result == AttackResult.MISS:
-			enemy.receive_damage(0.0, false, true)
-		elif result == AttackResult.CRITICAL:
-			enemy.receive_damage(damage_per_target, true, false)
-		else:
-			enemy.receive_damage(damage_per_target, false, false)
-
-	await get_tree().create_timer(0.5).timeout
-
-	# Scoreboard update
-	total_attacks += 1
-	if result != AttackResult.MISS:
-		total_hits += 1
-		_add_combo(1)
-	else:
-		_reset_combo()
-
-	match result:
-		AttackResult.MISS: total_miss += 1
-		AttackResult.LOW: total_low += 1
-		AttackResult.MID: total_mid += 1
-		AttackResult.CRITICAL: total_critical += 1
-
-	# Attack card: fade indicator, enemy turn
+	# Enemy turn
 	if attack_card_ui:
 		_on_attack_mechanic_done()
 	else:
@@ -3088,18 +2991,46 @@ func _on_enemy_defeated(_exp_amount: int, _gold_amount: int, _dropped_items: Arr
 
 
 func _on_enemy_clicked(clicked_enemy: BattleEnemy) -> void:
-	# Rapid attack mode — tap enemy buat hit
+	# Rapid attack mode — tap enemy = langsung damage + slash
 	if is_rapid_active and rapid_attack_ui and rapid_attack_ui.is_active:
 		var index = enemies.find(clicked_enemy)
 		if index != -1:
 			var hit := rapid_attack_ui.register_hit(index)
 			if hit:
-				_play_rapid_slash()
-				# Flash enemy kuning sebentar biar juicy
+				# 1. Flash enemy kuning
 				var orig_color: Color = clicked_enemy.modulate
 				clicked_enemy.modulate = Color(1.5, 1.5, 0.5, 1.0)
-				var flash_tw := create_tween()
-				flash_tw.tween_property(clicked_enemy, "modulate", orig_color, 0.15)
+				create_tween().tween_property(clicked_enemy, "modulate", orig_color, 0.12)
+
+				# 2. Slash effect langsung di enemy
+				clicked_enemy.play_slash_effect()
+
+				# 3. Quick hand slash (instant)
+				_play_rapid_slash()
+
+				# 4. Apply damage LANGSUNG ke enemy ini
+				var base_damage: float = player_damage + _get_player_attack_bonus()
+				var quality: String = rapid_attack_ui.hit_results[-1].quality
+				var dmg_mult: float = 1.0
+				var is_crit: bool = false
+				match quality:
+					"perfect":
+						dmg_mult = 1.5
+						is_crit = true
+					"good":
+						dmg_mult = 1.0
+					_:
+						dmg_mult = 0.4
+				var final_damage: float = base_damage * dmg_mult
+				clicked_enemy.receive_damage(final_damage, is_crit, false)
+
+				# 5. Scoreboard
+				total_attacks += 1
+				total_hits += 1
+				_add_combo(1)
+
+				# 6. Tandai card sudah dipakai
+				attack_card_used_this_session = true
 		return
 
 	if not is_player_turn:
