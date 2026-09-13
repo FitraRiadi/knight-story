@@ -2217,15 +2217,14 @@ func _position_title_on_enemy(enemy: BattleEnemy, animate: bool = true) -> void:
 	var center_x := viewport_size.x * 0.5
 	var enemy_x := enemy.global_position.x
 
-	# X offset dari center: enemy kiri → title geser kanan, enemy kanan → title geser kiri
 	var x_offset := 0.0
 	if enemy_x < center_x - 50.0:
 		x_offset = 50.0
 	elif enemy_x > center_x + 50.0:
 		x_offset = -50.0
 
-	# Anchor udah center, jadi position.x relatif ke tengah viewport
-	var new_pos := Vector2(x_offset, 0.0)
+	var base_pos := Vector2(276.0, 275.0)
+	var new_pos := Vector2(base_pos.x + x_offset, base_pos.y)
 
 	if animate:
 		var pos_tw := create_tween()
