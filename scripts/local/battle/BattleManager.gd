@@ -2214,16 +2214,18 @@ func _position_title_on_enemy(enemy: BattleEnemy, animate: bool = true) -> void:
 		return
 
 	var viewport_size := get_viewport().get_visible_rect().size
-	# Convert enemy world pos → screen pos pakai camera
-	var enemy_screen_pos := enemy.global_position
-	if camera:
-		enemy_screen_pos = (enemy.global_position - camera.global_position) * camera.zoom + viewport_size * 0.5
+	var center_x := viewport_size.x * 0.5
+	var enemy_x := enemy.global_position.x
 
-	var title_size := title_label.size * title_label.scale
-	var new_pos := Vector2(
-		clampf(enemy_screen_pos.x - title_size.x * 0.5, 10.0, viewport_size.x - title_size.x - 10.0),
-		clampf(enemy_screen_pos.y - title_size.y - 60.0, 10.0, viewport_size.y - title_size.y - 10.0)
-	)
+	# Hitung offset X berdasarkan posisi enemy relatif ke center
+	var x_offset := 0.0
+	if enemy_x < center_x - 50.0:
+		x_offset = 50.0   # Enemy di kiri → title geser kanan biar center di camera
+	elif enemy_x > center_x + 50.0:
+		x_offset = -50.0  # Enemy di kanan → title geser kiri biar center di camera
+
+	var base_pos := Vector2(276.0, 275.0)
+	var new_pos := Vector2(base_pos.x + x_offset, base_pos.y)
 
 	if animate:
 		var pos_tw := create_tween()
