@@ -327,6 +327,7 @@ func _process(delta: float) -> void:
 			if next_enemy:
 				_spawn_raptive_btn_on_enemy(next_enemy)
 				_zoom_camera_to_enemy(next_enemy, 1.10)
+				_position_title_on_enemy(next_enemy, true)
 			else:
 				# Semua enemy mati → rapid selesai
 				_finish_raptive()
@@ -2125,6 +2126,40 @@ func _start_attack_raptive() -> void:
 	_spawn_raptive_btn_on_enemy(_rapid_current_enemy)
 	_zoom_camera_to_enemy(_rapid_current_enemy, 1.10)
 
+	# === Title + Subtitle — sekali saat rapid mulai ===
+	var title_label := get_node_or_null("rapidAttack/title") as Label
+	if title_label:
+		title_label.modulate.a = 0.0
+		title_label.scale = Vector2(0.01, 0.01)
+		title_label.pivot_offset = title_label.size / 2.0
+		title_label.show()
+		_position_title_on_enemy(_rapid_current_enemy, false)
+
+		var pop_tw := create_tween()
+		pop_tw.tween_property(title_label, "modulate:a", 1.0, 0.08)
+		pop_tw.parallel().tween_property(title_label, "scale", Vector2(1.0, 1.0), 0.25)\
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+		var subtitle_label := title_label.get_node_or_null("subtitle") as Label
+		if subtitle_label:
+			subtitle_label.modulate.a = 0.0
+			subtitle_label.scale = Vector2(0.01, 0.01)
+			subtitle_label.pivot_offset = subtitle_label.size / 2.0
+			subtitle_label.show()
+
+			var sub_pop_tw := create_tween().set_parallel(true)
+			sub_pop_tw.tween_property(subtitle_label, "modulate:a", 1.0, 0.12).set_delay(0.15)
+			sub_pop_tw.tween_property(subtitle_label, "scale", Vector2(1.0, 1.0), 0.25)\
+				.set_delay(0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+			# Blink HANYA subtitle
+			var blink_tw := create_tween().set_loops()
+			blink_tw.tween_property(subtitle_label, "modulate:a", 0.2, 0.5)\
+				.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+			blink_tw.tween_property(subtitle_label, "modulate:a", 1.0, 0.5)\
+				.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+			set_meta("_subtitle_blink_tween", blink_tw)
+
 
 func _spawn_raptive_btn_on_enemy(enemy: BattleEnemy) -> void:
 	var viewport_size := get_viewport().get_visible_rect().size
@@ -2173,6 +2208,31 @@ func _spawn_raptive_btn_on_enemy(enemy: BattleEnemy) -> void:
 	_rapid_current_enemy = enemy
 
 
+func _position_title_on_enemy(enemy: BattleEnemy, animate: bool = true) -> void:
+	var title_label := get_node_or_null("rapidAttack/title") as Label
+	if not title_label or not is_instance_valid(enemy):
+		return
+
+	var viewport_size := get_viewport().get_visible_rect().size
+	# Convert enemy world pos → screen pos pakai camera
+	var enemy_screen_pos := enemy.global_position
+	if camera:
+		enemy_screen_pos = (enemy.global_position - camera.global_position) * camera.zoom + viewport_size * 0.5
+
+	var title_size := title_label.size * title_label.scale
+	var new_pos := Vector2(
+		clampf(enemy_screen_pos.x - title_size.x * 0.5, 10.0, viewport_size.x - title_size.x - 10.0),
+		clampf(enemy_screen_pos.y - title_size.y - 60.0, 10.0, viewport_size.y - title_size.y - 10.0)
+	)
+
+	if animate:
+		var pos_tw := create_tween()
+		pos_tw.tween_property(title_label, "position", new_pos, 0.25)\
+			.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	else:
+		title_label.position = new_pos
+
+
 func _hide_raptive_btn() -> void:
 	if _rapid_timing_tween and _rapid_timing_tween.is_running():
 		_rapid_timing_tween.kill()
@@ -2182,8 +2242,9 @@ func _hide_raptive_btn() -> void:
 			old_tw.kill()
 		rapid_btn.modulate.a = 0.0
 		rapid_btn.hide()
+		# Parent biar gak block input
 		if rapid_btn.get_parent():
-			rapid_btn.get_parent().hide()
+			rapid_btn.get_parent().mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 func _on_raptive_btn_pressed() -> void:
@@ -2200,7 +2261,7 @@ func _on_raptive_btn_pressed() -> void:
 
 	# Kalau enemy mati, skip visual effects
 	if _rapid_current_enemy.current_hp <= 0:
-		if not _is_raptive_active:
+		if not _is_rapid_active:
 			return
 		_hide_raptive_btn()
 		_rapid_enemy_index += 1
@@ -2251,6 +2312,7 @@ func _on_raptive_btn_pressed() -> void:
 	if next_enemy:
 		_spawn_raptive_btn_on_enemy(next_enemy)
 		_zoom_camera_to_enemy(next_enemy, 1.10)
+		_position_title_on_enemy(next_enemy, true)
 	else:
 		_finish_raptive()
 
@@ -2352,7 +2414,31 @@ func _finish_raptive() -> void:
 		return
 	_is_rapid_active = false
 
-	_hide_raptive_btn()
+	# === Title + Subtitle pop-out — sekali saat rapid selesai ===
+	var blink_tw = get_meta("_subtitle_blink_tween", null)
+	if blink_tw is Tween and blink_tw.is_running():
+		blink_tw.kill()
+
+	var title_label := get_node_or_null("rapidAttack/title") as Label
+	if title_label:
+		var pop_out_tw := create_tween().set_parallel(true)
+		pop_out_tw.tween_property(title_label, "scale", Vector2(0.01, 0.01), 0.15)\
+			.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+		pop_out_tw.tween_property(title_label, "modulate:a", 0.0, 0.12)
+		var subtitle_label := title_label.get_node_or_null("subtitle") as Label
+		if subtitle_label:
+			pop_out_tw.tween_property(subtitle_label, "scale", Vector2(0.01, 0.01), 0.12)\
+				.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+			pop_out_tw.tween_property(subtitle_label, "modulate:a", 0.0, 0.1)
+		pop_out_tw.chain().tween_callback(func():
+			_hide_raptive_btn()
+			if rapid_btn and rapid_btn.get_parent():
+				rapid_btn.get_parent().hide()
+		)
+	else:
+		_hide_raptive_btn()
+		if rapid_btn and rapid_btn.get_parent():
+			rapid_btn.get_parent().hide()
 
 	if _rapid_timing_tween and _rapid_timing_tween.is_running():
 		_rapid_timing_tween.kill()

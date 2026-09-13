@@ -208,6 +208,20 @@ corner_radius_top_right = 20
 corner_radius_bottom_right = 20
 corner_radius_bottom_left = 20
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ve2ux"]
+bg_color = Color(0.1428257, 0.1428257, 0.1428257, 0.193)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8svm1"]
+bg_color = Color(0.13816993, 0.76675236, 0.13816993, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
 [node name="battlemode" type="Control" unique_id=184345478]
 layout_mode = 3
 anchors_preset = 15
@@ -1162,6 +1176,35 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+
+[node name="title" type="Label" parent="rapidAttack" unique_id=2879631]
+z_index = 4096
+layout_mode = 0
+offset_left = 276.0
+offset_top = 275.0
+offset_right = 507.0
+offset_bottom = 304.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_ve2ux")
+text = "Rappid Attack!"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="subtitle" type="Label" parent="rapidAttack/title" unique_id=537664005]
+z_index = 4096
+layout_mode = 0
+offset_left = 15.0
+offset_top = 31.0
+offset_right = 220.0
+offset_bottom = 48.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_shadow_color = Color(0.9340804, 0.9340805, 0.93408036, 1)
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_8svm1")
+text = "Tap Button Faster You Can!"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="rapidBtn" type="Button" parent="rapidAttack" unique_id=1441135726]
 visible = false
