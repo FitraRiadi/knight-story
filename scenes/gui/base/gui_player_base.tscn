@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://biq0j4ve867kr" path="res://scripts/local/gui/base/gui_player_base.gd" id="2_8xriv"]
 [ext_resource type="FontFile" uid="uid://dx6ognpbk586" path="res://assets/ui/fonts/alagard.ttf" id="2_mi53y"]
 [ext_resource type="Texture2D" uid="uid://ubgv1comvtdg" path="res://assets/art/profile/player/Icon4.png" id="3_c2cj2"]
+[ext_resource type="Script" uid="uid://cvl34fqp2un1c" path="res://test.gd" id="5_mi53y"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dt4my"]
 bg_color = Color(0.08066759, 0.35231295, 0.20111734, 1)
@@ -325,6 +326,7 @@ scale = Vector2(0.11773189, 0.111019455)
 theme_override_font_sizes/font_size = 200
 theme_override_styles/normal = SubResource("StyleBoxFlat_lxysw")
 text = "Journey"
+script = ExtResource("5_mi53y")
 
 [node name="mapBtn" type="Button" parent="bar-features" unique_id=785582507]
 layout_mode = 0

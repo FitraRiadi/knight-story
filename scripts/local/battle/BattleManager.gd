@@ -125,7 +125,7 @@ var original_hand_left_pos: Vector2
 @export var hand_left_corner_offset: Vector2 = Vector2(-120, 200)
 
 # BGM SYSTEM
-var bgm_player: AudioStreamPlayer
+
 
 # COMBO SYSTEM
 var current_combo: int = 0
@@ -858,7 +858,8 @@ func _load_attack_cards() -> void:
 	var charge_card_path: String = "res://data/action_cards/attack_cards/charge_attack.tres"
 	var charge_card: AttackCardData = load(charge_card_path) as AttackCardData
 	if charge_card:
-		attack_hand.append(charge_card.duplicate())
+		for i in range(2):
+			attack_hand.append(charge_card.duplicate())
 
 
 func open_attack_card_ui() -> void:
@@ -1082,14 +1083,7 @@ func _process_action_card_cooldowns() -> void:
 # SETUP BGM SYSTEM
 # ============================================================
 func _setup_bgm() -> void:
-	var bgm_stream: AudioStream = load("uid://c42peweo18yvn")
-	if bgm_stream:
-		bgm_player = AudioStreamPlayer.new()
-		bgm_player.stream = bgm_stream
-		bgm_player.volume_db = -20.0
-		bgm_player.autoplay = true
-		add_child(bgm_player)
-		bgm_player.play()
+	MusicManager.play_music("res://assets/audio/bgm/battle/forestOfShadows.mp3", 1.0)
 
 
 # ============================================================

@@ -1,12 +1,14 @@
-[gd_resource type="Resource" script_class="AttackCardData" format=3]
+[gd_resource type="Resource" script_class="AttackCardData" format=3 uid="uid://bk32v4sxgevcp"]
 
 [ext_resource type="Script" uid="uid://dhkk2y75k2045" path="res://scripts/local/battle/AttackCardData.gd" id="1_card"]
+[ext_resource type="Texture2D" uid="uid://cmn5ook6mgn0t" path="res://assets/art/card/attackCard/charge_attack.jpg" id="1_ietx0"]
 
 [resource]
 script = ExtResource("1_card")
+attack_type = "Charge"
 card_name = "Charge Attack"
 description = "Hold and release for big damage!"
-stamina_cost = 30.0
+card_art = ExtResource("1_ietx0")
+rarity = "Rare"
+stamina_cost = 35.0
 cooldown = 0
-attack_type = "Charge"
-hit_count = 1

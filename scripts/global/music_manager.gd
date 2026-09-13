@@ -10,11 +10,13 @@ extends Node
 var _current_player: AudioStreamPlayer
 var _current_path: String = ""
 var _fade_tween: Tween
+var _master_volume_db: float = -26.02
 
 
 func _ready() -> void:
 	_current_player = AudioStreamPlayer.new()
 	_current_player.bus = "Master"
+	_current_player.volume_db = _master_volume_db
 	add_child(_current_player)
 
 
@@ -40,6 +42,7 @@ func play_music(path: String, fade_time: float = 0.5) -> void:
 		_fade_out_and_swap(new_stream, fade_time)
 	else:
 		_current_player.stream = new_stream
+		_current_player.volume_db = _master_volume_db
 		_current_player.play()
 
 
@@ -90,13 +93,12 @@ func _fade_out_and_swap(new_stream: AudioStream, fade_time: float) -> void:
 
 	_current_player.stop()
 	_current_player.stream = new_stream
-	_current_player.volume_db = 0.0
+	_current_player.volume_db = -40.0
 	_current_player.play()
 
-	# Fade in
-	_current_player.volume_db = -40.0
+	# Fade in to master volume
 	var fade_in = create_tween()
-	fade_in.tween_property(_current_player, "volume_db", 0.0, fade_time * 0.5)
+	fade_in.tween_property(_current_player, "volume_db", _master_volume_db, fade_time * 0.5)
 
 
 func _fade_out_and_free(fade_time: float) -> void:
@@ -108,9 +110,34 @@ func _fade_out_and_free(fade_time: float) -> void:
 
 	await _fade_tween.finished
 	_current_player.stop()
-	_current_player.volume_db = 0.0
+	_current_player.volume_db = _master_volume_db
 
 
 func _kill_tween(t: Tween) -> void:
 	if t and t.is_valid():
 		t.kill()
+
+
+## ============================================================
+## VOLUME CONTROL
+## ============================================================
+
+## Set master volume in dB (0.0 = full, -6.0 ≈ 50%, -12.0 ≈ 25%, -20.0 ≈ 10%).
+func set_master_volume(db: float) -> void:
+	_master_volume_db = db
+	if _current_player.playing:
+		_current_player.volume_db = db
+
+
+func get_master_volume() -> float:
+	return _master_volume_db
+
+
+## Set master volume linear (0.0 to 1.0).
+func set_master_volume_linear(volume: float) -> void:
+	var db = 20.0 * log(max(volume, 0.001)) / log(10.0)
+	set_master_volume(db)
+
+
+func get_master_volume_linear() -> float:
+	return pow(10.0, _master_volume_db / 20.0)

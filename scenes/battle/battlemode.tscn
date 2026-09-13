@@ -54,6 +54,8 @@ corner_radius_bottom_left = 5
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_xngd2"]
 
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ve2ux"]
+
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_y6eqr"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_wnd2m"]
@@ -109,7 +111,7 @@ corner_radius_bottom_left = 5
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_hsfr7"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ve2ux"]
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_gw8qx"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jncy7"]
 bg_color = Color(0, 0, 0, 0.62600005)
@@ -565,6 +567,7 @@ theme_override_font_sizes/font_size = 500
 theme_override_styles/normal = SubResource("StyleBoxEmpty_lsh83")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_kngoi")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_xngd2")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_ve2ux")
 icon = ExtResource("9_5wo1c")
 
 [node name="atkLabel" type="Label" parent="interaction/atkBtn" unique_id=1647390542]
@@ -590,6 +593,7 @@ theme_override_font_sizes/font_size = 500
 theme_override_styles/normal = SubResource("StyleBoxEmpty_y6eqr")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_wnd2m")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_xngd2")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_ve2ux")
 icon = ExtResource("10_5wo1c")
 
 [node name="defendLabel" type="Label" parent="interaction/defendBtn" unique_id=1820145999]
@@ -615,6 +619,7 @@ theme_override_font_sizes/font_size = 500
 theme_override_styles/normal = SubResource("StyleBoxEmpty_lsh83")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_kngoi")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_xngd2")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_ve2ux")
 icon = ExtResource("10_wnd2m")
 
 [node name="skillBtn" type="Button" parent="interaction" unique_id=316588293]
@@ -630,6 +635,7 @@ theme_override_font_sizes/font_size = 500
 theme_override_styles/normal = SubResource("StyleBoxEmpty_lsh83")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_kngoi")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_xngd2")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_ve2ux")
 icon = ExtResource("12_yyr2t")
 
 [node name="runBtn" type="Button" parent="interaction" unique_id=2112867943]
@@ -645,6 +651,7 @@ theme_override_font_sizes/font_size = 500
 theme_override_styles/normal = SubResource("StyleBoxEmpty_lsh83")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_kngoi")
 theme_override_styles/hover = SubResource("StyleBoxEmpty_xngd2")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_ve2ux")
 icon = ExtResource("11_kngoi")
 
 [node name="parryBtn" type="Button" parent="." unique_id=1011180995]
@@ -775,7 +782,7 @@ offset_right = 439.0
 offset_bottom = 288.0
 theme_override_styles/normal = SubResource("StyleBoxFlat_gujcb")
 theme_override_styles/pressed = SubResource("StyleBoxEmpty_hsfr7")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_ve2ux")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_gw8qx")
 text = "Cancel"
 
 [node name="scoreBoard" type="Control" parent="." unique_id=1824372562]
@@ -1136,3 +1143,13 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_6dwjw")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_344p7")
 theme_override_styles/hover = SubResource("StyleBoxFlat_ix6kw")
 text = "Charge!"
+
+[node name="Label" type="Label" parent="chargeAttack/Control/chargePanel" unique_id=2123668903]
+layout_mode = 0
+offset_left = 72.0
+offset_top = 28.999998
+offset_right = 193.0
+offset_bottom = 44.0
+rotation = 1.5699024
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.78300005)
+text = "Charge Progress"
