@@ -1,0 +1,1166 @@
+[gd_scene format=3 uid="uid://bu5hkr727us0p"]
+
+[ext_resource type="Script" uid="uid://bm15klo0yfmnk" path="res://scripts/local/battle/BattleManager.gd" id="1_i268m"]
+[ext_resource type="Texture2D" uid="uid://by25n7vk76fh1" path="res://assets/art/backgrounds/location/map/forest_of_shadow/forest_of_shadow1.jpg" id="2_gujcb"]
+[ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="3_g2c4h"]
+[ext_resource type="FontFile" uid="uid://dx6ognpbk586" path="res://assets/ui/fonts/alagard.ttf" id="3_i268m"]
+[ext_resource type="Texture2D" uid="uid://ct3bvjqujdl0y" path="res://assets/art/playerHand/hand/right-left/base.png" id="4_3b2kv"]
+[ext_resource type="Texture2D" uid="uid://ubgv1comvtdg" path="res://assets/art/profile/player/Icon4.png" id="4_o6x6a"]
+[ext_resource type="Texture2D" uid="uid://keqimxji2oh4" path="res://assets/art/playerHand/hand/left/shield/oak_shield.png" id="4_wnd2m"]
+[ext_resource type="Texture2D" uid="uid://c42ev7khv5aou" path="res://assets/art/playerHand/hand/right/weapon/iron_mace.png" id="5_gujcb"]
+[ext_resource type="Texture2D" uid="uid://dukpxgco0stkj" path="res://assets/ui/icons/target_icon.png" id="6_ymp2q"]
+[ext_resource type="Texture2D" uid="uid://caxwao41ucbqm" path="res://assets/ui/icons/attackBtn.png" id="9_5wo1c"]
+[ext_resource type="Texture2D" uid="uid://me2o2n8ea0mg" path="res://assets/ui/icons/statusEffect/attackUp.png" id="9_gujcb"]
+[ext_resource type="Texture2D" uid="uid://ddc1w5qr1txmy" path="res://assets/ui/icons/defendBtn.png" id="10_5wo1c"]
+[ext_resource type="Texture2D" uid="uid://dp8tbij73ny0f" path="res://assets/ui/icons/backpackBtn.png" id="10_wnd2m"]
+[ext_resource type="Texture2D" uid="uid://bx2e55df83y6s" path="res://assets/ui/icons/runBtn.png" id="11_kngoi"]
+[ext_resource type="Texture2D" uid="uid://bqa1jdoqm6fsq" path="res://assets/ui/icons/skilBtn.png" id="12_yyr2t"]
+[ext_resource type="Texture2D" uid="uid://toj1si5imisd" path="res://assets/ui/icons/parryBtn.png" id="13_kngoi"]
+[ext_resource type="Texture2D" uid="uid://crm3m4q1wtttx" path="res://assets/ui/icons/timingCircle.png" id="14_qpju5"]
+[ext_resource type="Script" uid="uid://djbf4rxh2wv3a" path="res://scripts/local/battle/ChargeAttack.gd" id="charge_attack"]
+[ext_resource type="Script" uid="uid://vhj6gwhmniue" path="res://scripts/local/battle/RapidAttack.gd" id="rapid_attack"]
+[ext_resource type="Script" uid="uid://dalxm83qgh3oh" path="res://scripts/local/battle/WaveProgress.gd" id="wave_progress"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ymp2q"]
+bg_color = Color(0.54, 0.052650016, 0.027000008, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3b2kv"]
+bg_color = Color(0.5785529, 0.49115562, 0.4189473, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_abymu"]
+bg_color = Color(0.84313726, 0.8901961, 0.9647059, 0.44313726)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h8kyn"]
+bg_color = Color(1, 1, 0, 0.36078432)
+corner_radius_top_right = 1
+corner_radius_bottom_right = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i268m"]
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_lsh83"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_kngoi"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_xngd2"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_ve2ux"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_y6eqr"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_wnd2m"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kngoi"]
+bg_color = Color(0.60038817, 0.60038817, 0.60038817, 0)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_yyr2t"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_gujcb"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_xncs8"]
+bg_color = Color(0, 0, 0, 0.5803922)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yyr2t"]
+bg_color = Color(0.87282884, 0.48816437, 0.09847432, 0.34509805)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hx87m"]
+bg_color = Color(0.8831197, 0.9352641, 0.64310896, 0.4627451)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kylmi"]
+bg_color = Color(0.67230505, 1.7688051e-06, 6.256998e-07, 0.72156864)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dt4my"]
+bg_color = Color(0.31764707, 0.52156866, 0.14901961, 0.65882355)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gujcb"]
+bg_color = Color(0.18631536, 0.18631536, 0.18631536, 0.78300005)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_hsfr7"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_gw8qx"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_jncy7"]
+bg_color = Color(0, 0, 0, 0.62600005)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_v8twt"]
+bg_color = Color(0, 0, 0, 0.45800003)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mnmqb"]
+bg_color = Color(0.050708726, 0.050708726, 0.050708726, 0.58400005)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1qqxr"]
+bg_color = Color(0.60038817, 0.60038817, 0.60038817, 0.22200002)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w4lhp"]
+bg_color = Color(0.012920001, 0.012920001, 0.012920001, 0.40300003)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_kxutv"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2ujja"]
+bg_color = Color(0.06100855, 0.06100855, 0.06100855, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_1orl3"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_8svm1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hdopt"]
+bg_color = Color(0.10747974, 0.10747974, 0.10747967, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_iiu5v"]
+bg_color = Color(0.106126174, 0.106126174, 0.106126174, 0.837)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_gw8qx"]
+bg_color = Color(0.6789437, 0.6789437, 0.6789436, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hsfr7"]
+bg_color = Color(0.40161076, 0.1428257, 0.28918967, 0.47000003)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_uudxr"]
+bg_color = Color(0.17641908, 0.17641911, 0.17641899, 1)
+corner_radius_top_left = 50
+corner_radius_top_right = 50
+corner_radius_bottom_right = 50
+corner_radius_bottom_left = 50
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kxutv"]
+bg_color = Color(0.22658296, 0.22658296, 0.22658296, 0.22900002)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_1orl3"]
+bg_color = Color(0.30353206, 0.25030932, 0.07846785, 0.35500002)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lsh83"]
+bg_color = Color(0.106126174, 1, 0.106126174, 0.837)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6dwjw"]
+bg_color = Color(0, 0, 0, 0.735)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_344p7"]
+bg_color = Color(0.17449641, 0.12444509, 0.021864586, 0.73333335)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ix6kw"]
+bg_color = Color(0, 0, 0, 0.735)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
+[node name="battlemode" type="Control" unique_id=184345478]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_i268m")
+
+[node name="bg" type="TextureRect" parent="." unique_id=287304962]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_gujcb")
+expand_mode = 1
+
+[node name="mapTitle" type="Label" parent="bg" unique_id=691397388]
+layout_mode = 0
+offset_left = 563.0
+offset_top = 10.0
+offset_right = 853.6572
+offset_bottom = 39.0
+scale = Vector2(0.5856387, 0.59788865)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.49411765)
+theme_override_fonts/font = ExtResource("3_i268m")
+theme_override_font_sizes/font_size = 30
+text = "Forest Of Shadow"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label" type="Label" parent="bg/mapTitle" unique_id=615507255]
+layout_mode = 0
+offset_left = -3.229519
+offset_top = 28.018585
+offset_right = 287.42776
+offset_bottom = 43.018585
+theme_override_font_sizes/font_size = 16
+text = "The Darkness Field"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="WaveProgress" type="Control" parent="bg" unique_id=1667513961]
+anchors_preset = 0
+offset_left = 517.0
+offset_top = 45.0
+offset_right = 782.0
+offset_bottom = 60.0
+mouse_filter = 2
+script = ExtResource("wave_progress")
+
+[node name="Camera2D" type="Camera2D" parent="." unique_id=2106517464]
+position = Vector2(370, 170)
+
+[node name="hand-left" type="TextureRect" parent="Camera2D" unique_id=1647611838]
+texture_filter = 1
+offset_left = -366.0
+offset_top = -123.0
+offset_right = 368.0
+offset_bottom = 217.0
+mouse_filter = 2
+texture = ExtResource("4_wnd2m")
+expand_mode = 1
+
+[node name="hand-right" type="TextureRect" parent="Camera2D" unique_id=70181446]
+texture_filter = 1
+offset_left = -365.0
+offset_top = -172.0
+offset_right = 369.0
+offset_bottom = 168.0
+mouse_filter = 2
+texture = ExtResource("5_gujcb")
+expand_mode = 1
+
+[node name="hand-right-left" type="TextureRect" parent="Camera2D" unique_id=1411404318]
+visible = false
+texture_filter = 1
+offset_left = -366.0
+offset_top = -170.0
+offset_right = 368.0
+offset_bottom = 170.0
+mouse_filter = 2
+texture = ExtResource("4_3b2kv")
+expand_mode = 1
+
+[node name="player-information" type="Control" parent="." unique_id=791426165]
+texture_filter = 1
+anchors_preset = 0
+offset_left = 2.0000002
+offset_right = 42.0
+offset_bottom = 40.0
+scale = Vector2(0.797118, 0.81556207)
+
+[node name="MORALstatus" type="TextureRect" parent="player-information" unique_id=1592777693]
+texture_filter = 1
+layout_mode = 0
+offset_left = 4.0470486
+offset_top = 61.043903
+offset_right = 96.11742
+offset_bottom = 71.0439
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="bar" type="Panel" parent="player-information/MORALstatus" unique_id=428414601]
+layout_mode = 0
+offset_left = 3.035287
+offset_top = 1.0
+offset_right = 90.04684
+offset_bottom = 9.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_ymp2q")
+
+[node name="number" type="Label" parent="player-information/MORALstatus" unique_id=1917815711]
+layout_mode = 0
+offset_left = 3.0352879
+offset_top = 0.8846972
+offset_right = 89.03507
+offset_bottom = 8.884697
+theme_override_fonts/font = ExtResource("3_i268m")
+theme_override_font_sizes/font_size = 7
+text = "100 / 200"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="STAMINAstatus" type="TextureRect" parent="player-information" unique_id=1214071008]
+texture_filter = 1
+layout_mode = 0
+offset_left = 3.035287
+offset_top = 50.427574
+offset_right = 126.47028
+offset_bottom = 60.427574
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="bar" type="Panel" parent="player-information/STAMINAstatus" unique_id=137732337]
+layout_mode = 0
+offset_left = 2.0235252
+offset_top = 1.0
+offset_right = 120.39972
+offset_bottom = 9.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_3b2kv")
+
+[node name="number" type="Label" parent="player-information/STAMINAstatus" unique_id=1568088863]
+layout_mode = 0
+offset_left = 15.176435
+offset_top = 0.88469315
+offset_right = 104.21152
+offset_bottom = 8.884693
+theme_override_fonts/font = ExtResource("3_i268m")
+theme_override_font_sizes/font_size = 7
+text = "100 / 200"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="HPstatus" type="TextureRect" parent="player-information" unique_id=431529670]
+texture_filter = 1
+layout_mode = 0
+offset_left = 2.0235248
+offset_top = 36.57654
+offset_right = 229.67003
+offset_bottom = 49.542877
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="bar" type="Panel" parent="player-information/HPstatus" unique_id=280728470]
+layout_mode = 0
+offset_left = 3.0705729
+offset_top = 1.0
+offset_right = 222.5877
+offset_bottom = 12.081642
+theme_override_styles/panel = SubResource("StyleBoxFlat_ymp2q")
+
+[node name="number" type="Label" parent="player-information/HPstatus" unique_id=2007439472]
+layout_mode = 0
+offset_left = 85.9998
+offset_top = 4.1193943
+offset_right = 143.99982
+offset_bottom = 12.119394
+theme_override_fonts/font = ExtResource("3_i268m")
+theme_override_font_sizes/font_size = 7
+text = "100 / 200"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="information" type="TextureRect" parent="player-information" unique_id=1248532417]
+layout_mode = 0
+offset_top = 1.0
+offset_right = 40.0
+offset_bottom = 41.0
+scale = Vector2(5.9184318, 1.017209)
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="name" type="Label" parent="player-information/information" unique_id=256579851]
+layout_mode = 0
+offset_left = 8.617149
+offset_top = 5.898492
+offset_right = 230.12643
+offset_bottom = 25.89849
+scale = Vector2(0.12509653, 0.74070823)
+theme_override_fonts/font = ExtResource("3_i268m")
+theme_override_font_sizes/font_size = 21
+text = "The Knight"
+
+[node name="Panel" type="Panel" parent="player-information/information" unique_id=861071921]
+layout_mode = 0
+offset_left = 7.941293
+offset_top = 36.374035
+offset_right = 38.01683
+offset_bottom = 39.323284
+theme_override_styles/panel = SubResource("StyleBoxFlat_abymu")
+
+[node name="exp-bar" type="TextureRect" parent="player-information/information" unique_id=1100861589]
+texture_filter = 1
+layout_mode = 0
+offset_left = 7.096474
+offset_top = 33.42479
+offset_right = 38.86165
+offset_bottom = 39.323284
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="exp-progress" type="Panel" parent="player-information/information/exp-bar" unique_id=927585805]
+layout_mode = 0
+offset_left = -0.16896369
+offset_top = 0.9830812
+offset_right = 31.068466
+offset_bottom = 4.9154086
+theme_override_styles/panel = SubResource("StyleBoxFlat_h8kyn")
+
+[node name="exp-bar2" type="TextureRect" parent="player-information/information" unique_id=679167286]
+layout_mode = 0
+offset_left = 7.096474
+offset_top = 33.42479
+offset_right = 9.968857
+offset_bottom = 39.323284
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="badge" type="TextureRect" parent="player-information" unique_id=1780701172]
+layout_mode = 0
+offset_left = 74.0
+offset_top = 25.0
+offset_right = 155.0
+offset_bottom = 35.0
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="player-information/badge" unique_id=1981086554]
+layout_mode = 0
+offset_left = 5.0000076
+offset_top = 1.0
+offset_right = 156.91653
+offset_bottom = 16.0
+scale = Vector2(0.49369207, 0.5356497)
+theme_override_fonts/font = ExtResource("3_i268m")
+text = "Noble"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="level" type="TextureRect" parent="player-information" unique_id=1884026842]
+layout_mode = 0
+offset_left = 37.0
+offset_top = 25.0
+offset_right = 85.0
+offset_bottom = 35.0
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="player-information/level" unique_id=1406974030]
+layout_mode = 0
+offset_left = 13.0
+offset_top = 1.0
+offset_right = 53.0
+offset_bottom = 16.0
+scale = Vector2(0.56919855, 0.55448294)
+theme_override_colors/font_color = Color(1, 1, 0.17254902, 1)
+theme_override_fonts/font = ExtResource("3_i268m")
+text = "LV"
+
+[node name="level" type="Label" parent="player-information/level" unique_id=1504367049]
+layout_mode = 0
+offset_left = 25.0
+offset_top = 1.0
+offset_right = 62.657448
+offset_bottom = 16.0
+scale = Vector2(0.53110355, 0.5542145)
+theme_override_fonts/font = ExtResource("3_i268m")
+text = "5"
+vertical_alignment = 1
+
+[node name="profile" type="TextureRect" parent="player-information" unique_id=960627779]
+layout_mode = 0
+offset_left = 2.0
+offset_top = 2.0
+offset_right = 42.0
+offset_bottom = 42.0
+scale = Vector2(1.1496692, 0.98153913)
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="Panel" type="Panel" parent="player-information/profile" unique_id=1330693931]
+clip_children = 1
+layout_mode = 0
+offset_left = 0.8698156
+offset_top = 3.0564246
+offset_right = 38.27188
+offset_bottom = 37.6959
+theme_override_styles/panel = SubResource("StyleBoxFlat_i268m")
+
+[node name="img" type="TextureRect" parent="player-information/profile/Panel" unique_id=2056504528]
+layout_mode = 0
+offset_right = 40.01151
+offset_bottom = 35.658287
+texture = ExtResource("4_o6x6a")
+
+[node name="playerEffect" type="Control" parent="player-information" unique_id=1119730705]
+anchors_preset = 0
+offset_left = 3.763558
+offset_top = 69.89045
+offset_right = 108.208015
+offset_bottom = 84.33491
+scale = Vector2(1.8687787, 2.1181943)
+
+[node name="effect" type="TextureRect" parent="player-information/playerEffect" unique_id=36442757]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 43.333336
+offset_right = -44.44445
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("9_gujcb")
+expand_mode = 1
+
+[node name="interaction" type="Control" parent="." unique_id=48050382]
+anchors_preset = 0
+offset_left = 280.0
+offset_top = 4.0
+offset_right = 320.0
+offset_bottom = 44.0
+
+[node name="atkBtn" type="Button" parent="interaction" unique_id=1136254172]
+texture_filter = 1
+layout_mode = 0
+offset_left = 347.0
+offset_top = 233.0
+offset_right = 857.1421
+offset_bottom = 774.56714
+scale = Vector2(0.2074529, 0.18226217)
+theme_override_fonts/font = ExtResource("3_i268m")
+theme_override_font_sizes/font_size = 500
+theme_override_styles/normal = SubResource("StyleBoxEmpty_lsh83")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_kngoi")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_xngd2")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_ve2ux")
+icon = ExtResource("9_5wo1c")
+
+[node name="atkLabel" type="Label" parent="interaction/atkBtn" unique_id=1647390542]
+visible = false
+layout_mode = 0
+offset_left = 115.38916
+offset_top = 512.6605
+offset_right = 162.38916
+offset_bottom = 527.6605
+theme_override_font_sizes/font_size = 100
+text = "Attack"
+
+[node name="defendBtn" type="Button" parent="interaction" unique_id=1070356766]
+texture_filter = 1
+layout_mode = 0
+offset_left = -218.0
+offset_top = 195.00002
+offset_right = 292.1421
+offset_bottom = 736.56714
+scale = Vector2(0.16466004, 0.14434505)
+theme_override_fonts/font = ExtResource("3_i268m")
+theme_override_font_sizes/font_size = 500
+theme_override_styles/normal = SubResource("StyleBoxEmpty_y6eqr")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_wnd2m")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_xngd2")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_ve2ux")
+icon = ExtResource("10_5wo1c")
+
+[node name="defendLabel" type="Label" parent="interaction/defendBtn" unique_id=1820145999]
+visible = false
+layout_mode = 0
+offset_left = 78.95055
+offset_top = 533.444
+offset_right = 409.95056
+offset_bottom = 627.444
+theme_override_font_sizes/font_size = 100
+text = "Defend"
+
+[node name="backpackBtn" type="Button" parent="interaction" unique_id=1156248231]
+texture_filter = 1
+layout_mode = 0
+offset_left = -274.0
+offset_top = 204.0
+offset_right = 236.14209
+offset_bottom = 745.56714
+scale = Vector2(0.12634899, 0.11041779)
+theme_override_fonts/font = ExtResource("3_i268m")
+theme_override_font_sizes/font_size = 500
+theme_override_styles/normal = SubResource("StyleBoxEmpty_lsh83")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_kngoi")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_xngd2")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_ve2ux")
+icon = ExtResource("10_wnd2m")
+
+[node name="skillBtn" type="Button" parent="interaction" unique_id=316588293]
+texture_filter = 1
+layout_mode = 0
+offset_left = 392.0
+offset_top = 186.0
+offset_right = 902.1421
+offset_bottom = 727.56714
+scale = Vector2(0.12634899, 0.11041779)
+theme_override_fonts/font = ExtResource("3_i268m")
+theme_override_font_sizes/font_size = 500
+theme_override_styles/normal = SubResource("StyleBoxEmpty_lsh83")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_kngoi")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_xngd2")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_ve2ux")
+icon = ExtResource("12_yyr2t")
+
+[node name="runBtn" type="Button" parent="interaction" unique_id=2112867943]
+texture_filter = 1
+layout_mode = 0
+offset_left = -247.0
+offset_top = 253.0
+offset_right = 263.1421
+offset_bottom = 794.56714
+scale = Vector2(0.12634899, 0.11041779)
+theme_override_fonts/font = ExtResource("3_i268m")
+theme_override_font_sizes/font_size = 500
+theme_override_styles/normal = SubResource("StyleBoxEmpty_lsh83")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_kngoi")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_xngd2")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_ve2ux")
+icon = ExtResource("11_kngoi")
+
+[node name="parryBtn" type="Button" parent="." unique_id=1011180995]
+visible = false
+layout_mode = 0
+offset_left = 271.0
+offset_top = 90.0
+offset_right = 752.0
+offset_bottom = 608.0
+scale = Vector2(0.08823513, 0.08547743)
+theme_override_font_sizes/font_size = 400
+theme_override_styles/normal = SubResource("StyleBoxFlat_kngoi")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_yyr2t")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_gujcb")
+icon = ExtResource("13_kngoi")
+
+[node name="timing" type="TextureProgressBar" parent="parryBtn" unique_id=1962442439]
+layout_mode = 0
+offset_left = -18.892054
+offset_top = -20.38327
+offset_right = 462.85526
+offset_bottom = 497.61673
+scale = Vector2(1.0755557, 1.0759319)
+value = 100.0
+fill_mode = 4
+texture_progress = ExtResource("14_qpju5")
+
+[node name="attackQte" type="Control" parent="." unique_id=1145859259]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 2.0
+offset_top = -4.0
+offset_right = 2.0
+offset_bottom = -4.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="information" type="Label" parent="attackQte" unique_id=1232580275]
+layout_mode = 0
+offset_left = 317.0
+offset_top = 258.0
+offset_right = 521.0
+offset_bottom = 287.0
+scale = Vector2(0.6773468, 0.68144476)
+theme_override_colors/font_color = Color(1, 1, 0.33183005, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.21568628)
+theme_override_font_sizes/font_size = 30
+text = "Attack Timing!"
+
+[node name="Label2" type="Label" parent="attackQte/information" unique_id=1310154040]
+layout_mode = 0
+offset_left = 14.0
+offset_top = 24.0
+offset_right = 182.0
+offset_bottom = 39.0
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.21568628)
+theme_override_font_sizes/font_size = 15
+text = "Tap To Perform attack"
+horizontal_alignment = 1
+
+[node name="bg" type="TextureRect" parent="attackQte" unique_id=747703566]
+layout_mode = 0
+offset_left = 230.0
+offset_top = 293.0
+offset_right = 552.0
+offset_bottom = 333.0
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="bar-container" type="Panel" parent="attackQte/bg" unique_id=1002143884]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 4.0
+offset_right = 313.0
+offset_bottom = 36.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_xncs8")
+
+[node name="bar-low" type="Panel" parent="attackQte/bg/bar-container" unique_id=2013307788]
+layout_mode = 0
+offset_left = 2.0
+offset_right = 210.0
+offset_bottom = 32.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_yyr2t")
+
+[node name="bar-mid" type="Panel" parent="attackQte/bg/bar-container" unique_id=2116624882]
+layout_mode = 0
+offset_left = 10.0
+offset_right = 149.0
+offset_bottom = 32.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_hx87m")
+
+[node name="bar-success" type="Panel" parent="attackQte/bg/bar-container" unique_id=254028990]
+layout_mode = 0
+offset_left = 53.0
+offset_right = 105.0
+offset_bottom = 32.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_kylmi")
+
+[node name="TextureRect" type="TextureRect" parent="attackQte/bg/bar-container/bar-success" unique_id=724253918]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 7.0
+offset_right = -7.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("6_ymp2q")
+expand_mode = 1
+
+[node name="bar-running" type="Panel" parent="attackQte/bg/bar-container" unique_id=702127615]
+layout_mode = 0
+offset_left = 174.0
+offset_right = 177.0
+offset_bottom = 32.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_dt4my")
+
+[node name="resetTarget" type="Button" parent="attackQte" unique_id=449822910]
+visible = false
+layout_mode = 0
+offset_left = 338.0
+offset_top = 265.0
+offset_right = 439.0
+offset_bottom = 288.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_gujcb")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_hsfr7")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_gw8qx")
+text = "Cancel"
+
+[node name="scoreBoard" type="Control" parent="." unique_id=1824372562]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="container" type="Panel" parent="scoreBoard" unique_id=1077844098]
+layout_mode = 0
+offset_left = 153.0
+offset_top = 33.0
+offset_right = 596.0
+offset_bottom = 261.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_jncy7")
+
+[node name="container3" type="Panel" parent="scoreBoard" unique_id=1409525245]
+layout_mode = 0
+offset_left = 153.0
+offset_top = 261.0
+offset_right = 596.0
+offset_bottom = 317.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_v8twt")
+
+[node name="container2" type="Panel" parent="scoreBoard" unique_id=1405820272]
+layout_mode = 0
+offset_left = 162.0
+offset_top = 90.0
+offset_right = 586.0
+offset_bottom = 249.0
+
+[node name="title" type="Label" parent="scoreBoard" unique_id=1795731443]
+layout_mode = 0
+offset_left = 233.0
+offset_top = 42.0
+offset_right = 509.0
+offset_bottom = 85.0
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_mnmqb")
+text = "Battle Results"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="cardScore" type="Control" parent="scoreBoard" unique_id=1618801188]
+anchors_preset = 0
+offset_left = 176.0
+offset_top = 117.0
+offset_right = 296.0
+offset_bottom = 203.0
+
+[node name="bg" type="Panel" parent="scoreBoard/cardScore" unique_id=1163917753]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -2.0
+offset_right = -3.0
+offset_bottom = 24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_1qqxr")
+
+[node name="title" type="Label" parent="scoreBoard/cardScore" unique_id=240126125]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 65.0
+offset_right = 114.0
+offset_bottom = 80.0
+theme_override_font_sizes/font_size = 9
+theme_override_styles/normal = SubResource("StyleBoxFlat_w4lhp")
+text = "Enemy Defeated"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="logo" type="Panel" parent="scoreBoard/cardScore" unique_id=1887503587]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 2.0000076
+offset_right = 68.0
+offset_bottom = 42.0
+scale = Vector2(1.5, 1.5)
+theme_override_styles/panel = SubResource("StyleBoxEmpty_kxutv")
+
+[node name="TextureRect" type="TextureRect" parent="scoreBoard/cardScore/logo" unique_id=1834817606]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("6_ymp2q")
+expand_mode = 1
+
+[node name="score" type="Label" parent="scoreBoard/cardScore" unique_id=1288540891]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 82.0
+offset_right = 114.0
+offset_bottom = 107.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_2ujja")
+text = "2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="cardScore2" type="Control" parent="scoreBoard" unique_id=2091175846]
+anchors_preset = 0
+offset_left = 315.0
+offset_top = 117.0
+offset_right = 435.0
+offset_bottom = 203.0
+
+[node name="bg" type="Panel" parent="scoreBoard/cardScore2" unique_id=1497098001]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -2.0
+offset_right = -3.0
+offset_bottom = 24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_1qqxr")
+
+[node name="title" type="Label" parent="scoreBoard/cardScore2" unique_id=1893712353]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 65.0
+offset_right = 114.0
+offset_bottom = 80.0
+theme_override_font_sizes/font_size = 9
+theme_override_styles/normal = SubResource("StyleBoxFlat_w4lhp")
+text = "Hit Accuracy"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="logo" type="Panel" parent="scoreBoard/cardScore2" unique_id=1628822429]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 2.0000076
+offset_right = 68.0
+offset_bottom = 42.0
+scale = Vector2(1.5, 1.5)
+theme_override_styles/panel = SubResource("StyleBoxEmpty_1orl3")
+
+[node name="TextureRect" type="TextureRect" parent="scoreBoard/cardScore2/logo" unique_id=1804657453]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("9_5wo1c")
+expand_mode = 1
+
+[node name="score" type="Label" parent="scoreBoard/cardScore2" unique_id=840395086]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 82.0
+offset_right = 114.0
+offset_bottom = 107.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_2ujja")
+text = "2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="cardScore3" type="Control" parent="scoreBoard" unique_id=1282010480]
+anchors_preset = 0
+offset_left = 455.0
+offset_top = 117.0
+offset_right = 575.0
+offset_bottom = 203.0
+
+[node name="bg" type="Panel" parent="scoreBoard/cardScore3" unique_id=464257952]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -2.0
+offset_right = -3.0
+offset_bottom = 24.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_1qqxr")
+
+[node name="title" type="Label" parent="scoreBoard/cardScore3" unique_id=1266949262]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 65.0
+offset_right = 114.0
+offset_bottom = 80.0
+theme_override_font_sizes/font_size = 9
+theme_override_styles/normal = SubResource("StyleBoxFlat_w4lhp")
+text = "Parries Successful"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="logo" type="Panel" parent="scoreBoard/cardScore3" unique_id=722675434]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 2.0000076
+offset_right = 68.0
+offset_bottom = 42.0
+scale = Vector2(1.5, 1.5)
+theme_override_styles/panel = SubResource("StyleBoxEmpty_8svm1")
+
+[node name="TextureRect" type="TextureRect" parent="scoreBoard/cardScore3/logo" unique_id=504094822]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("13_kngoi")
+expand_mode = 1
+
+[node name="score" type="Label" parent="scoreBoard/cardScore3" unique_id=248269031]
+layout_mode = 0
+offset_left = 5.0
+offset_top = 82.0
+offset_right = 114.0
+offset_bottom = 107.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_2ujja")
+text = "2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="continueBtn" type="Button" parent="scoreBoard" unique_id=1291469379]
+layout_mode = 0
+offset_left = 303.0
+offset_top = 264.0
+offset_right = 471.0348
+offset_bottom = 310.08664
+scale = Vector2(0.8569655, 0.78637534)
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_hdopt")
+text = "Continue"
+
+[node name="chargeAttack" type="Control" parent="." unique_id=975934097]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("charge_attack")
+
+[node name="Control" type="Control" parent="chargeAttack" unique_id=1098845858]
+anchors_preset = 0
+offset_left = 156.0
+offset_top = 31.0
+offset_right = 602.0
+offset_bottom = 331.0
+
+[node name="chargePanel" type="Panel" parent="chargeAttack/Control" unique_id=85154610]
+layout_mode = 0
+offset_left = 347.0
+offset_top = 33.0
+offset_right = 401.0
+offset_bottom = 206.47
+theme_override_styles/panel = SubResource("StyleBoxFlat_iiu5v")
+
+[node name="Panel" type="Panel" parent="chargeAttack/Control/chargePanel" unique_id=2056881222]
+layout_mode = 0
+offset_left = -19.0
+offset_top = 61.0
+offset_right = -13.0
+offset_bottom = 155.0
+
+[node name="title" type="Label" parent="chargeAttack/Control/chargePanel" unique_id=1183745422]
+layout_mode = 0
+offset_left = -173.0
+offset_top = 146.0
+offset_right = -64.0
+offset_bottom = 161.0
+theme_override_colors/font_color = Color(0.93078136, 0.92321503, 1.540184e-06, 1)
+theme_override_colors/font_shadow_color = Color(0.106126174, 0.106126174, 0.106126174, 1)
+text = "Attack Charge!"
+
+[node name="text2" type="Label" parent="chargeAttack/Control/chargePanel/title" unique_id=770071761]
+layout_mode = 0
+offset_left = -5.0
+offset_top = 19.0
+offset_right = 108.0
+offset_bottom = 34.0
+theme_override_colors/font_color = Color(0, 0, 0, 0.627451)
+theme_override_font_sizes/font_size = 12
+theme_override_styles/normal = SubResource("StyleBoxFlat_gw8qx")
+text = "Hold and pass!"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="low" type="Panel" parent="chargeAttack/Control/chargePanel" unique_id=1337386833]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 141.0
+offset_right = 55.0
+offset_bottom = 164.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_hsfr7")
+
+[node name="reachPoint" type="Panel" parent="chargeAttack/Control/chargePanel/low" unique_id=249224209]
+layout_mode = 0
+offset_left = -27.0
+offset_top = 4.0
+offset_right = -7.0
+offset_bottom = 23.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_uudxr")
+
+[node name="normal" type="Panel" parent="chargeAttack/Control/chargePanel" unique_id=1865266302]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 96.0
+offset_right = 55.0
+offset_bottom = 144.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_kxutv")
+
+[node name="reachPoint" type="Panel" parent="chargeAttack/Control/chargePanel/normal" unique_id=145301758]
+layout_mode = 0
+offset_left = -27.0
+offset_top = 6.0
+offset_right = -7.0
+offset_bottom = 25.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_uudxr")
+
+[node name="high" type="Panel" parent="chargeAttack/Control/chargePanel" unique_id=1226375337]
+layout_mode = 0
+offset_left = 1.0
+offset_top = 43.999992
+offset_right = 55.0
+offset_bottom = 91.99999
+theme_override_styles/panel = SubResource("StyleBoxFlat_1orl3")
+
+[node name="reachPoint" type="Panel" parent="chargeAttack/Control/chargePanel/high" unique_id=561479472]
+layout_mode = 0
+offset_left = -27.0
+offset_top = 10.000008
+offset_right = -7.0
+offset_bottom = 29.000008
+theme_override_styles/panel = SubResource("StyleBoxFlat_uudxr")
+
+[node name="chargeProgress" type="Panel" parent="chargeAttack/Control/chargePanel" unique_id=1568347120]
+layout_mode = 0
+offset_right = 54.0
+offset_bottom = 173.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_lsh83")
+
+[node name="ButtonCharge" type="Button" parent="chargeAttack/Control/chargePanel" unique_id=1734818675]
+layout_mode = 0
+offset_left = -219.0
+offset_top = 191.0
+offset_right = -21.0
+offset_bottom = 245.0
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_6dwjw")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_344p7")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ix6kw")
+text = "Charge!"
+
+[node name="Label" type="Label" parent="chargeAttack/Control/chargePanel" unique_id=2123668903]
+layout_mode = 0
+offset_left = 72.0
+offset_top = 28.999998
+offset_right = 193.0
+offset_bottom = 44.0
+rotation = 1.5699024
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.78300005)
+text = "Charge Progress"
+
+[node name="rapidAttack" type="Control" parent="." unique_id=982134098]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("rapid_attack")

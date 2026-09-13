@@ -3212,13 +3212,20 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			return
 
-	# Rapid attack input — SELALU dicek dulu, bahkan saat is_player_turn = false
+	# Rapid attack input — klik/tap di rapidBtn area = hit
 	if _is_rapid_active and rapid_btn and rapid_btn.visible:
 		var is_click := false
+		# Distance-based check — lebih reliable dari rect
+		var btn_center := rapid_btn.global_position + Vector2(
+			rapid_btn.size.x * rapid_btn.scale.x * 0.5,
+			rapid_btn.size.y * rapid_btn.scale.y * 0.5
+		)
+		var click_pos: Vector2 = event.position
+		var click_dist := click_pos.distance_to(btn_center)
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-			is_click = true
+			is_click = click_dist < 60.0
 		elif event is InputEventScreenTouch and event.pressed:
-			is_click = true
+			is_click = click_dist < 60.0
 		elif event is InputEventKey and event.pressed and event.is_action("ui_accept"):
 			is_click = true
 		if is_click:
