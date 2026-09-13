@@ -259,7 +259,7 @@ func register_hit(enemy_index: int) -> bool:
 	hit_results.append({"enemy_index": enemy_index, "quality": quality})
 
 	# Update combo
-	combo_label.text = "%d / %d" % targets_hit_count, max_hits
+	combo_label.text = "%d / %d" % [targets_hit_count, max_hits]
 
 	# Show hit marker
 	_show_hit_marker(quality)
