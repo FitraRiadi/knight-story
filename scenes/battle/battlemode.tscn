@@ -1153,3 +1153,37 @@ offset_bottom = 44.0
 rotation = 1.5699024
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.78300005)
 text = "Charge Progress"
+
+[node name="rapidAttack" type="Control" parent="." unique_id=310113708]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="rapidBtn" type="Button" parent="rapidAttack" unique_id=1441135726]
+visible = false
+layout_mode = 0
+offset_left = 271.0
+offset_top = 90.0
+offset_right = 752.0
+offset_bottom = 608.0
+scale = Vector2(0.08823513, 0.08547743)
+theme_override_font_sizes/font_size = 400
+theme_override_styles/normal = SubResource("StyleBoxFlat_kngoi")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_yyr2t")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_gujcb")
+icon = ExtResource("13_kngoi")
+
+[node name="timing" type="TextureProgressBar" parent="rapidAttack/rapidBtn" unique_id=807563724]
+layout_mode = 0
+offset_left = -18.892054
+offset_top = -20.38327
+offset_right = 462.85526
+offset_bottom = 497.61673
+scale = Vector2(1.0755557, 1.0759319)
+value = 100.0
+fill_mode = 4
+texture_progress = ExtResource("14_qpju5")

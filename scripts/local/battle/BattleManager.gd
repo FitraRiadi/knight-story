@@ -14,6 +14,8 @@ extends Control
 # DIUBAH: Menjadi TextureProgressBar agar bisa melakukan efek radial/melingkar
 @onready var parry_timing_bar: TextureProgressBar = $parryBtn/timing
 
+@onready var rapid_btn: Button = $rapidAttack/rapidBtn
+
 # --- NODE UI QTE ATTACK ---
 @onready var attack_qte_node: Control = $attackQte
 @onready var attack_qte_bg: TextureRect = $"attackQte/bg"
@@ -150,6 +152,19 @@ var can_input_attack_qte: bool = false
 var attack_qte_canvas_layer: CanvasLayer
 var attack_running_tween: Tween
 var target_attack_qte_pos: Vector2
+
+# RAPID ATTACK SYSTEM
+var _is_rapid_active: bool = false
+var _rapid_timer_global: float = 0.0
+var _rapid_timer_per_btn: float = 0.0
+var _rapid_damage_per_hit: float = 0.0
+var _rapid_hits: int = 0
+var _rapid_sfx_cache: AudioStream
+var _rapid_timing_tween: Tween
+var _rapid_current_enemy: BattleEnemy
+var _rapid_enemies_alive: Array = []
+var _rapid_enemy_index: int = 0
+var _rapid_entry_sfx_cache: AudioStream
 
 # PLAYER HP CAMERA OVERLAY
 var player_hp_overlay_layer: CanvasLayer
@@ -297,6 +312,29 @@ func _ready() -> void:
 	wave_progress.set_wave(current_wave, total_waves)
 	
 	spawn_random_enemies(1, enemies_per_wave, 1, 5)
+
+
+func _process(delta: float) -> void:
+	if _is_rapid_active:
+		_rapid_timer_global -= delta
+		_rapid_timer_per_btn -= delta
+
+		# 1 detik per spawn habis → pindah enemy berikutnya
+		if _rapid_timer_per_btn <= 0.0:
+			_hide_raptive_btn()
+			_rapid_enemy_index += 1
+			var next_enemy := _get_next_raptive_enemy()
+			if next_enemy:
+				_spawn_raptive_btn_on_enemy(next_enemy)
+				_zoom_camera_to_enemy(next_enemy, 1.10)
+			else:
+				# Semua enemy mati → rapid selesai
+				_finish_raptive()
+				return
+
+		# 5 detik global habis → rapid selesai
+		if _rapid_timer_global <= 0.0:
+			_finish_raptive()
 
 
 # ============================================================
@@ -852,14 +890,20 @@ func _load_attack_cards() -> void:
 	var basic_card_path: String = "res://data/action_cards/attack_cards/basic_attack.tres"
 	var basic_card: AttackCardData = load(basic_card_path) as AttackCardData
 	if basic_card:
-		for i in range(3):
+		for i in range(1):
 			attack_hand.append(basic_card.duplicate())
 
 	var charge_card_path: String = "res://data/action_cards/attack_cards/charge_attack.tres"
 	var charge_card: AttackCardData = load(charge_card_path) as AttackCardData
 	if charge_card:
-		for i in range(2):
+		for i in range(1):
 			attack_hand.append(charge_card.duplicate())
+
+	var rapid_card_path: String = "res://data/action_cards/attack_cards/rapid_attack.tres"
+	var rapid_card: AttackCardData = load(rapid_card_path) as AttackCardData
+	if rapid_card:
+		for i in range(3):
+			attack_hand.append(rapid_card.duplicate())
 
 
 func open_attack_card_ui() -> void:
@@ -919,7 +963,7 @@ func _on_attack_card_selected(index: int) -> void:
 		"Charge":
 			_start_attack_charge()
 		"Rapid":
-			_start_attack_qte()  # placeholder — nanti ganti ke rapid
+			_start_attack_raptive()
 
 
 func _on_attack_mechanic_done() -> void:
@@ -934,12 +978,13 @@ func _on_attack_card_closed() -> void:
 	_reset_hand_to_original(0.4)
 
 	if attack_card_used_this_session:
-		# Card dipakai → enemy turn
+		# Card dipakai → enemy turn (skip kalau rapid masih aktif)
 		attack_card_used_this_session = false
-		is_player_turn = false
-		_set_buttons_active(false)
-		await get_tree().create_timer(0.3).timeout
-		_start_enemies_turn()
+		if not _is_rapid_active:
+			is_player_turn = false
+			_set_buttons_active(false)
+			await get_tree().create_timer(0.3).timeout
+			_start_enemies_turn()
 	else:
 		# Cancel → balik ke player turn
 		is_player_turn = true
@@ -2035,6 +2080,283 @@ func _on_parry_button_clicked() -> void:
 	_animate_hp_change()
 
 
+# ============================================================
+# RAPID ATTACK SYSTEM
+# ============================================================
+
+func _start_attack_raptive() -> void:
+	if enemies.is_empty() or selected_enemy_index >= enemies.size():
+		_on_attack_mechanic_done()
+		return
+
+	_rapid_current_enemy = enemies[selected_enemy_index]
+	if not is_instance_valid(_rapid_current_enemy) or _rapid_current_enemy.current_hp <= 0:
+		_on_attack_mechanic_done()
+		return
+
+	_is_rapid_active = true
+	_rapid_timer_global = 5.0
+	_rapid_timer_per_btn = 1.0
+	_rapid_damage_per_hit = player_damage * 0.3
+	_rapid_hits = 0
+	_rapid_enemy_index = selected_enemy_index
+
+	if not _rapid_sfx_cache:
+		_rapid_sfx_cache = preload("res://assets/audio/effects/battle/sword/sword-attack.mp3")
+
+	# SFX masuk rapid mode
+	if not _rapid_entry_sfx_cache:
+		_rapid_entry_sfx_cache = load("res://assets/audio/effects/battle/ui/attackQte-open.mp3")
+	if _rapid_entry_sfx_cache:
+		var sfx_player := AudioStreamPlayer.new()
+		sfx_player.stream = _rapid_entry_sfx_cache
+		sfx_player.volume_db = -3.0
+		add_child(sfx_player)
+		sfx_player.play()
+		sfx_player.finished.connect(sfx_player.queue_free)
+
+	_set_buttons_active(false)
+
+	# Disable enemy collision biar click gak ke-intercept
+	for e in enemies:
+		if is_instance_valid(e) and e.enemy_collision:
+			e.enemy_collision.disabled = true
+
+	_spawn_raptive_btn_on_enemy(_rapid_current_enemy)
+	_zoom_camera_to_enemy(_rapid_current_enemy, 1.10)
+
+
+func _spawn_raptive_btn_on_enemy(enemy: BattleEnemy) -> void:
+	var viewport_size := get_viewport().get_visible_rect().size
+	var enemy_pos := enemy.global_position
+
+	var angle := randf() * TAU
+	var radius := randf_range(60.0, 120.0)
+	var random_offset := Vector2(cos(angle), sin(angle)) * radius
+	var target_pos := enemy_pos + random_offset
+
+	target_pos.x = clampf(target_pos.x, 80.0, viewport_size.x - 180.0)
+	target_pos.y = clampf(target_pos.y, 120.0, viewport_size.y - 200.0)
+
+	# Kill tween lama
+	var old_tw = rapid_btn.get_meta("_pop_tween", null) if rapid_btn else null
+	if old_tw is Tween and old_tw.is_running():
+		old_tw.kill()
+
+	rapid_btn.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	rapid_btn.position = target_pos
+	rapid_btn.modulate = Color(1, 1, 1, 0)
+	rapid_btn.scale = Vector2(0.01, 0.01)
+	rapid_btn.mouse_filter = Control.MOUSE_FILTER_STOP
+	rapid_btn.z_index = 100
+	# Show parent dulu biar child visible
+	if rapid_btn.get_parent():
+		rapid_btn.get_parent().show()
+	rapid_btn.show()
+
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(rapid_btn, "modulate:a", 1.0, 0.1)
+	tw.tween_property(rapid_btn, "scale", Vector2(0.100, 0.095), 0.12)\
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	rapid_btn.set_meta("_pop_tween", tw)
+
+	var timing_bar := rapid_btn.get_node_or_null("timing") as TextureProgressBar
+	if timing_bar:
+		timing_bar.value = 100.0
+		if _rapid_timing_tween and _rapid_timing_tween.is_running():
+			_rapid_timing_tween.kill()
+		_rapid_timing_tween = create_tween()
+		_rapid_timing_tween.tween_property(timing_bar, "value", 0.0, 1.0)\
+			.set_trans(Tween.TRANS_LINEAR)
+
+	_rapid_timer_per_btn = 1.0
+	_rapid_current_enemy = enemy
+
+
+func _hide_raptive_btn() -> void:
+	if _rapid_timing_tween and _rapid_timing_tween.is_running():
+		_rapid_timing_tween.kill()
+	if rapid_btn:
+		var old_tw = rapid_btn.get_meta("_pop_tween", null)
+		if old_tw is Tween and old_tw.is_running():
+			old_tw.kill()
+		rapid_btn.modulate.a = 0.0
+		rapid_btn.hide()
+		if rapid_btn.get_parent():
+			rapid_btn.get_parent().hide()
+
+
+func _on_raptive_btn_pressed() -> void:
+	if not _is_rapid_active:
+		return
+	if not is_instance_valid(_rapid_current_enemy):
+		return
+	if _rapid_current_enemy.current_hp <= 0:
+		return
+
+	# Hit enemy
+	_rapid_current_enemy.receive_damage(_rapid_damage_per_hit, false, false)
+	_rapid_hits += 1
+
+	# Enemy flash merah
+	var original_modulate := _rapid_current_enemy.modulate
+	_rapid_current_enemy.modulate = Color(10, 10, 10)
+	var flash_tw := create_tween()
+	flash_tw.tween_property(_rapid_current_enemy, "modulate", original_modulate, 0.1)
+
+	# Damage number
+	if _rapid_current_enemy.has_method("_show_damage_number"):
+		_rapid_current_enemy._show_damage_number(_rapid_damage_per_hit, false)
+
+	# "Hit!" popup text
+	var visual_center := rapid_btn.position + Vector2(40, 40)
+	_spawn_rapid_popup_text(visual_center)
+
+	# Yellow particles
+	_spawn_rapid_particles(visual_center)
+
+	# SFX
+	if _rapid_sfx_cache:
+		var sfx_player := AudioStreamPlayer.new()
+		add_child(sfx_player)
+		sfx_player.stream = _rapid_sfx_cache
+		sfx_player.play()
+		sfx_player.finished.connect(sfx_player.queue_free)
+
+	# Combo counter
+	_add_combo(1)
+
+
+func _spawn_rapid_popup_text(spawn_pos: Vector2, text_msg: String = "Hit!") -> void:
+	var popup_label := Label.new()
+	popup_label.text = text_msg
+	popup_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	popup_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	popup_label.add_theme_font_size_override("font_size", 22)
+	popup_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
+
+	if parry_canvas_layer:
+		parry_canvas_layer.add_child(popup_label)
+	else:
+		add_child(popup_label)
+
+	popup_label.position = spawn_pos - Vector2(100, 35)
+	popup_label.custom_minimum_size = Vector2(200, 60)
+	popup_label.scale = Vector2(0.1, 0.1)
+	popup_label.modulate.a = 0.0
+
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(popup_label, "scale", Vector2(1.25, 1.25), 0.15)\
+		.set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(popup_label, "modulate:a", 1.0, 0.08)
+	tw.chain().tween_property(popup_label, "scale", Vector2(1.0, 1.0), 0.12)\
+		.set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN_OUT)
+
+	var fade_tw := create_tween()
+	fade_tw.tween_interval(1.5)
+	fade_tw.tween_property(popup_label, "modulate:a", 0.0, 0.25)\
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	fade_tw.tween_callback(popup_label.queue_free)
+
+
+func _spawn_rapid_particles(spawn_pos: Vector2) -> void:
+	for dir in [-1, 1]:
+		var particles := CPUParticles2D.new()
+		if parry_canvas_layer:
+			parry_canvas_layer.add_child(particles)
+		else:
+			add_child(particles)
+
+		particles.position = spawn_pos
+		particles.emitting = false
+		particles.one_shot = true
+		particles.explosiveness = 0.95
+		particles.amount = 25
+		particles.lifetime = 0.4
+		particles.speed_scale = 1.8
+		particles.direction = Vector2(dir, 0)
+		particles.spread = 25.0
+		particles.initial_velocity_min = 350.0
+		particles.initial_velocity_max = 600.0
+		particles.gravity = Vector2.ZERO
+		particles.damping_min = 400.0
+		particles.damping_max = 600.0
+		particles.scale_amount_min = 4.0
+		particles.scale_amount_max = 9.0
+		particles.color = Color(1.0, 0.9, 0.0, 1.0)
+		particles.emitting = true
+
+		var cleanup_tween := create_tween()
+		cleanup_tween.tween_interval(1.0)
+		cleanup_tween.tween_callback(particles.queue_free)
+
+
+func _zoom_camera_to_enemy(enemy: BattleEnemy, zoom_level: float = 1.10) -> void:
+	if not camera or not is_instance_valid(enemy):
+		return
+
+	var viewport_size := get_viewport().get_visible_rect().size
+	var target_zoom := Vector2(zoom_level, zoom_level)
+	var half_width := viewport_size.x / target_zoom.x * 0.5
+	var half_height := viewport_size.y / target_zoom.y * 0.5
+
+	var clamped_x := clampf(enemy.global_position.x, half_width, viewport_size.x - half_width)
+	var clamped_y := clampf(enemy.global_position.y, half_height, viewport_size.y - half_height)
+	var target_pos := Vector2(clamped_x, clamped_y)
+
+	var cam_tw := create_tween().set_parallel(true)
+	cam_tw.tween_property(camera, "global_position", target_pos, 0.25)\
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	cam_tw.tween_property(camera, "zoom", target_zoom, 0.25)\
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+func _get_next_raptive_enemy() -> BattleEnemy:
+	_rapid_enemies_alive = enemies.filter(func(e): return is_instance_valid(e) and e.current_hp > 0)
+	if _rapid_enemies_alive.is_empty():
+		return null
+	_rapid_enemy_index = _rapid_enemy_index % _rapid_enemies_alive.size()
+	return _rapid_enemies_alive[_rapid_enemy_index]
+
+
+func _finish_raptive() -> void:
+	if not _is_rapid_active:
+		return
+	_is_rapid_active = false
+
+	_hide_raptive_btn()
+
+	if _rapid_timing_tween and _rapid_timing_tween.is_running():
+		_rapid_timing_tween.kill()
+
+	# Re-enable enemy collision
+	for e in enemies:
+		if is_instance_valid(e) and e.enemy_collision:
+			e.enemy_collision.disabled = false
+
+	if camera:
+		var cam_tw := create_tween().set_parallel(true)
+		cam_tw.tween_property(camera, "zoom", Vector2(1.0, 1.0), 0.3)\
+			.set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN_OUT)
+		cam_tw.tween_property(camera, "global_position", default_camera_pos, 0.3)\
+			.set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN_OUT)
+
+	var viewport_size := get_viewport().get_visible_rect().size
+	var hit_msg := str(_rapid_hits) + " hits!"
+	_spawn_rapid_popup_text(Vector2(viewport_size.x * 0.5, viewport_size.y * 0.3), hit_msg)
+
+	_rapid_hits = 0
+	_rapid_enemy_index = 0
+
+	# Trigger enemy turn
+	if attack_card_ui:
+		_on_attack_mechanic_done()
+	else:
+		is_player_turn = false
+		_set_buttons_active(false)
+		_start_enemies_turn()
+
+
 func _setup_hand_layer() -> void:
 	if not hand_right and not hand_left:
 		return
@@ -2821,6 +3143,12 @@ func player_receive_damage_custom(amount: float) -> void:
 
 
 func _on_enemy_defeated(_exp_amount: int, _gold_amount: int, _dropped_items: Array[String], enemy: BattleEnemy) -> void:
+	# Kalau rapid masih aktif, finish dulu baru proses death
+	if _is_rapid_active:
+		_finish_raptive()
+		# Tunggu reset selesai dulu
+		await get_tree().create_timer(0.3).timeout
+
 	# SCOREBOARD: Hitung enemy defeated
 	enemies_killed += 1
 
@@ -2882,6 +3210,19 @@ func _input(event: InputEvent) -> void:
 		if is_mouse_click or is_screen_touch or is_action_key:
 			_check_attack_qte_result()
 			get_viewport().set_input_as_handled()
+			return
+
+	# Rapid attack input — SELALU dicek dulu, bahkan saat is_player_turn = false
+	if _is_rapid_active and rapid_btn and rapid_btn.visible:
+		var is_click := false
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			is_click = true
+		elif event is InputEventScreenTouch and event.pressed:
+			is_click = true
+		elif event is InputEventKey and event.pressed and event.is_action("ui_accept"):
+			is_click = true
+		if is_click:
+			_on_raptive_btn_pressed()
 			return
 
 	if not is_player_turn:
