@@ -856,14 +856,19 @@ func _load_attack_cards() -> void:
 	var basic_card_path: String = "res://data/action_cards/attack_cards/basic_attack.tres"
 	var basic_card: AttackCardData = load(basic_card_path) as AttackCardData
 	if basic_card:
-		for i in range(3):
-			attack_hand.append(basic_card.duplicate())
+		attack_hand.append(basic_card.duplicate())
 
 	var charge_card_path: String = "res://data/action_cards/attack_cards/charge_attack.tres"
 	var charge_card: AttackCardData = load(charge_card_path) as AttackCardData
 	if charge_card:
 		for i in range(2):
 			attack_hand.append(charge_card.duplicate())
+
+	var rapid_card_path: String = "res://data/action_cards/attack_cards/rapid_attack.tres"
+	var rapid_card: AttackCardData = load(rapid_card_path) as AttackCardData
+	if rapid_card:
+		for i in range(2):
+			attack_hand.append(rapid_card.duplicate())
 
 
 func open_attack_card_ui() -> void:
