@@ -2517,6 +2517,8 @@ func _finish_raptive() -> void:
 			await get_tree().create_timer(0.5).timeout
 			spawn_random_enemies(1, enemies_per_wave, 1, 5)
 			# Cleanup visual state rapid mode
+			if attack_card_ui:
+				attack_card_ui.close()
 			attack_card_used_this_session = false
 			is_card_ui_open = false
 			attack_card_ui = null
@@ -2528,6 +2530,8 @@ func _finish_raptive() -> void:
 			await get_tree().create_timer(0.5).timeout
 			_show_scoreboard()
 			# Cleanup visual state rapid mode
+			if attack_card_ui:
+				attack_card_ui.close()
 			attack_card_used_this_session = false
 			is_card_ui_open = false
 			attack_card_ui = null
