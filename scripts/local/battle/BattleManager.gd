@@ -3335,6 +3335,10 @@ func player_receive_damage_custom(amount: float) -> void:
 func apply_damage(event: DamageEvent) -> void:
 	var final_damage := event.get_calculated_damage()
 
+	# Track potential parry/block BEFORE applying reductions
+	var potential_parry := parry_success_this_turn and event.can_be_parried and event.source in [DamageEvent.Source.NORMAL, DamageEvent.Source.BATTLE_CRY, DamageEvent.Source.COUNTER]
+	var potential_block := is_defending and not potential_parry and event.source in [DamageEvent.Source.NORMAL, DamageEvent.Source.BATTLE_CRY, DamageEvent.Source.COUNTER, DamageEvent.Source.BERSERK]
+
 	match event.source:
 		DamageEvent.Source.NORMAL:
 			_show_player_hp_camera_overlay()
@@ -3383,6 +3387,18 @@ func apply_damage(event: DamageEvent) -> void:
 			final_damage = max(0.0, final_damage - buff_dmg_reduction)
 
 	event.final_damage = final_damage
+
+	# Determine damage_result for text display
+	if final_damage <= 0.0:
+		if potential_parry:
+			event.damage_result = DamageEvent.DamageResult.PARRIED
+		elif potential_block:
+			event.damage_result = DamageEvent.DamageResult.BLOCKED
+		else:
+			event.damage_result = DamageEvent.DamageResult.ZERO
+	else:
+		event.damage_result = DamageEvent.DamageResult.NORMAL
+
 	current_hp = max(0.0, current_hp - final_damage)
 	_animate_hp_change()
 	_animate_player_hp_overlay_damage(event.final_damage)
@@ -3426,9 +3442,6 @@ var _damage_text_labels: Dictionary = {}
 var _damage_text_tweens: Dictionary = {}
 
 func _show_damage_text(event: DamageEvent) -> void:
-	if event.final_damage <= 0.0:
-		return
-
 	var key: int = event.source
 
 	# Buat/reuse label per source
@@ -3452,8 +3465,25 @@ func _show_damage_text(event: DamageEvent) -> void:
 	# Random offset untuk juice - biar text gak tumpuk
 	var random_offset := Vector2(randf_range(-6.0, 6.0), randf_range(-4.0, 4.0))
 
-	damage_label.text = "-" + str(int(event.final_damage))
-	damage_label.add_theme_color_override("font_color", _get_damage_text_color(event.source))
+	# Determine text and color based on damage_result
+	var text: String
+	var color: Color
+	match event.damage_result:
+		DamageEvent.DamageResult.PARRIED:
+			text = "Parried!"
+			color = Color(0.2, 1.0, 0.5)
+		DamageEvent.DamageResult.BLOCKED:
+			text = "Blocked!"
+			color = Color(0.3, 0.7, 1.0)
+		DamageEvent.DamageResult.ZERO:
+			text = "0"
+			color = Color(0.7, 0.7, 0.7)
+		DamageEvent.DamageResult.NORMAL:
+			text = "-" + str(int(event.final_damage))
+			color = _get_damage_text_color(event.source)
+
+	damage_label.text = text
+	damage_label.add_theme_color_override("font_color", color)
 	damage_label.modulate.a = 1.0
 	damage_label.position = Vector2(player_hp_overlay_max_width - 100.0, -20.0) + random_offset
 	damage_label.scale = Vector2(0.7, 0.7)
