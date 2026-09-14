@@ -201,6 +201,7 @@ var attack_hand: Array[ActionCardData] = []
 var attack_discard: Array[ActionCardData] = []
 var attack_card_ui: ActionCardUI = null
 var attack_card_used_this_session: bool = false
+var _is_scoreboard_hiding: bool = false
 const MAX_ATTACK_HAND: int = 5
 
 # ITEM DROP SYSTEM
@@ -3786,6 +3787,11 @@ func _show_scoreboard() -> void:
 
 
 func _on_scoreboard_continue_pressed() -> void:
+	if _is_scoreboard_hiding:
+		return
+	_is_scoreboard_hiding = true
+	if score_continue_btn:
+		score_continue_btn.disabled = true
 	_hide_scoreboard()
 
 
@@ -3814,6 +3820,7 @@ func _hide_scoreboard() -> void:
 	# Full fade out
 	tw.tween_property(scoreBoard, "modulate:a", 0.0, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	tw.tween_callback(func():
+		_is_scoreboard_hiding = false
 		scoreBoard.visible = false
 		_reset_scoreboard_values()
 		_show_battle_ui_after_scoreboard()
