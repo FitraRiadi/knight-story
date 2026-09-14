@@ -3397,6 +3397,7 @@ func apply_damage(event: DamageEvent) -> void:
 	event.final_damage = final_damage
 	current_hp = max(0.0, current_hp - final_damage)
 	_animate_hp_change()
+	_animate_player_hp_overlay_damage(event.final_damage)
 	_show_damage_text(event)
 	trigger_camera_shake_and_blood(14.0, 0.4, 0.85)
 
