@@ -9,7 +9,7 @@ class_name BattleEnemy
 signal action_finished
 signal clicked(enemy: BattleEnemy)
 signal attack_preparing
-signal attack_hit(damage_amount: float)
+signal attack_hit(event: DamageEvent)
 signal hp_changed
 signal sound_requested(sound_name: String)
 signal battle_cry_activated(ability_level: int)
@@ -773,7 +773,12 @@ func _execute_attack(
 
 	if not was_force_finished:
 		_play_sound("attack")
-	attack_hit.emit(total_damage)
+	var normal_event := DamageEvent.new()
+	normal_event.base_damage = total_damage
+	normal_event.source = DamageEvent.Source.NORMAL
+	normal_event.can_be_parried = true
+	normal_event.can_trigger_life_steal = true
+	attack_hit.emit(normal_event)
 	_shake_camera(camera, 12.0 * damage_multiplier, 0.25)
 
 	await get_tree().create_timer(0.6).timeout
@@ -818,7 +823,15 @@ func _execute_attack(
 
 			if not mh_was_force:
 				_play_sound("attack")
-			attack_hit.emit(total_damage * dmg_per_hit)
+			var berserk_event := DamageEvent.new()
+			berserk_event.base_damage = total_damage
+			berserk_event.source = DamageEvent.Source.BERSERK
+			berserk_event.can_be_parried = false
+			berserk_event.can_trigger_life_steal = false
+			berserk_event.damage_multiplier = dmg_per_hit
+			berserk_event.hit_index = i
+			berserk_event.total_hits = hit_count
+			attack_hit.emit(berserk_event)
 			_shake_camera(camera, 8.0, 0.2)
 			await get_tree().create_timer(0.3).timeout
 
@@ -866,7 +879,12 @@ func _execute_attack(
 
 		if not second_was_force:
 			_play_sound("attack")
-		attack_hit.emit(second_damage)
+		var cry_event := DamageEvent.new()
+		cry_event.base_damage = second_damage
+		cry_event.source = DamageEvent.Source.BATTLE_CRY
+		cry_event.can_be_parried = true
+		cry_event.can_trigger_life_steal = true
+		attack_hit.emit(cry_event)
 		_shake_camera(camera, 10.0 * bonus_mult, 0.2)
 		await get_tree().create_timer(0.5).timeout
 

@@ -1819,7 +1819,12 @@ func _execute_actual_attack(result: AttackResult, is_charge_attack: bool = false
 		var counter_damage: float = (target_enemy.scaled_damage + target_enemy.buff_manager.get_total_attack_bonus()) * counter_mult
 		target_enemy._play_sound("attack")
 		parry_success_this_turn = false
-		player_receive_damage_custom(counter_damage)
+		var counter_event := DamageEvent.new()
+		counter_event.base_damage = counter_damage
+		counter_event.source = DamageEvent.Source.COUNTER
+		counter_event.can_be_parried = false
+		counter_event.can_trigger_life_steal = false
+		apply_damage(counter_event)
 		trigger_camera_shake_and_blood(10.0, 0.2, 0.6)
 		await get_tree().create_timer(0.3).timeout
 
@@ -2982,7 +2987,7 @@ func _spawn_enemies(enemy_ids: Array[String], custom_levels: Array[int] = []) ->
 		enemies.append(enemy_instance)
 		
 		enemy_instance.clicked.connect(_on_enemy_clicked)
-		enemy_instance.attack_hit.connect(player_receive_damage_custom)
+		enemy_instance.attack_hit.connect(apply_damage)
 		enemy_instance.attack_preparing.connect(_on_enemy_attack_preparing)
 		enemy_instance.enemy_defeated.connect(_on_enemy_defeated)
 		enemy_instance.battle_cry_activated.connect(_on_battle_cry_activated)
@@ -3336,45 +3341,151 @@ func _stop_player_buff_particles() -> void:
 
 
 func player_receive_damage_custom(amount: float) -> void:
-	_hide_parry_window()
-	
-	var final_damage = amount
-	if parry_success_this_turn and is_defending:
-		final_damage = max(0.0, amount - player_durability - (parry_flat_reduction + parry_extra_reduction + (defense_flat_reduction * 0.9)))
-	elif parry_success_this_turn:
-		final_damage = max(0.0, amount - player_durability - (parry_flat_reduction + parry_extra_reduction))
-	elif is_defending:
-		final_damage = max(0.0, amount - player_durability - defense_flat_reduction)
-	else:
-		final_damage = max(0.0, amount - player_durability)
+	apply_damage_raw(amount)
 
-	# DAMAGE REDUCTION: Apply flat damage reduction (Protection Potion, dll)
+
+func apply_damage(event: DamageEvent) -> void:
+	var final_damage := event.get_calculated_damage()
+
+	match event.source:
+		DamageEvent.Source.NORMAL:
+			_show_player_hp_camera_overlay()
+			if parry_success_this_turn and is_defending:
+				final_damage = max(0.0, final_damage - player_durability - (parry_flat_reduction + parry_extra_reduction + (defense_flat_reduction * 0.9)))
+			elif parry_success_this_turn:
+				final_damage = max(0.0, final_damage - player_durability - (parry_flat_reduction + parry_extra_reduction))
+			elif is_defending:
+				final_damage = max(0.0, final_damage - player_durability - defense_flat_reduction)
+			else:
+				final_damage = max(0.0, final_damage - player_durability)
+			_hide_parry_window()
+			if is_defending:
+				_play_shield_sfx()
+
+		DamageEvent.Source.BERSERK:
+			# TIDAK bisa diparry, TIDAK hide parry window
+			final_damage = max(0.0, final_damage - player_durability)
+			if is_defending:
+				_play_shield_sfx()
+
+		DamageEvent.Source.BATTLE_CRY:
+			if parry_success_this_turn and is_defending:
+				final_damage = max(0.0, final_damage - player_durability - (parry_flat_reduction + parry_extra_reduction + (defense_flat_reduction * 0.9)))
+			elif parry_success_this_turn:
+				final_damage = max(0.0, final_damage - player_durability - (parry_flat_reduction + parry_extra_reduction))
+			elif is_defending:
+				final_damage = max(0.0, final_damage - player_durability - defense_flat_reduction)
+			else:
+				final_damage = max(0.0, final_damage - player_durability)
+			_hide_parry_window()
+			if is_defending:
+				_play_shield_sfx()
+
+		DamageEvent.Source.COUNTER:
+			final_damage = max(0.0, final_damage - player_durability)
+			_hide_parry_window()
+
+		DamageEvent.Source.RAPID:
+			final_damage = max(0.0, final_damage - player_durability)
+
+	# DAMAGE REDUCTION: Protection Potion
 	if player_buff_manager:
 		var buff_dmg_reduction: float = player_buff_manager.get_total_damage_reduction()
 		if buff_dmg_reduction > 0.0:
 			final_damage = max(0.0, final_damage - buff_dmg_reduction)
-	
-	if is_defending:
-		var shield_sfx: AudioStream = load("res://assets/audio/effects/battle/shield/shield-base.mp3")
-		if shield_sfx:
-			var sfx_player: AudioStreamPlayer = AudioStreamPlayer.new()
-			add_child(sfx_player)
-			sfx_player.stream = shield_sfx
-			sfx_player.play()
-			sfx_player.finished.connect(sfx_player.queue_free)
-	
+
+	event.final_damage = final_damage
 	current_hp = max(0.0, current_hp - final_damage)
 	_animate_hp_change()
-	_animate_player_hp_overlay_damage(final_damage)
+	_show_damage_text(event)
 	trigger_camera_shake_and_blood(14.0, 0.4, 0.85)
 
 	# MORALE: Enemy attack berhasil (tidak di-parry) -> naikkan morale +25%
-	if not parry_success_this_turn and current_enemy_attacking and is_instance_valid(current_enemy_attacking):
-		current_enemy_attacking.increase_morale_on_hit()
+	if event.source != DamageEvent.Source.BERSERK and event.source != DamageEvent.Source.RAPID:
+		if current_enemy_attacking and is_instance_valid(current_enemy_attacking):
+			current_enemy_attacking.increase_morale_on_hit()
 
-	# LIFE STEAL: Cek apakah enemy punya life steal ability
-	if current_enemy_attacking and is_instance_valid(current_enemy_attacking) and current_enemy_attacking.current_hp > 0:
-		current_enemy_attacking._apply_life_steal(amount)
+	# LIFE STEAL: Cuma untuk source yang bisa trigger
+	if event.can_trigger_life_steal and current_enemy_attacking and is_instance_valid(current_enemy_attacking) and current_enemy_attacking.current_hp > 0:
+		current_enemy_attacking._apply_life_steal(event.base_damage)
+
+
+func apply_damage_raw(amount: float) -> void:
+	var event := DamageEvent.new()
+	event.base_damage = amount
+	event.source = DamageEvent.Source.NORMAL
+	event.can_be_parried = true
+	event.can_trigger_life_steal = true
+	apply_damage(event)
+
+
+func _play_shield_sfx() -> void:
+	var shield_sfx: AudioStream = load("res://assets/audio/effects/battle/shield/shield-base.mp3")
+	if shield_sfx:
+		var sfx_player: AudioStreamPlayer = AudioStreamPlayer.new()
+		add_child(sfx_player)
+		sfx_player.stream = shield_sfx
+		sfx_player.play()
+		sfx_player.finished.connect(sfx_player.queue_free)
+
+
+# ============================================================
+# DAMAGE TEXT - Per-source labels + random offset
+# ============================================================
+
+var _damage_text_labels: Dictionary = {}
+var _damage_text_tweens: Dictionary = {}
+
+func _show_damage_text(event: DamageEvent) -> void:
+	if event.final_damage <= 0.0:
+		return
+
+	var key: int = event.source
+
+	# Buat/reuse label per source
+	var damage_label: Label
+	if _damage_text_labels.has(key) and is_instance_valid(_damage_text_labels[key]):
+		damage_label = _damage_text_labels[key]
+	else:
+		damage_label = Label.new()
+		damage_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		damage_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		damage_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		damage_label.add_theme_font_size_override("font_size", 22)
+		damage_label.add_theme_color_override("font_color", Color.WHITE)
+		player_hp_overlay_background.add_child(damage_label)
+		_damage_text_labels[key] = damage_label
+
+	# Kill tween lama untuk source ini
+	if _damage_text_tweens.has(key) and _damage_text_tweens[key] is Tween and _damage_text_tweens[key].is_running():
+		_damage_text_tweens[key].kill()
+
+	# Random offset untuk juice - biar text gak tumpuk
+	var random_offset := Vector2(randf_range(-6.0, 6.0), randf_range(-4.0, 4.0))
+
+	damage_label.text = "-" + str(int(event.final_damage))
+	damage_label.add_theme_color_override("font_color", _get_damage_text_color(event.source))
+	damage_label.modulate.a = 1.0
+	damage_label.position = Vector2(player_hp_overlay_max_width - 100.0, -20.0) + random_offset
+	damage_label.scale = Vector2(0.7, 0.7)
+	damage_label.visible = true
+
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(damage_label, "position:y", -55.0 + random_offset.y, 0.7).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(damage_label, "scale", Vector2(1.15, 1.15), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.chain().tween_property(damage_label, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	tw.tween_property(damage_label, "modulate:a", 0.0, 0.35).set_delay(0.35).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_damage_text_tweens[key] = tw
+
+
+func _get_damage_text_color(source: DamageEvent.Source) -> Color:
+	match source:
+		DamageEvent.Source.NORMAL: return Color(1.0, 1.0, 1.0)
+		DamageEvent.Source.BERSERK: return Color(1.0, 0.5, 0.2)
+		DamageEvent.Source.BATTLE_CRY: return Color(1.0, 0.3, 0.1)
+		DamageEvent.Source.COUNTER: return Color(0.8, 0.6, 1.0)
+		DamageEvent.Source.RAPID: return Color(0.5, 1.0, 0.8)
+	return Color.WHITE
 
 
 func _on_enemy_defeated(_exp_amount: int, _gold_amount: int, _dropped_items: Array[String], enemy: BattleEnemy) -> void:
