@@ -319,18 +319,16 @@ func setup_enemy(new_id: String, custom_level: int = 0) -> void:
 		# Load abilities dari EnemyData
 		enemy_abilities.clear()
 
-		# Merge parallel arrays → level map
-		var level_map: Dictionary = {}
-		for i in range(stats.ability_level_ids.size()):
-			if i < stats.ability_level_values.size():
-				level_map[stats.ability_level_ids[i]] = stats.ability_level_values[i]
+		# Parse ability_level_str → level map
+		var level_map: Dictionary = _parse_ability_levels(stats.ability_level_str)
 
 		for ab: AbilityData in stats.abilities:
 			if ab == null:
 				continue
 			var new_ab: AbilityData = ab.duplicate()
 			if level_map.has(new_ab.ability_id):
-				new_ab.level = mini(level_map[new_ab.ability_id], new_ab.max_level)
+				var requested: int = clampi(int(level_map[new_ab.ability_id]), 1, new_ab.max_level)
+				new_ab.level = requested
 			enemy_abilities.append(new_ab)
 
 		# Warning jika ability_level key tidak match ability_id apapun
@@ -1573,6 +1571,26 @@ func get_morale_ratio() -> float:
 # ============================================================
 # ABILITIES
 # ============================================================
+
+func _parse_ability_levels(raw: String) -> Dictionary:
+	var result: Dictionary = {}
+	var cleaned := raw.strip_edges()
+	if cleaned == "":
+		return result
+	var pairs := cleaned.split(",")
+	for pair in pairs:
+		var parts := pair.strip_edges().split(":")
+		if parts.size() == 2:
+			var key := parts[0].strip_edges()
+			if key == "":
+				continue
+			if not parts[1].strip_edges().is_valid_int():
+				push_warning("[Enemy] ability_level value '" + parts[1].strip_edges() + "' bukan angka, skip")
+				continue
+			var val := int(parts[1].strip_edges())
+			result[key] = val
+	return result
+
 
 func get_tactical_attack_ability() -> AbilityData:
 	for ab: AbilityData in enemy_abilities:
