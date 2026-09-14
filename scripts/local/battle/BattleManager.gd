@@ -3014,7 +3014,11 @@ func spawn_random_enemies(min_count: int = 1, max_count: int = 3, min_level: int
 		var eid: String = pool.pick_random()
 		var data: EnemyData = EnemyDatabase.get_enemy_data(eid)
 		var enemy_min: int = data.min_level if data else 1
-		var target_level: int = randi_range(maxi(spawn_min, enemy_min), spawn_max)
+		var target_level: int
+		if enemy_min <= spawn_max:
+			target_level = randi_range(maxi(spawn_min, enemy_min), spawn_max)
+		else:
+			target_level = enemy_min
 		random_ids.append(eid)
 		random_levels.append(target_level)
 
@@ -3032,21 +3036,20 @@ func _get_scalable_enemy_pool() -> Array[String]:
 			continue
 
 		var distance: int = data.min_level - spawn_max
-		if distance <= 0:
+		var chance: float = 0.0
+		match distance:
+			0: chance = 1.0
+			1: chance = 0.70
+			2: chance = 0.50
+			3: chance = 0.35
+			4: chance = 0.20
+			5: chance = 0.15
+			6: chance = 0.10
+			7: chance = 0.05
+			_: chance = 0.0
+
+		if distance <= 0 or randf() < chance:
 			filtered.append(enemy_id)
-		elif distance == 1:
-			if randf() < 0.50:
-				filtered.append(enemy_id)
-		elif distance == 2:
-			if randf() < 0.30:
-				filtered.append(enemy_id)
-		elif distance == 3:
-			if randf() < 0.15:
-				filtered.append(enemy_id)
-		elif distance == 4:
-			if randf() < 0.05:
-				filtered.append(enemy_id)
-		# distance >= 5 → 0%, skip
 
 	return filtered
 
