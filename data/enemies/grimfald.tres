@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://e1ygnofd5363"]
 
-[ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/AbilityData.gd" id="1_4y567"]
+[ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/abilities/AbilityData.gd" id="1_4y567"]
 [ext_resource type="Script" uid="uid://d1jtt6i0k5g0g" path="res://scripts/local/characters/enemy/EnemyData.gd" id="2_pmxet"]
 [ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="3_cdodp"]
 [ext_resource type="Texture2D" uid="uid://x0bt7ivc85by" path="res://assets/art/profile/enemy/grimfald.jpg" id="3_du4nc"]
@@ -87,5 +87,5 @@ sprite_frames = SubResource("SpriteFrames_yy6v2")
 max_hp = 90.0
 damage_to_player = 28.0
 abilities = Array[ExtResource("1_4y567")]([ExtResource("3_mgp4w")])
-ability_level_str = "battle_cry:3"
+ability_level_str = "battle_cry:1"
 metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"

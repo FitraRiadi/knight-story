@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://ckk8ulooi2h2x"]
 
 [ext_resource type="Script" uid="uid://d1jtt6i0k5g0g" path="res://scripts/local/characters/enemy/EnemyData.gd" id="1_arywp"]
-[ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/AbilityData.gd" id="1_qphqy"]
+[ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/abilities/AbilityData.gd" id="1_qphqy"]
 [ext_resource type="Texture2D" uid="uid://eeh1qrcceu17" path="res://assets/art/profile/enemy/grimward.jpg" id="1_ycbiy"]
 [ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="2_or5ns"]
 [ext_resource type="Texture2D" uid="uid://babnlghrmqvsm" path="res://assets/art/sprites/enemy/grimward/idle1-removebg-preview.png" id="2_pfxji"]
@@ -90,5 +90,5 @@ max_hp = 125.0
 damage_to_player = 20.0
 exp_reward = 10
 abilities = Array[ExtResource("1_qphqy")]([ExtResource("2_w4pim")])
-ability_level_str = "battle_cry:3"
+ability_level_str = "battle_cry:1"
 metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"

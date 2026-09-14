@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://cqwk7w724mc2s"]
 
 [ext_resource type="Script" uid="uid://d1jtt6i0k5g0g" path="res://scripts/local/characters/enemy/EnemyData.gd" id="1_0ypgr"]
-[ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/AbilityData.gd" id="1_ee2du"]
+[ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/abilities/AbilityData.gd" id="1_ee2du"]
 [ext_resource type="Texture2D" uid="uid://cawcaghcxu5hk" path="res://assets/art/profile/enemy/skeleton.jpg" id="1_jan5e"]
 [ext_resource type="Resource" uid="uid://b2265a03f0302" path="res://data/enemies/abilities/battle_cry.tres" id="2_684md"]
 [ext_resource type="AudioStream" uid="uid://wrxtp2jx4gko" path="res://assets/audio/effects/enemies/skeleton/death.mp3" id="2_a4t8e"]

@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://c60fficmw2t6s"]
 
-[ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/AbilityData.gd" id="1_0gqwf"]
+[ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/abilities/AbilityData.gd" id="1_0gqwf"]
 [ext_resource type="Texture2D" uid="uid://cgpns6s1y2fje" path="res://assets/art/profile/enemy/warewolf.jpg" id="1_7fsbw"]
 [ext_resource type="Script" uid="uid://d1jtt6i0k5g0g" path="res://scripts/local/characters/enemy/EnemyData.gd" id="1_n2612"]
 [ext_resource type="Resource" uid="uid://b2265a03f0302" path="res://data/enemies/abilities/battle_cry.tres" id="2_6qdrg"]
