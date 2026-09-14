@@ -2490,11 +2490,36 @@ func _finish_raptive() -> void:
 	_rapid_hits = 0
 	_rapid_enemy_index = 0
 
-	# Proses pending deaths yang tertunda selama rapid
+	# Proses pending deaths — inline, jangan panggil _process_enemy_death (ada wave logic)
 	if not _pending_rapid_deaths.is_empty():
 		for death_data in _pending_rapid_deaths:
-			_process_enemy_death(death_data["exp"], death_data["gold"], death_data["drops"], death_data["enemy"])
+			enemies_killed += 1
+			var dead_enemy = death_data["enemy"]
+			if is_instance_valid(dead_enemy):
+				EventBus.enemy_killed.emit(dead_enemy.enemy_id)
+				if not death_data["drops"].is_empty():
+					var pos = dead_enemy.global_position
+					for item_id in death_data["drops"]:
+						_spawn_drop_item(item_id, pos)
+						pos.x += randf_range(-30.0, 30.0)
+						pos.y += randf_range(-20.0, 20.0)
+				if death_data["exp"] > 0:
+					_spawn_exp_orbs(death_data["exp"], dead_enemy.global_position)
 		_pending_rapid_deaths.clear()
+		await get_tree().create_timer(1.2).timeout
+
+	# SATU wave check — bukan per-death
+	_update_target_selection()
+	if enemies.is_empty():
+		if current_wave < total_waves:
+			current_wave += 1
+			wave_progress.set_wave(current_wave, total_waves)
+			await get_tree().create_timer(0.5).timeout
+			spawn_random_enemies(1, enemies_per_wave, 1, 5)
+		else:
+			await get_tree().create_timer(0.5).timeout
+			_show_scoreboard()
+			return  # Jangan trigger enemy turn kalau scoreboard
 
 	# Trigger enemy turn
 	if attack_card_ui:
