@@ -1519,6 +1519,9 @@ func _on_charge_complete(multiplier: float) -> void:
 	if charge_attack_ui.charge_complete.is_connected(_on_charge_complete):
 		charge_attack_ui.charge_complete.disconnect(_on_charge_complete)
 
+	# SELALU stop charge shake — mencegah shake persist saat spam
+	_on_charge_shake_stop()
+
 	# Hide charge UI
 	charge_attack_ui.hide_charge()
 

@@ -234,7 +234,7 @@ func _stop_charge() -> void:
 
 	_flash_zone(zone)
 
-	await get_tree().create_timer(0.3).timeout
+	# Emit langsung tanpa await — mencegah stale completion saat spam
 	charge_complete.emit(multiplier)
 
 
