@@ -6,5 +6,3 @@
 script = ExtResource("1")
 ability_id = "tactical_attack"
 ability_name = "Tactical Attack"
-max_level = 3
-level = 3

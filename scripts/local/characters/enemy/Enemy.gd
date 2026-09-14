@@ -318,24 +318,30 @@ func setup_enemy(new_id: String, custom_level: int = 0) -> void:
 
 		# Load abilities dari EnemyData
 		enemy_abilities.clear()
+
+		# Merge parallel arrays → level map
+		var level_map: Dictionary = {}
+		for i in range(stats.ability_level_ids.size()):
+			if i < stats.ability_level_values.size():
+				level_map[stats.ability_level_ids[i]] = stats.ability_level_values[i]
+
 		for ab: AbilityData in stats.abilities:
 			if ab == null:
 				continue
 			var new_ab: AbilityData = ab.duplicate()
-			if stats.ability_levels.has(new_ab.ability_id):
-				var requested: int = stats.ability_levels[new_ab.ability_id]
-				new_ab.level = mini(requested, new_ab.max_level)
+			if level_map.has(new_ab.ability_id):
+				new_ab.level = mini(level_map[new_ab.ability_id], new_ab.max_level)
 			enemy_abilities.append(new_ab)
 
-		# Warning jika ability_levels key tidak match ability_id apapun
-		for key in stats.ability_levels.keys():
+		# Warning jika ability_level key tidak match ability_id apapun
+		for key in level_map.keys():
 			var found: bool = false
 			for ab: AbilityData in stats.abilities:
 				if ab != null and ab.ability_id == key:
 					found = true
 					break
 			if not found:
-				push_warning("[Enemy] ability_levels key '" + str(key) + "' tidak match ability_id apapun")
+				push_warning("[Enemy] ability_level key '" + str(key) + "' tidak match ability_id apapun")
 
 		if enemy_name_label:
 			enemy_name_label.text = stats.enemy_name
