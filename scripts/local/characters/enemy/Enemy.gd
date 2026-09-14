@@ -299,7 +299,7 @@ func setup_enemy(new_id: String, custom_level: int = 0) -> void:
 	stats = EnemyDatabase.get_enemy_data(enemy_id)
 
 	if stats != null:
-		level = custom_level if custom_level > 0 else stats.min_level
+		level = maxi(custom_level if custom_level > 0 else stats.min_level, stats.min_level)
 		var scaled: Dictionary = stats.get_scaled_stats(level)
 
 		scaled_max_hp = float(scaled.get("max_hp", 100.0))

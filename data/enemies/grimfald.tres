@@ -1,0 +1,91 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://e1ygnofd5363"]
+
+[ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/AbilityData.gd" id="1_4y567"]
+[ext_resource type="Script" uid="uid://d1jtt6i0k5g0g" path="res://scripts/local/characters/enemy/EnemyData.gd" id="2_pmxet"]
+[ext_resource type="Resource" uid="uid://c0sv4kwsteft7" path="res://data/enemies/abilities/tactical_attack.tres" id="2_ufv0u"]
+[ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="3_cdodp"]
+[ext_resource type="Texture2D" uid="uid://x0bt7ivc85by" path="res://assets/art/profile/enemy/grimfald.jpg" id="3_du4nc"]
+[ext_resource type="Resource" uid="uid://b2265a03f0302" path="res://data/enemies/abilities/battle_cry.tres" id="3_mgp4w"]
+[ext_resource type="Texture2D" uid="uid://cjrpy7i2gxhdp" path="res://assets/art/sprites/enemy/grimfald/attack1.png" id="5_mgp4w"]
+[ext_resource type="Texture2D" uid="uid://phkvdiqpcvdb" path="res://assets/art/sprites/enemy/grimfald/attack2.png" id="6_tm7ad"]
+[ext_resource type="Texture2D" uid="uid://db54stml8g7ty" path="res://assets/art/sprites/enemy/grimfald/attack3.png" id="7_nuvam"]
+[ext_resource type="Texture2D" uid="uid://bfaw6kml7mdja" path="res://assets/art/sprites/enemy/grimfald/hurt1.png" id="8_ccu5l"]
+[ext_resource type="Texture2D" uid="uid://2itqnw4mx3hk" path="res://assets/art/sprites/enemy/grimfald/hurt2.png" id="9_cub5k"]
+[ext_resource type="Texture2D" uid="uid://c6jg8e77tejo2" path="res://assets/art/sprites/enemy/grimfald/death.png" id="10_sta2a"]
+[ext_resource type="Texture2D" uid="uid://n1j5u6ix28a4" path="res://assets/art/sprites/enemy/grimfald/defend.png" id="11_ux8i3"]
+[ext_resource type="Texture2D" uid="uid://cnfn2ghw4fgft" path="res://assets/art/sprites/enemy/grimfald/idle1.png" id="12_0yajh"]
+[ext_resource type="Texture2D" uid="uid://bh0u6kevsyf3v" path="res://assets/art/sprites/enemy/grimfald/idle2.png" id="13_vqdr3"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_yy6v2"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("5_mgp4w")
+}, {
+"duration": 1.0,
+"texture": ExtResource("6_tm7ad")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_nuvam")
+}],
+"loop": 0,
+"name": &"attack",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("8_ccu5l")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_cub5k")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_sta2a")
+}],
+"loop": 0,
+"name": &"death",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("11_ux8i3")
+}],
+"loop": 1,
+"name": &"defend",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("8_ccu5l")
+}, {
+"duration": 1.0,
+"texture": ExtResource("9_cub5k")
+}],
+"loop": 0,
+"name": &"hurt",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("12_0yajh")
+}, {
+"duration": 1.0,
+"texture": ExtResource("13_vqdr3")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 2.0
+}]
+
+[resource]
+script = ExtResource("2_pmxet")
+ai_type = 2
+enemy_id = "grimfald"
+enemy_name = "Grimfald"
+min_level = 3
+icon_enemy = ExtResource("3_du4nc")
+sprite_frames = SubResource("SpriteFrames_yy6v2")
+max_hp = 90.0
+damage_to_player = 28.0
+abilities = Array[ExtResource("1_4y567")]([ExtResource("2_ufv0u"), ExtResource("3_mgp4w")])
+metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"

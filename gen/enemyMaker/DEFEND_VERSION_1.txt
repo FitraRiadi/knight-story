@@ -1,0 +1,38 @@
+[DEFEND — BLOCKING]
+
+Use the provided enemy image as the exact reference.
+
+Create ONE SINGLE STATIC DEFEND FRAME.
+
+The enemy is actively BLOCKING an attack coming directly from the PLAYER / CAMERA.
+
+The enemy faces DIRECTLY toward the camera.
+
+Make the defensive action VERY CLEAR:
+- both arms move strongly in front of the body
+- forearms are raised and positioned directly between the enemy and the camera
+- hands firmly brace against the incoming attack
+- shoulders tense and pushed forward
+- elbows bent
+- upper body leans slightly backward from the force
+- body lowers slightly into a strong defensive stance
+- legs remain firmly planted
+- expression shows tension and resistance
+
+The pose must clearly communicate:
+"STOPPING / BLOCKING AN ATTACK FROM THE FRONT."
+
+Keep the enemy's exact design, equipment, proportions, colors, size, position, perspective, and pixel-art style.
+
+DO NOT add a shield or any new object.
+NO particles.
+NO effects.
+NO blood.
+NO smoke.
+NO glow.
+NO camera movement.
+NO zoom.
+NO redesign.
+
+ONE SINGLE STATIC IMAGE.
+ONE DEFEND FRAME ONLY.
