@@ -2516,11 +2516,23 @@ func _finish_raptive() -> void:
 			wave_progress.set_wave(current_wave, total_waves)
 			await get_tree().create_timer(0.5).timeout
 			spawn_random_enemies(1, enemies_per_wave, 1, 5)
-			return  # Player turn setelah spawn, jangan trigger enemy turn
+			# Cleanup visual state rapid mode
+			attack_card_used_this_session = false
+			is_card_ui_open = false
+			attack_card_ui = null
+			_reset_hand_to_original(0.4)
+			is_player_turn = true
+			_set_buttons_active(true)
+			return
 		else:
 			await get_tree().create_timer(0.5).timeout
 			_show_scoreboard()
-			return  # Jangan trigger enemy turn kalau scoreboard
+			# Cleanup visual state rapid mode
+			attack_card_used_this_session = false
+			is_card_ui_open = false
+			attack_card_ui = null
+			_reset_hand_to_original(0.4)
+			return
 
 	# Trigger enemy turn
 	if attack_card_ui:
