@@ -2516,6 +2516,7 @@ func _finish_raptive() -> void:
 			wave_progress.set_wave(current_wave, total_waves)
 			await get_tree().create_timer(0.5).timeout
 			spawn_random_enemies(1, enemies_per_wave, 1, 5)
+			return  # Player turn setelah spawn, jangan trigger enemy turn
 		else:
 			await get_tree().create_timer(0.5).timeout
 			_show_scoreboard()
