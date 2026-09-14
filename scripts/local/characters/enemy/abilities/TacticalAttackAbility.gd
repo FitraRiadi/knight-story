@@ -6,12 +6,12 @@ class_name TacticalAttackAbility
 # Counter-attack saat player menyerang enemy.
 # Semakin tinggi level, semakin tinggi chance counter.
 #
-# Level 1: 25% chance, 0.8x damage
-# Level 2: 40% chance, 1.0x damage
+# Level 1: 30% chance, 0.8x damage
+# Level 2: 50% chance, 1.0x damage
 # Level 3: 100% chance, 1.3x damage + bonus text
 # ============================================================
 
-const CHANCE_BY_LEVEL: Array[float] = [0.25, 0.40, 1.0]
+const CHANCE_BY_LEVEL: Array[float] = [0.30, 0.50, 1.0]
 const DAMAGE_MULT_BY_LEVEL: Array[float] = [0.8, 1.0, 1.3]
 
 static func should_counter(ability_level: int) -> bool:

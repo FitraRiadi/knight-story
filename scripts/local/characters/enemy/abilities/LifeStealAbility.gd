@@ -6,12 +6,12 @@ class_name LifeStealAbility
 # Saat enemy menyerang, ada chance untuk heal dari damage dealt.
 # Semakin tinggi level, semakin tinggi chance + heal %.
 #
-# Level 1: 20% chance, 25% heal dari damage
-# Level 2: 35% chance, 40% heal dari damage
+# Level 1: 30% chance, 25% heal dari damage
+# Level 2: 50% chance, 40% heal dari damage
 # Level 3: 100% chance, 60% heal dari damage
 # ============================================================
 
-const CHANCE_BY_LEVEL: Array[float] = [0.20, 0.35, 1.0]
+const CHANCE_BY_LEVEL: Array[float] = [0.30, 0.50, 1.0]
 const HEAL_PERCENT_BY_LEVEL: Array[float] = [0.25, 0.40, 0.60]
 
 
