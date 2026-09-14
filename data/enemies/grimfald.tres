@@ -87,4 +87,5 @@ sprite_frames = SubResource("SpriteFrames_yy6v2")
 max_hp = 90.0
 damage_to_player = 28.0
 abilities = Array[ExtResource("1_4y567")]([ExtResource("3_mgp4w")])
+ability_level_str = "battle_cry:3"
 metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"
