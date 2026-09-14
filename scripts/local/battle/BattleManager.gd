@@ -165,6 +165,7 @@ var _rapid_current_enemy: BattleEnemy
 var _rapid_enemies_alive: Array = []
 var _rapid_enemy_index: int = 0
 var _rapid_entry_sfx_cache: AudioStream
+var _pending_rapid_deaths: Array = []  # [{exp, gold, drops, enemy}] — di-proses setelah rapid selesai
 
 # PLAYER HP CAMERA OVERLAY
 var player_hp_overlay_layer: CanvasLayer
@@ -2113,6 +2114,7 @@ func _start_attack_raptive() -> void:
 	_rapid_damage_per_hit = player_damage * 0.15
 	_rapid_hits = 0
 	_rapid_enemy_index = selected_enemy_index
+	_pending_rapid_deaths.clear()
 
 	if not _rapid_sfx_cache:
 		_rapid_sfx_cache = preload("res://assets/audio/effects/battle/sword/sword-attack.mp3")
@@ -2277,16 +2279,19 @@ func _on_raptive_btn_pressed() -> void:
 	total_hits += 1
 	total_critical += 1
 
-	# Kalau enemy mati, skip visual effects
+	# Kalau enemy mati, skip visual effects tapi tetap advance
 	if _rapid_current_enemy.current_hp <= 0:
 		if not _is_rapid_active:
 			return
 		_hide_raptive_btn()
+		# Tunggu sebentar biar death anim mulai
+		await get_tree().create_timer(0.3).timeout
 		_rapid_enemy_index += 1
 		var next_enemy := _get_next_raptive_enemy()
 		if next_enemy:
 			_spawn_raptive_btn_on_enemy(next_enemy)
 			_zoom_camera_to_enemy(next_enemy, 1.10)
+			_position_title_on_enemy(next_enemy, true)
 		else:
 			_finish_raptive()
 		return
@@ -2479,6 +2484,12 @@ func _finish_raptive() -> void:
 
 	_rapid_hits = 0
 	_rapid_enemy_index = 0
+
+	# Proses pending deaths yang tertunda selama rapid
+	if not _pending_rapid_deaths.is_empty():
+		for death_data in _pending_rapid_deaths:
+			_process_enemy_death(death_data["exp"], death_data["gold"], death_data["drops"], death_data["enemy"])
+		_pending_rapid_deaths.clear()
 
 	# Trigger enemy turn
 	if attack_card_ui:
@@ -3275,12 +3286,20 @@ func player_receive_damage_custom(amount: float) -> void:
 
 
 func _on_enemy_defeated(_exp_amount: int, _gold_amount: int, _dropped_items: Array[String], enemy: BattleEnemy) -> void:
-	# Kalau rapid masih aktif, finish dulu baru proses death
+	# Kalau rapid masih aktif, JANGAN proses death sekarang — tunda dulu
 	if _is_rapid_active:
-		_finish_raptive()
-		# Tunggu reset selesai dulu
-		await get_tree().create_timer(0.3).timeout
+		_pending_rapid_deaths.append({
+			"exp": _exp_amount,
+			"gold": _gold_amount,
+			"drops": _dropped_items.duplicate(),
+			"enemy": enemy,
+		})
+		return
 
+	_process_enemy_death(_exp_amount, _gold_amount, _dropped_items, enemy)
+
+
+func _process_enemy_death(_exp_amount: int, _gold_amount: int, _dropped_items: Array[String], enemy: BattleEnemy) -> void:
 	# SCOREBOARD: Hitung enemy defeated
 	enemies_killed += 1
 
