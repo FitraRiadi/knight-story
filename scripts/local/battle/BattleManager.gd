@@ -2517,10 +2517,10 @@ func _finish_raptive() -> void:
 			await get_tree().create_timer(0.5).timeout
 			spawn_random_enemies(1, enemies_per_wave, 1, 5)
 			# Cleanup visual state rapid mode
+			attack_card_used_this_session = false  # Reset SEBELUM finish supaya signal gak trigger enemy turn
 			if attack_card_ui:
 				attack_card_ui.finish_attack_indicator()
 				await get_tree().create_timer(0.4).timeout
-			attack_card_used_this_session = false
 			is_card_ui_open = false
 			attack_card_ui = null
 			_reset_hand_to_original(0.4)
@@ -2531,10 +2531,10 @@ func _finish_raptive() -> void:
 			await get_tree().create_timer(0.5).timeout
 			_show_scoreboard()
 			# Cleanup visual state rapid mode
+			attack_card_used_this_session = false  # Reset SEBELUM finish supaya signal gak trigger enemy turn
 			if attack_card_ui:
 				attack_card_ui.finish_attack_indicator()
 				await get_tree().create_timer(0.4).timeout
-			attack_card_used_this_session = false
 			is_card_ui_open = false
 			attack_card_ui = null
 			_reset_hand_to_original(0.4)
