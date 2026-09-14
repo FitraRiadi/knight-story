@@ -326,6 +326,16 @@ func setup_enemy(new_id: String, custom_level: int = 0) -> void:
 				new_ab.level = stats.ability_levels[new_ab.ability_id]
 			enemy_abilities.append(new_ab)
 
+		# Warning jika ability_levels key tidak match ability_id apapun
+		for key in stats.ability_levels.keys():
+			var found: bool = false
+			for ab: AbilityData in stats.abilities:
+				if ab != null and ab.ability_id == key:
+					found = true
+					break
+			if not found:
+				push_warning("[Enemy] ability_levels key '" + str(key) + "' tidak match ability_id apapun")
+
 		if enemy_name_label:
 			enemy_name_label.text = stats.enemy_name
 
