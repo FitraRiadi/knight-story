@@ -8,10 +8,10 @@ class_name BattleCryAbility
 #
 # Level 1: 25% chance double attack, parry 1x
 # Level 2: 45% chance double attack, parry 2x
-# Level 3: 65% chance double attack, parry 2x, 1.2x bonus damage
+# Level 3: 100% chance double attack, parry 2x, 1.2x bonus damage
 # ============================================================
 
-const CHANCE_BY_LEVEL: Array[float] = [0.25, 0.45, 0.65]
+const CHANCE_BY_LEVEL: Array[float] = [0.25, 0.45, 1.0]
 const BONUS_DAMAGE_MULT_BY_LEVEL: Array[float] = [1.0, 1.0, 1.2]
 const PARRY_COUNT_BY_LEVEL: Array[int] = [1, 2, 2]
 

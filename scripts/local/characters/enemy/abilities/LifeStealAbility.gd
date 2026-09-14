@@ -8,10 +8,10 @@ class_name LifeStealAbility
 #
 # Level 1: 20% chance, 25% heal dari damage
 # Level 2: 35% chance, 40% heal dari damage
-# Level 3: 50% chance, 60% heal dari damage
+# Level 3: 100% chance, 60% heal dari damage
 # ============================================================
 
-const CHANCE_BY_LEVEL: Array[float] = [0.20, 0.35, 0.50]
+const CHANCE_BY_LEVEL: Array[float] = [0.20, 0.35, 1.0]
 const HEAL_PERCENT_BY_LEVEL: Array[float] = [0.25, 0.40, 0.60]
 
 
