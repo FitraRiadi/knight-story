@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="AbilityData" format=3]
+
+[ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/abilities/AbilityData.gd" id="1"]
+
+[resource]
+script = ExtResource("1")
+ability_id = "berserk"
+ability_name = "Berserk"
+ability_type = 3
+max_level = 3
+level = 3

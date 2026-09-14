@@ -778,6 +778,50 @@ func _execute_attack(
 
 	await get_tree().create_timer(0.6).timeout
 
+	# BERSERK: Serangan bertubi-tubi (tidak bisa diparry)
+	if not stun_interrupted and should_berserk():
+		var berserk_ab := get_berserk_ability()
+		var berserk_level: int = berserk_ab.get_level()
+		var hit_count: int = BerserkAbility.get_hit_count(berserk_level)
+		var dmg_per_hit: float = BerserkAbility.get_damage_per_hit(berserk_level)
+		var berserk_text: String = BerserkAbility.get_berserk_text(berserk_level)
+		var berserk_color: Color = BerserkAbility.get_berserk_text_color(berserk_level)
+
+		show_reaction_text(berserk_text, berserk_color, true)
+		await get_tree().create_timer(0.4).timeout
+
+		for i in range(hit_count):
+			if stun_interrupted:
+				break
+			force_attack_finish = false
+			stun_interrupted = false
+			frame = 0
+			play("attack")
+			var mh_frame_count: int = get_sprite_frames().get_frame_count(&"attack") if get_sprite_frames().has_animation(&"attack") else 1
+			var mh_was_force: bool = false
+			var mh_check_time: float = 0.0
+			while mh_check_time < 2.0:
+				await get_tree().process_frame
+				mh_check_time += get_process_delta_time()
+				if force_attack_finish:
+					stop()
+					if mh_frame_count > 1:
+						set_frame_and_progress(mh_frame_count - 1, 0.0)
+					mh_was_force = true
+					break
+				if not is_playing():
+					break
+			force_attack_finish = false
+
+			if stun_interrupted:
+				break
+
+			if not mh_was_force:
+				_play_sound("attack")
+			attack_hit.emit(total_damage * dmg_per_hit)
+			_shake_camera(camera, 8.0, 0.2)
+			await get_tree().create_timer(0.3).timeout
+
 	# BATTLE CRY: Check double attack setelah serangan pertama
 	if not stun_interrupted and should_double_attack():
 		var ab := get_battle_cry_ability()
@@ -1672,6 +1716,28 @@ func _apply_life_steal(damage_dealt: float) -> void:
 	var tween: Tween = create_tween()
 	tween.tween_property(self, "modulate", Color(0.5, 1.5, 0.5, 1.0), 0.15)
 	tween.tween_property(self, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.3)
+
+
+# ============================================================
+# BERSERK ABILITY
+# ============================================================
+
+func get_berserk_ability() -> AbilityData:
+	for ab: AbilityData in enemy_abilities:
+		if ab.is_berserk():
+			return ab
+	return null
+
+
+func has_berserk() -> bool:
+	return get_berserk_ability() != null
+
+
+func should_berserk() -> bool:
+	var ab := get_berserk_ability()
+	if ab == null:
+		return false
+	return BerserkAbility.should_trigger(ab.get_level())
 
 
 # ============================================================
