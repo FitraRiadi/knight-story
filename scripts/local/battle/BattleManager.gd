@@ -3711,6 +3711,7 @@ func _setup_scoreboard() -> void:
 		score_title.modulate.a = 0.0
 	if score_continue_btn:
 		score_continue_btn.modulate.a = 0.0
+		score_continue_btn.disabled = true
 		score_continue_btn.pressed.connect(_on_scoreboard_continue_pressed)
 
 
@@ -3775,7 +3776,13 @@ func _show_scoreboard() -> void:
 		tw.tween_interval(0.12)
 	
 	# Continue button muncul terakhir
+	if score_continue_btn:
+		score_continue_btn.disabled = true
 	tw.tween_property(score_continue_btn, "modulate:a", 1.0, 0.3).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+	tw.tween_callback(func():
+		if score_continue_btn:
+			score_continue_btn.disabled = false
+	)
 
 
 func _on_scoreboard_continue_pressed() -> void:
