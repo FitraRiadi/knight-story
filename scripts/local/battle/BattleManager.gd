@@ -2998,18 +2998,57 @@ func spawn_custom_enemies(enemy_ids: Array[String], levels: Array[int] = []) -> 
 
 
 func spawn_random_enemies(min_count: int = 1, max_count: int = 3, min_level: int = 1, max_level: int = 5) -> void:
-	if available_enemy_pool.is_empty():
+	var player_level: int = PlayerDataManager.get_level()
+	var spawn_min: int = maxi(1, player_level - 3)
+	var spawn_max: int = player_level + 2
+
+	var pool: Array[String] = _get_scalable_enemy_pool()
+	if pool.is_empty():
 		return
-	
+
 	var count: int = randi_range(clampi(min_count, 1, 2), clampi(max_count, 1, 2))
 	var random_ids: Array[String] = []
 	var random_levels: Array[int] = []
-	
+
 	for i in range(count):
-		random_ids.append(available_enemy_pool.pick_random())
-		random_levels.append(randi_range(min_level, max_level))
-	
+		var eid: String = pool.pick_random()
+		var data: EnemyData = EnemyDatabase.get_enemy_data(eid)
+		var enemy_min: int = data.min_level if data else 1
+		var target_level: int = randi_range(maxi(spawn_min, enemy_min), spawn_max)
+		random_ids.append(eid)
+		random_levels.append(target_level)
+
 	_spawn_enemies(random_ids, random_levels)
+
+
+func _get_scalable_enemy_pool() -> Array[String]:
+	var player_level: int = PlayerDataManager.get_level()
+	var spawn_max: int = player_level + 2
+	var filtered: Array[String] = []
+
+	for enemy_id in available_enemy_pool:
+		var data: EnemyData = EnemyDatabase.get_enemy_data(enemy_id)
+		if data == null:
+			continue
+
+		var distance: int = data.min_level - spawn_max
+		if distance <= 0:
+			filtered.append(enemy_id)
+		elif distance == 1:
+			if randf() < 0.50:
+				filtered.append(enemy_id)
+		elif distance == 2:
+			if randf() < 0.30:
+				filtered.append(enemy_id)
+		elif distance == 3:
+			if randf() < 0.15:
+				filtered.append(enemy_id)
+		elif distance == 4:
+			if randf() < 0.05:
+				filtered.append(enemy_id)
+		# distance >= 5 → 0%, skip
+
+	return filtered
 
 
 func respawn_test_enemies() -> void:
