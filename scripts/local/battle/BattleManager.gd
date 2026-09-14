@@ -319,8 +319,12 @@ func _process(delta: float) -> void:
 		_rapid_timer_global -= delta
 		_rapid_timer_per_btn -= delta
 
-		# 1 detik per spawn habis → pindah enemy berikutnya
+		# 1 detik per spawn habis → pindah enemy berikutnya (MISS)
 		if _rapid_timer_per_btn <= 0.0:
+			# SCOREBOARD: rapid miss
+			total_attacks += 1
+			total_miss += 1
+
 			_hide_raptive_btn()
 			_rapid_enemy_index += 1
 			var next_enemy := _get_next_raptive_enemy()
@@ -1534,6 +1538,14 @@ func _on_charge_complete(multiplier: float) -> void:
 	else:
 		result = AttackResult.LOW
 
+	# SCOREBOARD: charge attack
+	total_attacks += 1
+	total_hits += 1
+	match result:
+		AttackResult.CRITICAL: total_critical += 1
+		AttackResult.MID: total_mid += 1
+		AttackResult.LOW: total_low += 1
+
 	# Charge attack gets bonus damage multiplier (1.25x base on top of zone)
 	_execute_actual_attack(result, true, multiplier)
 
@@ -2259,6 +2271,11 @@ func _on_raptive_btn_pressed() -> void:
 	# Hit enemy
 	_rapid_current_enemy.receive_damage(_rapid_damage_per_hit, false, false)
 	_rapid_hits += 1
+
+	# SCOREBOARD
+	total_attacks += 1
+	total_hits += 1
+	total_critical += 1
 
 	# Kalau enemy mati, skip visual effects
 	if _rapid_current_enemy.current_hp <= 0:
