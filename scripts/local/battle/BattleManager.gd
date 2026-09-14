@@ -2284,8 +2284,13 @@ func _on_raptive_btn_pressed() -> void:
 		if not _is_rapid_active:
 			return
 		_hide_raptive_btn()
-		_rapid_timer_per_btn = 1.0  # Reset timer, prevent _process double advance
+		_rapid_timer_per_btn = 1.0
 		await get_tree().create_timer(0.3).timeout
+
+		# Guard: rapid udah berhenti (global timer habis) — jangan spawn lagi
+		if not _is_rapid_active:
+			return
+
 		_rapid_enemy_index += 1
 		var next_enemy := _get_next_raptive_enemy()
 		if next_enemy:
