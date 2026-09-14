@@ -322,8 +322,9 @@ func setup_enemy(new_id: String, custom_level: int = 0) -> void:
 			if ab == null:
 				continue
 			var new_ab: AbilityData = ab.duplicate()
-			var requested: int = stats.ability_levels.get(new_ab.ability_id, 1)
-			new_ab.level = mini(requested, new_ab.max_level)
+			if stats.ability_levels.has(new_ab.ability_id):
+				var requested: int = stats.ability_levels[new_ab.ability_id]
+				new_ab.level = mini(requested, new_ab.max_level)
 			enemy_abilities.append(new_ab)
 
 		# Warning jika ability_levels key tidak match ability_id apapun

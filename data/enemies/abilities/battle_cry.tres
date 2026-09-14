@@ -8,3 +8,4 @@ ability_id = "battle_cry"
 ability_name = "Battle Cry"
 ability_type = 1
 max_level = 3
+level = 3

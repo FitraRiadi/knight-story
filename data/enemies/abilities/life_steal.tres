@@ -8,3 +8,4 @@ ability_id = "life_steal"
 ability_name = "Life Steal"
 ability_type = 2
 max_level = 3
+level = 3
