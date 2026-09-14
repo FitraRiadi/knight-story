@@ -10,10 +10,11 @@ enum AbilityType {
 @export var ability_id: String = ""
 @export var ability_name: String = ""
 @export var ability_type: AbilityType = AbilityType.TACTICAL_ATTACK
-@export var level: int = 1  # 1-3
+@export var max_level: int = 3
+var level: int = 1
 
 func get_level() -> int:
-	return clampi(level, 1, 3)
+	return clampi(level, 1, max_level)
 
 func is_tactical_attack() -> bool:
 	return ability_type == AbilityType.TACTICAL_ATTACK
