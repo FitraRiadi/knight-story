@@ -5,7 +5,7 @@
 [ext_resource type="Script" uid="uid://d1jtt6i0k5g0g" path="res://scripts/local/characters/enemy/EnemyData.gd" id="2_pmxet"]
 [ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="3_cdodp"]
 [ext_resource type="Texture2D" uid="uid://x0bt7ivc85by" path="res://assets/art/profile/enemy/grimfald.jpg" id="3_du4nc"]
-[ext_resource type="Resource" uid="uid://cq041xql6bmcc" path="res://data/enemies/abilities/life_steal.tres" id="3_mgp4w"]
+[ext_resource type="Resource" uid="uid://cnrvpwsecuanr" path="res://data/enemies/abilities/berserk.tres" id="3_mgp4w"]
 [ext_resource type="Texture2D" uid="uid://cjrpy7i2gxhdp" path="res://assets/art/sprites/enemy/grimfald/attack1.png" id="5_mgp4w"]
 [ext_resource type="Texture2D" uid="uid://phkvdiqpcvdb" path="res://assets/art/sprites/enemy/grimfald/attack2.png" id="6_tm7ad"]
 [ext_resource type="Texture2D" uid="uid://db54stml8g7ty" path="res://assets/art/sprites/enemy/grimfald/attack3.png" id="7_nuvam"]
@@ -88,5 +88,5 @@ sprite_frames = SubResource("SpriteFrames_yy6v2")
 max_hp = 90.0
 damage_to_player = 28.0
 abilities = Array[ExtResource("1_ufv0u")]([ExtResource("2_du4nc"), ExtResource("3_mgp4w")])
-ability_level_str = "battle_cry:1,life_steal:3"
+ability_level_str = "battle_cry:3,berserk:3"
 metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"
