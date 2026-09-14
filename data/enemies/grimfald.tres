@@ -79,7 +79,7 @@ animations = [{
 
 [resource]
 script = ExtResource("2_pmxet")
-ai_type = 2
+ai_type = 1
 enemy_id = "grimfald"
 enemy_name = "Grimfald"
 min_level = 2
