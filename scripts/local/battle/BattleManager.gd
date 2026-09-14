@@ -2827,18 +2827,6 @@ func _animate_player_hp_overlay_damage(damage_amount: float) -> void:
 	
 	player_hp_overlay_visual_hp = starting_hp
 	
-	if player_hp_overlay_damage_label:
-		player_hp_overlay_damage_label.text = ("-" + str(int(damage_amount)))
-		player_hp_overlay_damage_label.modulate.a = 1.0
-		player_hp_overlay_damage_label.position = Vector2(player_hp_overlay_max_width - 100.0, -20.0)
-		player_hp_overlay_damage_label.scale = Vector2(0.7, 0.7)
-		
-		var damage_tween = create_tween().set_parallel(true)
-		damage_tween.tween_property(player_hp_overlay_damage_label, "position:y", -55.0, 0.7).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-		damage_tween.tween_property(player_hp_overlay_damage_label, "scale", Vector2(1.15, 1.15), 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		damage_tween.chain().tween_property(player_hp_overlay_damage_label, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-		damage_tween.tween_property(player_hp_overlay_damage_label, "modulate:a", 0.0, 0.35).set_delay(0.35).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	
 	var hp_difference = starting_hp - target_hp
 	var damage_duration = clampf(0.45 + (hp_difference / max_hp) * 0.8, 0.45, 1.15)
 	
