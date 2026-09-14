@@ -3921,6 +3921,7 @@ var flee_is_choosing: bool = false
 var flee_result_label: Label
 var flee_chance_label: Label
 var flee_title_label: Label
+var flee_cancel_btn: Button = null
 
 const FLEE_CARD_COUNT: int = 6
 const FLEE_BASE_CHANCE: float = 30.0
@@ -4114,34 +4115,34 @@ func _show_flee_qte() -> void:
 	_animate_flee_opening()
 
 	# Cancel button di bawah card area
-	var cancel_btn := Button.new()
-	cancel_btn.text = "CANCEL"
-	cancel_btn.custom_minimum_size = Vector2(100, 28)
-	cancel_btn.set_anchors_preset(Control.PRESET_CENTER)
-	cancel_btn.offset_left = -50.0
-	cancel_btn.offset_right = 50.0
-	cancel_btn.offset_top = 135.0
-	cancel_btn.offset_bottom = 163.0
-	cancel_btn.add_theme_font_size_override("font_size", 11)
+	flee_cancel_btn = Button.new()
+	flee_cancel_btn.text = "CANCEL"
+	flee_cancel_btn.custom_minimum_size = Vector2(100, 28)
+	flee_cancel_btn.set_anchors_preset(Control.PRESET_CENTER)
+	flee_cancel_btn.offset_left = -50.0
+	flee_cancel_btn.offset_right = 50.0
+	flee_cancel_btn.offset_top = 135.0
+	flee_cancel_btn.offset_bottom = 163.0
+	flee_cancel_btn.add_theme_font_size_override("font_size", 11)
 
 	var cancel_style := StyleBoxFlat.new()
 	cancel_style.bg_color = Color(0.2, 0.2, 0.2, 0.8)
 	cancel_style.set_corner_radius_all(4)
 	cancel_style.set_content_margin_all(6)
-	cancel_btn.add_theme_stylebox_override("normal", cancel_style)
+	flee_cancel_btn.add_theme_stylebox_override("normal", cancel_style)
 
 	var cancel_hover := StyleBoxFlat.new()
 	cancel_hover.bg_color = Color(0.35, 0.35, 0.35, 0.9)
 	cancel_hover.set_corner_radius_all(4)
 	cancel_hover.set_content_margin_all(6)
-	cancel_btn.add_theme_stylebox_override("hover", cancel_hover)
+	flee_cancel_btn.add_theme_stylebox_override("hover", cancel_hover)
 
-	cancel_btn.pressed.connect(_on_flee_cancel_pressed)
-	flee_qte_root.add_child(cancel_btn)
+	flee_cancel_btn.pressed.connect(_on_flee_cancel_pressed)
+	flee_qte_root.add_child(flee_cancel_btn)
 
 	var cancel_tw := create_tween()
-	cancel_tw.tween_property(cancel_btn, "modulate:a", 0.0, 0.0)
-	cancel_tw.tween_property(cancel_btn, "modulate:a", 1.0, 0.3).set_delay(0.6)
+	cancel_tw.tween_property(flee_cancel_btn, "modulate:a", 0.0, 0.0)
+	cancel_tw.tween_property(flee_cancel_btn, "modulate:a", 1.0, 0.3).set_delay(0.6)
 
 
 func _create_flee_card(index: int) -> PanelContainer:
@@ -4272,6 +4273,10 @@ func _on_flee_card_pressed(index: int) -> void:
 		return
 	flee_is_choosing = false
 
+	# Sembunyikan cancel button — biar gak bisa diklik selama flip animation
+	if flee_cancel_btn:
+		flee_cancel_btn.visible = false
+
 	var is_escape: bool = flee_card_is_escape[index]
 	var chosen_card: PanelContainer = flee_cards[index]
 
@@ -4390,6 +4395,7 @@ func _cleanup_flee_qte() -> void:
 		flee_qte_layer.queue_free()
 	flee_qte_layer = null
 	flee_qte_root = null
+	flee_cancel_btn = null
 	flee_cards.clear()
 	flee_card_fronts.clear()
 	flee_card_backs.clear()
