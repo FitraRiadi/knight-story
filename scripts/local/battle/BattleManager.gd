@@ -2284,7 +2284,7 @@ func _on_raptive_btn_pressed() -> void:
 		if not _is_rapid_active:
 			return
 		_hide_raptive_btn()
-		# Tunggu sebentar biar death anim mulai
+		_rapid_timer_per_btn = 1.0  # Reset timer, prevent _process double advance
 		await get_tree().create_timer(0.3).timeout
 		_rapid_enemy_index += 1
 		var next_enemy := _get_next_raptive_enemy()
