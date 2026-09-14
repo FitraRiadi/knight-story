@@ -2857,12 +2857,9 @@ func _on_enemy_attack_preparing() -> void:
 
 
 func _on_battle_cry_activated(ability_level: int) -> void:
-	var parry_count: int = BattleCryAbility.get_parry_count(ability_level)
-	# Parry window pertama sudah muncul dari attack_preparing
-	# Tambah parry window lagi jika level >= 2
-	if parry_count >= 2:
-		await get_tree().create_timer(0.1).timeout
-		_show_parry_window(0.7)
+	# Battle Cry trigger → parry window selalu muncul
+	await get_tree().create_timer(0.1).timeout
+	_show_parry_window(0.7)
 
 
 func _auto_detect_enemy_pool() -> void:
