@@ -93,5 +93,5 @@ sprite_frames = SubResource("SpriteFrames_gn7wh")
 max_hp = 125.0
 damage_to_player = 20.0
 exp_reward = 10
-abilities = Array[ExtResource("1_qphqy")]([ExtResource("10_ab1"), ExtResource("3_w4pim"), null])
+abilities = Array[ExtResource("1_qphqy")]([])
 metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"

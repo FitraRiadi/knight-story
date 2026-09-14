@@ -108,6 +108,7 @@ enum AIType {
 # ============================================================
 @export_group("Abilities")
 @export var abilities: Array[AbilityData] = []
+@export var ability_levels: Dictionary = {}
 
 
 # ============================================================

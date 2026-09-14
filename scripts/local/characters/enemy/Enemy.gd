@@ -319,8 +319,12 @@ func setup_enemy(new_id: String, custom_level: int = 0) -> void:
 		# Load abilities dari EnemyData
 		enemy_abilities.clear()
 		for ab: AbilityData in stats.abilities:
-			if ab != null:
-				enemy_abilities.append(ab)
+			if ab == null:
+				continue
+			var new_ab: AbilityData = ab.duplicate()
+			if stats.ability_levels.has(new_ab.ability_id):
+				new_ab.level = stats.ability_levels[new_ab.ability_id]
+			enemy_abilities.append(new_ab)
 
 		if enemy_name_label:
 			enemy_name_label.text = stats.enemy_name
