@@ -1,6 +1,9 @@
 extends Control
 
 @onready var camera: Camera2D = $Camera2D
+@onready var wave_title_label: Label = $Camera2D/wave
+@onready var wave_info_label: Label = $Camera2D/wave/information
+@onready var wave_divider: Panel = $Camera2D/wave/Panel
 @onready var hand_right: TextureRect = $"Camera2D/hand-right"
 @onready var hand_left: TextureRect = $"Camera2D/hand-left"
 
@@ -3086,6 +3089,44 @@ func _get_spawn_position(index: int, total: int) -> Vector2:
 	return center_spawn_position
 
 
+func _show_wave_title() -> void:
+	if not wave_title_label:
+		return
+	wave_title_label.text = "Wave " + str(current_wave)
+	if wave_info_label:
+		wave_info_label.text = _get_wave_subtitle()
+	var parts: Array = [wave_title_label, wave_info_label, wave_divider]
+	for p in parts:
+		if p:
+			p.modulate.a = 0.0
+	wave_title_label.pivot_offset = wave_title_label.size / 2.0
+	wave_title_label.scale = Vector2(0.6, 0.6)
+	var wtw := create_tween().set_parallel(true)
+	wtw.set_ignore_time_scale(true)
+	wtw.tween_property(wave_title_label, "scale", Vector2.ONE, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	for p in parts:
+		if p:
+			wtw.tween_property(p, "modulate:a", 1.0, 0.25).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	wtw.chain().tween_interval(2.2)
+	for p in parts:
+		if p:
+			wtw.tween_property(p, "modulate:a", 0.0, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+
+
+func _get_wave_subtitle() -> String:
+	var seen: Array[String] = []
+	for e in enemies:
+		if is_instance_valid(e) and e.stats != null:
+			var nm: String = str(e.stats.enemy_name)
+			if nm != "" and not seen.has(nm):
+				seen.append(nm)
+	if seen.is_empty():
+		return "Misterious Enemy"
+	if seen.size() == 1:
+		return seen[0]
+	return str(enemies.size()) + " Enemies"
+
+
 func _animate_enemies_spawn() -> void:
 	is_player_turn = false
 
@@ -3099,6 +3140,8 @@ func _animate_enemies_spawn() -> void:
 		_set_buttons_active_staggered()
 	else:
 		_set_buttons_active(false)
+
+	_show_wave_title()
 
 	# Wave intro: zoom dikit ke tengah terus balik (napas kamera)
 	if camera:

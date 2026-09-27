@@ -266,6 +266,32 @@ script = ExtResource("wave_progress")
 [node name="Camera2D" type="Camera2D" parent="." unique_id=2106517464]
 position = Vector2(370, 170)
 
+[node name="wave" type="Label" parent="Camera2D" unique_id=1419385249]
+offset_left = -38.0
+offset_top = 110.0
+offset_right = 73.0
+offset_bottom = 141.0
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+theme_override_font_sizes/font_size = 30
+text = "Wave 1"
+horizontal_alignment = 1
+
+[node name="information" type="Label" parent="Camera2D/wave" unique_id=962325317]
+layout_mode = 0
+offset_left = 6.0
+offset_top = 24.0
+offset_right = 116.0
+offset_bottom = 41.0
+theme_override_colors/font_color = Color(0.96283704, 0.94981414, 0.9997509, 1)
+text = "Misterious Enemy"
+horizontal_alignment = 1
+
+[node name="Panel" type="Panel" parent="Camera2D/wave" unique_id=1817947138]
+layout_mode = 0
+offset_top = 26.0
+offset_right = 115.0
+offset_bottom = 27.0
+
 [node name="hand-left" type="TextureRect" parent="Camera2D" unique_id=1647611838]
 texture_filter = 1
 offset_left = -366.0
@@ -558,10 +584,10 @@ offset_bottom = 44.0
 [node name="atkBtn" type="Button" parent="interaction" unique_id=1136254172]
 texture_filter = 1
 layout_mode = 0
-offset_left = 340.0
-offset_top = 219.0
-offset_right = 930.0
-offset_bottom = 837.3795
+offset_left = 331.0
+offset_top = 209.0
+offset_right = 921.0
+offset_bottom = 827.3795
 scale = Vector2(0.1, 0.1)
 theme_override_fonts/font = ExtResource("3_i268m")
 theme_override_font_sizes/font_size = 500
@@ -585,10 +611,6 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 0.0
-offset_bottom = 0.0
 grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("9_5wo1c")
@@ -632,10 +654,10 @@ expand_mode = 1
 [node name="skillBtn" type="Button" parent="interaction" unique_id=316588293]
 texture_filter = 1
 layout_mode = 0
-offset_left = 391.0
-offset_top = 207.0
-offset_right = 901.1421
-offset_bottom = 748.56714
+offset_left = 389.0
+offset_top = 212.0
+offset_right = 899.1421
+offset_bottom = 753.56714
 scale = Vector2(0.12634899, 0.11041779)
 theme_override_fonts/font = ExtResource("3_i268m")
 theme_override_font_sizes/font_size = 500
@@ -649,10 +671,6 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -23.74376
-offset_top = 72.45209
-offset_right = -23.743774
-offset_bottom = 72.45209
 grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("12_yyr2t")
