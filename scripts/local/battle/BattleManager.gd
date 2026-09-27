@@ -3100,8 +3100,6 @@ func _animate_enemies_spawn() -> void:
 	else:
 		_set_buttons_active(false)
 
-	_show_wave_banner(current_wave)
-
 	for i in range(enemies.size()):
 		var enemy = enemies[i]
 		var target_pos: Vector2 = _get_spawn_position(i, enemies.size())
@@ -3136,47 +3134,6 @@ func _slam_on_landing(wait: float, big: bool, dust_pos: Vector2) -> void:
 	# Shake doang tanpa blood (slam, bukan damage).
 	# NOTE: trigger clamp intensity ke 6.0, jadi big = max + durasi lebih panjang
 	trigger_camera_shake_and_blood(6.0 if big else 5.0, 0.3 if big else 0.2, 0.0)
-
-
-func _show_wave_banner(wave: int) -> void:
-	# Layer sendiri (anti-gangguan layer lain) + ignore_time_scale (anti hit-stop)
-	var layer := CanvasLayer.new()
-	layer.layer = 200
-	add_child(layer)
-	var banner := Label.new()
-	banner.text = "WAVE " + str(wave)
-	banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	banner.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	banner.add_theme_font_size_override("font_size", 56)
-	banner.add_theme_color_override("font_color", Color(1.0, 0.85, 0.25))
-	banner.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
-	banner.add_theme_constant_override("shadow_offset_x", 3)
-	banner.add_theme_constant_override("shadow_offset_y", 3)
-	var vp: Vector2 = get_viewport().get_visible_rect().size
-	banner.position = Vector2(vp.x / 2.0 - 180.0, 100.0)
-	banner.size = Vector2(360.0, 72.0)
-	banner.pivot_offset = Vector2(180.0, 36.0)
-	banner.scale = Vector2(0.3, 0.3)
-	banner.modulate.a = 0.0
-	banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	layer.add_child(banner)
-	print("[WAVE_BANNER] show wave ", wave, " t=", Time.get_ticks_msec())
-	var btw := create_tween()
-	btw.set_ignore_time_scale(true)
-	# Nongol abis slam reda (0.4s) biar fokus gak rebutan sama enemy
-	btw.tween_interval(0.4)
-	btw.set_parallel(true)
-	btw.tween_property(banner, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	btw.tween_property(banner, "modulate:a", 1.0, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	btw.chain().tween_interval(5.0)
-	btw.tween_property(banner, "modulate:a", 0.0, 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	btw.tween_callback(_free_wave_banner.bind(layer, wave))
-
-
-func _free_wave_banner(layer: CanvasLayer, wave: int) -> void:
-	print("[WAVE_BANNER] free wave ", wave, " t=", Time.get_ticks_msec())
-	if is_instance_valid(layer):
-		layer.queue_free()
 
 
 func _spawn_dust_particle(pos: Vector2, amount: int = 8) -> void:
