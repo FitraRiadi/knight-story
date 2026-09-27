@@ -106,6 +106,7 @@ func _setup_vignette() -> void:
 	vignette.texture = grad_tex
 	vignette.set_anchors_preset(Control.PRESET_FULL_RECT)
 	vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vignette.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	vignette.stretch_mode = TextureRect.STRETCH_SCALE
 	add_child(vignette)
 
