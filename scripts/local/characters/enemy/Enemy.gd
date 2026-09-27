@@ -112,6 +112,11 @@ var smoke_particles: CPUParticles2D = null
 var buff_particles: CPUParticles2D = null
 var current_buff_particle_type: String = ""
 
+# Hit squash (efek kena damage)
+var hit_squash_tween: Tween = null
+var hit_base_scale := Vector2.ONE
+var hit_base_scale_init := false
+
 
 # ============================================================
 # DEFEND STATE
@@ -1052,6 +1057,12 @@ func _on_death() -> void:
 	is_defending = false
 	is_defense_animation_locked = false
 
+	# Matikan squash biar scale balik baseline sebelum animasi menciut
+	if hit_squash_tween and hit_squash_tween.is_valid():
+		hit_squash_tween.kill()
+	if hit_base_scale_init:
+		scale = hit_base_scale
+
 	if enemy_target: enemy_target.hide()
 	if enemy_hit_icon: enemy_hit_icon.hide()
 	if enemy_collision: enemy_collision.disabled = true
@@ -1088,7 +1099,7 @@ func _on_death() -> void:
 	# Menciut staggered: pop dikit -> susut ke 0 + fade bareng
 	var base_scale := scale
 	var shrink: Tween = create_tween()
-	shrink.tween_property(self, "scale", base_scale * 1.12, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	shrink.tween_property(self, "scale", base_scale * 1.05, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	shrink.tween_property(self, "scale", Vector2.ZERO, 0.55).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 	shrink.parallel().tween_property(self, "modulate:a", 0.0, 0.55).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 
@@ -1151,6 +1162,16 @@ func receive_damage(
 	var hit_flash := create_tween()
 	hit_flash.tween_property(self, "modulate", Color(1.5, 0.3, 0.3, 1.0), 0.08)
 	hit_flash.tween_property(self, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.15)
+
+	# Squash staggered: kempis dikit -> balik halus
+	if not hit_base_scale_init:
+		hit_base_scale = scale
+		hit_base_scale_init = true
+	if hit_squash_tween and hit_squash_tween.is_valid():
+		hit_squash_tween.kill()
+	hit_squash_tween = create_tween()
+	hit_squash_tween.tween_property(self, "scale", hit_base_scale * Vector2(1.05, 0.92), 0.06).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	hit_squash_tween.tween_property(self, "scale", hit_base_scale, 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 	if is_critical:
 		_play_sound("hurt_crit")
