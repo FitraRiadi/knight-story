@@ -2035,7 +2035,8 @@ func _on_parry_button_clicked() -> void:
 	
 	parry_success_this_turn = true
 	is_parry_window_active = false
-	_pulse_atmosphere()
+	# Surge panjang dari momen pencet sampe hit mendarat (di-reset pas connect)
+	_pulse_atmosphere(1.0)
 	
 	var remaining_ratio: float = 0.0
 	# DIUBAH: Menghitung persentase dari value progress bar yang tersisa
@@ -3158,8 +3159,8 @@ func _show_wave_banner(wave: int) -> void:
 	var btw := create_tween().set_parallel(true)
 	btw.tween_property(banner, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	btw.tween_property(banner, "modulate:a", 1.0, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	btw.chain().tween_interval(2.6)
-	btw.tween_property(banner, "modulate:a", 0.0, 0.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	btw.chain().tween_interval(4.0)
+	btw.tween_property(banner, "modulate:a", 0.0, 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	btw.tween_callback(banner.queue_free)
 
 
@@ -3478,12 +3479,6 @@ func apply_damage(event: DamageEvent) -> void:
 	_show_damage_text(event)
 	trigger_camera_shake_and_blood(14.0, 0.4, 0.85)
 	_update_battle_atmosphere(event)
-
-	# Parry/block connect = momen payoff: surge kunang (di atas state reset di atas)
-	if event.damage_result == DamageEvent.DamageResult.PARRIED:
-		_pulse_atmosphere(0.45)
-	elif event.damage_result == DamageEvent.DamageResult.BLOCKED:
-		_pulse_atmosphere(0.3)
 
 	# MORALE: Enemy attack berhasil (tidak di-parry) -> naikkan morale +25%
 	if event.source != DamageEvent.Source.BERSERK and event.source != DamageEvent.Source.RAPID:
