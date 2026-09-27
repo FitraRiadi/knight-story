@@ -3158,8 +3158,8 @@ func _show_wave_banner(wave: int) -> void:
 	var btw := create_tween().set_parallel(true)
 	btw.tween_property(banner, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	btw.tween_property(banner, "modulate:a", 1.0, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	btw.chain().tween_interval(0.6)
-	btw.tween_property(banner, "modulate:a", 0.0, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	btw.chain().tween_interval(1.6)
+	btw.tween_property(banner, "modulate:a", 0.0, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	btw.tween_callback(banner.queue_free)
 
 
@@ -3966,9 +3966,9 @@ func _show_scoreboard() -> void:
 	if not scoreBoard:
 		return
 
-	# Battle selesai: matiin ambient biar gak bocor ke scene lain
+	# Battle selesai: atmosfer balik calm tapi tetep nyala (node ikut ke-free pas pindah scene)
 	if battle_atmosphere:
-		battle_atmosphere.stop()
+		battle_atmosphere.update_mood(false, false)
 	
 	# Simpan target values buat count-up animation
 	var target_killed: int = enemies_killed

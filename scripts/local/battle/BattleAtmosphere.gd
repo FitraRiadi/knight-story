@@ -218,22 +218,33 @@ func _apply_state() -> void:
 	fireflies.modulate = Color(1, 1, 1, 1)
 	if _burst_active:
 		# Hantaman besar: kunang-kunang ngamuk sesaat
-		fireflies.amount = 44
+		_set_fireflies_amount(44)
 		fireflies.speed_scale = 1.9
 		fireflies.modulate = Color(1, 1, 1, 1)
 		fog.modulate = Color(1, 1, 1, 1.4)
 	elif _danger:
 		# HP sekarat: kunang redup kemerahan, kabut menebal
-		fireflies.amount = 28
+		_set_fireflies_amount(28)
 		fireflies.speed_scale = 0.8
 		_firefly_pm.color = _firefly_danger
-		fog.amount = 16
+		_set_fog_amount(16)
 		_fog_pm.color = _fog_danger
 	else:
-		fireflies.amount = 28
+		_set_fireflies_amount(28)
 		fireflies.speed_scale = 1.0
 		_firefly_pm.color = _firefly_calm
 		fireflies.modulate = Color(1, 1, 1, 1)
-		fog.amount = 10
+		_set_fog_amount(10)
 		_fog_pm.color = _fog_calm
 		fog.modulate = Color(1, 1, 1, 1)
+
+
+func _set_fireflies_amount(v: int) -> void:
+	# Guard: ganti amount me-realloc pool partikel (kedip), jadi cuma pas beda
+	if fireflies.amount != v:
+		fireflies.amount = v
+
+
+func _set_fog_amount(v: int) -> void:
+	if fog.amount != v:
+		fog.amount = v
