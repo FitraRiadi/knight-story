@@ -151,8 +151,8 @@ theme_override_font_sizes/font_size = 10
 text = "Close Map"
 
 [node name="locationInfoPanel" type="Panel" parent="LocationUI" unique_id=751407311]
-offset_left = 502.0
-offset_top = 99.0
+offset_left = 447.0
+offset_top = 58.0
 offset_right = 740.0
 offset_bottom = 339.0
 theme_override_styles/panel = SubResource("StyleBoxTexture_moojr")
@@ -160,46 +160,47 @@ theme_override_styles/panel = SubResource("StyleBoxTexture_moojr")
 [node name="nameLocation" type="Label" parent="LocationUI/locationInfoPanel" unique_id=85037651]
 layout_mode = 0
 offset_left = 44.0
-offset_top = 10.0
-offset_right = 198.0
-offset_bottom = 25.0
+offset_top = 7.000004
+offset_right = 272.42456
+offset_bottom = 30.786198
+scale = Vector2(0.90182954, 0.92490613)
 theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_font_sizes/font_size = 15
+theme_override_font_sizes/font_size = 20
 theme_override_styles/normal = SubResource("StyleBoxFlat_fitem")
-text = "Location Jnformation"
+text = "Location Information"
 horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="Panel" type="Panel" parent="LocationUI/locationInfoPanel" unique_id=1627036734]
 layout_mode = 0
-offset_left = 38.0
+offset_left = 68.0
 offset_top = 47.0
-offset_right = 78.0
+offset_right = 108.0
 offset_bottom = 87.0
 theme_override_styles/panel = SubResource("StyleBoxTexture_kdf4v")
 
 [node name="Panel2" type="Panel" parent="LocationUI/locationInfoPanel" unique_id=1308522708]
 layout_mode = 0
-offset_left = 100.0
+offset_left = 130.0
 offset_top = 48.0
-offset_right = 140.0
+offset_right = 170.0
 offset_bottom = 88.0
 theme_override_styles/panel = SubResource("StyleBoxTexture_jygbb")
 
 [node name="Panel3" type="Panel" parent="LocationUI/locationInfoPanel" unique_id=1111443130]
 layout_mode = 0
-offset_left = 160.0
+offset_left = 190.0
 offset_top = 48.0
-offset_right = 200.0
+offset_right = 230.0
 offset_bottom = 88.0
 theme_override_styles/panel = SubResource("StyleBoxTexture_cwpjt")
 
 [node name="loreInfo" type="Label" parent="LocationUI/locationInfoPanel" unique_id=1876464309]
 layout_mode = 0
-offset_left = 33.0
-offset_top = 129.0
-offset_right = 206.0
-offset_bottom = 232.0
+offset_left = 46.0
+offset_top = 112.0
+offset_right = 251.0
+offset_bottom = 241.0
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 theme_override_font_sizes/font_size = 9
 text = "Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet  Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet Loremdimsum sip amet "
@@ -208,10 +209,10 @@ text_overrun_behavior = 6
 
 [node name="Label3" type="Label" parent="LocationUI/locationInfoPanel" unique_id=16048751]
 layout_mode = 0
-offset_left = 90.0
-offset_top = 110.0
-offset_right = 149.0
-offset_bottom = 125.0
+offset_left = 119.0
+offset_top = 95.0
+offset_right = 178.0
+offset_bottom = 112.0
 theme_override_styles/normal = SubResource("StyleBoxFlat_kylmi")
 text = "Lore"
 horizontal_alignment = 1
@@ -234,14 +235,15 @@ offset_bottom = 11.0
 [node name="moreInfo" type="Button" parent="LocationUI/locationInfoPanel" unique_id=1624636116]
 layout_mode = 0
 offset_left = 43.0
-offset_top = 93.0
-offset_right = 196.0
-offset_bottom = 105.0
+offset_top = 248.0
+offset_right = 247.0
+offset_bottom = 270.0
 theme_override_font_sizes/font_size = 10
 theme_override_styles/normal = SubResource("StyleBoxFlat_xncs8")
 text = "More Info ->"
 
 [node name="popupInfoAllEvent" type="Control" parent="LocationUI" unique_id=518873694]
+visible = false
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0

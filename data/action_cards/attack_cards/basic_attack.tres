@@ -5,9 +5,9 @@
 
 [resource]
 script = ExtResource("1_card")
+spawn_probability = 70.0
 card_name = "Basic Attack"
 description = "Basic QTE attack to single target"
 card_art = ExtResource("1_s47mj")
 stamina_cost = 20.0
 cooldown = 0
-spawn_probability = 100.0

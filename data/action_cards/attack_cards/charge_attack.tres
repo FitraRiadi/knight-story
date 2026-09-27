@@ -6,10 +6,10 @@
 [resource]
 script = ExtResource("1_card")
 attack_type = "Charge"
+spawn_probability = 65.0
 card_name = "Charge Attack"
 description = "Hold and release for big damage!"
 card_art = ExtResource("1_ietx0")
 rarity = "Rare"
 stamina_cost = 35.0
 cooldown = 0
-spawn_probability = 90.0
