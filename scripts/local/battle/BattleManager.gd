@@ -3097,19 +3097,23 @@ func _animate_enemies_spawn() -> void:
 	else:
 		_set_buttons_active(false)
 
+	_show_wave_banner(current_wave)
+
 	for i in range(enemies.size()):
 		var enemy = enemies[i]
 		var target_pos: Vector2 = _get_spawn_position(i, enemies.size())
 		var delay: float = i * stagger
 
 		var tw := create_tween()
+		# Interval dulu (stagger beneran), baru slide bareng-bareng
 		tw.tween_interval(delay)
-		tw.parallel().tween_property(enemy, "global_position", target_pos, spawn_duration).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		tw.parallel().tween_property(enemy, "scale", Vector2(1.0, 1.0), spawn_duration).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		tw.parallel().tween_property(enemy, "modulate:a", 1.0, spawn_duration * 0.8).set_trans(Tween.TRANS_SINE)
+		tw.set_parallel(true)
+		tw.tween_property(enemy, "global_position", target_pos, spawn_duration).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(enemy, "scale", Vector2(1.0, 1.0), spawn_duration).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(enemy, "modulate:a", 1.0, spawn_duration * 0.8).set_trans(Tween.TRANS_SINE)
 
-		# Dust particle lebih cepet (0.15s setelah mulai)
-		tw.tween_callback(_spawn_dust_particle.bind(target_pos + Vector2(0, 102))).set_delay(0.15)
+		# Slam pas mendarat: dust + camera geduk (timer absolut, ngikutin stagger)
+		_slam_on_landing(delay + spawn_duration, first_spawn, target_pos + Vector2(0, 102))
 
 	# Tunggu semua selesai
 	var total_time: float = (enemies.size() - 1) * stagger + spawn_duration
@@ -3120,17 +3124,56 @@ func _animate_enemies_spawn() -> void:
 	_set_buttons_active(true, first_spawn)
 
 
-func _spawn_dust_particle(pos: Vector2) -> void:
+func _slam_on_landing(wait: float, big: bool, dust_pos: Vector2) -> void:
+	# Geduk kamera + dust pas enemy mendarat. Timer absolut biar presisi.
+	await get_tree().create_timer(wait).timeout
+	if is_queued_for_deletion():
+		return
+	_spawn_dust_particle(dust_pos, 16 if big else 8)
+	# Shake doang tanpa blood (slam, bukan damage)
+	trigger_camera_shake_and_blood(8.0 if big else 5.0, 0.2, 0.0)
+
+
+func _show_wave_banner(wave: int) -> void:
+	var banner := Label.new()
+	banner.text = "WAVE " + str(wave)
+	banner.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	banner.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	banner.add_theme_font_size_override("font_size", 44)
+	banner.add_theme_color_override("font_color", Color(1.0, 0.85, 0.25))
+	banner.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+	banner.add_theme_constant_override("shadow_offset_x", 2)
+	banner.add_theme_constant_override("shadow_offset_y", 2)
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	banner.position = Vector2(vp.x / 2.0 - 150.0, 36.0)
+	banner.size = Vector2(300.0, 60.0)
+	banner.pivot_offset = Vector2(150.0, 30.0)
+	banner.scale = Vector2(0.3, 0.3)
+	banner.modulate.a = 0.0
+	banner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	if combo_canvas_layer:
+		combo_canvas_layer.add_child(banner)
+	else:
+		add_child(banner)
+	var btw := create_tween().set_parallel(true)
+	btw.tween_property(banner, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	btw.tween_property(banner, "modulate:a", 1.0, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	btw.chain().tween_interval(0.6)
+	btw.tween_property(banner, "modulate:a", 0.0, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	btw.tween_callback(banner.queue_free)
+
+
+func _spawn_dust_particle(pos: Vector2, amount: int = 8) -> void:
 	var dust := CPUParticles2D.new()
 	dust.emitting = true
 	dust.one_shot = true
-	dust.amount = 8
+	dust.amount = amount
 	dust.lifetime = 0.5
 	dust.explosiveness = 0.9
 	dust.direction = Vector2(0, -1)
 	dust.spread = 60.0
 	dust.initial_velocity_min = 30.0
-	dust.initial_velocity_max = 60.0
+	dust.initial_velocity_max = 90.0 if amount > 8 else 60.0
 	dust.gravity = Vector2(0, 120)
 	dust.scale_amount_min = 2.0
 	dust.scale_amount_max = 4.0
