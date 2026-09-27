@@ -11,10 +11,6 @@ extends Control
 @onready var skill_btn: Button = $interaction/skillBtn
 @onready var parry_btn: Button = $parryBtn
 
-# Intro pop button: tracking biar gak macet invisible
-var _btn_intro_tween: Tween = null
-var _btn_base_scales: Dictionary = {}
-
 # DIUBAH: Menjadi TextureProgressBar agar bisa melakukan efek radial/melingkar
 @onready var parry_timing_bar: TextureProgressBar = $parryBtn/timing
 
@@ -3116,10 +3112,7 @@ func _animate_enemies_spawn() -> void:
 
 	_update_target_selection()
 	is_player_turn = true
-	if not first_spawn:
-		_set_buttons_active(true, false)
-	# first_spawn: staggered pop sudah handle posisi + enable sendiri,
-	# jangan snap instan biar animasinya gak kepotong
+	_set_buttons_active(true, first_spawn)
 
 
 func _spawn_dust_particle(pos: Vector2) -> void:
@@ -3765,13 +3758,6 @@ func _start_enemies_turn() -> void:
 
 
 func _set_buttons_active(show_buttons: bool, instant: bool = false) -> void:
-	# Matikan intro pop kalau masih jalan biar gak rebutan tween
-	if _btn_intro_tween and _btn_intro_tween.is_valid():
-		_btn_intro_tween.kill()
-	_btn_intro_tween = null
-	if show_buttons:
-		_restore_buttons_visible()
-
 	if atk_btn: atk_btn.disabled = (not show_buttons or current_stamina < attack_stamina_cost)
 	if defend_btn: defend_btn.disabled = not show_buttons
 	if backpack_btn: backpack_btn.disabled = not show_buttons
@@ -3804,59 +3790,45 @@ func _set_buttons_active(show_buttons: bool, instant: bool = false) -> void:
 	if skill_btn: tw.tween_property(skill_btn, "position:y", target_skill_y, 0.4).set_trans(trans_type).set_ease(ease_type)
 	
 func _set_buttons_active_staggered() -> void:
-	# Intro pop staggered: slide naik + scale pop + fade, satu-satu
+	# Semua button mulai dari bawah (hidden)
 	var hide_offset_y: float = 200.0
-	var pairs: Array = [
-		[atk_btn, original_atk_pos],
-		[skill_btn, original_skill_post],
-		[defend_btn, original_def_pos],
-		[backpack_btn, original_backpack_pos],
-		[run_btn, original_run_post],
-	]
+	if atk_btn: atk_btn.position.y = original_atk_pos.y + hide_offset_y
+	if defend_btn: defend_btn.position.y = original_def_pos.y + hide_offset_y
+	if backpack_btn: backpack_btn.position.y = original_backpack_pos.y + hide_offset_y
+	if run_btn: run_btn.position.y = original_run_post.y + hide_offset_y
+	if skill_btn: skill_btn.position.y = original_skill_post.y + hide_offset_y
 
-	if _btn_intro_tween and _btn_intro_tween.is_valid():
-		_btn_intro_tween.kill()
-	_btn_base_scales.clear()
+	# Disable dulu
+	if atk_btn: atk_btn.disabled = true
+	if defend_btn: defend_btn.disabled = true
+	if backpack_btn: backpack_btn.disabled = true
+	if run_btn: run_btn.disabled = true
+	if skill_btn: skill_btn.disabled = true
+
+	# Stagger muncul satu-satu
+	var btns: Array = []
+	if atk_btn: btns.append(atk_btn)
+	if skill_btn: btns.append(skill_btn)
+	if defend_btn: btns.append(defend_btn)
+	if backpack_btn: btns.append(backpack_btn)
+	if run_btn: btns.append(run_btn)
 
 	var tw := create_tween()
-	_btn_intro_tween = tw
-	var i := 0
-	for pair in pairs:
-		var btn: Button = pair[0]
-		var orig: Vector2 = pair[1]
-		if not btn:
-			continue
-		btn.disabled = true
-		btn.pivot_offset = btn.size / 2.0
-		btn.position.y = orig.y + hide_offset_y
-		var base_scale: Vector2 = btn.scale
-		_btn_base_scales[btn] = base_scale
-		btn.scale = base_scale * 0.3
-		btn.modulate.a = 0.0
-		var delay: float = i * 0.09
-		tw.parallel().tween_property(btn, "position:y", orig.y, 0.4).set_delay(delay).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		tw.parallel().tween_property(btn, "scale", base_scale, 0.35).set_delay(delay).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		tw.parallel().tween_property(btn, "modulate:a", 1.0, 0.25).set_delay(delay).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-		i += 1
+	for i in range(btns.size()):
+		var btn = btns[i]
+		var target_y: float = original_atk_pos.y if btn == atk_btn else \
+			(original_def_pos.y if btn == defend_btn else \
+			(original_backpack_pos.y if btn == backpack_btn else \
+			(original_run_post.y if btn == run_btn else original_skill_post.y)))
+		tw.parallel().tween_property(btn, "position:y", target_y, 0.35).set_delay(i * 0.08).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 	tw.chain().tween_callback(func():
-		_btn_intro_tween = null
 		if atk_btn: atk_btn.disabled = (current_stamina < attack_stamina_cost)
 		if defend_btn: defend_btn.disabled = false
 		if backpack_btn: backpack_btn.disabled = false
 		if run_btn: run_btn.disabled = false
 		if skill_btn: skill_btn.disabled = false
 	)
-
-
-func _restore_buttons_visible() -> void:
-	# Jaminan: tiap show, button selalu full visible (anti-macEt invisible)
-	for btn in [atk_btn, defend_btn, backpack_btn, run_btn, skill_btn]:
-		if not btn:
-			continue
-		btn.modulate.a = 1.0
-		if _btn_base_scales.has(btn):
-			btn.scale = _btn_base_scales[btn]
 
 func _set_player_turn_true() -> void:
 	is_player_turn = true
