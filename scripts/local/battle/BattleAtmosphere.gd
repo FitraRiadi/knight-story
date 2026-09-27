@@ -5,16 +5,19 @@ class_name BattleAtmosphere
 # BATTLE ATMOSPHERE
 # Ambient battle: kunang-kunang + kabut + vignette gelap.
 # Dibuat code-based (tanpa ubah .tscn) biar aman dari @onready $ paths.
-# Semua CPUParticles2D (ramah Android), total < 50 partikel.
+# GPUParticles2D + ParticleProcessMaterial (pola yang sama kayak village.gd),
+# total < 50 partikel biar ringan di Android.
 # Parent = root battlemode (screen-space 740x340), BUKAN Camera2D
 # biar gak ikut zoom 1.10x pas rapid attack.
 # ============================================================
 
 const VIEW_SIZE := Vector2(740.0, 340.0)
 
-var fireflies: CPUParticles2D = null
-var fog: CPUParticles2D = null
+var fireflies: GPUParticles2D = null
+var fog: GPUParticles2D = null
 var vignette: TextureRect = null
+var _firefly_pm: ParticleProcessMaterial = null
+var _fog_pm: ParticleProcessMaterial = null
 
 var _burst_active: bool = false
 var _danger: bool = false
@@ -77,11 +80,13 @@ func _make_dot_texture(size: int) -> GradientTexture2D:
 	return grad_tex
 
 
-func _make_fade_ramp() -> Gradient:
+func _make_fade_ramp() -> GradientTexture1D:
 	var ramp := Gradient.new()
 	ramp.offsets = PackedFloat32Array([0.0, 0.25, 1.0])
 	ramp.colors = PackedColorArray([Color(1, 1, 1, 0), Color(1, 1, 1, 1), Color(1, 1, 1, 0)])
-	return ramp
+	var ramp_tex := GradientTexture1D.new()
+	ramp_tex.gradient = ramp
+	return ramp_tex
 
 
 func _setup_vignette() -> void:
@@ -106,46 +111,52 @@ func _setup_vignette() -> void:
 
 
 func _setup_fireflies() -> void:
-	fireflies = CPUParticles2D.new()
+	fireflies = GPUParticles2D.new()
 	fireflies.position = VIEW_SIZE / 2.0
 	fireflies.amount = 28
 	fireflies.lifetime = 5.0
 	fireflies.preprocess = 5.0
 	fireflies.lifetime_randomness = 0.4
-	fireflies.emission_shape = CPUParticles2D.EMISSION_SHAPE_BOX
-	fireflies.emission_box_extents = Vector3(VIEW_SIZE.x / 2.0, VIEW_SIZE.y / 2.0, 1.0)
-	fireflies.direction = Vector2(0, -1)
-	fireflies.spread = 180.0
-	fireflies.gravity = Vector2(0, -8)
-	fireflies.initial_velocity_min = 10.0
-	fireflies.initial_velocity_max = 25.0
-	fireflies.scale_amount_min = 0.8
-	fireflies.scale_amount_max = 1.6
-	fireflies.color = _firefly_calm
-	fireflies.color_ramp = _make_fade_ramp()
 	fireflies.texture = _make_dot_texture(12)
+	var pm := ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(VIEW_SIZE.x / 2.0, VIEW_SIZE.y / 2.0, 1.0)
+	pm.direction = Vector3(0, -1, 0)
+	pm.spread = 180.0
+	pm.gravity = Vector3(0, -8, 0)
+	pm.initial_velocity_min = 10.0
+	pm.initial_velocity_max = 25.0
+	pm.scale_min = 0.8
+	pm.scale_max = 1.6
+	pm.color = _firefly_calm
+	pm.color_ramp = _make_fade_ramp()
+	fireflies.process_material = pm
+	_firefly_pm = pm
 	add_child(fireflies)
 
 
 func _setup_fog() -> void:
-	fog = CPUParticles2D.new()
+	fog = GPUParticles2D.new()
 	fog.position = Vector2(VIEW_SIZE.x / 2.0, 290.0)
 	fog.amount = 10
 	fog.lifetime = 9.0
 	fog.preprocess = 9.0
 	fog.lifetime_randomness = 0.3
-	fog.emission_shape = CPUParticles2D.EMISSION_SHAPE_BOX
-	fog.emission_box_extents = Vector3(VIEW_SIZE.x / 2.0, 50.0, 1.0)
-	fog.direction = Vector2(1, 0)
-	fog.spread = 25.0
-	fog.gravity = Vector2.ZERO
-	fog.initial_velocity_min = 8.0
-	fog.initial_velocity_max = 18.0
-	fog.scale_amount_min = 2.0
-	fog.scale_amount_max = 4.0
-	fog.color = _fog_calm
-	fog.color_ramp = _make_fade_ramp()
 	fog.texture = _make_dot_texture(64)
+	var pm := ParticleProcessMaterial.new()
+	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	pm.emission_box_extents = Vector3(VIEW_SIZE.x / 2.0, 50.0, 1.0)
+	pm.direction = Vector3(1, 0, 0)
+	pm.spread = 25.0
+	pm.gravity = Vector3.ZERO
+	pm.initial_velocity_min = 8.0
+	pm.initial_velocity_max = 18.0
+	pm.scale_min = 2.0
+	pm.scale_max = 4.0
+	pm.color = _fog_calm
+	pm.color_ramp = _make_fade_ramp()
+	fog.process_material = pm
+	_fog_pm = pm
 	add_child(fog)
 
 
@@ -179,7 +190,7 @@ func _end_burst() -> void:
 
 
 func _apply_state() -> void:
-	if not fireflies or not fog:
+	if not fireflies or not fog or not _firefly_pm or not _fog_pm:
 		return
 	if _burst_active:
 		# Hantaman besar: kunang-kunang ngamuk sesaat
@@ -191,14 +202,14 @@ func _apply_state() -> void:
 		# HP sekarat: kunang redup kemerahan, kabut menebal
 		fireflies.amount = 28
 		fireflies.speed_scale = 0.8
-		fireflies.color = _firefly_danger
+		_firefly_pm.color = _firefly_danger
 		fog.amount = 16
-		fog.color = _fog_danger
+		_fog_pm.color = _fog_danger
 	else:
 		fireflies.amount = 28
 		fireflies.speed_scale = 1.0
-		fireflies.color = _firefly_calm
+		_firefly_pm.color = _firefly_calm
 		fireflies.modulate = Color(1, 1, 1, 1)
 		fog.amount = 10
-		fog.color = _fog_calm
+		_fog_pm.color = _fog_calm
 		fog.modulate = Color(1, 1, 1, 1)
