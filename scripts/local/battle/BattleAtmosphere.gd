@@ -53,6 +53,13 @@ func update_mood(big_hit: bool, hp_low: bool) -> void:
 		_apply_state()
 
 
+func burst() -> void:
+	# Versi publik burst gede (parry jackpot dkk): jumlah + speed + fog 1.2 dtk
+	if _stopped:
+		return
+	_trigger_burst()
+
+
 func pulse(duration: float = 0.3) -> void:
 	# Micro-surge: kunang ngebut + flash sesaat (parry/hit), balik sendiri.
 	# Cuma speed + modulate, jumlah gak diubah biar murah. Revert via _apply_state
