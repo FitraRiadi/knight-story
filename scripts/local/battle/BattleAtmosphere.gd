@@ -116,7 +116,6 @@ func _setup_fireflies() -> void:
 	fireflies.amount = 28
 	fireflies.lifetime = 5.0
 	fireflies.preprocess = 5.0
-	fireflies.lifetime_randomness = 0.4
 	fireflies.texture = _make_dot_texture(12)
 	var pm := ParticleProcessMaterial.new()
 	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
@@ -141,7 +140,6 @@ func _setup_fog() -> void:
 	fog.amount = 10
 	fog.lifetime = 9.0
 	fog.preprocess = 9.0
-	fog.lifetime_randomness = 0.3
 	fog.texture = _make_dot_texture(64)
 	var pm := ParticleProcessMaterial.new()
 	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
