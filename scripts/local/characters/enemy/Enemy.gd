@@ -117,9 +117,6 @@ var hit_squash_tween: Tween = null
 var hit_base_scale := Vector2.ONE
 var hit_base_scale_init := false
 
-# Wind-up anticipation sebelum impact
-var windup_tween: Tween = null
-
 
 # ============================================================
 # DEFEND STATE
@@ -716,19 +713,6 @@ func take_turn(camera: Camera2D, default_camera_pos: Vector2) -> void:
 # ATTACK
 # ============================================================
 
-func _play_wind_up(duration: float = 0.07) -> void:
-	# Antisipasi sebelum impact: kempis (wind-up) terus balik.
-	# Timer-based (bukan await tween) biar gak hang kalau tween ke-kill.
-	# Scale selalu dibalikin ke pre-scale biar baseline hit_squash aman.
-	if windup_tween and windup_tween.is_valid():
-		windup_tween.kill()
-	var pre_scale := scale
-	windup_tween = create_tween()
-	windup_tween.tween_property(self, "scale", pre_scale * Vector2(0.9, 1.12), duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	windup_tween.tween_property(self, "scale", pre_scale, 0.04).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	await get_tree().create_timer(duration + 0.05).timeout
-
-
 func _execute_attack(
 	camera: Camera2D,
 	default_camera_pos: Vector2,
@@ -783,10 +767,6 @@ func _execute_attack(
 			break
 	force_attack_finish = false
 
-	# WIND-UP: kempis dikit sebelum impact biar ada antisipasi.
-	# Stun check yang udah ada di bawah otomatis cover jeda ini.
-	await _play_wind_up(0.07)
-
 	# STUN INTERRUPT: Parry menyebabkan stun mid-attack, skip damage langsung stun
 	if stun_interrupted:
 		stun_interrupted = false
@@ -839,29 +819,26 @@ func _execute_attack(
 						set_frame_and_progress(mh_frame_count - 1, 0.0)
 					mh_was_force = true
 					break
-			if not is_playing():
-				break
+				if not is_playing():
+					break
 			force_attack_finish = false
-
-			# WIND-UP kilat per hit (flurry tetep ngebut)
-			await _play_wind_up(0.05)
 
 			if stun_interrupted:
 				break
 
 			if not mh_was_force:
 				_play_sound("attack")
-				var berserk_event := DamageEvent.new()
-				berserk_event.base_damage = total_damage
-				berserk_event.source = DamageEvent.Source.BERSERK
-				berserk_event.can_be_parried = false
-				berserk_event.can_trigger_life_steal = false
-				berserk_event.damage_multiplier = dmg_per_hit
-				berserk_event.hit_index = i
-				berserk_event.total_hits = hit_count
-				attack_hit.emit(berserk_event)
-				_shake_camera(camera, 8.0, 0.2)
-				await get_tree().create_timer(0.3).timeout
+			var berserk_event := DamageEvent.new()
+			berserk_event.base_damage = total_damage
+			berserk_event.source = DamageEvent.Source.BERSERK
+			berserk_event.can_be_parried = false
+			berserk_event.can_trigger_life_steal = false
+			berserk_event.damage_multiplier = dmg_per_hit
+			berserk_event.hit_index = i
+			berserk_event.total_hits = hit_count
+			attack_hit.emit(berserk_event)
+			_shake_camera(camera, 8.0, 0.2)
+			await get_tree().create_timer(0.3).timeout
 
 	# BATTLE CRY: Check double attack setelah serangan pertama
 	if not stun_interrupted and should_double_attack():
@@ -896,8 +873,6 @@ func _execute_attack(
 			if not is_playing():
 				break
 		force_attack_finish = false
-
-		await _play_wind_up(0.07)
 
 		if stun_interrupted:
 			stun_interrupted = false
