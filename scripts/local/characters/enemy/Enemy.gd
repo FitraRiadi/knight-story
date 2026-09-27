@@ -841,27 +841,27 @@ func _execute_attack(
 					break
 			if not is_playing():
 				break
-		force_attack_finish = false
+			force_attack_finish = false
 
-		# WIND-UP kilat per hit (flurry tetep ngebut)
-		await _play_wind_up(0.05)
+			# WIND-UP kilat per hit (flurry tetep ngebut)
+			await _play_wind_up(0.05)
 
-		if stun_interrupted:
-			break
+			if stun_interrupted:
+				break
 
-		if not mh_was_force:
-			_play_sound("attack")
-			var berserk_event := DamageEvent.new()
-			berserk_event.base_damage = total_damage
-			berserk_event.source = DamageEvent.Source.BERSERK
-			berserk_event.can_be_parried = false
-			berserk_event.can_trigger_life_steal = false
-			berserk_event.damage_multiplier = dmg_per_hit
-			berserk_event.hit_index = i
-			berserk_event.total_hits = hit_count
-			attack_hit.emit(berserk_event)
-			_shake_camera(camera, 8.0, 0.2)
-			await get_tree().create_timer(0.3).timeout
+			if not mh_was_force:
+				_play_sound("attack")
+				var berserk_event := DamageEvent.new()
+				berserk_event.base_damage = total_damage
+				berserk_event.source = DamageEvent.Source.BERSERK
+				berserk_event.can_be_parried = false
+				berserk_event.can_trigger_life_steal = false
+				berserk_event.damage_multiplier = dmg_per_hit
+				berserk_event.hit_index = i
+				berserk_event.total_hits = hit_count
+				attack_hit.emit(berserk_event)
+				_shake_camera(camera, 8.0, 0.2)
+				await get_tree().create_timer(0.3).timeout
 
 	# BATTLE CRY: Check double attack setelah serangan pertama
 	if not stun_interrupted and should_double_attack():
