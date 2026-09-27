@@ -209,6 +209,8 @@ var attack_card_ui: ActionCardUI = null
 var attack_card_used_this_session: bool = false
 var _is_scoreboard_hiding: bool = false
 const MAX_ATTACK_HAND: int = 5
+# Preload langsung biar gak tergantung cache global class editor
+const ProbGen = preload("res://scripts/global/probability_generator.gd")
 
 # ITEM DROP SYSTEM
 var drop_layer: CanvasLayer
@@ -919,7 +921,7 @@ func _load_attack_cards() -> void:
 	if datas.is_empty():
 		return
 
-	var picks: Array[int] = ProbabilityGenerator.roll_multi(weights, 5, true)
+	var picks: Array[int] = ProbGen.roll_multi(weights, 5, true)
 	for idx in picks:
 		attack_hand.append(datas[idx].duplicate())
 
