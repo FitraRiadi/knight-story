@@ -1793,12 +1793,15 @@ func _execute_actual_attack(result: AttackResult, is_charge_attack: bool = false
 		AttackResult.LOW:
 			var low_damage = total_damage * 0.4 * charge_bonus
 			target_enemy.receive_damage(low_damage, false, false)
+			_pulse_atmosphere()
 		AttackResult.MID:
 			var mid_damage = total_damage * charge_bonus
 			target_enemy.receive_damage(mid_damage, false, false)
+			_pulse_atmosphere()
 		AttackResult.CRITICAL:
 			var crit_damage = (total_damage + player_crit_damage) * charge_bonus
 			target_enemy.receive_damage(crit_damage, true, false)
+			_pulse_atmosphere()
 	
 	await get_tree().create_timer(0.8).timeout
 
@@ -2032,6 +2035,7 @@ func _on_parry_button_clicked() -> void:
 	
 	parry_success_this_turn = true
 	is_parry_window_active = false
+	_pulse_atmosphere()
 	
 	var remaining_ratio: float = 0.0
 	# DIUBAH: Menghitung persentase dari value progress bar yang tersisa
@@ -2286,6 +2290,7 @@ func _on_raptive_btn_pressed() -> void:
 	# Hit enemy
 	_rapid_current_enemy.receive_damage(_rapid_damage_per_hit, false, false)
 	_rapid_hits += 1
+	_pulse_atmosphere()
 
 	# SCOREBOARD
 	total_attacks += 1
@@ -3309,6 +3314,12 @@ func _update_battle_atmosphere(event: DamageEvent) -> void:
 	var big_hit := event.source == DamageEvent.Source.BATTLE_CRY or event.source == DamageEvent.Source.BERSERK
 	var hp_low := max_hp > 0.0 and current_hp / max_hp < 0.3
 	battle_atmosphere.update_mood(big_hit, hp_low)
+
+
+func _pulse_atmosphere() -> void:
+	# Micro-surge kunang 0.2 dtk pas parry / hit musuh
+	if battle_atmosphere:
+		battle_atmosphere.pulse()
 
 
 func _play_player_buff_visual(buff_type: String) -> void:

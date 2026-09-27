@@ -22,6 +22,7 @@ var _fog_pm: ParticleProcessMaterial = null
 var _burst_active: bool = false
 var _danger: bool = false
 var _burst_tween: Tween = null
+var _pulse_tween: Tween = null
 var _vignette_tween: Tween = null
 var _stopped: bool = false
 
@@ -52,10 +53,32 @@ func update_mood(big_hit: bool, hp_low: bool) -> void:
 		_apply_state()
 
 
+func pulse(duration: float = 0.2) -> void:
+	# Micro-surge: kunang ngebut sesaat (parry/hit), balik sendiri.
+	# Cuma speed, jumlah gak diubah biar murah. Revert via _apply_state
+	# biar nurut sama burst/danger yang lagi aktif.
+	if _stopped or not fireflies:
+		return
+	if _pulse_tween and _pulse_tween.is_valid():
+		_pulse_tween.kill()
+	fireflies.speed_scale = 1.5
+	_pulse_tween = create_tween()
+	_pulse_tween.tween_interval(duration)
+	_pulse_tween.tween_callback(_end_pulse)
+
+
+func _end_pulse() -> void:
+	if _stopped:
+		return
+	_apply_state()
+
+
 func stop() -> void:
 	_stopped = true
 	if _burst_tween and _burst_tween.is_valid():
 		_burst_tween.kill()
+	if _pulse_tween and _pulse_tween.is_valid():
+		_pulse_tween.kill()
 	if _vignette_tween and _vignette_tween.is_valid():
 		_vignette_tween.kill()
 	if fireflies:
