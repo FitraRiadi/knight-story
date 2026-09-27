@@ -1074,8 +1074,23 @@ func _on_death() -> void:
 	enemy_defeated.emit(exp_gained, gold_gained, dropped_items, self)
 
 	await get_tree().create_timer(0.8).timeout
-	var tween: Tween = create_tween()
-	tween.tween_property(self, "modulate:a", 0.0, 1.0)
+
+	# Soul dilepas ke parent biar naik bebas, gak ikut kejepit animasi menciut
+	if soul_particles and is_instance_valid(soul_particles) and soul_particles.get_parent() == self:
+		var soul_pos := soul_particles.global_position
+		remove_child(soul_particles)
+		get_parent().add_child(soul_particles)
+		soul_particles.global_position = soul_pos
+		var soul_tween: Tween = soul_particles.create_tween()
+		soul_tween.tween_interval(1.5)
+		soul_tween.tween_callback(soul_particles.queue_free)
+
+	# Menciut staggered: pop dikit -> susut ke 0 + fade bareng
+	var base_scale := scale
+	var shrink: Tween = create_tween()
+	shrink.tween_property(self, "scale", base_scale * 1.12, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	shrink.tween_property(self, "scale", Vector2.ZERO, 0.55).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+	shrink.parallel().tween_property(self, "modulate:a", 0.0, 0.55).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 
 
 # ============================================================
