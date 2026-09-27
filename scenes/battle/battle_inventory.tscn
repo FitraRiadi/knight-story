@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" uid="uid://du3aqt5b0q3h4" path="res://assets/ui/icons/inventorySlot.png" id="1_dhnwk"]
 [ext_resource type="Script" uid="uid://crg77mw2ganm8" path="res://scripts/local/battle/battle_inventory.gd" id="1_uqent"]
-[ext_resource type="Texture2D" uid="uid://dp8tbij73ny0f" path="res://assets/ui/icons/backpackBtn.png" id="2_geesr"]
+[ext_resource type="Texture2D" uid="uid://ob640ju61cdx" path="res://assets/ui/icons/inventoryBtn.png" id="2_geesr"]
 [ext_resource type="Texture2D" uid="uid://csriovkscy4pg" path="res://assets/art/items/consumable/potion/Icon20.png" id="3_ea8f0"]
 [ext_resource type="Texture2D" uid="uid://vc4tcdcsd57b" path="res://assets/art/items/consumable/potion/Icon46.png" id="3_jkeq3"]
 
