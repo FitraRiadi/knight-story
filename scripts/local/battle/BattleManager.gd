@@ -3158,8 +3158,8 @@ func _show_wave_banner(wave: int) -> void:
 	var btw := create_tween().set_parallel(true)
 	btw.tween_property(banner, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	btw.tween_property(banner, "modulate:a", 1.0, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	btw.chain().tween_interval(1.6)
-	btw.tween_property(banner, "modulate:a", 0.0, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	btw.chain().tween_interval(2.6)
+	btw.tween_property(banner, "modulate:a", 0.0, 0.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	btw.tween_callback(banner.queue_free)
 
 
@@ -3359,10 +3359,10 @@ func _update_battle_atmosphere(event: DamageEvent) -> void:
 	battle_atmosphere.update_mood(big_hit, hp_low)
 
 
-func _pulse_atmosphere() -> void:
-	# Micro-surge kunang 0.2 dtk pas parry / hit musuh
+func _pulse_atmosphere(duration: float = 0.3) -> void:
+	# Micro-surge kunang pas parry / hit musuh
 	if battle_atmosphere:
-		battle_atmosphere.pulse()
+		battle_atmosphere.pulse(duration)
 
 
 func _play_player_buff_visual(buff_type: String) -> void:
@@ -3478,6 +3478,12 @@ func apply_damage(event: DamageEvent) -> void:
 	_show_damage_text(event)
 	trigger_camera_shake_and_blood(14.0, 0.4, 0.85)
 	_update_battle_atmosphere(event)
+
+	# Parry/block connect = momen payoff: surge kunang (di atas state reset di atas)
+	if event.damage_result == DamageEvent.DamageResult.PARRIED:
+		_pulse_atmosphere(0.45)
+	elif event.damage_result == DamageEvent.DamageResult.BLOCKED:
+		_pulse_atmosphere(0.3)
 
 	# MORALE: Enemy attack berhasil (tidak di-parry) -> naikkan morale +25%
 	if event.source != DamageEvent.Source.BERSERK and event.source != DamageEvent.Source.RAPID:
