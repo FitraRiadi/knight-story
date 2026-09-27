@@ -3436,6 +3436,11 @@ func apply_damage(event: DamageEvent) -> void:
 	trigger_camera_shake_and_blood(14.0, 0.4, 0.85)
 	_update_battle_atmosphere(event)
 
+	# IMPACT FREEZE: stop 0.04 dtk pas hantaman mendarat (single-hit aja,
+	# flurry berserk + rapid dikecualikan biar pacing gak patah)
+	if event.source == DamageEvent.Source.NORMAL or event.source == DamageEvent.Source.BATTLE_CRY or event.source == DamageEvent.Source.COUNTER:
+		_apply_hit_stop(0.04)
+
 	# MORALE: Enemy attack berhasil (tidak di-parry) -> naikkan morale +25%
 	if event.source != DamageEvent.Source.BERSERK and event.source != DamageEvent.Source.RAPID:
 		if current_enemy_attacking and is_instance_valid(current_enemy_attacking):
