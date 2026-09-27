@@ -3100,6 +3100,13 @@ func _animate_enemies_spawn() -> void:
 	else:
 		_set_buttons_active(false)
 
+	# Wave intro: zoom dikit ke tengah terus balik (napas kamera)
+	if camera:
+		var zoom_tw := create_tween()
+		zoom_tw.set_ignore_time_scale(true)
+		zoom_tw.tween_property(camera, "zoom", Vector2(1.08, 1.08), 0.35).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		zoom_tw.tween_property(camera, "zoom", Vector2.ONE, 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
 	for i in range(enemies.size()):
 		var enemy = enemies[i]
 		var target_pos: Vector2 = _get_spawn_position(i, enemies.size())
