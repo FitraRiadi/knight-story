@@ -61,7 +61,7 @@ func pulse(duration: float = 0.3) -> void:
 		return
 	if _pulse_tween and _pulse_tween.is_valid():
 		_pulse_tween.kill()
-	fireflies.speed_scale = 2.5
+	fireflies.speed_scale = 4.0
 	fireflies.modulate = Color(1.6, 1.6, 1.6, 1.0)
 	_pulse_tween = create_tween()
 	_pulse_tween.tween_interval(duration)
