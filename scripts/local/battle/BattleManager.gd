@@ -902,23 +902,26 @@ func _load_attack_cards() -> void:
 	attack_hand.clear()
 	attack_discard.clear()
 
-	var basic_card_path: String = "res://data/action_cards/attack_cards/basic_attack.tres"
-	var basic_card: AttackCardData = load(basic_card_path) as AttackCardData
-	if basic_card:
-		for i in range(1):
-			attack_hand.append(basic_card.duplicate())
+	# Random deck 5 kartu dari bobot spawn_probability masing-masing tipe.
+	# allow_multiple = true (boleh kembar) karena tipe baru 3 vs deck 5.
+	var card_paths: Array[String] = [
+		"res://data/action_cards/attack_cards/basic_attack.tres",
+		"res://data/action_cards/attack_cards/charge_attack.tres",
+		"res://data/action_cards/attack_cards/rapid_attack.tres",
+	]
+	var datas: Array[AttackCardData] = []
+	var weights: Array = []
+	for path in card_paths:
+		var data: AttackCardData = load(path) as AttackCardData
+		if data:
+			datas.append(data)
+			weights.append(data.spawn_probability)
+	if datas.is_empty():
+		return
 
-	var charge_card_path: String = "res://data/action_cards/attack_cards/charge_attack.tres"
-	var charge_card: AttackCardData = load(charge_card_path) as AttackCardData
-	if charge_card:
-		for i in range(1):
-			attack_hand.append(charge_card.duplicate())
-
-	var rapid_card_path: String = "res://data/action_cards/attack_cards/rapid_attack.tres"
-	var rapid_card: AttackCardData = load(rapid_card_path) as AttackCardData
-	if rapid_card:
-		for i in range(3):
-			attack_hand.append(rapid_card.duplicate())
+	var picks: Array[int] = ProbabilityGenerator.roll_multi(weights, 5, true)
+	for idx in picks:
+		attack_hand.append(datas[idx].duplicate())
 
 
 func open_attack_card_ui() -> void:

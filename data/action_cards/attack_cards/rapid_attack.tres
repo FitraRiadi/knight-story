@@ -12,3 +12,4 @@ card_art = ExtResource("1_rapid")
 rarity = "Uncommon"
 stamina_cost = 30.0
 cooldown = 0
+spawn_probability = 100.0

@@ -12,3 +12,4 @@ card_art = ExtResource("1_ietx0")
 rarity = "Rare"
 stamina_cost = 35.0
 cooldown = 0
+spawn_probability = 90.0
