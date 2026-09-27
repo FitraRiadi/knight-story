@@ -53,15 +53,16 @@ func update_mood(big_hit: bool, hp_low: bool) -> void:
 		_apply_state()
 
 
-func pulse(duration: float = 0.2) -> void:
-	# Micro-surge: kunang ngebut sesaat (parry/hit), balik sendiri.
-	# Cuma speed, jumlah gak diubah biar murah. Revert via _apply_state
+func pulse(duration: float = 0.3) -> void:
+	# Micro-surge: kunang ngebut + flash sesaat (parry/hit), balik sendiri.
+	# Cuma speed + modulate, jumlah gak diubah biar murah. Revert via _apply_state
 	# biar nurut sama burst/danger yang lagi aktif.
 	if _stopped or not fireflies:
 		return
 	if _pulse_tween and _pulse_tween.is_valid():
 		_pulse_tween.kill()
-	fireflies.speed_scale = 1.5
+	fireflies.speed_scale = 2.5
+	fireflies.modulate = Color(1.6, 1.6, 1.6, 1.0)
 	_pulse_tween = create_tween()
 	_pulse_tween.tween_interval(duration)
 	_pulse_tween.tween_callback(_end_pulse)
@@ -147,8 +148,8 @@ func _setup_fireflies() -> void:
 	pm.direction = Vector3(0, -1, 0)
 	pm.spread = 180.0
 	pm.gravity = Vector3(0, -8, 0)
-	pm.initial_velocity_min = 10.0
-	pm.initial_velocity_max = 25.0
+	pm.initial_velocity_min = 30.0
+	pm.initial_velocity_max = 70.0
 	pm.scale_min = 0.8
 	pm.scale_max = 1.6
 	pm.color = _firefly_calm
@@ -214,6 +215,7 @@ func _end_burst() -> void:
 func _apply_state() -> void:
 	if not fireflies or not fog or not _firefly_pm or not _fog_pm:
 		return
+	fireflies.modulate = Color(1, 1, 1, 1)
 	if _burst_active:
 		# Hantaman besar: kunang-kunang ngamuk sesaat
 		fireflies.amount = 44
