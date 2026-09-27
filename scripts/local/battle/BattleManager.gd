@@ -288,6 +288,7 @@ func _ready() -> void:
 		
 	_setup_blood_vignette()
 	_setup_player_hp_camera_overlay()
+	_hide_wave_title_instant()
 	_load_player_data()
 	_update_player_ui_instant()
 	_setup_scoreboard()
@@ -3095,22 +3096,33 @@ func _show_wave_title() -> void:
 	wave_title_label.text = "Wave " + str(current_wave)
 	if wave_info_label:
 		wave_info_label.text = _get_wave_subtitle()
-	var parts: Array = [wave_title_label, wave_info_label, wave_divider]
-	for p in parts:
+	# Fade in staggered: judul -> garis -> subtitle (smooth, tanpa mantul)
+	var parts_in: Array = [wave_title_label, wave_divider, wave_info_label]
+	var wtw := create_tween()
+	wtw.set_ignore_time_scale(true)
+	var i := 0
+	for p in parts_in:
 		if p:
 			p.modulate.a = 0.0
-	wave_title_label.pivot_offset = wave_title_label.size / 2.0
-	wave_title_label.scale = Vector2(0.6, 0.6)
-	var wtw := create_tween().set_parallel(true)
-	wtw.set_ignore_time_scale(true)
-	wtw.tween_property(wave_title_label, "scale", Vector2.ONE, 0.35).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	for p in parts:
+			wtw.parallel().tween_property(p, "modulate:a", 1.0, 0.4).set_delay(i * 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			i += 1
+	# Hold, terus fade out staggered kebalikannya
+	wtw.chain().tween_interval(3.0)
+	var parts_out: Array = [wave_info_label, wave_divider, wave_title_label]
+	var k := 0
+	for p in parts_out:
 		if p:
-			wtw.tween_property(p, "modulate:a", 1.0, 0.25).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	wtw.chain().tween_interval(2.2)
-	for p in parts:
+			var t := wtw
+			if k > 0:
+				t = wtw.parallel()
+			t.tween_property(p, "modulate:a", 0.0, 0.6).set_delay(k * 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+			k += 1
+
+
+func _hide_wave_title_instant() -> void:
+	for p in [wave_title_label, wave_info_label, wave_divider]:
 		if p:
-			wtw.tween_property(p, "modulate:a", 0.0, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+			p.modulate.a = 0.0
 
 
 func _get_wave_subtitle() -> String:
