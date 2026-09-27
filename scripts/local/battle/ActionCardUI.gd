@@ -56,6 +56,7 @@ var selected_index: int = -1
 var canvas_layer: CanvasLayer
 var bg_overlay: ColorRect
 var float_tweens: Array[Tween] = []
+var hover_tweens: Dictionary = {}
 var spawn_tween: Tween  # Track spawn tween to kill on early select
 
 # Attack mode
@@ -281,6 +282,22 @@ func _stop_idle_float() -> void:
 	float_tweens.clear()
 
 
+func _kill_hover_tween(index: int) -> void:
+	if hover_tweens.has(index):
+		var ht = hover_tweens[index]
+		if ht and ht.is_valid():
+			ht.kill()
+		hover_tweens.erase(index)
+
+
+func _kill_all_hover_tweens() -> void:
+	for key in hover_tweens.keys():
+		var ht = hover_tweens[key]
+		if ht and ht.is_valid():
+			ht.kill()
+	hover_tweens.clear()
+
+
 func _on_card_hover(index: int) -> void:
 	if is_selecting:
 		return
@@ -298,6 +315,8 @@ func _on_card_hover(index: int) -> void:
 	if index < float_tweens.size() and float_tweens[index] and float_tweens[index].is_valid():
 		float_tweens[index].kill()
 
+	_kill_hover_tween(index)
+
 	var tw := create_tween().set_parallel(true)
 	tw.tween_property(card, "position:y", CARD_Y + HOVER_LIFT, 0.2)\
 		.set_trans(Tween.TRANS_BACK)\
@@ -305,6 +324,7 @@ func _on_card_hover(index: int) -> void:
 	tw.tween_property(card, "scale", Vector2(HOVER_SCALE, HOVER_SCALE), 0.2)\
 		.set_trans(Tween.TRANS_BACK)\
 		.set_ease(Tween.EASE_OUT)
+	hover_tweens[index] = tw
 
 	if index < card_glow_panels.size() and card_glow_panels[index]:
 		tw.tween_property(card_glow_panels[index], "modulate:a", 1.0, 0.2)
@@ -324,6 +344,8 @@ func _on_card_unhover(index: int) -> void:
 
 	var card: Control = card_nodes[index]
 
+	_kill_hover_tween(index)
+
 	var tw := create_tween().set_parallel(true)
 	tw.tween_property(card, "position:y", CARD_Y, 0.25)\
 		.set_trans(Tween.TRANS_BACK)\
@@ -331,6 +353,7 @@ func _on_card_unhover(index: int) -> void:
 	tw.tween_property(card, "scale", Vector2.ONE, 0.25)\
 		.set_trans(Tween.TRANS_BACK)\
 		.set_ease(Tween.EASE_OUT)
+	hover_tweens[index] = tw
 
 	if index < card_glow_panels.size() and card_glow_panels[index]:
 		tw.tween_property(card_glow_panels[index], "modulate:a", 0.0, 0.2)
@@ -341,6 +364,9 @@ func _on_card_unhover(index: int) -> void:
 func _restart_float(index: int) -> void:
 	if index < 0 or index >= card_nodes.size():
 		return
+	_kill_hover_tween(index)
+	if index < float_tweens.size() and float_tweens[index] and float_tweens[index].is_valid():
+		float_tweens[index].kill()
 	var card: Control = card_nodes[index]
 	var delay: float = index * 0.3
 
@@ -388,6 +414,7 @@ func _select_card(index: int) -> void:
 	is_selecting = true
 	selected_index = index
 	_stop_idle_float()
+	_kill_all_hover_tweens()
 
 	# Kill spawn tween if still running to prevent position:y conflict
 	if spawn_tween and spawn_tween.is_running():
@@ -421,7 +448,7 @@ func _select_card(index: int) -> void:
 		.set_trans(Tween.TRANS_QUAD)\
 		.set_ease(Tween.EASE_IN)
 	tw.tween_property(card, "scale", Vector2(SELECT_SCALE, SELECT_SCALE), 0.2)\
-		.set_trans(Tween.TRANS_ELASTIC)\
+		.set_trans(Tween.TRANS_BACK)\
 		.set_ease(Tween.EASE_OUT)
 
 	# Full glow
@@ -489,6 +516,7 @@ func _move_to_indicator(card: Control) -> void:
 	var indicator_scale: Vector2 = Vector2(0.95, 0.95)
 
 	var tw := create_tween().set_parallel(true)
+	tw.set_ignore_time_scale(true)
 	tw.tween_property(card, "position", indicator_pos, 0.3)\
 		.set_trans(Tween.TRANS_CUBIC)\
 		.set_ease(Tween.EASE_OUT)
@@ -542,6 +570,7 @@ func _cleanup() -> void:
 	is_selecting = false
 	selected_index = -1
 	_stop_idle_float()
+	_kill_all_hover_tweens()
 
 	if canvas_layer and is_instance_valid(canvas_layer):
 		canvas_layer.queue_free()
