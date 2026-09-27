@@ -3779,7 +3779,7 @@ func _set_buttons_active(show_buttons: bool, instant: bool = false) -> void:
 		if skill_btn: skill_btn.position.y = target_skill_y
 		return
 	
-	var trans_type = (Tween.TRANS_BACK if show_buttons else Tween.TRANS_CUBIC)
+	var trans_type = Tween.TRANS_CUBIC
 	var ease_type = (Tween.EASE_OUT if show_buttons else Tween.EASE_IN)
 	
 	var tw = create_tween().set_parallel(true)
@@ -3820,7 +3820,7 @@ func _set_buttons_active_staggered() -> void:
 			(original_def_pos.y if btn == defend_btn else \
 			(original_backpack_pos.y if btn == backpack_btn else \
 			(original_run_post.y if btn == run_btn else original_skill_post.y)))
-		tw.parallel().tween_property(btn, "position:y", target_y, 0.35).set_delay(i * 0.08).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.parallel().tween_property(btn, "position:y", target_y, 0.35).set_delay(i * 0.08).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 	tw.chain().tween_callback(func():
 		if atk_btn: atk_btn.disabled = (current_stamina < attack_stamina_cost)
