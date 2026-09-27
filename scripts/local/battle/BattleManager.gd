@@ -3126,17 +3126,15 @@ func _hide_wave_title_instant() -> void:
 
 
 func _get_wave_subtitle() -> String:
-	var seen: Array[String] = []
+	var names: Array[String] = []
 	for e in enemies:
 		if is_instance_valid(e) and e.stats != null:
 			var nm: String = str(e.stats.enemy_name)
-			if nm != "" and not seen.has(nm):
-				seen.append(nm)
-	if seen.is_empty():
+			if nm != "":
+				names.append(nm)
+	if names.is_empty():
 		return "Misterious Enemy"
-	if seen.size() == 1:
-		return seen[0]
-	return str(enemies.size()) + " Enemies"
+	return " - ".join(names)
 
 
 func _animate_enemies_spawn() -> void:
