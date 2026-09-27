@@ -850,7 +850,7 @@ func _execute_attack(
 			break
 
 		if not mh_was_force:
-				_play_sound("attack")
+			_play_sound("attack")
 			var berserk_event := DamageEvent.new()
 			berserk_event.base_damage = total_damage
 			berserk_event.source = DamageEvent.Source.BERSERK
