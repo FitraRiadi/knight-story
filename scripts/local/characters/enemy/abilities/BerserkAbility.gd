@@ -6,14 +6,14 @@ class_name BerserkAbility
 # Serangan bertubi-tubi yang tidak bisa diparry.
 # Semakin tinggi level, semakin banyak hit + damage per hit.
 #
-# Level 1: 30% chance, 2 hit, 0.35x per hit = 0.70x total
-# Level 2: 50% chance, 3 hit, 0.35x per hit = 1.05x total
-# Level 3: 100% chance, 4 hit, 0.40x per hit = 1.60x total
+# Level 1: 30% chance, 2 hit, 0.25x per hit = 0.50x total
+# Level 2: 50% chance, 3 hit, 0.28x per hit = 0.84x total
+# Level 3: 100% chance, 4 hit, 0.30x per hit = 1.20x total
 # ============================================================
 
 const CHANCE_BY_LEVEL: Array[float] = [0.30, 0.50, 1.0]
 const HIT_COUNT_BY_LEVEL: Array[int] = [2, 3, 4]
-const DAMAGE_PER_HIT_BY_LEVEL: Array[float] = [0.35, 0.35, 0.40]
+const DAMAGE_PER_HIT_BY_LEVEL: Array[float] = [0.25, 0.28, 0.30]
 
 static func should_trigger(ability_level: int) -> bool:
 	var idx := clampi(ability_level - 1, 0, 2)
