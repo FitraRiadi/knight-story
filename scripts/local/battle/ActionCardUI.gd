@@ -358,7 +358,8 @@ func _on_card_unhover(index: int) -> void:
 	if index < card_glow_panels.size() and card_glow_panels[index]:
 		tw.tween_property(card_glow_panels[index], "modulate:a", 0.0, 0.2)
 
-	_restart_float(index)
+	# Float baru jalan abis tween balik kelar biar gak tarik-tarikan
+	tw.chain().tween_callback(_restart_float.bind(index))
 
 
 func _restart_float(index: int) -> void:
