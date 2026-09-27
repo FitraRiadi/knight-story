@@ -86,6 +86,9 @@ var player_buff_particles: CPUParticles2D = null
 var player_heal_particles: CPUParticles2D = null
 var current_player_buff_type: String = ""
 
+# Battle atmosphere (kunang-kunang + kabut + vignette)
+var battle_atmosphere: BattleAtmosphere = null
+
 var enemies: Array[BattleEnemy] = []
 var selected_enemy_index: int = 0
 var is_player_turn: bool = true
@@ -272,6 +275,7 @@ func _ready() -> void:
 	_setup_player_buff_and_effect()
 	_setup_player_buff_particles()
 	_setup_player_heal_particles()
+	_setup_battle_atmosphere()
 	
 	if camera: default_camera_pos = camera.global_position
 	if hp_bar: max_hp_bar_width = hp_bar.size.x
@@ -3292,6 +3296,21 @@ func _setup_player_heal_particles() -> void:
 	player_heal_particles.position = player_profile_img.position + player_profile_img.size / 2.0
 
 
+func _setup_battle_atmosphere() -> void:
+	if battle_atmosphere:
+		return
+	battle_atmosphere = BattleAtmosphere.new()
+	battle_atmosphere.setup(self)
+
+
+func _update_battle_atmosphere(event: DamageEvent) -> void:
+	if not battle_atmosphere:
+		return
+	var big_hit := event.source == DamageEvent.Source.BATTLE_CRY or event.source == DamageEvent.Source.BERSERK
+	var hp_low := max_hp > 0.0 and current_hp / max_hp < 0.3
+	battle_atmosphere.update_mood(big_hit, hp_low)
+
+
 func _play_player_buff_visual(buff_type: String) -> void:
 	if not player_buff_particles:
 		return
@@ -3404,6 +3423,7 @@ func apply_damage(event: DamageEvent) -> void:
 	_animate_player_hp_overlay_damage(event.final_damage)
 	_show_damage_text(event)
 	trigger_camera_shake_and_blood(14.0, 0.4, 0.85)
+	_update_battle_atmosphere(event)
 
 	# MORALE: Enemy attack berhasil (tidak di-parry) -> naikkan morale +25%
 	if event.source != DamageEvent.Source.BERSERK and event.source != DamageEvent.Source.RAPID:
@@ -3891,6 +3911,10 @@ func _setup_scoreboard() -> void:
 func _show_scoreboard() -> void:
 	if not scoreBoard:
 		return
+
+	# Battle selesai: matiin ambient biar gak bocor ke scene lain
+	if battle_atmosphere:
+		battle_atmosphere.stop()
 	
 	# Simpan target values buat count-up animation
 	var target_killed: int = enemies_killed
