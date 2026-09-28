@@ -3270,6 +3270,8 @@ func _animate_enemies_spawn() -> void:
 
 		# Slam pas mendarat: dust + camera geduk (timer absolut, ngikutin stagger)
 		_slam_on_landing(delay + spawn_duration, first_spawn, target_pos + Vector2(0, 102))
+		# Ocehan spawn (global lock: max 1 yang ngomong)
+		enemy.try_chatter(&"spawn")
 
 	# Tunggu semua selesai
 	var total_time: float = (enemies.size() - 1) * stagger + spawn_duration

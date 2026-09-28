@@ -149,6 +149,7 @@ const DEFEND_DAMAGE_REDUCTION: float = 0.40
 @onready var enemy_collision: TextureButton = $enemyCollision
 @onready var enemy_hit_icon: TextureRect = $enemyHitIcon
 @onready var exp_label: Label = $expLabel
+@onready var dialog_label: Label = $enemyDialog
 @onready var slash: AnimatedSprite2D = $slash
 @onready var label_template: Label = $Label
 
@@ -239,6 +240,13 @@ func _ready() -> void:
 		exp_label.modulate.a = 0.0
 	else:
 		push_warning("[Enemy] $expLabel tidak ketemu, popup exp mati.")
+
+	if dialog_label:
+		dialog_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		dialog_label.hide()
+		dialog_label.modulate.a = 0.0
+	else:
+		push_warning("[Enemy] $enemyDialog tidak ketemu, chatter mati.")
 
 	if has_node("enemyStats"):
 		$enemyStats.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -761,6 +769,7 @@ func _execute_attack(
 		_get_emotion_color(emotion),
 		is_power_attack
 	)
+	try_chatter(&"attack", emotion)
 
 	# Tunggu animasi attack selesai, tapi kalau force_attack_finish aktif, langsung loncat ke frame terakhir
 	var attack_frame_count: int = get_sprite_frames().get_frame_count(&"attack") if get_sprite_frames().has_animation(&"attack") else 1
@@ -912,6 +921,111 @@ func _execute_attack(
 	_reset_camera_focus(camera, default_camera_pos)
 
 	_play_idle_if_allowed()
+
+
+# ============================================================
+# ENEMY CHATTER (enemyDialog, max 1 sedunia)
+# ============================================================
+
+static var _dialog_owner: BattleEnemy = null
+
+const CHATTER_COOLDOWN_MS := 5000
+const DIALOG_TYPE_SPEED := 0.035
+const DIALOG_HOLD := 2.5
+
+const SPAWN_LINES: Array[String] = [
+	"Another soul approaches...",
+	"Fresh meat!",
+	"You dare enter?",
+	"The dark welcomes you...",
+]
+const DEATH_LINES: Array[String] = [
+	"Impossible...",
+	"The darkness takes me...",
+	"Argh... so cold...",
+	"Master... avenge me...",
+]
+const HURT_LINES: Array[String] = [
+	"Argh!",
+	"You dare?!",
+	"Hmph!",
+	"That... hurt!",
+]
+
+var _last_chatter_msec: int = -99999
+
+
+func try_chatter(kind: StringName, emotion: EnemyAI.Emotion = EnemyAI.Emotion.CALM) -> bool:
+	if dialog_label == null:
+		return false
+	# Cooldown per enemy
+	if Time.get_ticks_msec() - _last_chatter_msec < CHATTER_COOLDOWN_MS:
+		return false
+	# Global lock: cuma 1 dialog dalam satu waktu (stale auto-clear)
+	if _dialog_owner != null:
+		if not is_instance_valid(_dialog_owner):
+			_dialog_owner = null
+		elif _dialog_owner != self:
+			return false
+
+	var chance := 0.0
+	var line := ""
+	match kind:
+		&"spawn":
+			chance = 0.35
+			line = SPAWN_LINES.pick_random()
+		&"death":
+			chance = 0.5
+			line = DEATH_LINES.pick_random()
+		&"hurt":
+			chance = 0.15
+			line = HURT_LINES.pick_random()
+		&"attack":
+			chance = 0.2
+			line = _get_attack_chatter(emotion)
+		_:
+			return false
+
+	if randf() > chance:
+		return false
+	_say_line(line)
+	return true
+
+
+func _get_attack_chatter(emotion: EnemyAI.Emotion) -> String:
+	match emotion:
+		EnemyAI.Emotion.ENRAGED:
+			return "DIE!"
+		EnemyAI.Emotion.ANGRY:
+			return "Feel my wrath!"
+		EnemyAI.Emotion.DESPERATE:
+			return "Stay back!"
+		EnemyAI.Emotion.FEARFUL:
+			return "P-please..."
+		EnemyAI.Emotion.CONFIDENT:
+			return "Too slow!"
+		_:
+			return "Hmph."
+
+
+func _say_line(text: String) -> void:
+	_dialog_owner = self
+	_last_chatter_msec = Time.get_ticks_msec()
+	dialog_label.show()
+	dialog_label.text = text
+	dialog_label.modulate.a = 1.0
+	dialog_label.visible_ratio = 0.0
+	var type_time: float = maxf(0.2, text.length() * DIALOG_TYPE_SPEED)
+	var tw := create_tween()
+	tw.tween_property(dialog_label, "visible_ratio", 1.0, type_time).set_trans(Tween.TRANS_LINEAR)
+	tw.tween_interval(DIALOG_HOLD)
+	tw.tween_property(dialog_label, "modulate:a", 0.0, 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tw.tween_callback(func() -> void:
+		if is_instance_valid(dialog_label):
+			dialog_label.hide()
+		if _dialog_owner == self:
+			_dialog_owner = null
+	)
 
 
 # ============================================================
@@ -1090,6 +1204,13 @@ func _on_death() -> void:
 
 	# Popup exp pas mati (bukan pas spawn)
 	play_exp_popup()
+	# Ocehan mati: lepas ke parent dulu biar gak ikut menciut
+	if dialog_label and dialog_label.get_parent() == self:
+		var dgp := dialog_label.global_position
+		remove_child(dialog_label)
+		get_parent().add_child(dialog_label)
+		dialog_label.global_position = dgp
+	try_chatter(&"death")
 
 	if soul_particles:
 		soul_particles.emitting = true
@@ -1222,6 +1343,7 @@ func receive_damage(
 		_on_death()
 	else:
 		play("hurt")
+		try_chatter(&"hurt")
 
 
 # ============================================================

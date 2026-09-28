@@ -356,7 +356,6 @@ frame = 11
 frame_progress = 1.0
 
 [node name="expLabel" type="Label" parent="." unique_id=739560457]
-visible = false
 offset_left = -100.0
 offset_top = 35.555557
 offset_right = 125.55557
@@ -365,3 +364,13 @@ theme_override_colors/font_color = Color(1, 1, 0, 1)
 text = "Gain +20 Exp"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="enemyDialog" type="Label" parent="." unique_id=1484170386]
+visible = false
+mouse_filter = 2
+offset_left = 22.222221
+offset_top = -72.22223
+offset_right = 62.22222
+offset_bottom = -55.22223
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+text = "So Easy!"
