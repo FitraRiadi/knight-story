@@ -30,6 +30,7 @@ const DEFAULT_SFX_DEATH = preload("res://assets/audio/effects/enemies/death-base
 const DEFAULT_ATTACK = preload("res://assets/audio/effects/enemies/attack-base.mp3")
 const DEFAULT_SFX_HIT = preload("res://assets/audio/effects/enemies/hit-base.mp3")
 const SFX_USE_ITEM = preload("uid://d3jo784jvhvnu")
+const OUTLINE_SHADER: Shader = preload("res://assets/art/shaders/enemy_outline.gdshader")
 
 
 # ============================================================
@@ -161,6 +162,12 @@ var effect_center_position: Vector2 = Vector2.ZERO
 var blood_particles: CPUParticles2D
 var soul_particles: CPUParticles2D
 
+# Outline + flash shader (material unik per enemy)
+var outline_mat: ShaderMaterial = null
+var flash_tween: Tween = null
+const OUTLINE_DEFAULT := Color(0.0, 0.0, 0.0, 0.6)
+const OUTLINE_SELECTED := Color(1.0, 0.85, 0.2, 0.9)
+
 
 # ============================================================
 # STATE
@@ -208,6 +215,7 @@ func _ready() -> void:
 	_setup_smoke_particles()
 	_setup_buff_particles()
 	_setup_crack_overlay()
+	_setup_outline_material()
 
 	# Sembunyi slash effect secara default
 	if slash:
@@ -1158,10 +1166,8 @@ func receive_damage(
 	hp_changed.emit()
 	_trigger_blood_splash()
 
-	# Red flash pas kena hit
-	var hit_flash := create_tween()
-	hit_flash.tween_property(self, "modulate", Color(1.5, 0.3, 0.3, 1.0), 0.08)
-	hit_flash.tween_property(self, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.15)
+	# Flash putih via shader pas kena hit (ganti modulate merah)
+	_play_hit_flash()
 
 	# Squash staggered: kempis dikit -> balik halus
 	if not hit_base_scale_init:
@@ -1291,10 +1297,34 @@ func show_reaction_text(text: String, text_color: Color = Color.WHITE, is_crit: 
 # HIGHLIGHT & TARGET
 # ============================================================
 
+func _setup_outline_material() -> void:
+	if outline_mat:
+		return
+	outline_mat = ShaderMaterial.new()
+	outline_mat.shader = OUTLINE_SHADER
+	outline_mat.set_shader_parameter("outline_color", OUTLINE_DEFAULT)
+	outline_mat.set_shader_parameter("outline_size", 1.0)
+	outline_mat.set_shader_parameter("flash_amount", 0.0)
+	material = outline_mat
+
+
+func _play_hit_flash() -> void:
+	if not outline_mat:
+		return
+	if flash_tween and flash_tween.is_valid():
+		flash_tween.kill()
+	outline_mat.set_shader_parameter("flash_amount", 1.0)
+	flash_tween = create_tween()
+	flash_tween.tween_property(outline_mat, "shader_parameter/flash_amount", 0.0, 0.18).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
+
 func set_highlight(active: bool) -> void:
 	is_selected = active
 	var target_alpha: float = 1.0 if active else 0.4
 	var target_color: Color = Color(1.3, 1.3, 1.3, 1.0) if active else Color.WHITE
+
+	if outline_mat:
+		outline_mat.set_shader_parameter("outline_color", OUTLINE_SELECTED if active else OUTLINE_DEFAULT)
 
 	var tween: Tween = create_tween().set_parallel(true)
 	tween.tween_property(self, "modulate:a", target_alpha, 0.2)
