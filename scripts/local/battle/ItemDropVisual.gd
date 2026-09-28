@@ -48,7 +48,8 @@ func setup(item: ItemData, spawn_pos: Vector2, ground_pos: Vector2 = Vector2.ZER
 	
 	# Icon item
 	var icon := TextureRect.new()
-	icon.texture = item.icon	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.texture = item.icon
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.custom_minimum_size = ICON_SIZE
 	icon.anchors_preset = Control.PRESET_CENTER
