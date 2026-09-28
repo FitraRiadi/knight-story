@@ -40,6 +40,10 @@ enum AIType {
 
 @export var min_level: int = 1
 
+## Bobot spawn 0-100 (ProbabilityGenerator). Gede = sering muncul.
+## Bebas, gak harus total 100.
+@export_range(0.0, 100.0) var spawn_chance: float = 100.0
+
 
 # ============================================================
 # VISUAL & ANIMATIONS

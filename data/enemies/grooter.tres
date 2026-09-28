@@ -82,6 +82,7 @@ animations = [{
 script = ExtResource("1_dhcys")
 ai_type = 2
 enemy_id = "grooter"
+spawn_chance = 75.0
 enemy_name = "Grooter"
 min_level = 2
 icon_enemy = ExtResource("1_hanjq")

@@ -80,6 +80,7 @@ animations = [{
 script = ExtResource("1_arywp")
 ai_type = 2
 enemy_id = "grimward"
+spawn_chance = 60.0
 enemy_name = "Grimward"
 min_level = 3
 icon_enemy = ExtResource("1_ycbiy")

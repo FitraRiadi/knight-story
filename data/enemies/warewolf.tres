@@ -83,6 +83,7 @@ animations = [{
 script = ExtResource("1_n2612")
 ai_type = 1
 enemy_id = "warewolf"
+spawn_chance = 85.0
 enemy_name = "Warewolf"
 min_level = 2
 icon_enemy = ExtResource("1_7fsbw")

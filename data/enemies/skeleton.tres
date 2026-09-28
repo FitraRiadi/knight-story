@@ -82,6 +82,7 @@ animations = [{
 [resource]
 script = ExtResource("1_0ypgr")
 enemy_id = "skeleton"
+spawn_chance = 100.0
 enemy_name = "Skeleton"
 icon_enemy = ExtResource("1_jan5e")
 sprite_frames = SubResource("SpriteFrames_0ypgr")

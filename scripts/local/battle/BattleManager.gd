@@ -3021,8 +3021,18 @@ func spawn_random_enemies(min_count: int = 1, max_count: int = 3, min_level: int
 	var random_ids: Array[String] = []
 	var random_levels: Array[int] = []
 
-	for i in range(count):
-		var eid: String = pool.pick_random()
+	# Bobot dari spawn_chance tiap enemy (ProbabilityGenerator).
+	# Tanpa kembar dulu biar variasi, sisanya boleh kembar kalau pool kurang.
+	var weights: Array = []
+	for pid in pool:
+		var wdata: EnemyData = EnemyDatabase.get_enemy_data(pid)
+		weights.append(wdata.spawn_chance if wdata else 0.0)
+	var picks: Array[int] = ProbGen.roll_multi(weights, count, false)
+	while picks.size() < count:
+		picks.append_array(ProbGen.roll_multi(weights, count - picks.size(), true))
+
+	for pick in picks:
+		var eid: String = pool[pick]
 		var data: EnemyData = EnemyDatabase.get_enemy_data(eid)
 		var enemy_min: int = data.min_level if data else 1
 		var target_level: int
@@ -3037,6 +3047,7 @@ func spawn_random_enemies(min_count: int = 1, max_count: int = 3, min_level: int
 
 
 func _get_scalable_enemy_pool() -> Array[String]:
+	# Eligibility cuma gate level; rarity diatur spawn_chance via ProbabilityGenerator.
 	var player_level: int = PlayerDataManager.get_level()
 	var spawn_max: int = player_level + 2
 	var filtered: Array[String] = []
@@ -3046,21 +3057,10 @@ func _get_scalable_enemy_pool() -> Array[String]:
 		if data == null:
 			continue
 
-		var distance: int = data.min_level - spawn_max
-		var chance: float = 0.0
-		match distance:
-			0: chance = 1.0
-			1: chance = 0.70
-			2: chance = 0.50
-			3: chance = 0.35
-			4: chance = 0.20
-			5: chance = 0.15
-			6: chance = 0.10
-			7: chance = 0.05
-			_: chance = 0.0
-
-		if distance <= 0 or randf() < chance:
+		if data.min_level <= spawn_max:
 			filtered.append(enemy_id)
+
+	return filtered
 
 	return filtered
 

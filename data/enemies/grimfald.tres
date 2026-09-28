@@ -81,6 +81,7 @@ animations = [{
 script = ExtResource("2_pmxet")
 ai_type = 1
 enemy_id = "grimfald"
+spawn_chance = 50.0
 enemy_name = "Grimfald"
 min_level = 2
 icon_enemy = ExtResource("3_du4nc")
