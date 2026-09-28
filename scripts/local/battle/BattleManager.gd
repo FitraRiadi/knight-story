@@ -3262,13 +3262,11 @@ func _animate_enemies_spawn() -> void:
 		var target_pos: Vector2 = _get_spawn_position(i, enemies.size())
 		var delay: float = i * stagger
 
-		var tw := create_tween()
-		# Interval dulu (stagger beneran), baru slide bareng-bareng
-		tw.tween_interval(delay)
-		tw.set_parallel(true)
-		tw.tween_property(enemy, "global_position", target_pos, spawn_duration).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		tw.tween_property(enemy, "scale", Vector2(1.0, 1.0), spawn_duration).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		tw.tween_property(enemy, "modulate:a", 1.0, spawn_duration * 0.8).set_trans(Tween.TRANS_SINE)
+		var tw := create_tween().set_parallel(true)
+		# Stagger via set_delay per tween (interval + parallel GAK nge-gate!)
+		tw.tween_property(enemy, "global_position", target_pos, spawn_duration).set_delay(delay).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(enemy, "scale", Vector2(1.0, 1.0), spawn_duration).set_delay(delay).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tw.tween_property(enemy, "modulate:a", 1.0, spawn_duration * 0.8).set_delay(delay).set_trans(Tween.TRANS_SINE)
 
 		# Slam pas mendarat: dust + camera geduk (timer absolut, ngikutin stagger)
 		_slam_on_landing(delay + spawn_duration, first_spawn, target_pos + Vector2(0, 102))

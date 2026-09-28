@@ -1357,7 +1357,8 @@ func _animate_target_icon() -> void:
 
 
 func play_spawn_exp_popup(delay: float = 0.0) -> void:
-	# Pop + naik + fadeout 1.5 dtk smooth pas enemy muncul (SINE semua)
+	# Pop + naik + fadeout 1.5 dtk smooth pas enemy muncul (SINE semua).
+	# Delay via set_delay per tween (interval + parallel GAK nge-gate!).
 	if not exp_label:
 		return
 	exp_label.text = "Gain +" + str(scaled_exp) + " Exp"
@@ -1365,12 +1366,10 @@ func play_spawn_exp_popup(delay: float = 0.0) -> void:
 	exp_label.pivot_offset = exp_label.size / 2.0
 	exp_label.scale = Vector2(0.5, 0.5)
 	var base_y := exp_label.position.y
-	var tw := create_tween()
-	tw.tween_interval(delay)
-	tw.set_parallel(true)
-	tw.tween_property(exp_label, "modulate:a", 1.0, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	tw.tween_property(exp_label, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	tw.tween_property(exp_label, "position:y", base_y - 25.0, 1.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(exp_label, "modulate:a", 1.0, 0.2).set_delay(delay).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tw.tween_property(exp_label, "scale", Vector2.ONE, 0.3).set_delay(delay).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tw.tween_property(exp_label, "position:y", base_y - 25.0, 1.0).set_delay(delay).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	tw.chain().tween_property(exp_label, "modulate:a", 0.0, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	tw.tween_callback(func() -> void:
 		if is_instance_valid(exp_label):
