@@ -1919,7 +1919,7 @@ func _execute_actual_attack(result: AttackResult, is_charge_attack: bool = false
 		await get_tree().create_timer(0.15).timeout
 
 		# Play animasi attack dulu
-		target_enemy.play("attack")
+		target_enemy.play(target_enemy.pick_attack_anim())
 		await target_enemy.animation_finished
 
 		var counter_damage: float = (target_enemy.scaled_damage + target_enemy.buff_manager.get_total_attack_bonus()) * counter_mult

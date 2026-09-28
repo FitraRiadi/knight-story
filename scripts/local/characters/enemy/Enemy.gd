@@ -737,6 +737,25 @@ func take_turn(camera: Camera2D, default_camera_pos: Vector2) -> void:
 # ATTACK
 # ============================================================
 
+# State giliran attack/attack2 (multi-hit berserk/cry)
+var _attack_alt := false
+
+
+func pick_attack_anim(force_alt: bool = false) -> StringName:
+	# Pilih animasi serangan. force_alt = giliran ketat (berserk/cry),
+	# single = 30% acak. Gak punya attack2 = selalu attack.
+	var sf := get_sprite_frames()
+	if sf == null or not sf.has_animation(&"attack2"):
+		return &"attack"
+	if force_alt:
+		var anim := &"attack" if not _attack_alt else &"attack2"
+		_attack_alt = not _attack_alt
+		return anim
+	if randf() < 0.30:
+		return &"attack2"
+	return &"attack"
+
+
 func _execute_attack(
 	camera: Camera2D,
 	default_camera_pos: Vector2,
@@ -772,11 +791,12 @@ func _execute_attack(
 	try_chatter(&"attack", emotion)
 
 	# Tunggu animasi attack selesai, tapi kalau force_attack_finish aktif, langsung loncat ke frame terakhir
-	var attack_frame_count: int = get_sprite_frames().get_frame_count(&"attack") if get_sprite_frames().has_animation(&"attack") else 1
+	var attack_anim := pick_attack_anim()
+	var attack_frame_count: int = get_sprite_frames().get_frame_count(attack_anim) if get_sprite_frames().has_animation(attack_anim) else 1
 	force_attack_finish = false
 	stun_interrupted = false
 	frame = 0
-	play("attack")
+	play(attack_anim)
 	var was_force_finished: bool = false
 	var frame_check_time: float = 0.0
 	while frame_check_time < 2.0:
@@ -830,9 +850,10 @@ func _execute_attack(
 				break
 			force_attack_finish = false
 			stun_interrupted = false
+			var mh_anim := pick_attack_anim(true)
 			frame = 0
-			play("attack")
-			var mh_frame_count: int = get_sprite_frames().get_frame_count(&"attack") if get_sprite_frames().has_animation(&"attack") else 1
+			play(mh_anim)
+			var mh_frame_count: int = get_sprite_frames().get_frame_count(mh_anim) if get_sprite_frames().has_animation(mh_anim) else 1
 			var mh_was_force: bool = false
 			var mh_check_time: float = 0.0
 			while mh_check_time < 2.0:
@@ -881,9 +902,10 @@ func _execute_attack(
 		var second_damage: float = (scaled_damage + buff_manager.get_total_attack_bonus()) * bonus_mult
 		force_attack_finish = false
 		stun_interrupted = false
+		var second_anim := pick_attack_anim(true)
 		frame = 0
-		play("attack")
-		var second_frame_count: int = get_sprite_frames().get_frame_count(&"attack") if get_sprite_frames().has_animation(&"attack") else 1
+		play(second_anim)
+		var second_frame_count: int = get_sprite_frames().get_frame_count(second_anim) if get_sprite_frames().has_animation(second_anim) else 1
 		var second_was_force: bool = false
 		var second_check_time: float = 0.0
 		while second_check_time < 2.0:
