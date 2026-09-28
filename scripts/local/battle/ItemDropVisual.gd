@@ -258,15 +258,20 @@ func confirm_collect() -> void:
 	if _glow_tween:
 		_glow_tween.kill()
 
-	# Label dilepas ke layer biar gak ikut fade button, muncul abis item ilang
+	# Label dilepas ke layer biar gak ikut fade button, muncul abis item ilang.
+	# Dibikin lebar 300px center tepat di tengah item biar teks panjang
+	# ("Collect ...") tetep rata tengah, gak ngandelin rect template.
 	var label_hold: Label = null
 	if name_label:
 		label_hold = name_label
 		name_label = null
-		var lp := label_hold.global_position
+		var item_center: Vector2 = global_position + size * 0.5
 		remove_child(label_hold)
 		get_parent().add_child(label_hold)
-		label_hold.global_position = lp
+		label_hold.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		label_hold.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		label_hold.size = Vector2(300.0, 20.0)
+		label_hold.position = item_center + Vector2(-150.0, 28.0)
 		label_hold.text = "Collect " + item_data.item_name
 		label_hold.visible = true
 		label_hold.modulate.a = 0.0
