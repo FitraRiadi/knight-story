@@ -14,6 +14,8 @@ var is_collected: bool = false
 var magnet_flying: bool = false
 var magnet_target: Vector2 = Vector2.ZERO
 var magnet_speed: float = 650.0
+var magnet_fly_time: float = 0.0
+const MAGNET_MAX_FLY := 2.0
 
 # ============================================================
 # CONSTANTS
@@ -156,10 +158,14 @@ func _set_border_color(color: Color) -> void:
 # FLOAT ANIMATION
 # ============================================================
 func _process(delta: float) -> void:
-	# Magnet: jalan deterministik via move_toward (gak bisa macet/killBareng tween)
+	# Magnet: jalan deterministik via move_toward + failsafe waktu.
+	# Kalau 2 detik belum sampe (kasus aneh), snap paksa ke target.
 	if magnet_flying:
+		magnet_fly_time += delta
 		position = position.move_toward(magnet_target, magnet_speed * delta)
-		if position.distance_to(magnet_target) < 4.0:
+		if magnet_fly_time >= MAGNET_MAX_FLY:
+			position = magnet_target
+		if magnet_fly_time >= MAGNET_MAX_FLY or position.distance_to(magnet_target) < 4.0:
 			magnet_flying = false
 			item_clicked.emit(item_data, self)
 		return
@@ -204,9 +210,14 @@ func confirm_collect() -> void:
 # BATAL (dipanggil handler kalau inventory penuh)
 # ============================================================
 func cancel_collect() -> void:
-	# Balikin ke kondisi idle: tetep bisa diklik / ke-magnet lagi
+	# Balikin ke kondisi idle: tetep bisa diklik / ke-magnet lagi.
+	# Kalau posisi lagi off-screen (cancel abis magnet), tarik balik ke layar.
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	if position.x < 0.0 or position.y > vp.y or position.x > vp.x or position.y < 0.0:
+		position = Vector2(vp.x * 0.5 - 28.0, vp.y - 70.0)
 	is_collected = false
 	magnet_flying = false
+	magnet_fly_time = 0.0
 	base_position = position
 	scale = Vector2.ONE
 	modulate.a = 1.0
@@ -224,6 +235,7 @@ func _on_magnet_timeout() -> void:
 	# Geraknya di _process (move_toward) biar gak bisa macet.
 	is_collected = true
 	magnet_flying = true
+	magnet_fly_time = 0.0
 	if _glow_tween:
 		_glow_tween.kill()
 

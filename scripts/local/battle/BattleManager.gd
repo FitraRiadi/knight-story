@@ -643,9 +643,8 @@ func _spawn_drop_item(item_id: String, enemy_pos: Vector2, spawn_delay: float = 
 
 	# World -> screen: visual hidup di CanvasLayer (drop_layer)
 	var screen_pos: Vector2 = get_viewport().get_canvas_transform() * enemy_pos
-	# Magnet target: bawah-tengah layar (koordinat screen juga)
-	var vp: Vector2 = get_viewport().get_visible_rect().size
-	var magnet_pos := Vector2(vp.x * 0.5 - 28.0, vp.y - 70.0)
+	# Magnet target: keluar layar kiri-bawah (off-screen, pasti sampe)
+	var magnet_pos := Vector2(-70.0, 360.0)
 
 	# Buat ItemDropVisual
 	var drop_visual := ItemDropVisual.new()
@@ -659,12 +658,26 @@ func _spawn_drop_item(item_id: String, enemy_pos: Vector2, spawn_delay: float = 
 # ON DROP ITEM CLICKED
 # ============================================================
 func _on_drop_item_clicked(item: ItemData, visual: ItemDropVisual) -> void:
+	# Pantang silent-return: tiap jalur berujung confirm (lanjut) atau
+	# cancel/free (balik visible). Visual gak boleh nyangkut claimed.
 	if not item:
+		if is_instance_valid(visual):
+			visual.queue_free()
+		return
+
+	var pdata = PlayerDataManager.data
+	if pdata == null or pdata.battle_inventory == null:
+		push_error("[BattleManager] PlayerData/battle_inventory null pas ambil drop.")
+		if is_instance_valid(visual):
+			visual.cancel_collect()
 		return
 
 	# Cek apakah inventory penuh (tidak ada slot null)
-	var battle_inv := PlayerDataManager.data.battle_inventory
-	if not battle_inv:
+	var battle_inv = pdata.battle_inventory
+	if battle_inv.items == null:
+		push_error("[BattleManager] battle_inventory.items null pas ambil drop.")
+		if is_instance_valid(visual):
+			visual.cancel_collect()
 		return
 
 	# Cari slot pertama yang null
