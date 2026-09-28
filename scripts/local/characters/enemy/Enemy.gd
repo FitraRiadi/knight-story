@@ -1088,6 +1088,9 @@ func _on_death() -> void:
 	play("death")
 	_play_sound("death")
 
+	# Popup exp pas mati (bukan pas spawn)
+	play_exp_popup()
+
 	if soul_particles:
 		soul_particles.emitting = true
 
@@ -1359,12 +1362,18 @@ func _animate_target_icon() -> void:
 	tween.tween_property(enemy_target, "position:y", base_target_y, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
-func play_spawn_exp_popup(delay: float = 0.0) -> void:
-	# Pop + naik + fadeout 1.5 dtk smooth pas enemy muncul (SINE semua).
-	# Ready = hide, spawn = show. Delay via set_delay per tween.
+func play_exp_popup(delay: float = 0.0) -> void:
+	# Pop + naik + fadeout 1.5 dtk smooth pas enemy MATI (SINE semua).
+	# Dilepas ke parent biar gak ikut menciut/fade bareng badan.
+	# Delay via set_delay per tween.
 	if not exp_label:
-		push_warning("[Enemy] play_spawn_exp_popup: exp_label null.")
+		push_warning("[Enemy] play_exp_popup: exp_label null.")
 		return
+	if exp_label.get_parent() == self:
+		var gp := exp_label.global_position
+		remove_child(exp_label)
+		get_parent().add_child(exp_label)
+		exp_label.global_position = gp
 	exp_label.show()
 	exp_label.text = "Gain +" + str(scaled_exp) + " Exp"
 	exp_label.modulate.a = 0.0
@@ -1379,6 +1388,7 @@ func play_spawn_exp_popup(delay: float = 0.0) -> void:
 	tw.tween_callback(func() -> void:
 		if is_instance_valid(exp_label):
 			exp_label.position.y = base_y
+			exp_label.modulate.a = 0.0
 			exp_label.hide()
 	)
 
