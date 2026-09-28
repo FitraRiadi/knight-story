@@ -148,7 +148,6 @@ func _play_toss_animation(spawn_delay: float = 0.0) -> void:
 	tw.tween_callback(func() -> void:
 		toss_done = true
 		base_position = position
-		_burst_sparkle()
 		_play_land_settle()
 	)
 
@@ -217,27 +216,6 @@ func _start_shimmer() -> void:
 	shimmer.texture = _make_dot()
 	shimmer.position = Vector2(28, 28)
 	add_child(shimmer)
-
-
-func _burst_sparkle() -> void:
-	var p := CPUParticles2D.new()
-	p.amount = 12
-	p.lifetime = 0.5
-	p.one_shot = true
-	p.explosiveness = 1.0
-	p.emitting = true
-	p.direction = Vector2(0, -1)
-	p.spread = 180.0
-	p.gravity = Vector2(0, 400)
-	p.initial_velocity_min = 80.0
-	p.initial_velocity_max = 180.0
-	p.scale_amount_min = 1.5
-	p.scale_amount_max = 3.0
-	p.color = Color(1.0, 0.88, 0.4, 1.0)
-	p.texture = _make_dot()
-	p.position = size * 0.5
-	add_child(p)
-	p.finished.connect(p.queue_free)
 
 # ============================================================
 # FLOAT ANIMATION
