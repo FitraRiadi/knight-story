@@ -267,6 +267,7 @@ func confirm_collect() -> void:
 		remove_child(label_hold)
 		get_parent().add_child(label_hold)
 		label_hold.global_position = lp
+		label_hold.text = "Collect " + item_data.item_name
 		label_hold.visible = true
 		label_hold.modulate.a = 0.0
 
