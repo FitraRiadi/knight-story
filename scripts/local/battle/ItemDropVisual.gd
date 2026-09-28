@@ -12,6 +12,11 @@ signal collect_finished(item: ItemData)
 var item_data: ItemData = null
 var is_collected: bool = false
 var toss_done: bool = false
+var icon_rect: TextureRect = null
+var glow_mat: ShaderMaterial = null
+var shimmer: CPUParticles2D = null
+
+const GLOW_SHADER: Shader = preload("res://assets/art/shaders/drop_glow.gdshader")
 
 const ICON_SIZE := Vector2(48, 48)
 const POP_DURATION := 0.4
@@ -54,6 +59,14 @@ func setup(item: ItemData, spawn_pos: Vector2, ground_pos: Vector2 = Vector2.ZER
 	icon.offset_bottom = ICON_SIZE.y / 2.0
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(icon)
+	icon_rect = icon
+
+	# Glow shader di art + shimmer loop
+	glow_mat = ShaderMaterial.new()
+	glow_mat.shader = GLOW_SHADER
+	glow_mat.set_shader_parameter("glow_strength", 0.5)
+	icon_rect.material = glow_mat
+	_start_shimmer()
 	
 	# Style button transparan dengan border gold
 	var normal_style := StyleBoxFlat.new()
@@ -131,41 +144,88 @@ func _play_spawn_animation(spawn_delay: float = 0.0) -> void:
 
 
 func _play_toss_animation(spawn_delay: float = 0.0) -> void:
-	# Lempar ke atas dikit terus jatoh ke tanah, squash pas mendarat
+	# Lempar ke atas dikit terus jatoh BOUNCE ke tanah (tanpa squash)
 	var tw := create_tween()
 	tw.tween_interval(spawn_delay)
 	tw.tween_property(self, "position:x", base_position.x, 0.45).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tw.parallel().tween_property(self, "position:y", position.y - 50.0, 0.18).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tw.tween_property(self, "position:y", base_position.y, 0.27).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
-	# Squash pas mendarat
-	tw.tween_property(self, "scale", Vector2(1.2, 0.7), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	tw.tween_property(self, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tw.tween_callback(func() -> void:
 		toss_done = true
 		base_position = position
+		_burst_sparkle()
 	)
 
 # ============================================================
-# GLOW PULSE (looping border color)
+# GLOW PULSE (shader uniform, loop)
 # ============================================================
 var _glow_tween: Tween
 
 func _start_glow_pulse() -> void:
-	if is_collected:
+	if is_collected or not glow_mat:
 		return
-	
+	if _glow_tween and _glow_tween.is_valid():
+		_glow_tween.kill()
+
 	_glow_tween = create_tween().set_loops()
-	_glow_tween.tween_method(_set_border_color, Color(0.85, 0.7, 0.2, 0.9), Color(1.0, 0.95, 0.4, 1.0), 1.2)\
+	_glow_tween.tween_property(glow_mat, "shader_parameter/glow_strength", 0.95, 1.2)\
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_glow_tween.tween_method(_set_border_color, Color(1.0, 0.95, 0.4, 1.0), Color(0.85, 0.7, 0.2, 0.9), 1.2)\
+	_glow_tween.tween_property(glow_mat, "shader_parameter/glow_strength", 0.35, 1.2)\
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
-func _set_border_color(color: Color) -> void:
-	if not is_instance_valid(self):
+
+func _make_dot() -> GradientTexture2D:
+	var grad_tex := GradientTexture2D.new()
+	grad_tex.gradient = Gradient.new()
+	grad_tex.gradient.colors = PackedColorArray([Color.WHITE, Color(1, 1, 1, 0)])
+	grad_tex.fill = GradientTexture2D.FILL_RADIAL
+	grad_tex.fill_from = Vector2(0.5, 0.5)
+	grad_tex.fill_to = Vector2(1.0, 0.5)
+	grad_tex.width = 12
+	grad_tex.height = 12
+	return grad_tex
+
+
+func _start_shimmer() -> void:
+	if shimmer:
 		return
-	var style := get_theme_stylebox("normal") as StyleBoxFlat
-	if style:
-		style.border_color = color
+	shimmer = CPUParticles2D.new()
+	shimmer.amount = 5
+	shimmer.lifetime = 1.4
+	shimmer.preprocess = 1.4
+	shimmer.emitting = true
+	shimmer.direction = Vector2(0, -1)
+	shimmer.spread = 25.0
+	shimmer.gravity = Vector2(0, -15)
+	shimmer.initial_velocity_min = 12.0
+	shimmer.initial_velocity_max = 30.0
+	shimmer.scale_amount_min = 1.0
+	shimmer.scale_amount_max = 2.0
+	shimmer.color = Color(1.0, 0.9, 0.5, 0.5)
+	shimmer.texture = _make_dot()
+	shimmer.position = Vector2(28, 28)
+	add_child(shimmer)
+
+
+func _burst_sparkle() -> void:
+	var p := CPUParticles2D.new()
+	p.amount = 12
+	p.lifetime = 0.5
+	p.one_shot = true
+	p.explosiveness = 1.0
+	p.emitting = true
+	p.direction = Vector2(0, -1)
+	p.spread = 180.0
+	p.gravity = Vector2(0, 400)
+	p.initial_velocity_min = 80.0
+	p.initial_velocity_max = 180.0
+	p.scale_amount_min = 1.5
+	p.scale_amount_max = 3.0
+	p.color = Color(1.0, 0.88, 0.4, 1.0)
+	p.texture = _make_dot()
+	p.position = size * 0.5
+	add_child(p)
+	p.finished.connect(p.queue_free)
 
 # ============================================================
 # FLOAT ANIMATION
