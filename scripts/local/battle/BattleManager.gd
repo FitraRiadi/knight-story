@@ -714,6 +714,10 @@ func _on_drop_item_clicked(item: ItemData, visual: ItemDropVisual) -> void:
 
 	PlayerDataManager.save()
 	print("[BattleManager] Item ditambahkan: ", item.item_name, " di slot ", slot_index)
+	# Party kecil kayak parry sukses: burst kunang + shake halus
+	if battle_atmosphere:
+		battle_atmosphere.burst()
+	trigger_camera_shake_and_blood(2.5, 0.15, 0.0)
 	if is_instance_valid(visual):
 		visual.confirm_collect()
 
