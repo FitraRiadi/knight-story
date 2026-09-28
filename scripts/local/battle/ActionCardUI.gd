@@ -427,6 +427,9 @@ func _select_card(index: int) -> void:
 	card.position.y = CARD_Y
 	card.scale = Vector2.ONE
 	card.rotation = 0.0
+	# Matikan klik semua kartu: yang fade-out (modulate 0) tetep STOP dan
+	# makan klik mechanic di bawahnya (charge button!) kalau dibiarkan
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
 	var center_pos: Vector2 = Vector2(
@@ -460,11 +463,12 @@ func _select_card(index: int) -> void:
 	tw.parallel().tween_property(card, "rotation", 0.0, 0.3)\
 		.set_trans(Tween.TRANS_CUBIC)
 
-	# Other cards cascade fade out
+	# Other cards cascade fade out (klik dimatikan biar gak makan input)
 	for i in range(card_nodes.size()):
 		if i == index:
 			continue
 		var other: Control = card_nodes[i]
+		other.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		var delay: float = (i * 0.08)
 		var other_tw := create_tween()
 		other_tw.tween_property(other, "modulate:a", 0.0, 0.15).set_delay(delay)
