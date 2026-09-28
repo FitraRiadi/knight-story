@@ -643,15 +643,13 @@ func _spawn_drop_item(item_id: String, enemy_pos: Vector2, spawn_delay: float = 
 
 	# World -> screen: visual hidup di CanvasLayer (drop_layer)
 	var screen_pos: Vector2 = get_viewport().get_canvas_transform() * enemy_pos
-	# Magnet target: keluar layar kiri-bawah (off-screen, pasti sampe)
-	var magnet_pos := Vector2(-70.0, 360.0)
 
 	# Buat ItemDropVisual
 	var drop_visual := ItemDropVisual.new()
 	drop_visual.item_clicked.connect(_on_drop_item_clicked)
 	drop_visual.collect_finished.connect(_on_drop_collect_finished)
 	drop_layer.add_child(drop_visual)
-	drop_visual.setup(item, screen_pos, magnet_pos, spawn_delay)
+	drop_visual.setup(item, screen_pos, spawn_delay)
 
 
 # ============================================================
