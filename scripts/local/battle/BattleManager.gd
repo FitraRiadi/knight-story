@@ -3955,7 +3955,7 @@ func _start_enemies_turn() -> void:
 
 
 func _set_buttons_active(show_buttons: bool, instant: bool = false) -> void:
-	if atk_btn: atk_btn.disabled = (not show_buttons or current_stamina < attack_stamina_cost)
+	if atk_btn: atk_btn.disabled = not show_buttons
 	if defend_btn: defend_btn.disabled = not show_buttons
 	if backpack_btn: backpack_btn.disabled = not show_buttons
 	if run_btn: run_btn.disabled = not show_buttons
@@ -4020,7 +4020,7 @@ func _set_buttons_active_staggered() -> void:
 		tw.parallel().tween_property(btn, "position:y", target_y, 0.35).set_delay(i * 0.08).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
 	tw.chain().tween_callback(func():
-		if atk_btn: atk_btn.disabled = (current_stamina < attack_stamina_cost)
+		if atk_btn: atk_btn.disabled = false
 		if defend_btn: defend_btn.disabled = false
 		if backpack_btn: backpack_btn.disabled = false
 		if run_btn: run_btn.disabled = false
