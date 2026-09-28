@@ -235,7 +235,10 @@ func _ready() -> void:
 
 	if exp_label:
 		exp_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		exp_label.hide()
 		exp_label.modulate.a = 0.0
+	else:
+		push_warning("[Enemy] $expLabel tidak ketemu, popup exp mati.")
 
 	if has_node("enemyStats"):
 		$enemyStats.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1358,9 +1361,11 @@ func _animate_target_icon() -> void:
 
 func play_spawn_exp_popup(delay: float = 0.0) -> void:
 	# Pop + naik + fadeout 1.5 dtk smooth pas enemy muncul (SINE semua).
-	# Delay via set_delay per tween (interval + parallel GAK nge-gate!).
+	# Ready = hide, spawn = show. Delay via set_delay per tween.
 	if not exp_label:
+		push_warning("[Enemy] play_spawn_exp_popup: exp_label null.")
 		return
+	exp_label.show()
 	exp_label.text = "Gain +" + str(scaled_exp) + " Exp"
 	exp_label.modulate.a = 0.0
 	exp_label.pivot_offset = exp_label.size / 2.0
@@ -1374,6 +1379,7 @@ func play_spawn_exp_popup(delay: float = 0.0) -> void:
 	tw.tween_callback(func() -> void:
 		if is_instance_valid(exp_label):
 			exp_label.position.y = base_y
+			exp_label.hide()
 	)
 
 
