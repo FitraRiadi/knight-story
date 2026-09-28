@@ -165,7 +165,9 @@ func _on_pressed() -> void:
 # KUMPULKAN ITEM (dipanggil handler kalau slot ada)
 # ============================================================
 func confirm_collect() -> void:
-	if is_collected or not item_data:
+	# NOTE: jangan guard is_collected di sini — auto path nge-claim
+	# (is_collected=true) SEBELUM emit, jadi guard itu bikin fade gak jalan.
+	if not item_data:
 		return
 
 	is_collected = true
