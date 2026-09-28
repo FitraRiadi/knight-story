@@ -2973,21 +2973,24 @@ func _auto_detect_enemy_pool() -> void:
 	available_enemy_pool.clear()
 	if Engine.has_singleton("EnemyDatabase") or has_node("/root/EnemyDatabase"):
 		var db = get_node_or_null("/root/EnemyDatabase")
-		if db and "enemy_dict" in db and db.enemy_dict is Dictionary:
-			for enemy_id in db.enemy_dict.keys():
+		if db and db.has_method("get_all_enemy_ids"):
+			for enemy_id in db.get_all_enemy_ids():
 				available_enemy_pool.append(str(enemy_id))
 			return
-	
+
+	# Fallback: baca enemy_id langsung dari file (JANGAN lowercase nama file,
+	# id asli case-sensitive, mis "banditRaider" != "banditraider")
 	var dir = DirAccess.open(enemy_resources_folder)
 	if dir:
 		dir.list_dir_begin()
 		var file_name = dir.get_next()
 		while file_name != "":
 			if not dir.current_is_dir():
-				if file_name.ends_with(".tres") or file_name.ends_with(".tres.remap"):
-					var clean_id = file_name.replace(".tres.remap", "").replace(".tres", "").to_lower()
-					if not available_enemy_pool.has(clean_id):
-						available_enemy_pool.append(clean_id)
+				var clean_name = file_name.trim_suffix(".remap")
+				if clean_name.ends_with(".tres"):
+					var data: EnemyData = load(enemy_resources_folder + clean_name) as EnemyData
+					if data and data.enemy_id != "" and not available_enemy_pool.has(data.enemy_id):
+						available_enemy_pool.append(data.enemy_id)
 			file_name = dir.get_next()
 		dir.list_dir_end()
 

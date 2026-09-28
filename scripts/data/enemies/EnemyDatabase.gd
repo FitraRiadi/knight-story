@@ -47,3 +47,10 @@ func get_enemy_data(id: String) -> EnemyData:
 		
 	push_warning("[EnemyDatabase] Musuh dengan ID '" + id + "' tidak ditemukan di cache!")
 	return null
+
+
+func get_all_enemy_ids() -> Array[String]:
+	var ids: Array[String] = []
+	for key in _enemies_cache.keys():
+		ids.append(str(key))
+	return ids
