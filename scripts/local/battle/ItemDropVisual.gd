@@ -3,6 +3,8 @@ class_name ItemDropVisual
 
 # Signal ketika item di-click / magnet sampai (bawa visual biar bisa confirm/cancel)
 signal item_clicked(item: ItemData, visual: ItemDropVisual)
+# Signal abis fade collect kelar (buat save final)
+signal collect_finished(item: ItemData)
 
 # ============================================================
 # DATA
@@ -10,6 +12,8 @@ signal item_clicked(item: ItemData, visual: ItemDropVisual)
 var item_data: ItemData = null
 var is_collected: bool = false
 var magnet_flying: bool = false
+var magnet_target: Vector2 = Vector2.ZERO
+var magnet_speed: float = 650.0
 
 # ============================================================
 # CONSTANTS
@@ -19,7 +23,7 @@ const POP_DURATION := 0.4
 const FLOAT_AMPLITUDE := 3.0
 const FLOAT_SPEED := 2.0
 const DESPAWN_TIME := 8.0
-const MAGNET_DELAY := 3.0
+const MAGNET_DELAY := 1.0
 
 # ============================================================
 # BASE POSITION (untuk float effect)
@@ -29,10 +33,11 @@ var base_position: Vector2 = Vector2.ZERO
 # ============================================================
 # SETUP
 # ============================================================
-func setup(item: ItemData, spawn_pos: Vector2) -> void:
+func setup(item: ItemData, spawn_pos: Vector2, magnet_pos: Vector2 = Vector2.ZERO, spawn_delay: float = 0.0) -> void:
 	item_data = item
 	base_position = spawn_pos
 	position = spawn_pos
+	magnet_target = magnet_pos
 	custom_minimum_size = Vector2(56, 56)
 	size = Vector2(56, 56)
 	pivot_offset = size / 2.0
@@ -100,24 +105,26 @@ func setup(item: ItemData, spawn_pos: Vector2) -> void:
 	# Mulai dari kecil dan transparan
 	scale = Vector2.ZERO
 	modulate.a = 0.0
-	
-	# Start animasi
-	_play_spawn_animation()
+
+	# Start animasi (stagger per index biar pop-nya gantian)
+	_play_spawn_animation(spawn_delay)
 
 # ============================================================
 # ANIMASI SPAWN (POP OUT)
 # ============================================================
-func _play_spawn_animation() -> void:
+func _play_spawn_animation(spawn_delay: float = 0.0) -> void:
 	var tween := create_tween().set_parallel(true)
-	
+
 	# Scale pop: 0 -> 1.2 -> 1.0 (overshoot effect)
 	tween.tween_property(self, "scale", Vector2(1.2, 1.2), POP_DURATION * 0.6)\
+		.set_delay(spawn_delay)\
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.chain().tween_property(self, "scale", Vector2(1.0, 1.0), POP_DURATION * 0.4)\
 		.set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
-	
+
 	# Fade in
 	tween.tween_property(self, "modulate:a", 1.0, POP_DURATION * 0.3)\
+		.set_delay(spawn_delay)\
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	
 	# Glow pulse mulai setelah spawn selesai
@@ -149,7 +156,14 @@ func _set_border_color(color: Color) -> void:
 # FLOAT ANIMATION
 # ============================================================
 func _process(delta: float) -> void:
-	if is_collected or magnet_flying:
+	# Magnet: jalan deterministik via move_toward (gak bisa macet/killBareng tween)
+	if magnet_flying:
+		position = position.move_toward(magnet_target, magnet_speed * delta)
+		if position.distance_to(magnet_target) < 4.0:
+			magnet_flying = false
+			item_clicked.emit(item_data, self)
+		return
+	if is_collected:
 		return
 	position.y = base_position.y + sin(Time.get_ticks_msec() * 0.001 * FLOAT_SPEED) * FLOAT_AMPLITUDE
 
@@ -180,7 +194,10 @@ func confirm_collect() -> void:
 	tween.tween_property(self, "modulate:a", 0.0, 0.2)\
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 
-	tween.chain().tween_callback(queue_free)
+	tween.chain().tween_callback(func() -> void:
+		collect_finished.emit(item_data)
+		queue_free()
+	)
 
 
 # ============================================================
@@ -203,20 +220,12 @@ func _on_magnet_timeout() -> void:
 	if is_collected or not item_data:
 		return
 
-	# Claim dulu biar despawn timer + klik gak rebutan
+	# Claim dulu biar despawn timer + klik gak rebutan.
+	# Geraknya di _process (move_toward) biar gak bisa macet.
 	is_collected = true
 	magnet_flying = true
 	if _glow_tween:
 		_glow_tween.kill()
-
-	var vp: Vector2 = get_viewport().get_visible_rect().size
-	var target := Vector2(vp.x * 0.5 - 28.0, vp.y - 70.0)
-	var tw := create_tween()
-	tw.tween_property(self, "position", target, 0.5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-	tw.tween_callback(func() -> void:
-		magnet_flying = false
-		item_clicked.emit(item_data, self)
-	)
 
 # ============================================================
 # DESPAWN OTOMATIS

@@ -636,16 +636,23 @@ func _find_item_recursive(folder: String, item_id: String) -> ItemData:
 # ============================================================
 # SPAWN DROP ITEM
 # ============================================================
-func _spawn_drop_item(item_id: String, enemy_pos: Vector2) -> void:
+func _spawn_drop_item(item_id: String, enemy_pos: Vector2, spawn_delay: float = 0.0) -> void:
 	var item := _load_item_by_id(item_id)
 	if not item:
 		return
-	
+
+	# World -> screen: visual hidup di CanvasLayer (drop_layer)
+	var screen_pos: Vector2 = get_viewport().get_canvas_transform() * enemy_pos
+	# Magnet target: bawah-tengah layar (koordinat screen juga)
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	var magnet_pos := Vector2(vp.x * 0.5 - 28.0, vp.y - 70.0)
+
 	# Buat ItemDropVisual
 	var drop_visual := ItemDropVisual.new()
 	drop_visual.item_clicked.connect(_on_drop_item_clicked)
+	drop_visual.collect_finished.connect(_on_drop_collect_finished)
 	drop_layer.add_child(drop_visual)
-	drop_visual.setup(item, enemy_pos)
+	drop_visual.setup(item, screen_pos, magnet_pos, spawn_delay)
 
 
 # ============================================================
@@ -688,6 +695,11 @@ func _on_drop_item_clicked(item: ItemData, visual: ItemDropVisual) -> void:
 	print("[BattleManager] Item ditambahkan: ", item.item_name, " di slot ", slot_index)
 	if is_instance_valid(visual):
 		visual.confirm_collect()
+
+
+func _on_drop_collect_finished(_item: ItemData) -> void:
+	# Save final pas fade collect kelar (jaminan ke-save walau timing mepet ganti scene)
+	PlayerDataManager.save()
 
 
 # ============================================================
@@ -2548,8 +2560,10 @@ func _finish_raptive() -> void:
 				EventBus.enemy_killed.emit(dead_enemy.enemy_id)
 				if not death_data["drops"].is_empty():
 					var pos = dead_enemy.global_position
+					var drop_idx := 0
 					for item_id in death_data["drops"]:
-						_spawn_drop_item(item_id, pos)
+						_spawn_drop_item(item_id, pos, drop_idx * 0.08)
+						drop_idx += 1
 						pos.x += randf_range(-30.0, 30.0)
 						pos.y += randf_range(-20.0, 20.0)
 				if death_data["exp"] > 0:
@@ -3660,11 +3674,13 @@ func _process_enemy_death(_exp_amount: int, _gold_amount: int, _dropped_items: A
 	if is_instance_valid(enemy):
 		EventBus.enemy_killed.emit(enemy.enemy_id)
 
-	# Spawn item drops jika ada
+	# Spawn item drops jika ada (pop stagger per index)
 	if not _dropped_items.is_empty() and is_instance_valid(enemy):
 		var enemy_pos := enemy.global_position
+		var drop_idx := 0
 		for item_id in _dropped_items:
-			_spawn_drop_item(item_id, enemy_pos)
+			_spawn_drop_item(item_id, enemy_pos, drop_idx * 0.08)
+			drop_idx += 1
 			# Offset sedikit biar item gak tumpuk
 			enemy_pos.x += randf_range(-30.0, 30.0)
 			enemy_pos.y += randf_range(-20.0, 20.0)
