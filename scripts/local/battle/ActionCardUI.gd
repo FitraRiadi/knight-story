@@ -298,6 +298,19 @@ func _kill_all_hover_tweens() -> void:
 	hover_tweens.clear()
 
 
+func _disable_card_input(card: Control) -> void:
+	# IGNORE se-subtree: anak STOP tetep makan klik walau parent IGNORE
+	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_disable_input_recursive(card)
+
+
+func _disable_input_recursive(node: Node) -> void:
+	for child in node.get_children():
+		if child is Control:
+			(child as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_disable_input_recursive(child)
+
+
 func _on_card_hover(index: int) -> void:
 	if is_selecting:
 		return
@@ -428,8 +441,10 @@ func _select_card(index: int) -> void:
 	card.scale = Vector2.ONE
 	card.rotation = 0.0
 	# Matikan klik semua kartu: yang fade-out (modulate 0) tetep STOP dan
-	# makan klik mechanic di bawahnya (charge button!) kalau dibiarkan
-	card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# makan klik mechanic di bawahnya (charge button!) kalau dibiarkan.
+	# IGNORE harus se-subtree: TextureRect anak (art/placeholder full-rect)
+	# tetep makan klik walau root-nya IGNORE.
+	_disable_card_input(card)
 
 	var viewport_size: Vector2 = get_viewport().get_visible_rect().size
 	var center_pos: Vector2 = Vector2(
@@ -468,7 +483,7 @@ func _select_card(index: int) -> void:
 		if i == index:
 			continue
 		var other: Control = card_nodes[i]
-		other.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_disable_card_input(other)
 		var delay: float = (i * 0.08)
 		var other_tw := create_tween()
 		other_tw.tween_property(other, "modulate:a", 0.0, 0.15).set_delay(delay)
