@@ -714,17 +714,51 @@ func _on_drop_item_clicked(item: ItemData, visual: ItemDropVisual) -> void:
 
 	PlayerDataManager.save()
 	print("[BattleManager] Item ditambahkan: ", item.item_name, " di slot ", slot_index)
-	# Party kecil kayak parry sukses: burst kunang + shake halus
+	# Party kecil kayak parry sukses: burst kunang + shake halus + semburan kiri-kanan
 	if battle_atmosphere:
 		battle_atmosphere.burst()
 	trigger_camera_shake_and_blood(2.5, 0.15, 0.0)
 	if is_instance_valid(visual):
+		_spawn_collect_particles(visual.global_position + visual.size * 0.5)
 		visual.confirm_collect()
 
 
 func _on_drop_collect_finished(_item: ItemData) -> void:
 	# Save final pas fade collect kelar (jaminan ke-save walau timing mepet ganti scene)
 	PlayerDataManager.save()
+
+
+func _spawn_collect_particles(spawn_pos: Vector2) -> void:
+	# Semburan kiri-kanan gaya rapid/parry: 2 emitter horizontal berlawanan
+	for dir in [-1, 1]:
+		var particles := CPUParticles2D.new()
+		if drop_layer:
+			drop_layer.add_child(particles)
+		else:
+			add_child(particles)
+
+		particles.position = spawn_pos
+		particles.emitting = false
+		particles.one_shot = true
+		particles.explosiveness = 0.95
+		particles.amount = 18
+		particles.lifetime = 0.4
+		particles.speed_scale = 1.8
+		particles.direction = Vector2(dir, 0)
+		particles.spread = 25.0
+		particles.initial_velocity_min = 250.0
+		particles.initial_velocity_max = 450.0
+		particles.gravity = Vector2.ZERO
+		particles.damping_min = 300.0
+		particles.damping_max = 500.0
+		particles.scale_amount_min = 3.0
+		particles.scale_amount_max = 6.0
+		particles.color = Color(1.0, 0.85, 0.3, 1.0)
+		particles.emitting = true
+
+		var cleanup_tween := create_tween()
+		cleanup_tween.tween_interval(1.0)
+		cleanup_tween.tween_callback(particles.queue_free)
 
 
 # ============================================================

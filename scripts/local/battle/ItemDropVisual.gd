@@ -279,7 +279,7 @@ func confirm_collect() -> void:
 		queue_free()
 	)
 
-	# Label: nongol abis item ilang, naik smooth, tahan, fade, free
+	# Label: nongol abis item ilang, naik smooth + warna-warni, tahan, fade, free
 	if label_hold:
 		var ltw := label_hold.create_tween().set_parallel(true)
 		ltw.tween_property(label_hold, "modulate:a", 1.0, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
@@ -287,6 +287,14 @@ func confirm_collect() -> void:
 		ltw.chain().tween_interval(0.2)
 		ltw.tween_property(label_hold, "modulate:a", 0.0, 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 		ltw.tween_callback(label_hold.queue_free)
+		# Hue cycling selama label hidup (bound ke label, mati bareng)
+		var hue_tw := label_hold.create_tween().set_loops()
+		hue_tw.tween_method(_cycle_label_color.bind(label_hold), 0.0, 1.0, 0.7).set_trans(Tween.TRANS_LINEAR)
+
+
+func _cycle_label_color(h: float, lbl: Label) -> void:
+	if is_instance_valid(lbl):
+		lbl.add_theme_color_override("font_color", Color.from_hsv(h, 0.7, 1.0))
 
 
 # ============================================================
