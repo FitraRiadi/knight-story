@@ -2637,6 +2637,7 @@ func _finish_raptive() -> void:
 			current_wave += 1
 			wave_progress.set_wave(current_wave, total_waves)
 			await get_tree().create_timer(0.5).timeout
+			await _wait_for_dialogs_done()
 			spawn_random_enemies(1, enemies_per_wave, 1, 5)
 			# Cleanup visual state rapid mode
 			attack_card_used_this_session = false  # Reset SEBELUM finish supaya signal gak trigger enemy turn
@@ -3185,6 +3186,14 @@ func _get_spawn_position(index: int, total: int) -> Vector2:
 		else:
 			return center_spawn_position + Vector2(0, 20)
 	return center_spawn_position
+
+
+func _wait_for_dialogs_done(max_wait: float = 5.0) -> void:
+	# Wave nunggu dialog wave sekarang kelar dulu (max 5 dtk biar gak hang)
+	var waited := 0.0
+	while BattleEnemy.is_any_dialog_active() and waited < max_wait:
+		await get_tree().create_timer(0.2).timeout
+		waited += 0.2
 
 
 func _show_wave_title() -> void:
@@ -3760,10 +3769,12 @@ func _process_enemy_death(_exp_amount: int, _gold_amount: int, _dropped_items: A
 			current_wave += 1
 			wave_progress.set_wave(current_wave, total_waves)
 			await get_tree().create_timer(0.5).timeout
+			await _wait_for_dialogs_done()
 			spawn_random_enemies(1, enemies_per_wave, 1, 5)
 		else:
 			# All waves completed - show scoreboard
 			await get_tree().create_timer(0.5).timeout
+			await _wait_for_dialogs_done()
 			_show_scoreboard()
 
 

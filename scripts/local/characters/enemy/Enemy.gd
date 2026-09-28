@@ -929,6 +929,15 @@ func _execute_attack(
 
 static var _dialog_owner: BattleEnemy = null
 
+
+static func is_any_dialog_active() -> bool:
+	if _dialog_owner == null:
+		return false
+	if not is_instance_valid(_dialog_owner):
+		_dialog_owner = null
+		return false
+	return true
+
 const CHATTER_COOLDOWN_MS := 5000
 const DIALOG_TYPE_SPEED := 0.035
 const DIALOG_HOLD := 2.5
