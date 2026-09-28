@@ -166,7 +166,7 @@ var soul_particles: CPUParticles2D
 var outline_mat: ShaderMaterial = null
 var flash_tween: Tween = null
 const OUTLINE_DEFAULT := Color(0.0, 0.0, 0.0, 0.6)
-const OUTLINE_SELECTED := Color(1.0, 0.85, 0.2, 0.9)
+const OUTLINE_SELECTED := Color(0.0, 0.0, 0.0, 1.0)
 
 
 # ============================================================
@@ -1325,6 +1325,7 @@ func set_highlight(active: bool) -> void:
 
 	if outline_mat:
 		outline_mat.set_shader_parameter("outline_color", OUTLINE_SELECTED if active else OUTLINE_DEFAULT)
+		outline_mat.set_shader_parameter("outline_size", 2.0 if active else 1.0)
 
 	var tween: Tween = create_tween().set_parallel(true)
 	tween.tween_property(self, "modulate:a", target_alpha, 0.2)
