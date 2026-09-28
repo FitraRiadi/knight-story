@@ -14,6 +14,11 @@
 [ext_resource type="Texture2D" uid="uid://b32kx3oikj31r" path="res://assets/art/sprites/enemy/grooter/dead1.png" id="9_66wuw"]
 [ext_resource type="Texture2D" uid="uid://dsay57h3moksf" path="res://assets/art/sprites/enemy/grooter/defend1.png" id="10_vkkbq"]
 
+[ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="drop_script"]
+[ext_resource type="Resource" uid="uid://dmfc6tb72muxj" path="res://data/items/consumable/health_potion.tres" id="drop_hp"]
+[ext_resource type="Resource" uid="uid://besh3dfkieai5" path="res://data/items/consumable/protection_potion.tres" id="drop_prot"]
+[ext_resource type="Resource" uid="uid://cdwiqicslki8d" path="res://data/items/materials/iron_ingot.tres" id="drop_iron"]
+
 [sub_resource type="SpriteFrames" id="SpriteFrames_3hfl1"]
 animations = [{
 "frames": [{
@@ -82,14 +87,16 @@ animations = [{
 script = ExtResource("1_dhcys")
 ai_type = 2
 enemy_id = "grooter"
-spawn_chance = 75.0
 enemy_name = "Grooter"
 min_level = 2
+spawn_chance = 60.0
 icon_enemy = ExtResource("1_hanjq")
 sprite_frames = SubResource("SpriteFrames_3hfl1")
 max_hp = 150.0
 damage_to_player = 8.0
 defense = 5.0
 exp_reward = 10
+drop_table = Array[ExtResource("drop_script")]([ExtResource("drop_hp"), ExtResource("drop_prot"), ExtResource("drop_iron")])
+drop_chance = 0.5
 abilities = Array[ExtResource("1_nqphn")]([ExtResource("2_ocbkr")])
 metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"

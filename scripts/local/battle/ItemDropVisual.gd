@@ -1,14 +1,15 @@
 extends Button
 class_name ItemDropVisual
 
-# Signal ketika item di-click oleh player
-signal item_clicked(item: ItemData)
+# Signal ketika item di-click / magnet sampai (bawa visual biar bisa confirm/cancel)
+signal item_clicked(item: ItemData, visual: ItemDropVisual)
 
 # ============================================================
 # DATA
 # ============================================================
 var item_data: ItemData = null
 var is_collected: bool = false
+var magnet_flying: bool = false
 
 # ============================================================
 # CONSTANTS
@@ -18,6 +19,7 @@ const POP_DURATION := 0.4
 const FLOAT_AMPLITUDE := 3.0
 const FLOAT_SPEED := 2.0
 const DESPAWN_TIME := 8.0
+const MAGNET_DELAY := 3.0
 
 # ============================================================
 # BASE POSITION (untuk float effect)
@@ -86,6 +88,14 @@ func setup(item: ItemData, spawn_pos: Vector2) -> void:
 	timer.timeout.connect(_on_timeout)
 	add_child(timer)
 	timer.start()
+
+	# Magnet timer: terbang sendiri ke tas kalau gak diklik
+	var magnet := Timer.new()
+	magnet.wait_time = MAGNET_DELAY
+	magnet.one_shot = true
+	magnet.timeout.connect(_on_magnet_timeout)
+	add_child(magnet)
+	magnet.start()
 	
 	# Mulai dari kecil dan transparan
 	scale = Vector2.ZERO
@@ -139,41 +149,74 @@ func _set_border_color(color: Color) -> void:
 # FLOAT ANIMATION
 # ============================================================
 func _process(delta: float) -> void:
-	if is_collected:
+	if is_collected or magnet_flying:
 		return
 	position.y = base_position.y + sin(Time.get_ticks_msec() * 0.001 * FLOAT_SPEED) * FLOAT_AMPLITUDE
 
 # ============================================================
-# CLICK HANDLER
+# CLICK HANDLER (cuma minta, eksekusi di confirm/cancel)
 # ============================================================
 func _on_pressed() -> void:
 	if is_collected or not item_data:
 		return
-	_collect_item()
+	item_clicked.emit(item_data, self)
 
 # ============================================================
-# KUMPILKAN ITEM
+# KUMPULKAN ITEM (dipanggil handler kalau slot ada)
 # ============================================================
-func _collect_item() -> void:
+func confirm_collect() -> void:
 	if is_collected or not item_data:
 		return
-	
+
 	is_collected = true
-	
+
 	if _glow_tween:
 		_glow_tween.kill()
-	
+
 	# Animasi collect: scale up + fade out
 	var tween := create_tween().set_parallel(true)
 	tween.tween_property(self, "scale", Vector2(1.5, 1.5), 0.2)\
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 	tween.tween_property(self, "modulate:a", 0.0, 0.2)\
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	
+
 	tween.chain().tween_callback(queue_free)
-	
-	# Emit signal
-	item_clicked.emit(item_data)
+
+
+# ============================================================
+# BATAL (dipanggil handler kalau inventory penuh)
+# ============================================================
+func cancel_collect() -> void:
+	# Balikin ke kondisi idle: tetep bisa diklik / ke-magnet lagi
+	is_collected = false
+	magnet_flying = false
+	base_position = position
+	scale = Vector2.ONE
+	modulate.a = 1.0
+	_start_glow_pulse()
+
+
+# ============================================================
+# MAGNET OTOMATIS
+# ============================================================
+func _on_magnet_timeout() -> void:
+	if is_collected or not item_data:
+		return
+
+	# Claim dulu biar despawn timer + klik gak rebutan
+	is_collected = true
+	magnet_flying = true
+	if _glow_tween:
+		_glow_tween.kill()
+
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	var target := Vector2(vp.x * 0.5 - 28.0, vp.y - 70.0)
+	var tw := create_tween()
+	tw.tween_property(self, "position", target, 0.5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tw.tween_callback(func() -> void:
+		magnet_flying = false
+		item_clicked.emit(item_data, self)
+	)
 
 # ============================================================
 # DESPAWN OTOMATIS

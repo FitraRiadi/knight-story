@@ -94,9 +94,10 @@ enum AIType {
 
 @export var exp_reward: int = 20
 
-@export var gold_reward: int = 10
+## Drag & drop ItemData .tres ke sini (inspector). Dikosongkan = gak drop.
+@export var drop_table: Array[ItemData] = []
 
-@export var drop_table: Array[String] = []
+@export var gold_reward: int = 10
 
 @export var drop_chance: float = 0.5
 

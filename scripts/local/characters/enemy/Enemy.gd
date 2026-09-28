@@ -1088,7 +1088,9 @@ func _on_death() -> void:
 	var gold_gained: int = scaled_gold
 
 	if stats != null and randf() <= stats.drop_chance and stats.drop_table.size() > 0:
-		dropped_items.append(str(stats.drop_table.pick_random()))
+		var drop: ItemData = stats.drop_table.pick_random()
+		if drop and drop.item_id != "":
+			dropped_items.append(drop.item_id)
 
 	enemy_defeated.emit(exp_gained, gold_gained, dropped_items, self)
 

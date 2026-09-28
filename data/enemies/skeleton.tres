@@ -15,6 +15,9 @@
 [ext_resource type="Texture2D" uid="uid://ddcnhtwwhuf6n" path="res://assets/art/sprites/enemy/skeleton/death2.png" id="8_684md"]
 [ext_resource type="Texture2D" uid="uid://d4nc7ra86mlcy" path="res://assets/art/sprites/enemy/skeleton/defend1.png" id="9_ik7xt"]
 
+[ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="drop_script"]
+[ext_resource type="Resource" uid="uid://dmfc6tb72muxj" path="res://data/items/consumable/health_potion.tres" id="drop_hp"]
+
 [sub_resource type="SpriteFrames" id="SpriteFrames_0ypgr"]
 animations = [{
 "frames": [{
@@ -82,7 +85,6 @@ animations = [{
 [resource]
 script = ExtResource("1_0ypgr")
 enemy_id = "skeleton"
-spawn_chance = 100.0
 enemy_name = "Skeleton"
 icon_enemy = ExtResource("1_jan5e")
 sprite_frames = SubResource("SpriteFrames_0ypgr")
@@ -91,4 +93,6 @@ sfx_death = ExtResource("2_a4t8e")
 max_hp = 50.0
 damage_to_player = 8.0
 exp_reward = 10
+drop_table = Array[ExtResource("drop_script")]([ExtResource("drop_hp")])
+drop_chance = 0.4
 metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"

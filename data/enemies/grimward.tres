@@ -15,6 +15,11 @@
 [ext_resource type="Texture2D" uid="uid://e3q04pvucu10" path="res://assets/art/sprites/enemy/grimward/death1-removebg-preview.png" id="8_lxv2q"]
 [ext_resource type="Texture2D" uid="uid://6488p8v54jf" path="res://assets/art/sprites/enemy/grimward/defend1-removebg-preview.png" id="9_eodqq"]
 
+[ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="drop_script"]
+[ext_resource type="Resource" uid="uid://xf6noadq87vm" path="res://data/items/consumable/attack_potion.tres" id="drop_atk"]
+[ext_resource type="Resource" uid="uid://besh3dfkieai5" path="res://data/items/consumable/protection_potion.tres" id="drop_prot"]
+[ext_resource type="Resource" uid="uid://cdwiqicslki8d" path="res://data/items/materials/iron_ingot.tres" id="drop_iron"]
+
 [sub_resource type="SpriteFrames" id="SpriteFrames_gn7wh"]
 animations = [{
 "frames": [{
@@ -80,14 +85,16 @@ animations = [{
 script = ExtResource("1_arywp")
 ai_type = 2
 enemy_id = "grimward"
-spawn_chance = 60.0
 enemy_name = "Grimward"
 min_level = 3
+spawn_chance = 66.0
 icon_enemy = ExtResource("1_ycbiy")
 sprite_frames = SubResource("SpriteFrames_gn7wh")
 max_hp = 125.0
 damage_to_player = 18.0
 exp_reward = 10
+drop_table = Array[ExtResource("drop_script")]([ExtResource("drop_atk"), ExtResource("drop_prot"), ExtResource("drop_iron")])
+drop_chance = 0.6
 abilities = Array[ExtResource("1_w4pim")]([ExtResource("2_fcr88"), ExtResource("3_qphqy")])
 ability_level_str = "battle_cry:1,tactical_attack:3"
 metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"

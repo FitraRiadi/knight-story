@@ -595,27 +595,41 @@ func _load_item_by_id(item_id: String) -> ItemData:
 	# Cek cache dulu
 	if item_cache.has(item_id):
 		return item_cache[item_id]
-	
-	# Scan folder items
-	var dir := DirAccess.open(ITEMS_FOLDER)
+
+	# Scan rekursif (item adanya di subfolder consumable/materials/dll)
+	var found := _find_item_recursive(ITEMS_FOLDER, item_id)
+	if found:
+		item_cache[item_id] = found
+		return found
+
+	push_warning("[BattleManager] Item tidak ditemukan: " + item_id)
+	return null
+
+
+func _find_item_recursive(folder: String, item_id: String) -> ItemData:
+	var dir := DirAccess.open(folder)
 	if not dir:
-		push_error("[BattleManager] Tidak bisa buka folder: " + ITEMS_FOLDER)
+		push_error("[BattleManager] Tidak bisa buka folder: " + folder)
 		return null
-	
+
 	dir.list_dir_begin()
 	var file_name := dir.get_next()
-	
+
 	while file_name != "":
-		if file_name.ends_with(".tres"):
-			var resource_path := ITEMS_FOLDER + file_name
-			var item := load(resource_path) as ItemData
+		var full := folder.path_join(file_name)
+		if dir.current_is_dir():
+			var sub := _find_item_recursive(full, item_id)
+			if sub:
+				dir.list_dir_end()
+				return sub
+		elif file_name.ends_with(".tres"):
+			var item := load(full) as ItemData
 			if item and item.item_id == item_id:
-				item_cache[item_id] = item
+				dir.list_dir_end()
 				return item
 		file_name = dir.get_next()
-	
+
 	dir.list_dir_end()
-	push_warning("[BattleManager] Item tidak ditemukan: " + item_id)
 	return null
 
 
@@ -637,38 +651,43 @@ func _spawn_drop_item(item_id: String, enemy_pos: Vector2) -> void:
 # ============================================================
 # ON DROP ITEM CLICKED
 # ============================================================
-func _on_drop_item_clicked(item: ItemData) -> void:
+func _on_drop_item_clicked(item: ItemData, visual: ItemDropVisual) -> void:
 	if not item:
 		return
-	
+
 	# Cek apakah inventory penuh (tidak ada slot null)
 	var battle_inv := PlayerDataManager.data.battle_inventory
 	if not battle_inv:
 		return
-	
+
 	# Cari slot pertama yang null
 	var slot_index := -1
 	for i in range(battle_inv.items.size()):
 		if battle_inv.items[i] == null:
 			slot_index = i
 			break
-	
+
 	# Kalau semua slot terisi, cari slot kosong di akhir
 	if slot_index == -1:
 		if battle_inv.items.size() < 9:
 			slot_index = battle_inv.items.size()
 		else:
 			print("[BattleManager] Inventory penuh! Tidak bisa ambil item.")
+			if is_instance_valid(visual):
+				_spawn_floating_text("Inventory Full!", Color(1.0, 0.3, 0.2), visual.global_position)
+				visual.cancel_collect()
 			return
-	
+
 	# Masukkan item ke slot
 	if slot_index < battle_inv.items.size():
 		battle_inv.items[slot_index] = item
 	else:
 		battle_inv.items.append(item)
-	
+
 	PlayerDataManager.save()
 	print("[BattleManager] Item ditambahkan: ", item.item_name, " di slot ", slot_index)
+	if is_instance_valid(visual):
+		visual.confirm_collect()
 
 
 # ============================================================
