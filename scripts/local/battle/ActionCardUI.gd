@@ -19,7 +19,7 @@ const CARD_WIDTH: float = 110.0
 const CARD_HEIGHT: float = 160.0
 const CARD_GAP: float = 18.0
 const CARD_SPACING: float = CARD_WIDTH + CARD_GAP
-const CARD_Y: float = 80.0
+const CARD_Y: float = 168.0
 
 const HOVER_LIFT: float = -18.0
 const HOVER_SCALE: float = 1.1
