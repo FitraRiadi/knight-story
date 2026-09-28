@@ -15,7 +15,6 @@ var toss_done: bool = false
 var toss_dir: float = 1.0
 var shimmer: CPUParticles2D = null
 var name_label: Label = null
-const ICON_SIZE := Vector2(48, 48)
 const POP_DURATION := 0.4
 const FLOAT_AMPLITUDE := 3.0
 const FLOAT_SPEED := 2.0
@@ -40,41 +39,26 @@ func setup(item: ItemData, spawn_pos: Vector2, ground_pos: Vector2 = Vector2.ZER
 		toss_dir = 1.0
 	base_position = ground_pos
 	position = spawn_pos
-	custom_minimum_size = Vector2(56, 56)
-	size = Vector2(56, 56)
+	visible = true
+	# Ukuran + pivot ngikutin template scene (jangan override)
 	pivot_offset = size / 2.0
 	flat = true
 	focus_mode = Control.FOCUS_NONE
-	
-	# Icon item
-	var icon := TextureRect.new()
-	icon.texture = item.icon
-	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	icon.custom_minimum_size = ICON_SIZE
-	icon.anchors_preset = Control.PRESET_CENTER
-	icon.offset_left = -ICON_SIZE.x / 2.0
-	icon.offset_top = -ICON_SIZE.y / 2.0
-	icon.offset_right = ICON_SIZE.x / 2.0
-	icon.offset_bottom = ICON_SIZE.y / 2.0
-	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	add_child(icon)
 
-	# Label nama item di bawah (muncul pas mendarat)
-	name_label = Label.new()
-	name_label.text = item.item_name
-	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 11)
-	name_label.add_theme_color_override("font_color", Color.WHITE)
-	name_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
-	name_label.add_theme_constant_override("shadow_offset_x", 1)
-	name_label.add_theme_constant_override("shadow_offset_y", 1)
-	name_label.position = Vector2(-22.0, 58.0)
-	name_label.size = Vector2(100.0, 16.0)
-	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	name_label.modulate.a = 0.0
-	add_child(name_label)
+	# Icon item: pakai TextureRect bawaan template
+	var icon := get_node_or_null("TextureRect") as TextureRect
+	if icon:
+		icon.texture = item.icon
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	# Label nama: pakai Label bawaan template (muncul pas mendarat)
+	name_label = get_node_or_null("Label") as Label
+	if name_label:
+		name_label.text = item.item_name
+		name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		name_label.modulate.a = 0.0
 	# Shimmer loop
 	_start_shimmer()
 	
@@ -104,6 +88,9 @@ func setup(item: ItemData, spawn_pos: Vector2, ground_pos: Vector2 = Vector2.ZER
 	pressed_style.bg_color = Color(0.15, 0.12, 0.05, 0.95)
 	add_theme_stylebox_override("pressed", pressed_style)
 	
+	# Guard: duplicate bisa bawa koneksi lama
+	if pressed.is_connected(_on_pressed):
+		pressed.disconnect(_on_pressed)
 	pressed.connect(_on_pressed)
 	
 	# Despawn timer
@@ -235,7 +222,7 @@ func _start_shimmer() -> void:
 	shimmer.scale_amount_max = 2.0
 	shimmer.color = Color(1.0, 0.9, 0.5, 0.5)
 	shimmer.texture = _make_dot()
-	shimmer.position = Vector2(28, 28)
+	shimmer.position = size * 0.5
 	add_child(shimmer)
 
 # ============================================================

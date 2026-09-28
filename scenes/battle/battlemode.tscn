@@ -18,6 +18,8 @@
 [ext_resource type="Texture2D" uid="uid://toj1si5imisd" path="res://assets/ui/icons/parryBtn.png" id="13_kngoi"]
 [ext_resource type="Texture2D" uid="uid://ob640ju61cdx" path="res://assets/ui/icons/inventoryBtn.png" id="13_ve2ux"]
 [ext_resource type="Texture2D" uid="uid://crm3m4q1wtttx" path="res://assets/ui/icons/timingCircle.png" id="14_qpju5"]
+[ext_resource type="Texture2D" uid="uid://corujjfkda61s" path="res://assets/art/items/consumable/potion/Icon7.png" id="21_y6eqr"]
+[ext_resource type="Script" uid="uid://s4io6fpyf4d8" path="res://scripts/local/battle/ItemDropVisual.gd" id="item_drop"]
 [ext_resource type="Script" uid="uid://djbf4rxh2wv3a" path="res://scripts/local/battle/ChargeAttack.gd" id="charge_attack"]
 [ext_resource type="Script" uid="uid://dalxm83qgh3oh" path="res://scripts/local/battle/WaveProgress.gd" id="wave_progress"]
 
@@ -1279,3 +1281,31 @@ scale = Vector2(1.0755557, 1.0759319)
 value = 100.0
 fill_mode = 4
 texture_progress = ExtResource("14_qpju5")
+
+[node name="itemDropVisualBtn" type="Button" parent="." unique_id=35637890]
+visible = false
+layout_mode = 0
+offset_left = 303.0
+offset_top = 173.0
+offset_right = 363.0
+offset_bottom = 223.0
+flat = true
+script = ExtResource("item_drop")
+
+[node name="TextureRect" type="TextureRect" parent="itemDropVisualBtn" unique_id=1629546351]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("21_y6eqr")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="itemDropVisualBtn" unique_id=1978502883]
+layout_mode = 0
+offset_left = -11.0
+offset_top = 51.0
+offset_right = 82.0
+offset_bottom = 68.0
+text = "Health Potion +1"

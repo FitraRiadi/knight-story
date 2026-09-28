@@ -18,6 +18,7 @@ extends Control
 @onready var parry_timing_bar: TextureProgressBar = $parryBtn/timing
 
 @onready var rapid_btn: Button = $rapidAttack/rapidBtn
+@onready var item_drop_template: ItemDropVisual = $itemDropVisualBtn
 
 # --- NODE UI QTE ATTACK ---
 @onready var attack_qte_node: Control = $attackQte
@@ -291,6 +292,9 @@ func _ready() -> void:
 	_setup_blood_vignette()
 	_setup_player_hp_camera_overlay()
 	_hide_wave_title_instant()
+	# Template drop selalu hidden; yang dipakai cuma duplikatnya
+	if item_drop_template:
+		item_drop_template.hide()
 	_load_player_data()
 	_update_player_ui_instant()
 	_setup_scoreboard()
@@ -646,8 +650,12 @@ func _spawn_drop_item(item_id: String, enemy_pos: Vector2, spawn_delay: float = 
 	# Mendarat di tanah bawah musuh (nyebar dikit biar gak tumpuk)
 	var ground_pos := screen_pos + Vector2(randf_range(-50.0, 50.0), randf_range(65.0, 85.0))
 
-	# Buat ItemDropVisual
-	var drop_visual := ItemDropVisual.new()
+	# Duplikat dari template scene (bukan new, biar styling ngikutin editor)
+	if not item_drop_template:
+		return
+	var drop_visual := item_drop_template.duplicate() as ItemDropVisual
+	if not drop_visual:
+		return
 	drop_visual.item_clicked.connect(_on_drop_item_clicked)
 	drop_visual.collect_finished.connect(_on_drop_collect_finished)
 	drop_layer.add_child(drop_visual)
