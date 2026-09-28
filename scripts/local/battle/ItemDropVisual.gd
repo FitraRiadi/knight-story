@@ -14,7 +14,7 @@ var is_collected: bool = false
 var toss_done: bool = false
 var toss_dir: float = 1.0
 var shimmer: CPUParticles2D = null
-
+var name_label: Label = null
 const ICON_SIZE := Vector2(48, 48)
 const POP_DURATION := 0.4
 const FLOAT_AMPLITUDE := 3.0
@@ -48,8 +48,7 @@ func setup(item: ItemData, spawn_pos: Vector2, ground_pos: Vector2 = Vector2.ZER
 	
 	# Icon item
 	var icon := TextureRect.new()
-	icon.texture = item.icon
-	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.texture = item.icon	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.custom_minimum_size = ICON_SIZE
 	icon.anchors_preset = Control.PRESET_CENTER
@@ -60,6 +59,21 @@ func setup(item: ItemData, spawn_pos: Vector2, ground_pos: Vector2 = Vector2.ZER
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(icon)
 
+	# Label nama item di bawah (muncul pas mendarat)
+	name_label = Label.new()
+	name_label.text = item.item_name
+	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	name_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	name_label.add_theme_font_size_override("font_size", 11)
+	name_label.add_theme_color_override("font_color", Color.WHITE)
+	name_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+	name_label.add_theme_constant_override("shadow_offset_x", 1)
+	name_label.add_theme_constant_override("shadow_offset_y", 1)
+	name_label.position = Vector2(-22.0, 58.0)
+	name_label.size = Vector2(100.0, 16.0)
+	name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	name_label.modulate.a = 0.0
+	add_child(name_label)
 	# Shimmer loop
 	_start_shimmer()
 	
@@ -149,6 +163,9 @@ func _play_toss_animation(spawn_delay: float = 0.0) -> void:
 		toss_done = true
 		base_position = position
 		_play_land_settle()
+		if name_label:
+			var fade_tw := create_tween()
+			fade_tw.tween_property(name_label, "modulate:a", 1.0, 0.25).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	)
 
 
