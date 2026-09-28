@@ -354,3 +354,13 @@ scale = Vector2(0.4, 0.425)
 sprite_frames = SubResource("SpriteFrames_kylmi")
 frame = 11
 frame_progress = 1.0
+
+[node name="expLabel" type="Label" parent="." unique_id=739560457]
+offset_left = -100.0
+offset_top = 35.555557
+offset_right = 125.55557
+offset_bottom = 52.555557
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+text = "Gain +20 Exp"
+horizontal_alignment = 1
+vertical_alignment = 1

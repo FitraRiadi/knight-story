@@ -3272,6 +3272,8 @@ func _animate_enemies_spawn() -> void:
 
 		# Slam pas mendarat: dust + camera geduk (timer absolut, ngikutin stagger)
 		_slam_on_landing(delay + spawn_duration, first_spawn, target_pos + Vector2(0, 102))
+		# Popup exp tiap enemy (stagger ngikutin delay)
+		enemy.play_spawn_exp_popup(delay)
 
 	# Tunggu semua selesai
 	var total_time: float = (enemies.size() - 1) * stagger + spawn_duration

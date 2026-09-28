@@ -148,6 +148,7 @@ const DEFEND_DAMAGE_REDUCTION: float = 0.40
 @onready var enemy_target: TextureRect = $enemyTarget
 @onready var enemy_collision: TextureButton = $enemyCollision
 @onready var enemy_hit_icon: TextureRect = $enemyHitIcon
+@onready var exp_label: Label = $expLabel
 @onready var slash: AnimatedSprite2D = $slash
 @onready var label_template: Label = $Label
 
@@ -231,6 +232,10 @@ func _ready() -> void:
 		enemy_target.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		base_target_y = enemy_target.position.y
 		enemy_target.hide()
+
+	if exp_label:
+		exp_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		exp_label.modulate.a = 0.0
 
 	if has_node("enemyStats"):
 		$enemyStats.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1349,6 +1354,28 @@ func _animate_target_icon() -> void:
 	var tween: Tween = create_tween().set_loops()
 	tween.tween_property(enemy_target, "position:y", base_target_y - 8.0, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	tween.tween_property(enemy_target, "position:y", base_target_y, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func play_spawn_exp_popup(delay: float = 0.0) -> void:
+	# Pop + naik + fadeout 1.5 dtk smooth pas enemy muncul (SINE semua)
+	if not exp_label:
+		return
+	exp_label.text = "Gain +" + str(scaled_exp) + " Exp"
+	exp_label.modulate.a = 0.0
+	exp_label.pivot_offset = exp_label.size / 2.0
+	exp_label.scale = Vector2(0.5, 0.5)
+	var base_y := exp_label.position.y
+	var tw := create_tween()
+	tw.tween_interval(delay)
+	tw.set_parallel(true)
+	tw.tween_property(exp_label, "modulate:a", 1.0, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tw.tween_property(exp_label, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tw.tween_property(exp_label, "position:y", base_y - 25.0, 1.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tw.chain().tween_property(exp_label, "modulate:a", 0.0, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tw.tween_callback(func() -> void:
+		if is_instance_valid(exp_label):
+			exp_label.position.y = base_y
+	)
 
 
 # ============================================================
