@@ -153,13 +153,10 @@ func _play_toss_animation(spawn_delay: float = 0.0) -> void:
 
 
 func _play_land_settle() -> void:
-	# Stagger smooth: ngesot searah lemparan + menciut dikit,
-	# terus geter halus (SINE semua, tanpa overshoot manyun)
+	# Stagger smooth: ngesot searah lemparan + geter halus (tanpa menciut)
 	var end_x := base_position.x + toss_dir * 22.0
 	var st := create_tween()
 	st.tween_property(self, "position:x", end_x, 0.3).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	st.parallel().tween_property(self, "scale", Vector2(0.88, 0.88), 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	st.tween_property(self, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	# Geter: goyang x mengecil 3x
 	st.tween_property(self, "position:x", end_x - toss_dir * 4.0, 0.05).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	st.tween_property(self, "position:x", end_x + toss_dir * 2.5, 0.05).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
