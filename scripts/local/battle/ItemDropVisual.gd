@@ -144,7 +144,7 @@ func _play_toss_animation(spawn_delay: float = 0.0) -> void:
 	tw.tween_interval(spawn_delay)
 	tw.tween_property(self, "position:x", base_position.x, 0.45).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tw.parallel().tween_property(self, "position:y", position.y - 50.0, 0.18).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tw.tween_property(self, "position:y", base_position.y, 0.27).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+	tw.tween_property(self, "position:y", base_position.y, 0.27).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tw.tween_callback(func() -> void:
 		toss_done = true
 		base_position = position
@@ -153,12 +153,18 @@ func _play_toss_animation(spawn_delay: float = 0.0) -> void:
 
 
 func _play_land_settle() -> void:
-	# Stagger: ngesot dikit searah lemparan + menciut terus balik
-	var st := create_tween().set_parallel(true)
-	st.tween_property(self, "position:x", position.x + toss_dir * 22.0, 0.28).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	st.tween_property(self, "scale", Vector2(0.85, 0.85), 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	st.chain().tween_property(self, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	st.chain().tween_callback(func() -> void:
+	# Stagger smooth: ngesot searah lemparan + menciut dikit,
+	# terus geter halus (SINE semua, tanpa overshoot manyun)
+	var end_x := base_position.x + toss_dir * 22.0
+	var st := create_tween()
+	st.tween_property(self, "position:x", end_x, 0.3).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	st.parallel().tween_property(self, "scale", Vector2(0.88, 0.88), 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	st.tween_property(self, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	# Geter: goyang x mengecil 3x
+	st.tween_property(self, "position:x", end_x - toss_dir * 4.0, 0.05).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	st.tween_property(self, "position:x", end_x + toss_dir * 2.5, 0.05).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	st.tween_property(self, "position:x", end_x, 0.06).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	st.tween_callback(func() -> void:
 		base_position = position
 	)
 
