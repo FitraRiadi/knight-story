@@ -19,7 +19,6 @@ const POP_DURATION := 0.4
 const FLOAT_AMPLITUDE := 3.0
 const FLOAT_SPEED := 2.0
 const DESPAWN_TIME := 8.0
-const AUTO_COLLECT_DELAY := 1.2
 
 # ============================================================
 # BASE POSITION (untuk float effect)
@@ -100,14 +99,6 @@ func setup(item: ItemData, spawn_pos: Vector2, ground_pos: Vector2 = Vector2.ZER
 	timer.timeout.connect(_on_timeout)
 	add_child(timer)
 	timer.start()
-
-	# Auto-collect timer: ambil sendiri tanpa klik
-	var auto := Timer.new()
-	auto.wait_time = AUTO_COLLECT_DELAY
-	auto.one_shot = true
-	auto.timeout.connect(_on_auto_timeout)
-	add_child(auto)
-	auto.start()
 	
 	# Mulai dari kecil dan transparan
 	scale = Vector2.ZERO
@@ -277,20 +268,6 @@ func cancel_collect() -> void:
 	scale = Vector2.ONE
 	modulate.a = 1.0
 	_start_glow_pulse()
-
-
-# ============================================================
-# AUTO-COLLECT (tanpa klik, tanpa terbang)
-# ============================================================
-func _on_auto_timeout() -> void:
-	if is_collected or not item_data:
-		return
-
-	# Claim dulu biar despawn timer + klik gak rebutan
-	is_collected = true
-	if _glow_tween:
-		_glow_tween.kill()
-	item_clicked.emit(item_data, self)
 
 # ============================================================
 # DESPAWN OTOMATIS
