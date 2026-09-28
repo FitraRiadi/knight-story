@@ -12,11 +12,8 @@ signal collect_finished(item: ItemData)
 var item_data: ItemData = null
 var is_collected: bool = false
 var toss_done: bool = false
-var icon_rect: TextureRect = null
-var glow_mat: ShaderMaterial = null
+var toss_dir: float = 1.0
 var shimmer: CPUParticles2D = null
-
-const GLOW_SHADER: Shader = preload("res://assets/art/shaders/drop_glow.gdshader")
 
 const ICON_SIZE := Vector2(48, 48)
 const POP_DURATION := 0.4
@@ -38,6 +35,9 @@ func setup(item: ItemData, spawn_pos: Vector2, ground_pos: Vector2 = Vector2.ZER
 	# Mendarat di tanah (ground_pos), bukan di badan musuh
 	if ground_pos == Vector2.ZERO:
 		ground_pos = spawn_pos
+	toss_dir = signf(ground_pos.x - spawn_pos.x)
+	if toss_dir == 0.0:
+		toss_dir = 1.0
 	base_position = ground_pos
 	position = spawn_pos
 	custom_minimum_size = Vector2(56, 56)
@@ -59,13 +59,8 @@ func setup(item: ItemData, spawn_pos: Vector2, ground_pos: Vector2 = Vector2.ZER
 	icon.offset_bottom = ICON_SIZE.y / 2.0
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(icon)
-	icon_rect = icon
 
-	# Glow shader di art + shimmer loop
-	glow_mat = ShaderMaterial.new()
-	glow_mat.shader = GLOW_SHADER
-	glow_mat.set_shader_parameter("glow_strength", 0.5)
-	icon_rect.material = glow_mat
+	# Shimmer loop
 	_start_shimmer()
 	
 	# Style button transparan dengan border gold
@@ -154,24 +149,41 @@ func _play_toss_animation(spawn_delay: float = 0.0) -> void:
 		toss_done = true
 		base_position = position
 		_burst_sparkle()
+		_play_land_settle()
+	)
+
+
+func _play_land_settle() -> void:
+	# Stagger: ngesot dikit searah lemparan + menciut terus balik
+	var st := create_tween().set_parallel(true)
+	st.tween_property(self, "position:x", position.x + toss_dir * 22.0, 0.28).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	st.tween_property(self, "scale", Vector2(0.85, 0.85), 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	st.chain().tween_property(self, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	st.chain().tween_callback(func() -> void:
+		base_position = position
 	)
 
 # ============================================================
-# GLOW PULSE (shader uniform, loop)
+# GLOW PULSE (looping border color)
 # ============================================================
 var _glow_tween: Tween
 
 func _start_glow_pulse() -> void:
-	if is_collected or not glow_mat:
+	if is_collected:
 		return
-	if _glow_tween and _glow_tween.is_valid():
-		_glow_tween.kill()
 
 	_glow_tween = create_tween().set_loops()
-	_glow_tween.tween_property(glow_mat, "shader_parameter/glow_strength", 0.95, 1.2)\
+	_glow_tween.tween_method(_set_border_color, Color(0.85, 0.7, 0.2, 0.9), Color(1.0, 0.95, 0.4, 1.0), 1.2)\
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_glow_tween.tween_property(glow_mat, "shader_parameter/glow_strength", 0.35, 1.2)\
+	_glow_tween.tween_method(_set_border_color, Color(1.0, 0.95, 0.4, 1.0), Color(0.85, 0.7, 0.2, 0.9), 1.2)\
 		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+func _set_border_color(color: Color) -> void:
+	if not is_instance_valid(self):
+		return
+	var style := get_theme_stylebox("normal") as StyleBoxFlat
+	if style:
+		style.border_color = color
 
 
 func _make_dot() -> GradientTexture2D:
