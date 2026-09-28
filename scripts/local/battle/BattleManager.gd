@@ -643,13 +643,15 @@ func _spawn_drop_item(item_id: String, enemy_pos: Vector2, spawn_delay: float = 
 
 	# World -> screen: visual hidup di CanvasLayer (drop_layer)
 	var screen_pos: Vector2 = get_viewport().get_canvas_transform() * enemy_pos
+	# Mendarat di tanah bawah musuh (nyebar dikit biar gak tumpuk)
+	var ground_pos := screen_pos + Vector2(randf_range(-50.0, 50.0), randf_range(65.0, 85.0))
 
 	# Buat ItemDropVisual
 	var drop_visual := ItemDropVisual.new()
 	drop_visual.item_clicked.connect(_on_drop_item_clicked)
 	drop_visual.collect_finished.connect(_on_drop_collect_finished)
 	drop_layer.add_child(drop_visual)
-	drop_visual.setup(item, screen_pos, spawn_delay)
+	drop_visual.setup(item, screen_pos, ground_pos, spawn_delay)
 
 
 # ============================================================

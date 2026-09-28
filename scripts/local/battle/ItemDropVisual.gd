@@ -11,6 +11,7 @@ signal collect_finished(item: ItemData)
 # ============================================================
 var item_data: ItemData = null
 var is_collected: bool = false
+var toss_done: bool = false
 
 const ICON_SIZE := Vector2(48, 48)
 const POP_DURATION := 0.4
@@ -27,9 +28,12 @@ var base_position: Vector2 = Vector2.ZERO
 # ============================================================
 # SETUP
 # ============================================================
-func setup(item: ItemData, spawn_pos: Vector2, spawn_delay: float = 0.0) -> void:
+func setup(item: ItemData, spawn_pos: Vector2, ground_pos: Vector2 = Vector2.ZERO, spawn_delay: float = 0.0) -> void:
 	item_data = item
-	base_position = spawn_pos
+	# Mendarat di tanah (ground_pos), bukan di badan musuh
+	if ground_pos == Vector2.ZERO:
+		ground_pos = spawn_pos
+	base_position = ground_pos
 	position = spawn_pos
 	custom_minimum_size = Vector2(56, 56)
 	size = Vector2(56, 56)
@@ -101,6 +105,8 @@ func setup(item: ItemData, spawn_pos: Vector2, spawn_delay: float = 0.0) -> void
 
 	# Start animasi (stagger per index biar pop-nya gantian)
 	_play_spawn_animation(spawn_delay)
+	# Toss: melambung dari badan musuh terus jatoh ke tanah + squash pas mendarat
+	_play_toss_animation(spawn_delay)
 
 # ============================================================
 # ANIMASI SPAWN (POP OUT)
@@ -122,6 +128,22 @@ func _play_spawn_animation(spawn_delay: float = 0.0) -> void:
 	
 	# Glow pulse mulai setelah spawn selesai
 	tween.chain().tween_callback(_start_glow_pulse)
+
+
+func _play_toss_animation(spawn_delay: float = 0.0) -> void:
+	# Lempar ke atas dikit terus jatoh ke tanah, squash pas mendarat
+	var tw := create_tween()
+	tw.tween_interval(spawn_delay)
+	tw.tween_property(self, "position:x", base_position.x, 0.45).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(self, "position:y", position.y - 50.0, 0.18).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(self, "position:y", base_position.y, 0.27).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+	# Squash pas mendarat
+	tw.tween_property(self, "scale", Vector2(1.2, 0.7), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tw.tween_property(self, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_callback(func() -> void:
+		toss_done = true
+		base_position = position
+	)
 
 # ============================================================
 # GLOW PULSE (looping border color)
@@ -149,7 +171,7 @@ func _set_border_color(color: Color) -> void:
 # FLOAT ANIMATION
 # ============================================================
 func _process(_delta: float) -> void:
-	if is_collected:
+	if is_collected or not toss_done:
 		return
 	position.y = base_position.y + sin(Time.get_ticks_msec() * 0.001 * FLOAT_SPEED) * FLOAT_AMPLITUDE
 
