@@ -44,7 +44,10 @@ func setup(item: ItemData, spawn_pos: Vector2, ground_pos: Vector2 = Vector2.ZER
 	flat = true
 	focus_mode = Control.FOCUS_NONE
 
-	# Icon item: pakai TextureRect bawaan template
+	# Panel backdrop + icon: JANGAN makan klik (button gak bakal kepencet)
+	var backdrop := get_node_or_null("Panel") as Panel
+	if backdrop:
+		backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var icon := get_node_or_null("TextureRect") as TextureRect
 	if icon:
 		icon.texture = item.icon
@@ -52,12 +55,21 @@ func setup(item: ItemData, spawn_pos: Vector2, ground_pos: Vector2 = Vector2.ZER
 		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
-	# Label nama: pakai Label bawaan template (muncul pas mendarat)
+	# Label nama: hidden dari template, MUNCUL pas berhasil dipencet (bukan pas landing)
 	name_label = get_node_or_null("Label") as Label
 	if name_label:
 		name_label.text = item.item_name
 		name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		name_label.visible = false
 		name_label.modulate.a = 0.0
+
+	# Timing ring: countdown ilang 100 -> 0 selama DESPAWN_TIME
+	var timing := get_node_or_null("timing") as TextureProgressBar
+	if timing:
+		timing.max_value = 100.0
+		timing.value = 100.0
+		var dtw := create_tween()
+		dtw.tween_property(timing, "value", 0.0, DESPAWN_TIME).set_trans(Tween.TRANS_LINEAR)
 	# Shimmer loop
 	_start_shimmer()
 	
@@ -142,9 +154,6 @@ func _play_toss_animation(spawn_delay: float = 0.0) -> void:
 		toss_done = true
 		base_position = position
 		_play_land_settle()
-		if name_label:
-			var fade_tw := create_tween()
-			fade_tw.tween_property(name_label, "modulate:a", 1.0, 0.25).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	)
 
 
@@ -245,6 +254,11 @@ func confirm_collect() -> void:
 
 	if _glow_tween:
 		_glow_tween.kill()
+
+	# Label nama muncul pas BERHASIL dipencet (feedback pickup)
+	if name_label:
+		name_label.visible = true
+		name_label.modulate.a = 1.0
 
 	# Squeeze pop-out: kempis -> lenyap + fade, terus save via collect_finished
 	var tween := create_tween()

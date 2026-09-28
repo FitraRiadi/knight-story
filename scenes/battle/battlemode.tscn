@@ -19,8 +19,8 @@
 [ext_resource type="Texture2D" uid="uid://ob640ju61cdx" path="res://assets/ui/icons/inventoryBtn.png" id="13_ve2ux"]
 [ext_resource type="Texture2D" uid="uid://crm3m4q1wtttx" path="res://assets/ui/icons/timingCircle.png" id="14_qpju5"]
 [ext_resource type="Texture2D" uid="uid://corujjfkda61s" path="res://assets/art/items/consumable/potion/Icon7.png" id="21_y6eqr"]
-[ext_resource type="Script" uid="uid://s4io6fpyf4d8" path="res://scripts/local/battle/ItemDropVisual.gd" id="item_drop"]
 [ext_resource type="Script" uid="uid://djbf4rxh2wv3a" path="res://scripts/local/battle/ChargeAttack.gd" id="charge_attack"]
+[ext_resource type="Script" uid="uid://s4io6fpyf4d8" path="res://scripts/local/battle/ItemDropVisual.gd" id="item_drop"]
 [ext_resource type="Script" uid="uid://dalxm83qgh3oh" path="res://scripts/local/battle/WaveProgress.gd" id="wave_progress"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_al7n6"]
@@ -216,6 +216,13 @@ corner_radius_top_left = 20
 corner_radius_top_right = 20
 corner_radius_bottom_right = 20
 corner_radius_bottom_left = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_moojr"]
+bg_color = Color(0.37342674, 0.37342674, 0.37342674, 0.90300006)
+corner_radius_top_left = 100
+corner_radius_top_right = 100
+corner_radius_bottom_right = 100
+corner_radius_bottom_left = 100
 
 [node name="battlemode" type="Control" unique_id=184345478]
 layout_mode = 3
@@ -1283,7 +1290,6 @@ fill_mode = 4
 texture_progress = ExtResource("14_qpju5")
 
 [node name="itemDropVisualBtn" type="Button" parent="." unique_id=35637890]
-visible = false
 layout_mode = 0
 offset_left = 303.0
 offset_top = 173.0
@@ -1292,20 +1298,49 @@ offset_bottom = 223.0
 flat = true
 script = ExtResource("item_drop")
 
+[node name="Panel" type="Panel" parent="itemDropVisualBtn" unique_id=1373305065]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -7.0
+offset_right = 7.0
+offset_bottom = 14.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_moojr")
+
 [node name="TextureRect" type="TextureRect" parent="itemDropVisualBtn" unique_id=1629546351]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 3.0
+offset_top = 4.0
+offset_right = 3.0
+offset_bottom = 4.0
 grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("21_y6eqr")
 expand_mode = 1
 
+[node name="timing" type="TextureProgressBar" parent="itemDropVisualBtn" unique_id=1041007864]
+layout_mode = 0
+offset_left = -3.0000095
+offset_top = -10.000001
+offset_right = 478.0
+offset_bottom = 508.0
+scale = Vector2(0.15, 0.15)
+value = 100.0
+fill_mode = 4
+texture_progress = ExtResource("14_qpju5")
+
 [node name="Label" type="Label" parent="itemDropVisualBtn" unique_id=1978502883]
+visible = false
 layout_mode = 0
 offset_left = -11.0
-offset_top = 51.0
+offset_top = 20.0
 offset_right = 82.0
-offset_bottom = 68.0
-text = "Health Potion +1"
+offset_bottom = 37.0
+text = "Health Potion"
+horizontal_alignment = 1
