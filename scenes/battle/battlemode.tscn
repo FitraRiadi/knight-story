@@ -1291,10 +1291,11 @@ texture_progress = ExtResource("14_qpju5")
 
 [node name="itemDropVisualBtn" type="Button" parent="." unique_id=35637890]
 layout_mode = 0
-offset_left = 303.0
-offset_top = 173.0
-offset_right = 363.0
-offset_bottom = 223.0
+offset_left = 428.0
+offset_top = 233.0
+offset_right = 492.0
+offset_bottom = 288.0
+scale = Vector2(0.69700176, 0.686382)
 flat = true
 script = ExtResource("item_drop")
 
@@ -1303,11 +1304,12 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -7.0
+offset_top = -4.0
 offset_right = 7.0
-offset_bottom = 14.0
+offset_bottom = 17.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(0.8539916, 0.79916286)
 theme_override_styles/panel = SubResource("StyleBoxFlat_moojr")
 
 [node name="TextureRect" type="TextureRect" parent="itemDropVisualBtn" unique_id=1629546351]
@@ -1315,22 +1317,22 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 3.0
-offset_top = 4.0
-offset_right = 3.0
-offset_bottom = 4.0
+offset_left = 5.0
+offset_top = 6.0
+offset_right = 5.0
+offset_bottom = 6.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(0.7793157, 0.7485404)
 texture = ExtResource("21_y6eqr")
 expand_mode = 1
 
 [node name="timing" type="TextureProgressBar" parent="itemDropVisualBtn" unique_id=1041007864]
 layout_mode = 0
-offset_left = -3.0000095
-offset_top = -10.000001
-offset_right = 478.0
-offset_bottom = 508.0
-scale = Vector2(0.15, 0.15)
+offset_top = -5.0
+offset_right = 481.0
+offset_bottom = 513.0
+scale = Vector2(0.12823011, 0.123359434)
 value = 100.0
 fill_mode = 4
 texture_progress = ExtResource("14_qpju5")

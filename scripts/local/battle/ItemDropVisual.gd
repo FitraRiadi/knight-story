@@ -15,6 +15,8 @@ var toss_done: bool = false
 var toss_dir: float = 1.0
 var shimmer: CPUParticles2D = null
 var name_label: Label = null
+# Scale bawaan template scene (jangan dioverride ke ONE)
+var base_scale := Vector2.ONE
 const POP_DURATION := 0.4
 const FLOAT_AMPLITUDE := 3.0
 const FLOAT_SPEED := 2.0
@@ -112,7 +114,8 @@ func setup(item: ItemData, spawn_pos: Vector2, ground_pos: Vector2 = Vector2.ZER
 	add_child(timer)
 	timer.start()
 	
-	# Mulai dari kecil dan transparan
+	# Mulai dari kecil dan transparan (base ngikutin template)
+	base_scale = scale
 	scale = Vector2.ZERO
 	modulate.a = 0.0
 
@@ -127,11 +130,11 @@ func setup(item: ItemData, spawn_pos: Vector2, ground_pos: Vector2 = Vector2.ZER
 func _play_spawn_animation(spawn_delay: float = 0.0) -> void:
 	var tween := create_tween().set_parallel(true)
 
-	# Scale pop: 0 -> 1.2 -> 1.0 (overshoot effect)
-	tween.tween_property(self, "scale", Vector2(1.2, 1.2), POP_DURATION * 0.6)\
+	# Scale pop: 0 -> base*1.2 -> base (overshoot effect)
+	tween.tween_property(self, "scale", base_scale * 1.2, POP_DURATION * 0.6)\
 		.set_delay(spawn_delay)\
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.chain().tween_property(self, "scale", Vector2(1.0, 1.0), POP_DURATION * 0.4)\
+	tween.chain().tween_property(self, "scale", base_scale, POP_DURATION * 0.4)\
 		.set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 
 	# Fade in
@@ -262,7 +265,7 @@ func confirm_collect() -> void:
 
 	# Squeeze pop-out: kempis -> lenyap + fade, terus save via collect_finished
 	var tween := create_tween()
-	tween.tween_property(self, "scale", Vector2(1.25, 0.6), 0.1).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.tween_property(self, "scale", base_scale * Vector2(1.25, 0.6), 0.1).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tween.tween_property(self, "scale", Vector2.ZERO, 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
 	tween.parallel().tween_property(self, "modulate:a", 0.0, 0.25).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 
@@ -279,7 +282,7 @@ func cancel_collect() -> void:
 	# Balikin ke idle di tempat: tetep ngambang + bisa diklik sampe despawn.
 	is_collected = false
 	base_position = position
-	scale = Vector2.ONE
+	scale = base_scale
 	modulate.a = 1.0
 	_start_glow_pulse()
 
