@@ -258,21 +258,34 @@ func confirm_collect() -> void:
 	if _glow_tween:
 		_glow_tween.kill()
 
-	# Label nama muncul pas BERHASIL dipencet (feedback pickup)
+	# Label dilepas ke layer biar gak ikut fade button, muncul abis item ilang
+	var label_hold: Label = null
 	if name_label:
-		name_label.visible = true
-		name_label.modulate.a = 1.0
+		label_hold = name_label
+		name_label = null
+		var lp := label_hold.global_position
+		remove_child(label_hold)
+		get_parent().add_child(label_hold)
+		label_hold.global_position = lp
+		label_hold.visible = true
+		label_hold.modulate.a = 0.0
 
-	# Squeeze pop-out: kempis -> lenyap + fade, terus save via collect_finished
+	# Item: fadeout doang, tanpa squeeze
 	var tween := create_tween()
-	tween.tween_property(self, "scale", base_scale * Vector2(1.25, 0.6), 0.1).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	tween.tween_property(self, "scale", Vector2.ZERO, 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
-	tween.parallel().tween_property(self, "modulate:a", 0.0, 0.25).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tween.tween_property(self, "modulate:a", 0.0, 0.25).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 
 	tween.chain().tween_callback(func() -> void:
 		collect_finished.emit(item_data)
 		queue_free()
 	)
+
+	# Label: nongol abis item ilang, tahan 2 detik, fade, free
+	if label_hold:
+		var ltw := label_hold.create_tween()
+		ltw.tween_property(label_hold, "modulate:a", 1.0, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+		ltw.tween_interval(2.0)
+		ltw.tween_property(label_hold, "modulate:a", 0.0, 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+		ltw.tween_callback(label_hold.queue_free)
 
 
 # ============================================================
