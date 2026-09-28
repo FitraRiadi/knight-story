@@ -166,7 +166,7 @@ var soul_particles: CPUParticles2D
 var outline_mat: ShaderMaterial = null
 var flash_tween: Tween = null
 const OUTLINE_DEFAULT := Color(0.0, 0.0, 0.0, 0.6)
-const OUTLINE_SELECTED := Color(0.0, 0.0, 0.0, 1.0)
+const OUTLINE_SELECTED := Color(0.0, 0.0, 0.0, 0.85)
 
 
 # ============================================================
