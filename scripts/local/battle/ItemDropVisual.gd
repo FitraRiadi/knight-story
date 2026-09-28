@@ -291,7 +291,7 @@ func confirm_collect() -> void:
 		ltw.tween_property(label_hold, "modulate:a", 1.0, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 		ltw.tween_property(label_hold, "position:y", label_hold.position.y - 30.0, 2.2).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 		ltw.chain().tween_interval(0.2)
-		ltw.tween_property(label_hold, "modulate:a", 0.0, 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+		ltw.tween_property(label_hold, "modulate:a", 0.0, 0.7).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 		ltw.tween_callback(label_hold.queue_free)
 		# Hue cycling selama label hidup (bound ke label, mati bareng)
 		var hue_tw := label_hold.create_tween().set_loops()
