@@ -964,7 +964,7 @@ const HURT_LINES: Array[String] = [
 var _last_chatter_msec: int = -99999
 
 
-func try_chatter(kind: StringName, emotion: EnemyAI.Emotion = EnemyAI.Emotion.CALM) -> bool:
+func try_chatter(kind: StringName, emotion: EnemyAI.Emotion = EnemyAI.Emotion.CALM, force: bool = false) -> bool:
 	if dialog_label == null:
 		return false
 	# Cooldown per enemy
@@ -995,7 +995,7 @@ func try_chatter(kind: StringName, emotion: EnemyAI.Emotion = EnemyAI.Emotion.CA
 		_:
 			return false
 
-	if randf() > chance:
+	if randf() > chance and not force:
 		return false
 	_say_line(line)
 	return true
