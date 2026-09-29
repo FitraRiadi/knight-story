@@ -191,6 +191,10 @@ var player_hp_overlay_show_tween: Tween
 var player_hp_overlay_hide_tween: Tween
 var player_hp_overlay_visible: bool = false
 
+const HP_BAR_FLASH_SHADER: Shader = preload("res://assets/art/shaders/hp_bar_flash.gdshader")
+var hp_bar_flash_mat: ShaderMaterial = null
+var hp_bar_flash_tween: Tween = null
+
 # BATTLE INVENTORY SYSTEM
 var battle_inventory_scene: PackedScene = preload("res://scenes/battle/battle_inventory.tscn")
 var battle_inventory_instance: Control = null
@@ -2856,6 +2860,10 @@ func _setup_player_hp_camera_overlay() -> void:
 	player_hp_overlay_bar.size = Vector2(player_hp_overlay_max_width, player_hp_overlay_bar_height)
 	player_hp_overlay_bar.color = Color(0.82, 0.04, 0.04, 1.0)
 	player_hp_overlay_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	hp_bar_flash_mat = ShaderMaterial.new()
+	hp_bar_flash_mat.shader = HP_BAR_FLASH_SHADER
+	hp_bar_flash_mat.set_shader_parameter("flash_amount", 0.0)
+	player_hp_overlay_bar.material = hp_bar_flash_mat
 	player_hp_overlay_background.add_child(player_hp_overlay_bar)
 	
 	player_hp_overlay_label = Label.new()
@@ -3628,6 +3636,14 @@ func apply_damage(event: DamageEvent) -> void:
 			final_damage = max(0.0, final_damage - buff_dmg_reduction)
 
 	event.final_damage = final_damage
+
+	# HP bar flash putih pas kena damage beneran (0 = skip)
+	if final_damage > 0.0 and hp_bar_flash_mat:
+		if hp_bar_flash_tween and hp_bar_flash_tween.is_valid():
+			hp_bar_flash_tween.kill()
+		hp_bar_flash_mat.set_shader_parameter("flash_amount", 1.0)
+		hp_bar_flash_tween = create_tween()
+		hp_bar_flash_tween.tween_property(hp_bar_flash_mat, "shader_parameter/flash_amount", 0.0, 0.25).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 	# Determine damage_result for text display
 	if final_damage <= 0.0:
