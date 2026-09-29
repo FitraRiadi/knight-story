@@ -123,6 +123,7 @@ var available_enemy_pool: Array[String] = []
 
 var blood_vignette_rect: TextureRect
 var blood_vignette_tween: Tween
+var camera_shake_tween: Tween = null
 
 var attack_shadow_rect: TextureRect
 var attack_shadow_tween: Tween
@@ -3066,22 +3067,26 @@ func _setup_blood_vignette() -> void:
 
 
 func trigger_camera_shake_and_blood(intensity: float = 6.0, duration: float = 0.3, alpha_intensity: float = 0.6) -> void:
-	intensity = min(intensity, 6.0) 
-	
+	intensity = min(intensity, 6.0)
+
 	if camera:
-		var original_offset = camera.offset
-		var shake_tween = create_tween()
-		shake_tween.set_ignore_time_scale(true)
-		
+		# Kill shake lama + balik ke base dulu: kalau enggak, origin
+		# ke-capture pas lagi goyang -> drift numpuk tiap hit (rapid/thorns)
+		if camera_shake_tween and camera_shake_tween.is_valid():
+			camera_shake_tween.kill()
+		camera.offset = Vector2.ZERO
+		camera_shake_tween = create_tween()
+		camera_shake_tween.set_ignore_time_scale(true)
+
 		var steps = 8
 		for i in range(steps):
 			var offset = Vector2(
-				randf_range(-intensity * 0.3, intensity * 0.1), 
+				randf_range(-intensity * 0.3, intensity * 0.1),
 				randf_range(-intensity * 0.1, intensity * 0.3)
 			)
-			shake_tween.tween_property(camera, "offset", original_offset + offset, duration / float(steps))
-		
-		shake_tween.tween_property(camera, "offset", original_offset, 0.05).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+			camera_shake_tween.tween_property(camera, "offset", offset, duration / float(steps))
+
+		camera_shake_tween.tween_property(camera, "offset", Vector2.ZERO, 0.05).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	
 	if blood_vignette_rect:
 		if blood_vignette_tween and blood_vignette_tween.is_running():
@@ -3676,7 +3681,11 @@ func apply_damage(event: DamageEvent) -> void:
 	_animate_hp_change()
 	_animate_player_hp_overlay_damage(event.final_damage)
 	_show_damage_text(event)
-	trigger_camera_shake_and_blood(14.0, 0.4, 0.85)
+	# Thorns = tick kecil, shake-nya kalem aja (bukan slam 14.0)
+	if event.source == DamageEvent.Source.THORNS:
+		trigger_camera_shake_and_blood(3.0, 0.2, 0.4)
+	else:
+		trigger_camera_shake_and_blood(14.0, 0.4, 0.85)
 	_update_battle_atmosphere(event)
 
 	# MORALE: Enemy attack berhasil (tidak di-parry) -> naikkan morale +25%
