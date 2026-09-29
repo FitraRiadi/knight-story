@@ -2562,6 +2562,9 @@ func _finish_raptive() -> void:
 		return
 	_is_rapid_active = false
 
+	# Overlay HP ketinggalan nyala dari thorns pas rapid -> sembunyiin
+	_hide_player_hp_camera_overlay()
+
 	# === Title + Subtitle pop-out — sekali saat rapid selesai ===
 	var blink_tw = get_meta("_subtitle_blink_tween", null)
 	if blink_tw is Tween and blink_tw.is_running():
@@ -3249,6 +3252,9 @@ func _get_wave_subtitle() -> String:
 
 func _animate_enemies_spawn() -> void:
 	is_player_turn = false
+
+	# Wave baru = UI bersih: overlay HP sisa thorns wave lalu disembunyiin
+	_hide_player_hp_camera_overlay()
 
 	# Spawn pertama lebih lambat biar dramatic + skip button tween
 	var first_spawn: bool = (enemies_killed == 0)
