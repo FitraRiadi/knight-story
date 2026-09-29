@@ -3930,9 +3930,9 @@ func _fill_enemy_info(enemy: BattleEnemy) -> void:
 func _play_enemy_info_intro() -> void:
 	if enemy_info_intro_tween and enemy_info_intro_tween.is_valid():
 		enemy_info_intro_tween.kill()
-	# Positioning + scale DESAIN jangan dioverride: capture base dulu
+	# Positioning + scale + pivot DESAIN jangan dioverride: capture base dulu.
+	# Pivot sengaja gak disentuh (scene = 0,0); ubah pivot = geser semua isi.
 	var base := enemy_info.scale
-	enemy_info.pivot_offset = enemy_info.size / 2.0
 	enemy_info.scale = base * 0.96
 	enemy_info.modulate.a = 0.0
 	var seq: Array = [
