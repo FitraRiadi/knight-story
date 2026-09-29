@@ -7,3 +7,5 @@ script = ExtResource("1")
 ability_id = "berserk"
 ability_name = "Berserk"
 ability_type = 3
+activation = 1
+information = "Unleashes an unparryable flurry of hits. Higher level: more hits, more pain."

@@ -7,3 +7,5 @@ script = ExtResource("1")
 ability_id = "thorns"
 ability_name = "Thorns"
 ability_type = 4
+activation = 0
+information = "Reflects a portion of received damage back. The dead don't reflect."

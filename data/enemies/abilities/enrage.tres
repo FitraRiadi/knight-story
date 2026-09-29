@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="AbilityData" format=3]
+[gd_resource type="Resource" script_class="AbilityData" format=3 uid="uid://b3gcrs76fk7y0"]
 
 [ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/abilities/AbilityData.gd" id="1"]
 
@@ -7,3 +7,5 @@ script = ExtResource("1")
 ability_id = "enrage"
 ability_name = "Enrage"
 ability_type = 5
+activation = 0
+information = "Below 30% HP, all attacks deal bonus damage until death."

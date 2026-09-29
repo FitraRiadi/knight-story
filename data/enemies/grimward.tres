@@ -4,7 +4,6 @@
 [ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/abilities/AbilityData.gd" id="1_w4pim"]
 [ext_resource type="Texture2D" uid="uid://eeh1qrcceu17" path="res://assets/art/profile/enemy/grimward.jpg" id="1_ycbiy"]
 [ext_resource type="Resource" uid="uid://b2265a03f0302" path="res://data/enemies/abilities/battle_cry.tres" id="2_fcr88"]
-[ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="2_or5ns"]
 [ext_resource type="Texture2D" uid="uid://babnlghrmqvsm" path="res://assets/art/sprites/enemy/grimward/idle1-removebg-preview.png" id="2_pfxji"]
 [ext_resource type="Resource" uid="uid://c0sv4kwsteft7" path="res://data/enemies/abilities/tactical_attack.tres" id="3_qphqy"]
 [ext_resource type="Texture2D" uid="uid://xpfvadqs4lpj" path="res://assets/art/sprites/enemy/grimward/idle2-removebg-preview.png" id="3_ycbiy"]
@@ -14,11 +13,8 @@
 [ext_resource type="Texture2D" uid="uid://d1r4psmgu73iu" path="res://assets/art/sprites/enemy/grimward/hit2-removebg-preview.png" id="7_fcr88"]
 [ext_resource type="Texture2D" uid="uid://e3q04pvucu10" path="res://assets/art/sprites/enemy/grimward/death1-removebg-preview.png" id="8_lxv2q"]
 [ext_resource type="Texture2D" uid="uid://6488p8v54jf" path="res://assets/art/sprites/enemy/grimward/defend1-removebg-preview.png" id="9_eodqq"]
-
-[ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="drop_script"]
 [ext_resource type="Resource" uid="uid://xf6noadq87vm" path="res://data/items/consumable/attack_potion.tres" id="drop_atk"]
-[ext_resource type="Resource" uid="uid://besh3dfkieai5" path="res://data/items/consumable/protection_potion.tres" id="drop_prot"]
-[ext_resource type="Resource" uid="uid://cdwiqicslki8d" path="res://data/items/materials/iron_ingot.tres" id="drop_iron"]
+[ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="drop_script"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_gn7wh"]
 animations = [{
@@ -86,15 +82,16 @@ script = ExtResource("1_arywp")
 ai_type = 2
 enemy_id = "grimward"
 enemy_name = "Grimward"
+enemy_lore = "A fallen warden guarding ruins nobody remembers. Tactical and merciless."
 min_level = 3
-spawn_chance = 66.0
+spawn_chance = 10.0
 icon_enemy = ExtResource("1_ycbiy")
 sprite_frames = SubResource("SpriteFrames_gn7wh")
 max_hp = 125.0
 damage_to_player = 18.0
 exp_reward = 10
-drop_table = Array[ExtResource("drop_script")]([ExtResource("drop_atk"), ExtResource("drop_prot"), ExtResource("drop_iron")])
-drop_chance = 0.6
+drop_table = Array[ExtResource("drop_script")]([ExtResource("drop_atk")])
+drop_chance = 0.1
 abilities = Array[ExtResource("1_w4pim")]([ExtResource("2_fcr88"), ExtResource("3_qphqy")])
 ability_level_str = "battle_cry:1,tactical_attack:3"
 metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"

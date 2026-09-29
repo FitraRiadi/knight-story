@@ -38,6 +38,11 @@ enum AIType {
 
 @export var enemy_name: String = ""
 
+## Lore singkat, maks 125 huruf (dipotong otomatis kalau lebih).
+@export var enemy_lore: String = "":
+	set(v):
+		enemy_lore = v.left(125)
+
 @export var min_level: int = 1
 
 ## Bobot spawn 0-100 (ProbabilityGenerator). Gede = sering muncul.

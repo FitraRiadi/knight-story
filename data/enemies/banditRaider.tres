@@ -1,0 +1,111 @@
+[gd_resource type="Resource" script_class="EnemyData" format=3 uid="uid://diuj4f8galbld"]
+
+[ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/abilities/AbilityData.gd" id="1_khgax"]
+[ext_resource type="Resource" uid="uid://b2265a03f0302" path="res://data/enemies/abilities/battle_cry.tres" id="2_h3kci"]
+[ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="2_v1sai"]
+[ext_resource type="Resource" uid="uid://dmfc6tb72muxj" path="res://data/items/consumable/health_potion.tres" id="3_ke8wg"]
+[ext_resource type="Script" uid="uid://d1jtt6i0k5g0g" path="res://scripts/local/characters/enemy/EnemyData.gd" id="3_psf2p"]
+[ext_resource type="Texture2D" uid="uid://bpo1tv0xb5tv0" path="res://assets/art/profile/enemy/banditRaider.jpg" id="4_ny8sh"]
+[ext_resource type="Texture2D" uid="uid://cmvlc5gno2y44" path="res://assets/art/sprites/enemy/banditRaider/attack1-combo1.png" id="6_r35ui"]
+[ext_resource type="Texture2D" uid="uid://b0jqjru2x3mri" path="res://assets/art/sprites/enemy/banditRaider/attack2-combo1.png" id="7_y1no6"]
+[ext_resource type="Texture2D" uid="uid://cvw4tlp7x2fcw" path="res://assets/art/sprites/enemy/banditRaider/attack3-combo1.png" id="8_h3kci"]
+[ext_resource type="Texture2D" uid="uid://dfmo6owdgid4v" path="res://assets/art/sprites/enemy/banditRaider/hurt1.png" id="9_dnvoc"]
+[ext_resource type="Texture2D" uid="uid://l2xxv73ph1s7" path="res://assets/art/sprites/enemy/banditRaider/attack1-combo2.png" id="9_y1no6"]
+[ext_resource type="Texture2D" uid="uid://rh7m2f0bm2fi" path="res://assets/art/sprites/enemy/banditRaider/hurt2.png" id="10_5rr6y"]
+[ext_resource type="Texture2D" uid="uid://cnhnhqfnct4y4" path="res://assets/art/sprites/enemy/banditRaider/attack2-combo2.png" id="10_h3kci"]
+[ext_resource type="Texture2D" uid="uid://cunctkbwjdea" path="res://assets/art/sprites/enemy/banditRaider/death.png" id="11_aqx0m"]
+[ext_resource type="Texture2D" uid="uid://dqbnuacytv1eq" path="res://assets/art/sprites/enemy/banditRaider/attack3-combo2.png" id="11_dnvoc"]
+[ext_resource type="Texture2D" uid="uid://1qrj28i7qusk" path="res://assets/art/sprites/enemy/banditRaider/defend.png" id="12_7jasl"]
+[ext_resource type="Texture2D" uid="uid://cy20qwgr1tmah" path="res://assets/art/sprites/enemy/banditRaider/idle1.png" id="13_tygux"]
+[ext_resource type="Texture2D" uid="uid://dhn3tjtrwp4vt" path="res://assets/art/sprites/enemy/banditRaider/idle2.png" id="14_r2g67"]
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_a58yi"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("6_r35ui")
+}, {
+"duration": 1.0,
+"texture": ExtResource("7_y1no6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("8_h3kci")
+}],
+"loop": 0,
+"name": &"attack",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("9_y1no6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_h3kci")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_dnvoc")
+}],
+"loop": 0,
+"name": &"attack2",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("9_dnvoc")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_5rr6y")
+}, {
+"duration": 1.0,
+"texture": ExtResource("11_aqx0m")
+}],
+"loop": 0,
+"name": &"death",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("12_7jasl")
+}],
+"loop": 1,
+"name": &"defend",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("9_dnvoc")
+}, {
+"duration": 1.0,
+"texture": ExtResource("10_5rr6y")
+}],
+"loop": 0,
+"name": &"hurt",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("13_tygux")
+}, {
+"duration": 1.0,
+"texture": ExtResource("14_r2g67")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 2.0
+}]
+
+[resource]
+script = ExtResource("3_psf2p")
+ai_type = 2
+starting_inventory = Array[ExtResource("2_v1sai")]([ExtResource("3_ke8wg")])
+enemy_id = "banditRaider"
+enemy_name = "Bandit Raider"
+enemy_lore = "A desert raider hitting fast caravans. Greedy, loud, gone before dawn."
+spawn_chance = 10.0
+icon_enemy = ExtResource("4_ny8sh")
+sprite_frames = SubResource("SpriteFrames_a58yi")
+drop_table = Array[ExtResource("2_v1sai")]([ExtResource("3_ke8wg")])
+drop_chance = 0.2
+abilities = Array[ExtResource("1_khgax")]([ExtResource("2_h3kci")])
+ability_level_str = "battle_cry:2"
+metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"

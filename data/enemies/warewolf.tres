@@ -6,7 +6,6 @@
 [ext_resource type="Resource" uid="uid://b2265a03f0302" path="res://data/enemies/abilities/battle_cry.tres" id="2_5eh5s"]
 [ext_resource type="Texture2D" uid="uid://d2altnflbpbe3" path="res://assets/art/sprites/enemy/warewolf/idle1-removebg-preview (1).png" id="2_8o2hm"]
 [ext_resource type="Resource" uid="uid://c0sv4kwsteft7" path="res://data/enemies/abilities/tactical_attack.tres" id="3_6qdrg"]
-[ext_resource type="Resource" path="res://data/enemies/abilities/enrage.tres" id="ab_enrage"]
 [ext_resource type="Texture2D" uid="uid://dprj4c65ff6jj" path="res://assets/art/sprites/enemy/warewolf/idle2-removebg-preview (1).png" id="3_akbxh"]
 [ext_resource type="Texture2D" uid="uid://c0fy4ed3vlpvi" path="res://assets/art/sprites/enemy/warewolf/attack1.png" id="4_7fsbw"]
 [ext_resource type="Texture2D" uid="uid://cmogtqcyr6ts3" path="res://assets/art/sprites/enemy/warewolf/attack2-removebg-preview.png" id="5_0gqwf"]
@@ -14,6 +13,7 @@
 [ext_resource type="Texture2D" uid="uid://78ehk66ybvq4" path="res://assets/art/sprites/enemy/warewolf/hit2-removebg-preview.png" id="7_5eh5s"]
 [ext_resource type="Texture2D" uid="uid://bfewyxnupacp4" path="res://assets/art/sprites/enemy/warewolf/death1-removebg-preview.png" id="8_7slcr"]
 [ext_resource type="Texture2D" uid="uid://bbmugqtg2fsnv" path="res://assets/art/sprites/enemy/warewolf/defend1-removebg-preview.png" id="9_oa1ji"]
+[ext_resource type="Resource" uid="uid://b3gcrs76fk7y0" path="res://data/enemies/abilities/enrage.tres" id="ab_enrage"]
 [ext_resource type="Resource" uid="uid://xf6noadq87vm" path="res://data/items/consumable/attack_potion.tres" id="drop_atk"]
 [ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="drop_script"]
 
@@ -86,6 +86,7 @@ script = ExtResource("1_n2612")
 ai_type = 1
 enemy_id = "warewolf"
 enemy_name = "Warewolf"
+enemy_lore = "A cursed hunter stalking the shadow forests. Its howl freezes even veterans."
 min_level = 2
 spawn_chance = 10.0
 icon_enemy = ExtResource("1_7fsbw")

@@ -7,3 +7,5 @@ script = ExtResource("1")
 ability_id = "life_steal"
 ability_name = "Life Steal"
 ability_type = 2
+activation = 0
+information = "Heals a portion of damage dealt on normal and battle cry hits."

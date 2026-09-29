@@ -3,7 +3,6 @@
 [ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/abilities/AbilityData.gd" id="1_ufv0u"]
 [ext_resource type="Resource" uid="uid://b2265a03f0302" path="res://data/enemies/abilities/battle_cry.tres" id="2_du4nc"]
 [ext_resource type="Script" uid="uid://d1jtt6i0k5g0g" path="res://scripts/local/characters/enemy/EnemyData.gd" id="2_pmxet"]
-[ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="3_cdodp"]
 [ext_resource type="Texture2D" uid="uid://x0bt7ivc85by" path="res://assets/art/profile/enemy/grimfald.jpg" id="3_du4nc"]
 [ext_resource type="Resource" uid="uid://cnrvpwsecuanr" path="res://data/enemies/abilities/berserk.tres" id="3_mgp4w"]
 [ext_resource type="Texture2D" uid="uid://cjrpy7i2gxhdp" path="res://assets/art/sprites/enemy/grimfald/attack1.png" id="5_mgp4w"]
@@ -15,11 +14,8 @@
 [ext_resource type="Texture2D" uid="uid://n1j5u6ix28a4" path="res://assets/art/sprites/enemy/grimfald/defend.png" id="11_ux8i3"]
 [ext_resource type="Texture2D" uid="uid://cnfn2ghw4fgft" path="res://assets/art/sprites/enemy/grimfald/idle1.png" id="12_0yajh"]
 [ext_resource type="Texture2D" uid="uid://bh0u6kevsyf3v" path="res://assets/art/sprites/enemy/grimfald/idle2.png" id="13_vqdr3"]
-
-[ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="drop_script"]
 [ext_resource type="Resource" uid="uid://xf6noadq87vm" path="res://data/items/consumable/attack_potion.tres" id="drop_atk"]
-[ext_resource type="Resource" uid="uid://besh3dfkieai5" path="res://data/items/consumable/protection_potion.tres" id="drop_prot"]
-[ext_resource type="Resource" uid="uid://cdwiqicslki8d" path="res://data/items/materials/iron_ingot.tres" id="drop_iron"]
+[ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="drop_script"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_yy6v2"]
 animations = [{
@@ -87,13 +83,15 @@ script = ExtResource("2_pmxet")
 ai_type = 1
 enemy_id = "grimfald"
 enemy_name = "Grimfald"
+enemy_lore = "A warlord husk that refuses to fall. Rage keeps its rotten heart beating."
 min_level = 2
-spawn_chance = 66.0
+spawn_chance = 10.0
 icon_enemy = ExtResource("3_du4nc")
 sprite_frames = SubResource("SpriteFrames_yy6v2")
-max_hp = 90.0
-drop_table = Array[ExtResource("drop_script")]([ExtResource("drop_atk"), ExtResource("drop_prot"), ExtResource("drop_iron")])
-drop_chance = 0.6
+max_hp = 80.0
+damage_to_player = 20.0
+drop_table = Array[ExtResource("drop_script")]([ExtResource("drop_atk")])
+drop_chance = 0.3
 abilities = Array[ExtResource("1_ufv0u")]([ExtResource("2_du4nc"), ExtResource("3_mgp4w")])
 ability_level_str = "battle_cry:3,berserk:2"
 metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"

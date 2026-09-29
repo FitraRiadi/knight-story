@@ -7,3 +7,5 @@ script = ExtResource("1")
 ability_id = "battle_cry"
 ability_name = "Battle Cry"
 ability_type = 1
+activation = 1
+information = "Roars and strikes a second time with bonus damage. Parry window always opens."

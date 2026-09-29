@@ -6,3 +6,5 @@
 script = ExtResource("1")
 ability_id = "tactical_attack"
 ability_name = "Tactical Attack"
+activation = 1
+information = "Counter-attacks after the player strikes. Higher level: more often, harder."

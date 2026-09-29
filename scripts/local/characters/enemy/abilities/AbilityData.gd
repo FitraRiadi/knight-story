@@ -10,9 +10,24 @@ enum AbilityType {
 	ENRAGE
 }
 
+enum ActivationType {
+	PASSIVE,
+	ACTIVE
+}
+
 @export var ability_id: String = ""
 @export var ability_name: String = ""
 @export var ability_type: AbilityType = AbilityType.TACTICAL_ATTACK
+
+## Klasifikasi: Active (makan aksi/giliran: counter, double, flurry)
+## vs Passive (selalu nyala: life steal, thorns, enrage).
+@export var activation: ActivationType = ActivationType.PASSIVE
+
+## Icon ability (drag & drop Texture2D, boleh kosong).
+@export var icon: Texture2D
+
+## Deskripsi jelas buat UI/inspector.
+@export_multiline var information: String = ""
 @export var max_level: int = 3
 @export var level: int = 1
 
