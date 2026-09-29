@@ -2867,6 +2867,20 @@ func _setup_player_hp_camera_overlay() -> void:
 	player_hp_overlay_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	player_hp_overlay_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
 	player_hp_overlay_background.add_child(player_hp_overlay_label)
+
+	var player_hp_overlay_caption := Label.new()
+	player_hp_overlay_caption.text = "YOUR HP"
+	player_hp_overlay_caption.position = Vector2(0.0, -22.0)
+	player_hp_overlay_caption.size = Vector2(200.0, 18.0)
+	player_hp_overlay_caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	player_hp_overlay_caption.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	player_hp_overlay_caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	player_hp_overlay_caption.add_theme_font_size_override("font_size", 13)
+	player_hp_overlay_caption.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
+	player_hp_overlay_caption.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+	player_hp_overlay_caption.add_theme_constant_override("shadow_offset_x", 1)
+	player_hp_overlay_caption.add_theme_constant_override("shadow_offset_y", 1)
+	player_hp_overlay_background.add_child(player_hp_overlay_caption)
 	
 	player_hp_overlay_damage_label = Label.new()
 	player_hp_overlay_damage_label.position = Vector2(player_hp_overlay_max_width - 100.0, -20.0)
