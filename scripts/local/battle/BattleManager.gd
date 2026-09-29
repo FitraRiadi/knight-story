@@ -3930,9 +3930,10 @@ func _fill_enemy_info(enemy: BattleEnemy) -> void:
 func _play_enemy_info_intro() -> void:
 	if enemy_info_intro_tween and enemy_info_intro_tween.is_valid():
 		enemy_info_intro_tween.kill()
-	# Positioning gak disentuh, cuma scale root + fade stagger
+	# Positioning + scale DESAIN jangan dioverride: capture base dulu
+	var base := enemy_info.scale
 	enemy_info.pivot_offset = enemy_info.size / 2.0
-	enemy_info.scale = Vector2(0.96, 0.96)
+	enemy_info.scale = base * 0.96
 	enemy_info.modulate.a = 0.0
 	var seq: Array = [
 		enemy_info.get_node_or_null("title"),
@@ -3943,7 +3944,7 @@ func _play_enemy_info_intro() -> void:
 		enemy_info_ok,
 	]
 	enemy_info_intro_tween = create_tween().set_parallel(true)
-	enemy_info_intro_tween.tween_property(enemy_info, "scale", Vector2.ONE, 0.25).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	enemy_info_intro_tween.tween_property(enemy_info, "scale", base, 0.25).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	enemy_info_intro_tween.tween_property(enemy_info, "modulate:a", 1.0, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	var i := 0
 	for n in seq:
