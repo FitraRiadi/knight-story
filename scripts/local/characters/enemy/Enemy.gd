@@ -8,6 +8,7 @@ class_name BattleEnemy
 
 signal action_finished
 signal clicked(enemy: BattleEnemy)
+signal profile_clicked(enemy: BattleEnemy)
 signal attack_preparing
 signal attack_hit(event: DamageEvent)
 signal thorns_triggered(reflect_damage: float)
@@ -150,6 +151,7 @@ const DEFEND_DAMAGE_REDUCTION: float = 0.40
 @onready var enemy_profile_img: TextureRect = $"enemyStats/profile/img"
 
 @onready var enemy_target: TextureRect = $enemyTarget
+@onready var enemy_profile_btn: TextureButton = $enemyStats/enemyProfileBtn
 @onready var enemy_collision: TextureButton = $enemyCollision
 @onready var enemy_hit_icon: TextureRect = $enemyHitIcon
 @onready var exp_label: Label = $expLabel
@@ -237,6 +239,9 @@ func _ready() -> void:
 		enemy_target.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		base_target_y = enemy_target.position.y
 		enemy_target.hide()
+
+	if enemy_profile_btn and not enemy_profile_btn.pressed.is_connected(_on_profile_pressed):
+		enemy_profile_btn.pressed.connect(_on_profile_pressed)
 
 	if exp_label:
 		exp_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -1515,6 +1520,11 @@ func set_highlight(active: bool) -> void:
 		enemy_target.visible = active
 		if active:
 			_animate_target_icon()
+
+
+func _on_profile_pressed() -> void:
+	if current_hp > 0.0:
+		profile_clicked.emit(self)
 
 
 func _animate_target_icon() -> void:

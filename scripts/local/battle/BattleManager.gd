@@ -20,6 +20,21 @@ extends Control
 @onready var rapid_btn: Button = $rapidAttack/rapidBtn
 @onready var item_drop_template: ItemDropVisual = $itemDropVisualBtn
 
+# --- ENEMY INFO POPUP ---
+@onready var enemy_info: Control = $enemyInfo
+@onready var enemy_info_name: Label = $enemyInfo/nameEnemy
+@onready var enemy_info_lore: Label = $enemyInfo/enemyLore
+@onready var enemy_info_level: Label = $enemyInfo/enemyLevel
+@onready var enemy_info_hp: Label = $enemyInfo/enemyHp
+@onready var enemy_info_img: TextureRect = $enemyInfo/profile/img
+@onready var enemy_info_preview: AnimatedSprite2D = $enemyInfo/previewEnemyIdle
+@onready var enemy_info_ability_box: Control = $enemyInfo/enemyAbilityInfo
+@onready var enemy_info_ok: Button = $enemyInfo/OKbtn
+var enemy_info_layer: CanvasLayer
+var is_enemy_info_open := false
+var enemy_info_enemy: BattleEnemy = null
+var enemy_info_intro_tween: Tween = null
+
 # --- NODE UI QTE ATTACK ---
 @onready var attack_qte_node: Control = $attackQte
 @onready var attack_qte_bg: TextureRect = $"attackQte/bg"
@@ -296,6 +311,7 @@ func _ready() -> void:
 	_setup_blood_vignette()
 	_setup_player_hp_camera_overlay()
 	_hide_wave_title_instant()
+	_setup_enemy_info_layer()
 	# Template drop selalu hidden; yang dipakai cuma duplikatnya
 	if item_drop_template:
 		item_drop_template.hide()
@@ -3117,6 +3133,7 @@ func _spawn_enemies(enemy_ids: Array[String], custom_levels: Array[int] = []) ->
 		enemies.append(enemy_instance)
 		
 		enemy_instance.clicked.connect(_on_enemy_clicked)
+		enemy_instance.profile_clicked.connect(_on_enemy_profile_clicked)
 		enemy_instance.attack_hit.connect(apply_damage)
 		enemy_instance.thorns_triggered.connect(_on_enemy_thorns_triggered)
 		enemy_instance.attack_preparing.connect(_on_enemy_attack_preparing)
@@ -3840,6 +3857,126 @@ func _on_enemy_clicked(clicked_enemy: BattleEnemy) -> void:
 	if index != -1:
 		selected_enemy_index = index
 		_update_target_selection()
+
+
+# ============================================================
+# ENEMY INFO POPUP (modal, data real dari instance)
+# ============================================================
+
+func _setup_enemy_info_layer() -> void:
+	if not enemy_info:
+		return
+	# Layer top sendiri biar selalu di atas enemy/UI (layout full-rect ikut persis)
+	if enemy_info_layer == null:
+		enemy_info_layer = CanvasLayer.new()
+		enemy_info_layer.layer = 200
+		add_child(enemy_info_layer)
+		var old_parent := enemy_info.get_parent()
+		if old_parent:
+			old_parent.remove_child(enemy_info)
+		enemy_info_layer.add_child(enemy_info)
+	if enemy_info_ok and not enemy_info_ok.pressed.is_connected(_on_enemy_info_ok_pressed):
+		enemy_info_ok.pressed.connect(_on_enemy_info_ok_pressed)
+	enemy_info.hide()
+
+
+func _on_enemy_profile_clicked(enemy: BattleEnemy) -> void:
+	if is_enemy_info_open or is_card_ui_open or not is_player_turn:
+		return
+	if not is_instance_valid(enemy) or enemy.current_hp <= 0.0:
+		return
+	_open_enemy_info(enemy)
+
+
+func _open_enemy_info(enemy: BattleEnemy) -> void:
+	is_enemy_info_open = true
+	is_player_turn = false
+	enemy_info_enemy = enemy
+	_set_buttons_active(false)
+	_pull_hand_to_corner(0.4)
+	for e in enemies:
+		if is_instance_valid(e) and e.enemy_collision:
+			e.enemy_collision.disabled = true
+	_fill_enemy_info(enemy)
+	enemy_info.show()
+	_play_enemy_info_intro()
+
+
+func _fill_enemy_info(enemy: BattleEnemy) -> void:
+	var stats: EnemyData = enemy.stats
+	enemy_info_name.text = stats.enemy_name if stats and stats.enemy_name != "" else "???"
+	enemy_info_lore.text = stats.enemy_lore if stats else ""
+	enemy_info_level.text = "Level " + str(enemy.level)
+	enemy_info_hp.text = str(int(maxi(0, int(enemy.current_hp)))) + " / " + str(int(enemy.scaled_max_hp))
+	if enemy_info_img:
+		enemy_info_img.texture = stats.get_profile_icon() if stats else null
+	if enemy_info_preview:
+		enemy_info_preview.sprite_frames = enemy.sprite_frames
+		if enemy_info_preview.sprite_frames and enemy_info_preview.sprite_frames.has_animation(&"idle"):
+			enemy_info_preview.play("idle")
+	for i in range(1, 6):
+		var slot := enemy_info_ability_box.get_node_or_null("ability" + str(i)) as TextureRect
+		if slot == null:
+			continue
+		if i <= enemy.enemy_abilities.size():
+			var ab: AbilityData = enemy.enemy_abilities[i - 1]
+			slot.visible = true
+			slot.texture = ab.icon if ab and ab.icon else null
+			var nm := slot.get_node_or_null("nameAbility") as Label
+			if nm:
+				nm.text = ab.ability_name if ab else ""
+			var lv := slot.get_node_or_null("abilityLevel") as Label
+			if lv:
+				lv.text = "Level " + str(ab.get_level()) if ab else ""
+		else:
+			slot.visible = false
+
+
+func _play_enemy_info_intro() -> void:
+	if enemy_info_intro_tween and enemy_info_intro_tween.is_valid():
+		enemy_info_intro_tween.kill()
+	# Positioning gak disentuh, cuma scale root + fade stagger
+	enemy_info.pivot_offset = enemy_info.size / 2.0
+	enemy_info.scale = Vector2(0.96, 0.96)
+	enemy_info.modulate.a = 0.0
+	var seq: Array = [
+		enemy_info.get_node_or_null("title"),
+		enemy_info_name,
+		enemy_info_lore,
+		enemy_info_level,
+		enemy_info_ability_box,
+		enemy_info_ok,
+	]
+	enemy_info_intro_tween = create_tween().set_parallel(true)
+	enemy_info_intro_tween.tween_property(enemy_info, "scale", Vector2.ONE, 0.25).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	enemy_info_intro_tween.tween_property(enemy_info, "modulate:a", 1.0, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	var i := 0
+	for n in seq:
+		if n and is_instance_valid(n):
+			n.modulate.a = 0.0
+			enemy_info_intro_tween.tween_property(n, "modulate:a", 1.0, 0.25).set_delay(0.05 + i * 0.07).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			i += 1
+
+
+func _on_enemy_info_ok_pressed() -> void:
+	_close_enemy_info()
+
+
+func _close_enemy_info() -> void:
+	if not is_enemy_info_open:
+		return
+	is_enemy_info_open = false
+	if enemy_info_intro_tween and enemy_info_intro_tween.is_valid():
+		enemy_info_intro_tween.kill()
+	if enemy_info:
+		enemy_info.hide()
+	enemy_info_enemy = null
+	for e in enemies:
+		if is_instance_valid(e) and e.enemy_collision and e.current_hp > 0:
+			e.enemy_collision.disabled = false
+	is_player_turn = true
+	_set_buttons_active(true)
+	_reset_hand_to_original(0.4)
 
 
 func _input(event: InputEvent) -> void:

@@ -9,11 +9,13 @@
 [ext_resource type="Texture2D" uid="uid://e3q04pvucu10" path="res://assets/art/sprites/enemy/grimward/death1-removebg-preview.png" id="7_weo17"]
 [ext_resource type="Texture2D" uid="uid://6488p8v54jf" path="res://assets/art/sprites/enemy/grimward/defend1-removebg-preview.png" id="8_2sc0v"]
 [ext_resource type="Script" uid="uid://c22n5t7mdh7ui" path="res://scripts/local/characters/enemy/Enemy.gd" id="9_7v1ds"]
+[ext_resource type="Texture2D" uid="uid://cy20qwgr1tmah" path="res://assets/art/sprites/enemy/banditRaider/idle1.png" id="9_mu53l"]
+[ext_resource type="Texture2D" uid="uid://dhn3tjtrwp4vt" path="res://assets/art/sprites/enemy/banditRaider/idle2.png" id="10_emon8"]
 [ext_resource type="Texture2D" uid="uid://dukpxgco0stkj" path="res://assets/ui/icons/target_icon.png" id="10_qvr0l"]
 [ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="10_ubuwf"]
 [ext_resource type="Texture2D" uid="uid://bvn6tvox2at5e" path="res://assets/art/items/weapons/dagger_01.png" id="11_icfsp"]
 [ext_resource type="Texture2D" uid="uid://me2o2n8ea0mg" path="res://assets/ui/icons/statusEffect/attackUp.png" id="11_vkenx"]
-[ext_resource type="Texture2D" uid="uid://eeh1qrcceu17" path="res://assets/art/profile/enemy/grimward.jpg" id="12_vkenx"]
+[ext_resource type="Texture2D" uid="uid://bpo1tv0xb5tv0" path="res://assets/art/profile/enemy/banditRaider.jpg" id="14_24wpg"]
 [ext_resource type="Texture2D" uid="uid://b71q3uxlqegp0" path="res://assets/art/particles/slash/slash4_00001.png" id="15_0d3xp"]
 [ext_resource type="Texture2D" uid="uid://dxvgcqi4suo4t" path="res://assets/art/particles/slash/slash4_00002.png" id="16_ornea"]
 [ext_resource type="Texture2D" uid="uid://b2r3xitnsnexu" path="res://assets/art/particles/slash/slash4_00003.png" id="17_mu53l"]
@@ -87,10 +89,10 @@ animations = [{
 }, {
 "frames": [{
 "duration": 1.0,
-"texture": ExtResource("1_72liy")
+"texture": ExtResource("9_mu53l")
 }, {
 "duration": 1.0,
-"texture": ExtResource("2_icfsp")
+"texture": ExtResource("10_emon8")
 }],
 "loop": 1,
 "name": &"idle",
@@ -128,7 +130,7 @@ corner_radius_bottom_left = 5
 shadow_color = Color(0.8217887, 0.82178867, 0.82178867, 0.89411765)
 shadow_size = 2
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i268m"]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w8bby"]
 corner_radius_top_left = 5
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
@@ -204,12 +206,12 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_weo17")
 
 [node name="name" type="Label" parent="enemyStats" unique_id=1774231093]
 layout_mode = 0
-offset_left = -35.555542
-offset_top = 6.25
-offset_right = 144.44446
-offset_bottom = 21.25
+offset_left = 8.888889
+offset_top = 3.3333616
+offset_right = 100.0
+offset_bottom = 24.444485
 theme_override_colors/font_shadow_color = Color(0.047058824, 0.047058824, 0.047058824, 0.7490196)
-text = "Enemy"
+text = "Enemy Name"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -282,9 +284,9 @@ expand_mode = 1
 [node name="stroke" type="Panel" parent="enemyStats" unique_id=1652430202]
 texture_filter = 1
 layout_mode = 0
-offset_left = 8.61315
-offset_top = 8.859319
-offset_right = 46.113365
+offset_left = 5.279808
+offset_top = 8.859318
+offset_right = 42.78002
 offset_bottom = 39.434322
 rotation = 0.73378944
 scale = Vector2(0.7471384, 0.8917125)
@@ -294,13 +296,13 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_cql51")
 clip_children = 1
 texture_filter = 1
 layout_mode = 0
-offset_left = 8.888891
+offset_left = 5.5555496
 offset_top = 10.000004
-offset_right = 44.114555
+offset_right = 40.78121
 offset_bottom = 39.05394
 rotation = 0.73378944
 scale = Vector2(0.7471384, 0.8917125)
-theme_override_styles/panel = SubResource("StyleBoxFlat_i268m")
+theme_override_styles/panel = SubResource("StyleBoxFlat_w8bby")
 
 [node name="img" type="TextureRect" parent="enemyStats/profile" unique_id=2089390063]
 layout_mode = 0
@@ -310,8 +312,15 @@ offset_right = 44.68136
 offset_bottom = 59.953186
 rotation = -0.72479206
 scale = Vector2(0.8224401, 0.9931104)
-texture = ExtResource("12_vkenx")
+texture = ExtResource("14_24wpg")
 expand_mode = 1
+
+[node name="enemyProfileBtn" type="TextureButton" parent="enemyStats" unique_id=826299706]
+layout_mode = 0
+offset_left = -14.444445
+offset_top = 7.7778034
+offset_right = 25.555555
+offset_bottom = 47.7778
 
 [node name="enemyTarget" type="TextureRect" parent="." unique_id=1480684603]
 offset_left = -8.888897
@@ -367,7 +376,6 @@ vertical_alignment = 1
 
 [node name="enemyDialog" type="Label" parent="." unique_id=1484170386]
 visible = false
-mouse_filter = 2
 offset_left = 22.222221
 offset_top = -72.22223
 offset_right = 62.22222

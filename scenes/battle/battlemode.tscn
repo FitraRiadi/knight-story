@@ -1,24 +1,29 @@
 [gd_scene format=3 uid="uid://bu5hkr727us0p"]
 
 [ext_resource type="Script" uid="uid://bm15klo0yfmnk" path="res://scripts/local/battle/BattleManager.gd" id="1_i268m"]
-[ext_resource type="Texture2D" uid="uid://d3essyu6atugf" path="res://assets/art/backgrounds/location/map/forest_of_shadow/forest_of_shadow1.jpg" id="2_gujcb"]
+[ext_resource type="Texture2D" uid="uid://cvqm4gpajgyw4" path="res://assets/art/backgrounds/location/map/forest_of_shadow/forest_of_shadow2.jpg" id="2_lsh83"]
 [ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="3_g2c4h"]
 [ext_resource type="FontFile" uid="uid://dx6ognpbk586" path="res://assets/ui/fonts/alagard.ttf" id="3_i268m"]
 [ext_resource type="Texture2D" uid="uid://ct3bvjqujdl0y" path="res://assets/art/playerHand/hand/right-left/base.png" id="4_3b2kv"]
 [ext_resource type="Texture2D" uid="uid://ubgv1comvtdg" path="res://assets/art/profile/player/Icon4.png" id="4_o6x6a"]
 [ext_resource type="Texture2D" uid="uid://keqimxji2oh4" path="res://assets/art/playerHand/hand/left/shield/oak_shield.png" id="4_wnd2m"]
-[ext_resource type="Texture2D" uid="uid://c42ev7khv5aou" path="res://assets/art/playerHand/hand/right/weapon/iron_mace.png" id="5_gujcb"]
 [ext_resource type="Texture2D" uid="uid://dukpxgco0stkj" path="res://assets/ui/icons/target_icon.png" id="6_ymp2q"]
 [ext_resource type="Texture2D" uid="uid://caxwao41ucbqm" path="res://assets/ui/icons/attackBtn.png" id="9_5wo1c"]
 [ext_resource type="FontFile" uid="uid://dq04br7pre1ps" path="res://assets/ui/fonts/Jersey15-Regular.ttf" id="9_8svm1"]
 [ext_resource type="Texture2D" uid="uid://me2o2n8ea0mg" path="res://assets/ui/icons/statusEffect/attackUp.png" id="9_gujcb"]
 [ext_resource type="Texture2D" uid="uid://ddc1w5qr1txmy" path="res://assets/ui/icons/defendBtn.png" id="10_5wo1c"]
+[ext_resource type="Texture2D" uid="uid://b2dgxlip5um63" path="res://assets/art/playerHand/hand/right/weapon/iron_sword.png" id="10_lsh83"]
 [ext_resource type="Texture2D" uid="uid://bx2e55df83y6s" path="res://assets/ui/icons/runBtn.png" id="11_kngoi"]
 [ext_resource type="Texture2D" uid="uid://bqa1jdoqm6fsq" path="res://assets/ui/icons/skilBtn.png" id="12_yyr2t"]
 [ext_resource type="Texture2D" uid="uid://toj1si5imisd" path="res://assets/ui/icons/parryBtn.png" id="13_kngoi"]
 [ext_resource type="Texture2D" uid="uid://ob640ju61cdx" path="res://assets/ui/icons/inventoryBtn.png" id="13_ve2ux"]
 [ext_resource type="Texture2D" uid="uid://crm3m4q1wtttx" path="res://assets/ui/icons/timingCircle.png" id="14_qpju5"]
 [ext_resource type="Texture2D" uid="uid://corujjfkda61s" path="res://assets/art/items/consumable/potion/Icon7.png" id="21_y6eqr"]
+[ext_resource type="Texture2D" uid="uid://k2trotkj4tgi" path="res://assets/ui/popup/basic/Ui - 1.png" id="23_1orl3"]
+[ext_resource type="Texture2D" uid="uid://bpo1tv0xb5tv0" path="res://assets/art/profile/enemy/banditRaider.jpg" id="24_kxutv"]
+[ext_resource type="Texture2D" uid="uid://cy20qwgr1tmah" path="res://assets/art/sprites/enemy/banditRaider/idle1.png" id="25_gw8qx"]
+[ext_resource type="Texture2D" uid="uid://dhn3tjtrwp4vt" path="res://assets/art/sprites/enemy/banditRaider/idle2.png" id="26_344p7"]
+[ext_resource type="Texture2D" uid="uid://osri2skp6y4m" path="res://assets/art/ability/active/battlecry.jpg" id="27_344p7"]
 [ext_resource type="Script" uid="uid://djbf4rxh2wv3a" path="res://scripts/local/battle/ChargeAttack.gd" id="charge_attack"]
 [ext_resource type="Script" uid="uid://s4io6fpyf4d8" path="res://scripts/local/battle/ItemDropVisual.gd" id="item_drop"]
 [ext_resource type="Script" uid="uid://dalxm83qgh3oh" path="res://scripts/local/battle/WaveProgress.gd" id="wave_progress"]
@@ -26,8 +31,31 @@
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_al7n6"]
 bg_color = Color(1, 1, 1, 1)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_moojr"]
+bg_color = Color(0.21508199, 0.21508199, 0.21508199, 0.74100006)
+corner_radius_top_left = 100
+corner_radius_top_right = 100
+corner_radius_bottom_right = 100
+corner_radius_bottom_left = 100
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8svm1"]
 bg_color = Color(1, 1, 1, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_otvoh"]
+bg_color = Color(0.012920001, 0.012920001, 0.012920001, 0.58400005)
+border_width_bottom = 1
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_detail = 20
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_abymu"]
+bg_color = Color(0.84313726, 0.8901961, 0.9647059, 0.44313726)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h8kyn"]
+bg_color = Color(1, 1, 0, 0.36078432)
+corner_radius_top_right = 1
+corner_radius_bottom_right = 1
+corner_detail = 20
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ymp2q"]
 bg_color = Color(0.54, 0.052650016, 0.027000008, 1)
@@ -42,14 +70,6 @@ corner_radius_top_left = 5
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_abymu"]
-bg_color = Color(0.84313726, 0.8901961, 0.9647059, 0.44313726)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_h8kyn"]
-bg_color = Color(1, 1, 0, 0.36078432)
-corner_radius_top_right = 1
-corner_radius_bottom_right = 1
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i268m"]
 corner_radius_top_left = 5
@@ -217,12 +237,75 @@ corner_radius_top_right = 20
 corner_radius_bottom_right = 20
 corner_radius_bottom_left = 20
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_moojr"]
-bg_color = Color(0.37342674, 0.37342674, 0.37342674, 0.90300006)
-corner_radius_top_left = 100
-corner_radius_top_right = 100
-corner_radius_bottom_right = 100
-corner_radius_bottom_left = 100
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_l1vje"]
+bg_color = Color(0, 0, 0, 0.36862746)
+border_width_right = 1
+corner_radius_top_left = 5
+corner_radius_bottom_left = 5
+corner_detail = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i7ili"]
+bg_color = Color(0, 0, 0, 0.36862746)
+border_width_left = 1
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_detail = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wlai8"]
+bg_color = Color(0.15487596, 0.154876, 0.15487587, 1)
+
+[sub_resource type="SpriteFrames" id="SpriteFrames_moojr"]
+animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("25_gw8qx")
+}, {
+"duration": 1.0,
+"texture": ExtResource("26_344p7")
+}],
+"loop": 1,
+"name": &"idle",
+"speed": 3.0
+}]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cql51"]
+bg_color = Color(0, 0, 0, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+shadow_color = Color(0.8217887, 0.82178867, 0.82178867, 0.89411765)
+shadow_size = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_w8bby"]
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ey8yk"]
+bg_color = Color(0, 0, 0, 0.5372549)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rkb4v"]
+bg_color = Color(0.19434926, 0.19434929, 0.19434917, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_4b0xe"]
+bg_color = Color(0.2123048, 0.21230489, 0.21230471, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_racam"]
+bg_color = Color(0.19076231, 0.19076234, 0.19076222, 1)
+corner_radius_top_left = 50
+corner_radius_top_right = 50
+corner_radius_bottom_right = 50
+corner_radius_bottom_left = 50
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ejbwg"]
+bg_color = Color(0.6, 0.6, 0.6, 0.25882354)
+corner_radius_top_right = 5
+corner_radius_bottom_right = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_d8px2"]
+bg_color = Color(0.2370728, 0, 0.061645538, 1)
 
 [node name="battlemode" type="Control" unique_id=184345478]
 layout_mode = 3
@@ -240,7 +323,57 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("2_gujcb")
+texture = ExtResource("2_lsh83")
+expand_mode = 1
+
+[node name="TextureRect" type="TextureRect" parent="bg" unique_id=818512481]
+layout_mode = 0
+offset_left = 596.0
+offset_right = 743.0
+offset_bottom = 11.0
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="TextureRect6" type="TextureRect" parent="bg" unique_id=1167560304]
+layout_mode = 0
+offset_left = 582.0
+offset_right = 743.0
+offset_bottom = 7.0
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="TextureRect2" type="TextureRect" parent="bg" unique_id=721929142]
+layout_mode = 0
+offset_left = 719.0
+offset_right = 743.0
+offset_bottom = 11.0
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="TextureRect3" type="TextureRect" parent="bg" unique_id=1970049127]
+layout_mode = 0
+offset_left = 725.0
+offset_right = 743.0
+offset_bottom = 14.0
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="TextureRect4" type="TextureRect" parent="bg" unique_id=57788033]
+layout_mode = 0
+offset_left = 728.0
+offset_top = 5.0
+offset_right = 746.0
+offset_bottom = 19.0
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="TextureRect5" type="TextureRect" parent="bg" unique_id=1946648865]
+layout_mode = 0
+offset_left = 731.0
+offset_top = 11.0
+offset_right = 749.0
+offset_bottom = 25.0
+texture = ExtResource("3_g2c4h")
 expand_mode = 1
 
 [node name="mapTitle" type="Label" parent="bg" unique_id=691397388]
@@ -250,7 +383,7 @@ offset_top = 10.0
 offset_right = 853.6572
 offset_bottom = 39.0
 scale = Vector2(0.5856387, 0.59788865)
-theme_override_colors/font_color = Color(1, 1, 0, 1)
+theme_override_colors/font_color = Color(0.76, 0.76, 0, 0.9254902)
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.49411765)
 theme_override_fonts/font = ExtResource("9_8svm1")
 theme_override_font_sizes/font_size = 30
@@ -286,6 +419,65 @@ offset_right = 782.0
 offset_bottom = 60.0
 mouse_filter = 2
 script = ExtResource("wave_progress")
+
+[node name="itemDropVisualBtn" type="Button" parent="." unique_id=35637890]
+layout_mode = 0
+offset_left = 428.0
+offset_top = 233.0
+offset_right = 492.0
+offset_bottom = 288.0
+scale = Vector2(0.69700176, 0.686382)
+flat = true
+script = ExtResource("item_drop")
+
+[node name="Panel" type="Panel" parent="itemDropVisualBtn" unique_id=1373305065]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -4.0
+offset_right = 7.0
+offset_bottom = 17.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.8539916, 0.79916286)
+theme_override_styles/panel = SubResource("StyleBoxFlat_moojr")
+
+[node name="TextureRect" type="TextureRect" parent="itemDropVisualBtn" unique_id=1629546351]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 5.0
+offset_top = 6.0
+offset_right = 5.0
+offset_bottom = 6.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.7793157, 0.7485404)
+texture = ExtResource("21_y6eqr")
+expand_mode = 1
+
+[node name="timing" type="TextureProgressBar" parent="itemDropVisualBtn" unique_id=1041007864]
+layout_mode = 0
+offset_top = -5.0
+offset_right = 481.0
+offset_bottom = 513.0
+scale = Vector2(0.12823011, 0.123359434)
+value = 100.0
+fill_mode = 4
+texture_progress = ExtResource("14_qpju5")
+
+[node name="Label" type="Label" parent="itemDropVisualBtn" unique_id=1978502883]
+visible = false
+layout_mode = 0
+offset_left = -213.7728
+offset_top = 20.0
+offset_right = 279.7697
+offset_bottom = 37.0
+text = "Health Potion"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="Camera2D" type="Camera2D" parent="." unique_id=2106517464]
 position = Vector2(370, 170)
@@ -334,7 +526,7 @@ offset_top = -172.0
 offset_right = 369.0
 offset_bottom = 168.0
 mouse_filter = 2
-texture = ExtResource("5_gujcb")
+texture = ExtResource("10_lsh83")
 expand_mode = 1
 
 [node name="hand-right-left" type="TextureRect" parent="Camera2D" unique_id=1411404318]
@@ -356,13 +548,89 @@ offset_right = 42.0
 offset_bottom = 40.0
 scale = Vector2(0.797118, 0.81556207)
 
+[node name="information" type="TextureRect" parent="player-information" unique_id=1248532417]
+layout_mode = 0
+offset_top = 1.0
+offset_right = 40.0
+offset_bottom = 41.0
+scale = Vector2(5.9184318, 1.017209)
+expand_mode = 1
+
+[node name="Panel2" type="Panel" parent="player-information/information" unique_id=1210591994]
+layout_mode = 0
+offset_left = 0.63590443
+offset_top = 2.6331313
+offset_right = 38.790184
+offset_bottom = 76.1628
+theme_override_styles/panel = SubResource("StyleBoxFlat_otvoh")
+
+[node name="name" type="Label" parent="player-information/information" unique_id=256579851]
+layout_mode = 0
+offset_left = 8.617149
+offset_top = 5.898492
+offset_right = 230.12643
+offset_bottom = 25.89849
+scale = Vector2(0.12509653, 0.74070823)
+theme_override_fonts/font = ExtResource("9_8svm1")
+theme_override_font_sizes/font_size = 21
+text = "The Knight"
+
+[node name="Panel" type="Panel" parent="player-information/information" unique_id=861071921]
+visible = false
+layout_mode = 0
+offset_left = 7.941293
+offset_top = 36.374035
+offset_right = 33.490974
+offset_bottom = 39.323284
+theme_override_styles/panel = SubResource("StyleBoxFlat_abymu")
+
+[node name="exp-bar" type="TextureRect" parent="player-information/information" unique_id=1100861589]
+texture_filter = 1
+layout_mode = 0
+offset_left = 6.9949512
+offset_top = 30.357433
+offset_right = 29.463581
+offset_bottom = 38.138718
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="exp-progress" type="Panel" parent="player-information/information/exp-bar" unique_id=927585805]
+layout_mode = 0
+offset_left = -0.16896369
+offset_top = 0.9830812
+offset_right = 21.832726
+offset_bottom = 7.232425
+theme_override_styles/panel = SubResource("StyleBoxFlat_h8kyn")
+
+[node name="exp-bar2" type="TextureRect" parent="player-information/information" unique_id=679167286]
+layout_mode = 0
+offset_left = 7.096474
+offset_top = 33.42479
+offset_right = 9.968857
+offset_bottom = 39.323284
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="player-information/information" unique_id=1976639724]
+layout_mode = 0
+offset_left = 7.6308556
+offset_top = 31.562838
+offset_right = 137.63086
+offset_bottom = 132.56284
+scale = Vector2(0.013369563, 0.075422965)
+theme_override_colors/font_color = Color(1, 0.75317955, 0.7136501, 1)
+theme_override_font_sizes/font_size = 100
+text = "EXP"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="MORALstatus" type="TextureRect" parent="player-information" unique_id=1592777693]
 texture_filter = 1
 layout_mode = 0
-offset_left = 4.0470486
-offset_top = 61.043903
-offset_right = 96.11742
-offset_bottom = 71.0439
+offset_left = 5.0180755
+offset_top = 66.212006
+offset_right = 97.08843
+offset_bottom = 76.212006
 texture = ExtResource("3_g2c4h")
 expand_mode = 1
 
@@ -375,6 +643,7 @@ offset_bottom = 9.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_ymp2q")
 
 [node name="number" type="Label" parent="player-information/MORALstatus" unique_id=1917815711]
+texture_filter = 1
 layout_mode = 0
 offset_left = 3.0352879
 offset_top = 0.8846972
@@ -386,22 +655,41 @@ text = "100 / 200"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="exp-bar2" type="TextureRect" parent="player-information/MORALstatus" unique_id=645751089]
+layout_mode = 0
+offset_right = 20.07231
+offset_bottom = 9.809179
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="player-information/MORALstatus" unique_id=1057109641]
+layout_mode = 0
+offset_left = 2.5090418
+offset_right = 146.50905
+offset_bottom = 101.0
+scale = Vector2(0.09889855, 0.09215931)
+theme_override_colors/font_color = Color(1, 0.75317955, 0.7136501, 1)
+theme_override_font_sizes/font_size = 100
+text = "MRL"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="STAMINAstatus" type="TextureRect" parent="player-information" unique_id=1214071008]
 texture_filter = 1
 layout_mode = 0
-offset_left = 3.035287
-offset_top = 50.427574
-offset_right = 126.47028
-offset_bottom = 60.427574
+offset_left = 5.0180774
+offset_top = 56.402824
+offset_right = 128.45308
+offset_bottom = 66.402824
 texture = ExtResource("3_g2c4h")
 expand_mode = 1
 
 [node name="bar" type="Panel" parent="player-information/STAMINAstatus" unique_id=137732337]
 layout_mode = 0
-offset_left = 2.0235252
+offset_left = 2.509039
 offset_top = 1.0
-offset_right = 120.39972
-offset_bottom = 9.0
+offset_right = 120.39971
+offset_bottom = 8.5830345
 theme_override_styles/panel = SubResource("StyleBoxFlat_3b2kv")
 
 [node name="number" type="Label" parent="player-information/STAMINAstatus" unique_id=1568088863]
@@ -416,90 +704,76 @@ text = "100 / 200"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="exp-bar2" type="TextureRect" parent="player-information/STAMINAstatus" unique_id=1608940232]
+layout_mode = 0
+offset_right = 20.07231
+offset_bottom = 9.809179
+texture = ExtResource("3_g2c4h")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="player-information/STAMINAstatus" unique_id=1398447092]
+layout_mode = 0
+offset_left = 2.509037
+offset_top = -1.2261658
+offset_right = 135.50903
+offset_bottom = 99.773834
+scale = Vector2(0.10391822, 0.12025957)
+theme_override_colors/font_color = Color(1, 0.75317955, 0.7136501, 1)
+theme_override_font_sizes/font_size = 100
+text = "STA"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="HPstatus" type="TextureRect" parent="player-information" unique_id=431529670]
 texture_filter = 1
 layout_mode = 0
-offset_left = 2.0235248
-offset_top = 36.57654
-offset_right = 229.67003
-offset_bottom = 49.542877
+offset_left = 3.763558
+offset_top = 42.915188
+offset_right = 180.65079
+offset_bottom = 55.881523
 texture = ExtResource("3_g2c4h")
 expand_mode = 1
 
 [node name="bar" type="Panel" parent="player-information/HPstatus" unique_id=280728470]
 layout_mode = 0
-offset_left = 3.0705729
+offset_left = 5.018075
 offset_top = 1.0
-offset_right = 222.5877
-offset_bottom = 12.081642
+offset_right = 173.12369
+offset_bottom = 12.261482
 theme_override_styles/panel = SubResource("StyleBoxFlat_ymp2q")
 
 [node name="number" type="Label" parent="player-information/HPstatus" unique_id=2007439472]
 layout_mode = 0
-offset_left = 85.9998
-offset_top = 4.1193943
-offset_right = 143.99982
-offset_bottom = 12.119394
+offset_left = 77.7802
+offset_top = 2.452301
+offset_right = 235.7802
+offset_bottom = 53.4523
+scale = Vector2(0.20250872, 0.15785135)
 theme_override_fonts/font = ExtResource("9_8svm1")
-theme_override_font_sizes/font_size = 7
+theme_override_font_sizes/font_size = 50
 text = "100 / 200"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="information" type="TextureRect" parent="player-information" unique_id=1248532417]
+[node name="exp-bar2" type="TextureRect" parent="player-information/HPstatus" unique_id=1559121201]
 layout_mode = 0
-offset_top = 1.0
-offset_right = 40.0
-offset_bottom = 41.0
-scale = Vector2(5.9184318, 1.017209)
+offset_right = 25.090385
+offset_bottom = 13.487629
 texture = ExtResource("3_g2c4h")
 expand_mode = 1
 
-[node name="name" type="Label" parent="player-information/information" unique_id=256579851]
+[node name="Label" type="Label" parent="player-information/HPstatus" unique_id=1953778958]
 layout_mode = 0
-offset_left = 8.617149
-offset_top = 5.898492
-offset_right = 230.12643
-offset_bottom = 25.89849
-scale = Vector2(0.12509653, 0.74070823)
-theme_override_fonts/font = ExtResource("9_8svm1")
-theme_override_font_sizes/font_size = 21
-text = "The Knight"
-
-[node name="Panel" type="Panel" parent="player-information/information" unique_id=861071921]
-layout_mode = 0
-offset_left = 7.941293
-offset_top = 36.374035
-offset_right = 38.01683
-offset_bottom = 39.323284
-theme_override_styles/panel = SubResource("StyleBoxFlat_abymu")
-
-[node name="exp-bar" type="TextureRect" parent="player-information/information" unique_id=1100861589]
-texture_filter = 1
-layout_mode = 0
-offset_left = 7.096474
-offset_top = 33.42479
-offset_right = 38.86165
-offset_bottom = 39.323284
-texture = ExtResource("3_g2c4h")
-expand_mode = 1
-
-[node name="exp-progress" type="Panel" parent="player-information/information/exp-bar" unique_id=927585805]
-layout_mode = 0
-offset_left = -0.16896369
-offset_top = 0.9830812
-offset_right = 31.068466
-offset_bottom = 4.9154086
-theme_override_styles/panel = SubResource("StyleBoxFlat_h8kyn")
-
-[node name="exp-bar2" type="TextureRect" parent="player-information/information" unique_id=679167286]
-layout_mode = 0
-offset_left = 7.096474
-offset_top = 33.42479
-offset_right = 9.968857
-offset_bottom = 39.323284
-texture = ExtResource("3_g2c4h")
-expand_mode = 1
+offset_left = 5.0180774
+offset_top = -2.4522967
+offset_right = 94.018074
+offset_bottom = 98.54771
+scale = Vector2(0.17250945, 0.17472215)
+theme_override_colors/font_color = Color(1, 0.75317955, 0.7136501, 1)
+theme_override_font_sizes/font_size = 100
+text = "HP"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="badge" type="TextureRect" parent="player-information" unique_id=1780701172]
 layout_mode = 0
@@ -511,6 +785,7 @@ texture = ExtResource("3_g2c4h")
 expand_mode = 1
 
 [node name="Label" type="Label" parent="player-information/badge" unique_id=1981086554]
+texture_filter = 1
 layout_mode = 0
 offset_left = 5.0347223
 offset_top = -0.47703397
@@ -580,10 +855,10 @@ texture = ExtResource("4_o6x6a")
 
 [node name="playerEffect" type="Control" parent="player-information" unique_id=1119730705]
 anchors_preset = 0
-offset_left = 3.763558
-offset_top = 69.89045
-offset_right = 108.208015
-offset_bottom = 84.33491
+offset_left = 5.0180774
+offset_top = 82.15194
+offset_right = 109.46253
+offset_bottom = 96.5964
 scale = Vector2(1.8687787, 2.1181943)
 
 [node name="effect" type="TextureRect" parent="player-information/playerEffect" unique_id=36442757]
@@ -598,6 +873,15 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("9_gujcb")
 expand_mode = 1
+
+[node name="Label" type="Label" parent="player-information/playerEffect" unique_id=695298204]
+layout_mode = 0
+offset_top = -2.3154638
+offset_right = 511.0
+offset_bottom = 98.68454
+scale = Vector2(0.057443686, 0.05891194)
+theme_override_font_sizes/font_size = 100
+text = "Player Effect "
 
 [node name="interaction" type="Control" parent="." unique_id=48050382]
 anchors_preset = 0
@@ -1289,60 +1573,512 @@ value = 100.0
 fill_mode = 4
 texture_progress = ExtResource("14_qpju5")
 
-[node name="itemDropVisualBtn" type="Button" parent="." unique_id=35637890]
+[node name="enemyInfo" type="Control" parent="." unique_id=1834609970]
+visible = false
+texture_filter = 1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -128.0
+offset_top = -53.0
+offset_right = -128.0
+offset_bottom = -53.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(1.3866963, 1.3923484)
+
+[node name="bg" type="TextureRect" parent="enemyInfo" unique_id=658238059]
+texture_filter = 1
 layout_mode = 0
-offset_left = 428.0
-offset_top = 233.0
-offset_right = 492.0
-offset_bottom = 288.0
-scale = Vector2(0.69700176, 0.686382)
-flat = true
-script = ExtResource("item_drop")
-
-[node name="Panel" type="Panel" parent="itemDropVisualBtn" unique_id=1373305065]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -4.0
-offset_right = 7.0
-offset_bottom = 17.0
-grow_horizontal = 2
-grow_vertical = 2
-scale = Vector2(0.8539916, 0.79916286)
-theme_override_styles/panel = SubResource("StyleBoxFlat_moojr")
-
-[node name="TextureRect" type="TextureRect" parent="itemDropVisualBtn" unique_id=1629546351]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 5.0
-offset_top = 6.0
-offset_right = 5.0
-offset_bottom = 6.0
-grow_horizontal = 2
-grow_vertical = 2
-scale = Vector2(0.7793157, 0.7485404)
-texture = ExtResource("21_y6eqr")
+offset_left = 182.0
+offset_top = 15.0
+offset_right = 494.0
+offset_bottom = 249.0
+scale = Vector2(1.1884483, 1.3249097)
+texture = ExtResource("23_1orl3")
 expand_mode = 1
 
-[node name="timing" type="TextureProgressBar" parent="itemDropVisualBtn" unique_id=1041007864]
+[node name="Panel" type="Panel" parent="enemyInfo/bg" unique_id=2132657861]
 layout_mode = 0
-offset_top = -5.0
-offset_right = 481.0
-offset_bottom = 513.0
-scale = Vector2(0.12823011, 0.123359434)
-value = 100.0
-fill_mode = 4
-texture_progress = ExtResource("14_qpju5")
+offset_left = 39.929516
+offset_top = 55.65437
+offset_right = 144.21571
+offset_bottom = 173.95758
+theme_override_styles/panel = SubResource("StyleBoxFlat_l1vje")
 
-[node name="Label" type="Label" parent="itemDropVisualBtn" unique_id=1978502883]
-visible = false
+[node name="Panel2" type="Panel" parent="enemyInfo/bg" unique_id=1602890095]
 layout_mode = 0
-offset_left = -11.0
-offset_top = 20.0
-offset_right = 82.0
-offset_bottom = 37.0
-text = "Health Potion"
+offset_left = 143.57939
+offset_top = 56.438854
+offset_right = 272.82562
+offset_bottom = 174.61295
+theme_override_styles/panel = SubResource("StyleBoxFlat_i7ili")
+
+[node name="title" type="Label" parent="enemyInfo" unique_id=1254756540]
+layout_mode = 0
+offset_left = 289.7487
+offset_top = 55.5643
+offset_right = 454.7487
+offset_bottom = 72.5643
+theme_override_styles/normal = SubResource("StyleBoxFlat_wlai8")
+text = "Enemy Information"
 horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="OKbtn" type="Button" parent="enemyInfo" unique_id=1286274138]
+layout_mode = 0
+offset_left = 303.0
+offset_top = 229.0
+offset_right = 444.0
+offset_bottom = 246.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_wlai8")
+text = "OK"
+
+[node name="nameEnemy" type="Label" parent="enemyInfo" unique_id=1643262744]
+layout_mode = 0
+offset_left = 232.80386
+offset_top = 199.03629
+offset_right = 354.23035
+offset_bottom = 219.03629
+theme_override_font_sizes/font_size = 19
+text = "Bandit Raider"
+horizontal_alignment = 1
+
+[node name="previewEnemyIdle" type="AnimatedSprite2D" parent="enemyInfo" unique_id=717291189]
+position = Vector2(289.7487, 144.3013)
+scale = Vector2(0.5, 0.5)
+sprite_frames = SubResource("SpriteFrames_moojr")
+animation = &"idle"
+autoplay = "idle"
+
+[node name="stroke" type="Panel" parent="enemyInfo" unique_id=328440580]
+texture_filter = 1
+layout_mode = 0
+offset_left = 231.71544
+offset_top = 67.51184
+offset_right = 269.21564
+offset_bottom = 98.086845
+rotation = 0.73378944
+scale = Vector2(0.7471384, 0.8917125)
+theme_override_styles/panel = SubResource("StyleBoxFlat_cql51")
+
+[node name="profile" type="Panel" parent="enemyInfo" unique_id=1119659475]
+clip_children = 1
+texture_filter = 1
+layout_mode = 0
+offset_left = 231.9912
+offset_top = 68.65253
+offset_right = 267.21686
+offset_bottom = 97.70647
+rotation = 0.73378944
+scale = Vector2(0.7471384, 0.8917125)
+theme_override_styles/panel = SubResource("StyleBoxFlat_w8bby")
+
+[node name="img" type="TextureRect" parent="enemyInfo/profile" unique_id=1424141334]
+layout_mode = 0
+offset_left = -16.570671
+offset_top = 14.526863
+offset_right = 44.68136
+offset_bottom = 59.953186
+rotation = -0.72479206
+scale = Vector2(0.8224401, 0.9931104)
+texture = ExtResource("24_kxutv")
+expand_mode = 1
+
+[node name="enemyLore" type="Label" parent="enemyInfo" unique_id=1567292143]
+layout_mode = 0
+offset_left = 358.4058
+offset_top = 182.4256
+offset_right = 1480.2795
+offset_bottom = 475.4256
+scale = Vector2(0.12906711, 0.15846373)
+theme_override_font_sizes/font_size = 70
+text = "This Enemy Become Stronger Than Make Me Sick.. Lorep ipsum dolar si amet Lorep ipsum dolar si amet Lorep ipsum dolar si ametLorep ipsum dolar si amet rrert4t4."
+autowrap_mode = 3
+
+[node name="Panel" type="Panel" parent="enemyInfo" unique_id=1563130527]
+layout_mode = 0
+offset_left = 362.73264
+offset_top = 180.27098
+offset_right = 497.58554
+offset_bottom = 180.98918
+
+[node name="Label" type="Label" parent="enemyInfo" unique_id=1642666492]
+layout_mode = 0
+offset_left = 407.44315
+offset_top = 171.65244
+offset_right = 937.3701
+offset_bottom = 272.65247
+scale = Vector2(0.083339944, 0.078605875)
+theme_override_colors/font_color = Color(1, 1, 0, 1)
+theme_override_font_sizes/font_size = 100
+theme_override_styles/normal = SubResource("StyleBoxFlat_ey8yk")
+text = "Enemy Lore"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="enemyLevel" type="Label" parent="enemyInfo" unique_id=1999278586]
+layout_mode = 0
+offset_left = 248.07161
+offset_top = 216.18152
+offset_right = 1032.2631
+offset_bottom = 317.18152
+scale = Vector2(0.114029795, 0.10963223)
+theme_override_font_sizes/font_size = 100
+theme_override_styles/normal = SubResource("StyleBoxFlat_rkb4v")
+text = "Level 5"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Label2" type="Label" parent="enemyInfo" unique_id=1177817174]
+layout_mode = 0
+offset_left = 379.31882
+offset_top = 151.54253
+offset_right = 511.2894
+offset_bottom = 252.54253
+scale = Vector2(0.1525847, 0.16725172)
+theme_override_font_sizes/font_size = 100
+theme_override_styles/normal = SubResource("StyleBoxFlat_4b0xe")
+text = "HP"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="enemyHp" type="Label" parent="enemyInfo" unique_id=562612450]
+layout_mode = 0
+offset_left = 400.2318
+offset_top = 151.54253
+offset_right = 915.3827
+offset_bottom = 252.54253
+scale = Vector2(0.1525847, 0.16725172)
+theme_override_font_sizes/font_size = 100
+theme_override_styles/normal = SubResource("StyleBoxFlat_4b0xe")
+text = "100 / 500"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="enemyAbilityInfo" type="Control" parent="enemyInfo" unique_id=455513395]
+anchors_preset = 0
+offset_left = 359.12692
+offset_top = 91.93101
+offset_right = 497.58548
+offset_bottom = 149.3879
+
+[node name="title" type="Label" parent="enemyInfo/enemyAbilityInfo" unique_id=812292541]
+layout_mode = 0
+offset_left = 32.45123
+offset_top = -11.491371
+offset_right = 574.3223
+offset_bottom = 89.50863
+scale = Vector2(0.13948287, 0.15349881)
+theme_override_font_sizes/font_size = 100
+theme_override_styles/normal = SubResource("StyleBoxFlat_racam")
+text = "Enemy Ability"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ability1" type="TextureRect" parent="enemyInfo/enemyAbilityInfo" unique_id=903493307]
+texture_filter = 1
+layout_mode = 0
+offset_left = 4.326805
+offset_top = 8.618538
+offset_right = 23.797539
+offset_bottom = 29.446667
+scale = Vector2(0.7813132, 0.64724815)
+texture = ExtResource("27_344p7")
+expand_mode = 1
+
+[node name="previewBtn" type="TextureButton" parent="enemyInfo/enemyAbilityInfo/ability1" unique_id=716094130]
+layout_mode = 0
+offset_left = -0.9229431
+offset_right = 82.14557
+offset_bottom = 22.192757
+
+[node name="Panel" type="Panel" parent="enemyInfo/enemyAbilityInfo/ability1" unique_id=1805535826]
+layout_mode = 0
+offset_left = 19.382751
+offset_right = 81.222565
+offset_bottom = 21.083122
+scale = Vector2(1.0207145, 1.0041229)
+theme_override_styles/panel = SubResource("StyleBoxFlat_ejbwg")
+
+[node name="nameAbility" type="Label" parent="enemyInfo/enemyAbilityInfo/ability1" unique_id=1382671134]
+texture_filter = 1
+layout_mode = 0
+offset_left = 20.305723
+offset_top = -1.1096354
+offset_right = 2736.4404
+offset_bottom = 524.8418
+scale = Vector2(0.020443637, 0.025945365)
+theme_override_font_sizes/font_size = 400
+text = "Battle Cry "
+vertical_alignment = 1
+
+[node name="abilityLevel" type="Label" parent="enemyInfo/enemyAbilityInfo/ability1" unique_id=769478917]
+texture_filter = 1
+layout_mode = 0
+offset_left = 20.305725
+offset_top = 11.096382
+offset_right = 1600.4736
+offset_bottom = 412.09637
+scale = Vector2(0.020443637, 0.025945365)
+theme_override_font_sizes/font_size = 400
+theme_override_styles/normal = SubResource("StyleBoxFlat_d8px2")
+text = "Level 3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ability2" type="TextureRect" parent="enemyInfo/enemyAbilityInfo" unique_id=1870837771]
+texture_filter = 1
+layout_mode = 0
+offset_left = 4.3268967
+offset_top = 25.137392
+offset_right = 23.79763
+offset_bottom = 45.965523
+scale = Vector2(0.7813132, 0.64724815)
+texture = ExtResource("27_344p7")
+expand_mode = 1
+
+[node name="previewBtn" type="TextureButton" parent="enemyInfo/enemyAbilityInfo/ability2" unique_id=1369322779]
+layout_mode = 0
+offset_left = -0.9229431
+offset_right = 82.14557
+offset_bottom = 22.192757
+
+[node name="Panel" type="Panel" parent="enemyInfo/enemyAbilityInfo/ability2" unique_id=1587347852]
+layout_mode = 0
+offset_left = 19.382751
+offset_right = 81.222565
+offset_bottom = 21.083122
+scale = Vector2(1.0207145, 1.0041229)
+theme_override_styles/panel = SubResource("StyleBoxFlat_ejbwg")
+
+[node name="nameAbility" type="Label" parent="enemyInfo/enemyAbilityInfo/ability2" unique_id=1334262659]
+texture_filter = 1
+layout_mode = 0
+offset_left = 20.305723
+offset_top = -1.1096354
+offset_right = 2736.4404
+offset_bottom = 524.8418
+scale = Vector2(0.020443637, 0.025945365)
+theme_override_font_sizes/font_size = 400
+text = "Battle Cry "
+vertical_alignment = 1
+
+[node name="abilityLevel" type="Label" parent="enemyInfo/enemyAbilityInfo/ability2" unique_id=804958324]
+texture_filter = 1
+layout_mode = 0
+offset_left = 20.305725
+offset_top = 11.096382
+offset_right = 1600.4736
+offset_bottom = 412.09637
+scale = Vector2(0.020443637, 0.025945365)
+theme_override_font_sizes/font_size = 400
+theme_override_styles/normal = SubResource("StyleBoxFlat_d8px2")
+text = "Level 3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ability3" type="TextureRect" parent="enemyInfo/enemyAbilityInfo" unique_id=772346316]
+texture_filter = 1
+layout_mode = 0
+offset_left = 4.3268967
+offset_top = 40.938034
+offset_right = 23.79763
+offset_bottom = 61.766167
+scale = Vector2(0.7813132, 0.64724815)
+texture = ExtResource("27_344p7")
+expand_mode = 1
+
+[node name="previewBtn" type="TextureButton" parent="enemyInfo/enemyAbilityInfo/ability3" unique_id=529532052]
+layout_mode = 0
+offset_left = -0.9229431
+offset_right = 82.14557
+offset_bottom = 22.192757
+
+[node name="Panel" type="Panel" parent="enemyInfo/enemyAbilityInfo/ability3" unique_id=519929034]
+layout_mode = 0
+offset_left = 19.382751
+offset_right = 81.222565
+offset_bottom = 21.083122
+scale = Vector2(1.0207145, 1.0041229)
+theme_override_styles/panel = SubResource("StyleBoxFlat_ejbwg")
+
+[node name="nameAbility" type="Label" parent="enemyInfo/enemyAbilityInfo/ability3" unique_id=913124783]
+texture_filter = 1
+layout_mode = 0
+offset_left = 20.305723
+offset_top = -1.1096354
+offset_right = 2736.4404
+offset_bottom = 524.8418
+scale = Vector2(0.020443637, 0.025945365)
+theme_override_font_sizes/font_size = 400
+text = "Battle Cry "
+vertical_alignment = 1
+
+[node name="abilityLevel" type="Label" parent="enemyInfo/enemyAbilityInfo/ability3" unique_id=1849846119]
+texture_filter = 1
+layout_mode = 0
+offset_left = 20.305725
+offset_top = 11.096382
+offset_right = 1600.4736
+offset_bottom = 412.09637
+scale = Vector2(0.020443637, 0.025945365)
+theme_override_font_sizes/font_size = 400
+theme_override_styles/normal = SubResource("StyleBoxFlat_d8px2")
+text = "Level 3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ability4" type="TextureRect" parent="enemyInfo/enemyAbilityInfo" unique_id=1918318478]
+texture_filter = 1
+layout_mode = 0
+offset_left = 72.11373
+offset_top = 8.618538
+offset_right = 91.584465
+offset_bottom = 29.446667
+scale = Vector2(0.7813132, 0.64724815)
+texture = ExtResource("27_344p7")
+expand_mode = 1
+
+[node name="previewBtn" type="TextureButton" parent="enemyInfo/enemyAbilityInfo/ability4" unique_id=2102114176]
+layout_mode = 0
+offset_left = -0.9229431
+offset_right = 82.14557
+offset_bottom = 22.192757
+
+[node name="Panel" type="Panel" parent="enemyInfo/enemyAbilityInfo/ability4" unique_id=1052066791]
+layout_mode = 0
+offset_left = 19.382751
+offset_right = 81.222565
+offset_bottom = 21.083122
+scale = Vector2(1.0207145, 1.0041229)
+theme_override_styles/panel = SubResource("StyleBoxFlat_ejbwg")
+
+[node name="nameAbility" type="Label" parent="enemyInfo/enemyAbilityInfo/ability4" unique_id=547641399]
+texture_filter = 1
+layout_mode = 0
+offset_left = 20.305723
+offset_top = -1.1096354
+offset_right = 2736.4404
+offset_bottom = 524.8418
+scale = Vector2(0.020443637, 0.025945365)
+theme_override_font_sizes/font_size = 400
+text = "Battle Cry "
+vertical_alignment = 1
+
+[node name="abilityLevel" type="Label" parent="enemyInfo/enemyAbilityInfo/ability4" unique_id=372817350]
+texture_filter = 1
+layout_mode = 0
+offset_left = 20.305725
+offset_top = 11.096382
+offset_right = 1600.4736
+offset_bottom = 412.09637
+scale = Vector2(0.020443637, 0.025945365)
+theme_override_font_sizes/font_size = 400
+theme_override_styles/normal = SubResource("StyleBoxFlat_d8px2")
+text = "Level 3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ability5" type="TextureRect" parent="enemyInfo/enemyAbilityInfo" unique_id=1077445814]
+texture_filter = 1
+layout_mode = 0
+offset_left = 72.113815
+offset_top = 25.137392
+offset_right = 91.58455
+offset_bottom = 45.965523
+scale = Vector2(0.7813132, 0.64724815)
+texture = ExtResource("27_344p7")
+expand_mode = 1
+
+[node name="previewBtn" type="TextureButton" parent="enemyInfo/enemyAbilityInfo/ability5" unique_id=2093514453]
+layout_mode = 0
+offset_left = -0.9229431
+offset_right = 82.14557
+offset_bottom = 22.192757
+
+[node name="Panel" type="Panel" parent="enemyInfo/enemyAbilityInfo/ability5" unique_id=83192702]
+layout_mode = 0
+offset_left = 19.382751
+offset_right = 81.222565
+offset_bottom = 21.083122
+scale = Vector2(1.0207145, 1.0041229)
+theme_override_styles/panel = SubResource("StyleBoxFlat_ejbwg")
+
+[node name="nameAbility" type="Label" parent="enemyInfo/enemyAbilityInfo/ability5" unique_id=1684764965]
+texture_filter = 1
+layout_mode = 0
+offset_left = 20.305723
+offset_top = -1.1096354
+offset_right = 2736.4404
+offset_bottom = 524.8418
+scale = Vector2(0.020443637, 0.025945365)
+theme_override_font_sizes/font_size = 400
+text = "Battle Cry "
+vertical_alignment = 1
+
+[node name="abilityLevel" type="Label" parent="enemyInfo/enemyAbilityInfo/ability5" unique_id=107498022]
+texture_filter = 1
+layout_mode = 0
+offset_left = 20.305725
+offset_top = 11.096382
+offset_right = 1600.4736
+offset_bottom = 412.09637
+scale = Vector2(0.020443637, 0.025945365)
+theme_override_font_sizes/font_size = 400
+theme_override_styles/normal = SubResource("StyleBoxFlat_d8px2")
+text = "Level 3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ability6" type="TextureRect" parent="enemyInfo/enemyAbilityInfo" unique_id=1669501799]
+texture_filter = 1
+layout_mode = 0
+offset_left = 72.113815
+offset_top = 40.938034
+offset_right = 91.58455
+offset_bottom = 61.766167
+scale = Vector2(0.7813132, 0.64724815)
+texture = ExtResource("27_344p7")
+expand_mode = 1
+
+[node name="previewBtn" type="TextureButton" parent="enemyInfo/enemyAbilityInfo/ability6" unique_id=1254959177]
+layout_mode = 0
+offset_left = -0.9229431
+offset_right = 82.14557
+offset_bottom = 22.192757
+
+[node name="Panel" type="Panel" parent="enemyInfo/enemyAbilityInfo/ability6" unique_id=766670238]
+layout_mode = 0
+offset_left = 19.382751
+offset_right = 81.222565
+offset_bottom = 21.083122
+scale = Vector2(1.0207145, 1.0041229)
+theme_override_styles/panel = SubResource("StyleBoxFlat_ejbwg")
+
+[node name="nameAbility" type="Label" parent="enemyInfo/enemyAbilityInfo/ability6" unique_id=1080338786]
+texture_filter = 1
+layout_mode = 0
+offset_left = 20.305723
+offset_top = -1.1096354
+offset_right = 2736.4404
+offset_bottom = 524.8418
+scale = Vector2(0.020443637, 0.025945365)
+theme_override_font_sizes/font_size = 400
+text = "Battle Cry "
+vertical_alignment = 1
+
+[node name="abilityLevel" type="Label" parent="enemyInfo/enemyAbilityInfo/ability6" unique_id=735733283]
+texture_filter = 1
+layout_mode = 0
+offset_left = 20.305725
+offset_top = 11.096382
+offset_right = 1600.4736
+offset_bottom = 412.09637
+scale = Vector2(0.020443637, 0.025945365)
+theme_override_font_sizes/font_size = 400
+theme_override_styles/normal = SubResource("StyleBoxFlat_d8px2")
+text = "Level 3"
+horizontal_alignment = 1
+vertical_alignment = 1
