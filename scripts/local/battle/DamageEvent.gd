@@ -7,7 +7,7 @@ class_name DamageEvent
 # Gak ada shared mutable state → gak ada race condition.
 # ============================================================
 
-enum Source { NORMAL, BERSERK, BATTLE_CRY, COUNTER, RAPID }
+enum Source { NORMAL, BERSERK, BATTLE_CRY, COUNTER, RAPID, THORNS }
 enum DamageResult { NORMAL, PARRIED, BLOCKED, ZERO }
 
 var base_damage: float = 0.0

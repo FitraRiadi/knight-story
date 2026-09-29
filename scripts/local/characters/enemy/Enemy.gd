@@ -10,6 +10,7 @@ signal action_finished
 signal clicked(enemy: BattleEnemy)
 signal attack_preparing
 signal attack_hit(event: DamageEvent)
+signal thorns_triggered(reflect_damage: float)
 signal hp_changed
 signal sound_requested(sound_name: String)
 signal battle_cry_activated(ability_level: int)
@@ -31,6 +32,9 @@ const DEFAULT_ATTACK = preload("res://assets/audio/effects/enemies/attack-base.m
 const DEFAULT_SFX_HIT = preload("res://assets/audio/effects/enemies/hit-base.mp3")
 const SFX_USE_ITEM = preload("uid://d3jo784jvhvnu")
 const OUTLINE_SHADER: Shader = preload("res://assets/art/shaders/enemy_outline.gdshader")
+# Preload langsung (pola ProbGen): imun dari cache global class editor yang basi
+const ThornsAbilityLib = preload("res://scripts/local/characters/enemy/abilities/ThornsAbility.gd")
+const EnrageAbilityLib = preload("res://scripts/local/characters/enemy/abilities/EnrageAbility.gd")
 
 
 # ============================================================
@@ -769,6 +773,7 @@ func _execute_attack(
 		return
 
 	var total_damage: float = (scaled_damage + buff_manager.get_total_attack_bonus()) * damage_multiplier
+	total_damage *= 1.0 + get_enrage_bonus()
 
 	# BLEED: -attack reduction
 	for buff in buff_manager.active_buffs:
@@ -900,6 +905,7 @@ func _execute_attack(
 
 		# Serangan kedua dengan bonus damage
 		var second_damage: float = (scaled_damage + buff_manager.get_total_attack_bonus()) * bonus_mult
+		second_damage *= 1.0 + get_enrage_bonus()
 		force_attack_finish = false
 		stun_interrupted = false
 		var second_anim := pick_attack_anim(true)
@@ -1375,6 +1381,8 @@ func receive_damage(
 	else:
 		play("hurt")
 		try_chatter(&"hurt")
+		_check_enrage()
+		_check_thorns(final_damage)
 
 
 # ============================================================
@@ -2024,6 +2032,76 @@ func should_berserk() -> bool:
 	if ab == null:
 		return false
 	return BerserkAbility.should_trigger(ab.get_level())
+
+
+# ============================================================
+# THORNS ABILITY (pasif)
+# ============================================================
+
+func get_thorns_ability() -> AbilityData:
+	for ab: AbilityData in enemy_abilities:
+		if ab.is_thorns():
+			return ab
+	return null
+
+
+func has_thorns() -> bool:
+	return get_thorns_ability() != null
+
+
+func _check_thorns(final_damage: float) -> void:
+	var ab := get_thorns_ability()
+	if ab == null:
+		return
+	if not ThornsAbilityLib.should_thorns(ab.get_level()):
+		return
+	var reflect: float = maxf(0.0, final_damage * ThornsAbilityLib.get_reflect_percent(ab.get_level()))
+	if reflect <= 0.0:
+		return
+	show_reaction_text("Thorns!", Color(0.6, 1.0, 0.4), false)
+	thorns_triggered.emit(reflect)
+
+
+# ============================================================
+# ENRAGE ABILITY (pasif kondisional)
+# ============================================================
+
+var enraged: bool = false
+
+
+func get_enrage_ability() -> AbilityData:
+	for ab: AbilityData in enemy_abilities:
+		if ab.is_enrage():
+			return ab
+	return null
+
+
+func has_enrage() -> bool:
+	return get_enrage_ability() != null
+
+
+func get_enrage_bonus() -> float:
+	var ab := get_enrage_ability()
+	if ab == null or not enraged:
+		return 0.0
+	return EnrageAbilityLib.get_damage_bonus(ab.get_level())
+
+
+func _check_enrage() -> void:
+	if enraged:
+		return
+	var ab := get_enrage_ability()
+	if ab == null:
+		return
+	if scaled_max_hp <= 0.0:
+		return
+	if current_hp / scaled_max_hp > EnrageAbilityLib.HP_THRESHOLD:
+		return
+	enraged = true
+	show_reaction_text("ENRAGED!", Color(1.0, 0.15, 0.05), true)
+	var flash := create_tween()
+	flash.tween_property(self, "modulate", Color(1.6, 0.4, 0.4, 1.0), 0.12)
+	flash.tween_property(self, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.25)
 
 
 # ============================================================

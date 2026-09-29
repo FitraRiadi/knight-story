@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://broht88c253af" path="res://assets/art/profile/enemy/grooter.jpg" id="1_hanjq"]
 [ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/abilities/AbilityData.gd" id="1_nqphn"]
 [ext_resource type="Resource" uid="uid://cq041xql6bmcc" path="res://data/enemies/abilities/life_steal.tres" id="2_ocbkr"]
-[ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="2_yo2og"]
+[ext_resource type="Resource" path="res://data/enemies/abilities/thorns.tres" id="ab_thorns"]
 [ext_resource type="Texture2D" uid="uid://b77h5eoduna8q" path="res://assets/art/sprites/enemy/grooter/idle1.png" id="3_yaoiv"]
 [ext_resource type="Texture2D" uid="uid://bsderxif8r56i" path="res://assets/art/sprites/enemy/grooter/idle2.png" id="4_ocbkr"]
 [ext_resource type="Texture2D" uid="uid://bar7568hd75ol" path="res://assets/art/sprites/enemy/grooter/attack1.png" id="5_nqphn"]
@@ -13,11 +13,8 @@
 [ext_resource type="Texture2D" uid="uid://hlupngh0nw5u" path="res://assets/art/sprites/enemy/grooter/hit2.png" id="8_drvox"]
 [ext_resource type="Texture2D" uid="uid://b32kx3oikj31r" path="res://assets/art/sprites/enemy/grooter/dead1.png" id="9_66wuw"]
 [ext_resource type="Texture2D" uid="uid://dsay57h3moksf" path="res://assets/art/sprites/enemy/grooter/defend1.png" id="10_vkkbq"]
-
-[ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="drop_script"]
-[ext_resource type="Resource" uid="uid://dmfc6tb72muxj" path="res://data/items/consumable/health_potion.tres" id="drop_hp"]
 [ext_resource type="Resource" uid="uid://besh3dfkieai5" path="res://data/items/consumable/protection_potion.tres" id="drop_prot"]
-[ext_resource type="Resource" uid="uid://cdwiqicslki8d" path="res://data/items/materials/iron_ingot.tres" id="drop_iron"]
+[ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="drop_script"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_3hfl1"]
 animations = [{
@@ -89,14 +86,15 @@ ai_type = 2
 enemy_id = "grooter"
 enemy_name = "Grooter"
 min_level = 2
-spawn_chance = 60.0
+spawn_chance = 10.0
 icon_enemy = ExtResource("1_hanjq")
 sprite_frames = SubResource("SpriteFrames_3hfl1")
 max_hp = 150.0
 damage_to_player = 8.0
 defense = 5.0
 exp_reward = 10
-drop_table = Array[ExtResource("drop_script")]([ExtResource("drop_hp"), ExtResource("drop_prot"), ExtResource("drop_iron")])
-drop_chance = 0.5
-abilities = Array[ExtResource("1_nqphn")]([ExtResource("2_ocbkr")])
+drop_table = Array[ExtResource("drop_script")]([ExtResource("drop_prot")])
+drop_chance = 0.2
+abilities = Array[ExtResource("1_nqphn")]([ExtResource("2_ocbkr"), ExtResource("ab_thorns")])
+ability_level_str = "life_steal:1,thorns:2"
 metadata/_custom_type_script = "uid://d1jtt6i0k5g0g"

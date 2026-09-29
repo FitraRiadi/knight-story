@@ -5,7 +5,9 @@ enum AbilityType {
 	TACTICAL_ATTACK,
 	BATTLE_CRY,
 	LIFE_STEAL,
-	BERSERK
+	BERSERK,
+	THORNS,
+	ENRAGE
 }
 
 @export var ability_id: String = ""
@@ -30,3 +32,11 @@ func is_life_steal() -> bool:
 
 func is_berserk() -> bool:
 	return ability_type == AbilityType.BERSERK
+
+
+func is_thorns() -> bool:
+	return ability_type == AbilityType.THORNS
+
+
+func is_enrage() -> bool:
+	return ability_type == AbilityType.ENRAGE

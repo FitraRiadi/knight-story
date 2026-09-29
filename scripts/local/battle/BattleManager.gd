@@ -3093,6 +3093,7 @@ func _spawn_enemies(enemy_ids: Array[String], custom_levels: Array[int] = []) ->
 		
 		enemy_instance.clicked.connect(_on_enemy_clicked)
 		enemy_instance.attack_hit.connect(apply_damage)
+		enemy_instance.thorns_triggered.connect(_on_enemy_thorns_triggered)
 		enemy_instance.attack_preparing.connect(_on_enemy_attack_preparing)
 		enemy_instance.enemy_defeated.connect(_on_enemy_defeated)
 		enemy_instance.battle_cry_activated.connect(_on_battle_cry_activated)
@@ -3595,6 +3596,11 @@ func apply_damage(event: DamageEvent) -> void:
 		DamageEvent.Source.RAPID:
 			final_damage = max(0.0, final_damage - player_durability)
 
+		DamageEvent.Source.THORNS:
+			# Duri, bukan serangan: durability aja, gak bisa diparry,
+			# gak hide parry window, gak sfx shield
+			final_damage = max(0.0, final_damage - player_durability)
+
 	# DAMAGE REDUCTION: Protection Potion
 	if player_buff_manager:
 		var buff_dmg_reduction: float = player_buff_manager.get_total_damage_reduction()
@@ -3622,7 +3628,7 @@ func apply_damage(event: DamageEvent) -> void:
 	_update_battle_atmosphere(event)
 
 	# MORALE: Enemy attack berhasil (tidak di-parry) -> naikkan morale +25%
-	if event.source != DamageEvent.Source.BERSERK and event.source != DamageEvent.Source.RAPID:
+	if event.source != DamageEvent.Source.BERSERK and event.source != DamageEvent.Source.RAPID and event.source != DamageEvent.Source.THORNS:
 		if current_enemy_attacking and is_instance_valid(current_enemy_attacking):
 			current_enemy_attacking.increase_morale_on_hit()
 
@@ -3720,7 +3726,17 @@ func _get_damage_text_color(source: DamageEvent.Source) -> Color:
 		DamageEvent.Source.BATTLE_CRY: return Color(1.0, 0.3, 0.1)
 		DamageEvent.Source.COUNTER: return Color(0.8, 0.6, 1.0)
 		DamageEvent.Source.RAPID: return Color(0.5, 1.0, 0.8)
+		DamageEvent.Source.THORNS: return Color(0.6, 1.0, 0.4)
 	return Color.WHITE
+
+
+func _on_enemy_thorns_triggered(reflect_damage: float) -> void:
+	var thorns_event := DamageEvent.new()
+	thorns_event.base_damage = reflect_damage
+	thorns_event.source = DamageEvent.Source.THORNS
+	thorns_event.can_be_parried = false
+	thorns_event.can_trigger_life_steal = false
+	apply_damage(thorns_event)
 
 
 func _on_enemy_defeated(_exp_amount: int, _gold_amount: int, _dropped_items: Array[String], enemy: BattleEnemy) -> void:
