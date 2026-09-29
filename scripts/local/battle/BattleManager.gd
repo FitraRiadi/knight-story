@@ -34,6 +34,17 @@ var is_enemy_info_open := false
 var enemy_info_enemy: BattleEnemy = null
 var enemy_info_intro_tween: Tween = null
 
+# --- ABILITY INFO POPUP (di atas enemyInfo) ---
+@onready var ability_info: Control = $abilityInfo
+@onready var ability_info_name: Label = $abilityInfo/panel/abilityName
+@onready var ability_info_desc: Label = $abilityInfo/panel/abilityInformation
+@onready var ability_info_icon: TextureRect = $abilityInfo/panel/abilityIcon
+@onready var ability_info_level: Label = $abilityInfo/panel/level
+@onready var ability_info_type: Label = $abilityInfo/panel/type
+@onready var ability_info_ok: Button = $abilityInfo/panel/OKbtn
+var is_ability_info_open := false
+var ability_info_tween: Tween = null
+
 # --- NODE UI QTE ATTACK ---
 @onready var attack_qte_node: Control = $attackQte
 @onready var attack_qte_bg: TextureRect = $"attackQte/bg"
@@ -3875,6 +3886,10 @@ func _setup_enemy_info_layer() -> void:
 	if enemy_info_ok and not enemy_info_ok.pressed.is_connected(_on_enemy_info_ok_pressed):
 		enemy_info_ok.pressed.connect(_on_enemy_info_ok_pressed)
 	enemy_info.hide()
+	if ability_info:
+		if ability_info_ok and not ability_info_ok.pressed.is_connected(_on_ability_info_ok_pressed):
+			ability_info_ok.pressed.connect(_on_ability_info_ok_pressed)
+		ability_info.hide()
 
 
 func _on_enemy_profile_clicked(enemy: BattleEnemy) -> void:
@@ -3921,13 +3936,21 @@ func _fill_enemy_info(enemy: BattleEnemy) -> void:
 		if i <= enemy.enemy_abilities.size():
 			var ab: AbilityData = enemy.enemy_abilities[i - 1]
 			slot.visible = true
-			slot.texture = ab.icon if ab and ab.icon else null
+			# Icon: cuma timpa kalau ability punya icon, placeholder scene tetep kalau null
+			if ab and ab.icon:
+				slot.texture = ab.icon
 			var nm := slot.get_node_or_null("nameAbility") as Label
 			if nm:
 				nm.text = ab.ability_name if ab else ""
 			var lv := slot.get_node_or_null("abilityLevel") as Label
 			if lv:
 				lv.text = "Level " + str(ab.get_level()) if ab else ""
+			var pb := slot.get_node_or_null("previewBtn") as TextureButton
+			if pb:
+				if pb.pressed.is_connected(_on_ability_preview_pressed):
+					pb.pressed.disconnect(_on_ability_preview_pressed)
+				if ab:
+					pb.pressed.connect(_on_ability_preview_pressed.bind(ab))
 		else:
 			slot.visible = false
 
@@ -3963,9 +3986,78 @@ func _on_enemy_info_ok_pressed() -> void:
 	_close_enemy_info()
 
 
+# ============================================================
+# ABILITY INFO POPUP (di atas enemyInfo, konten real)
+# ============================================================
+
+func _on_ability_preview_pressed(ab: AbilityData) -> void:
+	if is_ability_info_open or not is_enemy_info_open:
+		return
+	if ab == null:
+		return
+	_open_ability_info(ab)
+
+
+func _open_ability_info(ab: AbilityData) -> void:
+	is_ability_info_open = true
+	ability_info_name.text = ab.ability_name
+	ability_info_desc.text = ab.information
+	ability_info_level.text = "Level " + str(ab.get_level())
+	ability_info_type.text = "Active" if ab.activation == AbilityData.ActivationType.ACTIVE else "Passive"
+	if ab.icon:
+		ability_info_icon.texture = ab.icon
+	# Paling atas (di atas enemyInfo yang di-move_to_front duluan)
+	ability_info.move_to_front()
+	ability_info.show()
+	_play_ability_info_intro()
+
+
+func _play_ability_info_intro() -> void:
+	if ability_info_tween and ability_info_tween.is_valid():
+		ability_info_tween.kill()
+	# Positioning/size/scale gak disentuh, cuma fade stagger konten
+	var seq: Array = [
+		ability_info.get_node_or_null("panel"),
+		ability_info.get_node_or_null("panel/title"),
+		ability_info_icon,
+		ability_info_name,
+		ability_info_level,
+		ability_info_type,
+		ability_info_desc,
+		ability_info_ok,
+	]
+	ability_info_tween = create_tween().set_parallel(true)
+	var i := 0
+	for n in seq:
+		if n and is_instance_valid(n):
+			n.modulate.a = 0.0
+			ability_info_tween.tween_property(n, "modulate:a", 1.0, 0.2).set_delay(i * 0.06).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			i += 1
+
+
+func _on_ability_info_ok_pressed() -> void:
+	_close_ability_info()
+
+
+func _close_ability_info() -> void:
+	if not is_ability_info_open:
+		return
+	is_ability_info_open = false
+	if ability_info_tween and ability_info_tween.is_valid():
+		ability_info_tween.kill()
+	var tw := create_tween()
+	tw.tween_property(ability_info, "modulate:a", 0.0, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	tw.tween_callback(func() -> void:
+		if ability_info:
+			ability_info.hide()
+			ability_info.modulate.a = 1.0
+	)
+
+
 func _close_enemy_info() -> void:
 	if not is_enemy_info_open:
 		return
+	_close_ability_info()
 	is_enemy_info_open = false
 	if enemy_info_intro_tween and enemy_info_intro_tween.is_valid():
 		enemy_info_intro_tween.kill()

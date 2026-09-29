@@ -254,6 +254,12 @@ corner_detail = 1
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wlai8"]
 bg_color = Color(0.15487596, 0.154876, 0.15487587, 1)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_88bu1"]
+bg_color = Color(0.15487596, 0.154876, 0.15487587, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_rl1dd"]
+bg_color = Color(0.15487596, 0.154876, 0.15487587, 1)
+
 [sub_resource type="SpriteFrames" id="SpriteFrames_moojr"]
 animations = [{
 "frames": [{
@@ -306,6 +312,59 @@ corner_radius_bottom_right = 4
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_d8px2"]
 bg_color = Color(0.2370728, 0, 0.061645538, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2kjol"]
+bg_color = Color(0, 0, 0, 0.8980392)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_n4exh"]
+bg_color = Color(0.6, 0.6, 0.6, 0.44705883)
+border_width_bottom = 1
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ia8et"]
+bg_color = Color(0.21568628, 0.21568628, 0.2, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wjyi2"]
+bg_color = Color(0.21950099, 0.21950105, 0.21950087, 1)
+corner_radius_top_left = 2
+corner_radius_top_right = 2
+corner_radius_bottom_right = 2
+corner_radius_bottom_left = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_vws0m"]
+bg_color = Color(0.18359044, 0.18359047, 0.18359032, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ktgx3"]
+bg_color = Color(0.21950099, 0.21950105, 0.21950087, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_3tky0"]
+bg_color = Color(0.58431375, 0.21960784, 0.21960784, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_7d6yc"]
+bg_color = Color(0.6, 0.6, 0.6, 0.45882353)
 
 [node name="battlemode" type="Control" unique_id=184345478]
 layout_mode = 3
@@ -1633,6 +1692,8 @@ offset_top = 229.0
 offset_right = 444.0
 offset_bottom = 246.0
 theme_override_styles/normal = SubResource("StyleBoxFlat_wlai8")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_88bu1")
+theme_override_styles/hover = SubResource("StyleBoxFlat_rl1dd")
 text = "OK"
 
 [node name="nameEnemy" type="Label" parent="enemyInfo" unique_id=1643262744]
@@ -1646,7 +1707,7 @@ text = "Bandit Raider"
 horizontal_alignment = 1
 
 [node name="previewEnemyIdle" type="AnimatedSprite2D" parent="enemyInfo" unique_id=717291189]
-position = Vector2(289.7487, 144.3013)
+position = Vector2(289.0276, 144.3013)
 scale = Vector2(0.5, 0.5)
 sprite_frames = SubResource("SpriteFrames_moojr")
 animation = &"idle"
@@ -1788,12 +1849,6 @@ scale = Vector2(0.7813132, 0.64724815)
 texture = ExtResource("27_344p7")
 expand_mode = 1
 
-[node name="previewBtn" type="TextureButton" parent="enemyInfo/enemyAbilityInfo/ability1" unique_id=716094130]
-layout_mode = 0
-offset_left = -0.9229431
-offset_right = 82.14557
-offset_bottom = 22.192757
-
 [node name="Panel" type="Panel" parent="enemyInfo/enemyAbilityInfo/ability1" unique_id=1805535826]
 layout_mode = 0
 offset_left = 19.382751
@@ -1828,6 +1883,12 @@ text = "Level 3"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="previewBtn" type="TextureButton" parent="enemyInfo/enemyAbilityInfo/ability1" unique_id=716094130]
+layout_mode = 0
+offset_left = -0.9229431
+offset_right = 82.14554
+offset_bottom = 22.192749
+
 [node name="ability2" type="TextureRect" parent="enemyInfo/enemyAbilityInfo" unique_id=1870837771]
 texture_filter = 1
 layout_mode = 0
@@ -1838,12 +1899,6 @@ offset_bottom = 45.965523
 scale = Vector2(0.7813132, 0.64724815)
 texture = ExtResource("27_344p7")
 expand_mode = 1
-
-[node name="previewBtn" type="TextureButton" parent="enemyInfo/enemyAbilityInfo/ability2" unique_id=1369322779]
-layout_mode = 0
-offset_left = -0.9229431
-offset_right = 82.14557
-offset_bottom = 22.192757
 
 [node name="Panel" type="Panel" parent="enemyInfo/enemyAbilityInfo/ability2" unique_id=1587347852]
 layout_mode = 0
@@ -1879,6 +1934,12 @@ text = "Level 3"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="previewBtn" type="TextureButton" parent="enemyInfo/enemyAbilityInfo/ability2" unique_id=1369322779]
+layout_mode = 0
+offset_left = -0.9229431
+offset_right = 82.14557
+offset_bottom = 22.192757
+
 [node name="ability3" type="TextureRect" parent="enemyInfo/enemyAbilityInfo" unique_id=772346316]
 texture_filter = 1
 layout_mode = 0
@@ -1889,12 +1950,6 @@ offset_bottom = 61.766167
 scale = Vector2(0.7813132, 0.64724815)
 texture = ExtResource("27_344p7")
 expand_mode = 1
-
-[node name="previewBtn" type="TextureButton" parent="enemyInfo/enemyAbilityInfo/ability3" unique_id=529532052]
-layout_mode = 0
-offset_left = -0.9229431
-offset_right = 82.14557
-offset_bottom = 22.192757
 
 [node name="Panel" type="Panel" parent="enemyInfo/enemyAbilityInfo/ability3" unique_id=519929034]
 layout_mode = 0
@@ -1930,6 +1985,12 @@ text = "Level 3"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="previewBtn" type="TextureButton" parent="enemyInfo/enemyAbilityInfo/ability3" unique_id=529532052]
+layout_mode = 0
+offset_left = -0.9229431
+offset_right = 82.14557
+offset_bottom = 22.192757
+
 [node name="ability4" type="TextureRect" parent="enemyInfo/enemyAbilityInfo" unique_id=1918318478]
 texture_filter = 1
 layout_mode = 0
@@ -1940,12 +2001,6 @@ offset_bottom = 29.446667
 scale = Vector2(0.7813132, 0.64724815)
 texture = ExtResource("27_344p7")
 expand_mode = 1
-
-[node name="previewBtn" type="TextureButton" parent="enemyInfo/enemyAbilityInfo/ability4" unique_id=2102114176]
-layout_mode = 0
-offset_left = -0.9229431
-offset_right = 82.14557
-offset_bottom = 22.192757
 
 [node name="Panel" type="Panel" parent="enemyInfo/enemyAbilityInfo/ability4" unique_id=1052066791]
 layout_mode = 0
@@ -1981,6 +2036,12 @@ text = "Level 3"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="previewBtn" type="TextureButton" parent="enemyInfo/enemyAbilityInfo/ability4" unique_id=2102114176]
+layout_mode = 0
+offset_left = -0.9229431
+offset_right = 82.14554
+offset_bottom = 22.192757
+
 [node name="ability5" type="TextureRect" parent="enemyInfo/enemyAbilityInfo" unique_id=1077445814]
 texture_filter = 1
 layout_mode = 0
@@ -1991,12 +2052,6 @@ offset_bottom = 45.965523
 scale = Vector2(0.7813132, 0.64724815)
 texture = ExtResource("27_344p7")
 expand_mode = 1
-
-[node name="previewBtn" type="TextureButton" parent="enemyInfo/enemyAbilityInfo/ability5" unique_id=2093514453]
-layout_mode = 0
-offset_left = -0.9229431
-offset_right = 82.14557
-offset_bottom = 22.192757
 
 [node name="Panel" type="Panel" parent="enemyInfo/enemyAbilityInfo/ability5" unique_id=83192702]
 layout_mode = 0
@@ -2032,6 +2087,12 @@ text = "Level 3"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="previewBtn" type="TextureButton" parent="enemyInfo/enemyAbilityInfo/ability5" unique_id=2093514453]
+layout_mode = 0
+offset_left = -0.92297363
+offset_right = 82.14554
+offset_bottom = 22.192757
+
 [node name="ability6" type="TextureRect" parent="enemyInfo/enemyAbilityInfo" unique_id=1669501799]
 texture_filter = 1
 layout_mode = 0
@@ -2042,12 +2103,6 @@ offset_bottom = 61.766167
 scale = Vector2(0.7813132, 0.64724815)
 texture = ExtResource("27_344p7")
 expand_mode = 1
-
-[node name="previewBtn" type="TextureButton" parent="enemyInfo/enemyAbilityInfo/ability6" unique_id=1254959177]
-layout_mode = 0
-offset_left = -0.9229431
-offset_right = 82.14557
-offset_bottom = 22.192757
 
 [node name="Panel" type="Panel" parent="enemyInfo/enemyAbilityInfo/ability6" unique_id=766670238]
 layout_mode = 0
@@ -2082,3 +2137,122 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_d8px2")
 text = "Level 3"
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="previewBtn" type="TextureButton" parent="enemyInfo/enemyAbilityInfo/ability6" unique_id=1254959177]
+layout_mode = 0
+offset_left = -0.92297363
+offset_top = 1.5258789e-05
+offset_right = 82.14551
+offset_bottom = 22.192764
+
+[node name="abilityInfo" type="Control" parent="." unique_id=1475924645]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="panel" type="Panel" parent="abilityInfo" unique_id=592115781]
+clip_children = 2
+layout_mode = 0
+offset_left = 226.0
+offset_top = 82.0
+offset_right = 516.0
+offset_bottom = 206.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_2kjol")
+
+[node name="Panel" type="Panel" parent="abilityInfo/panel" unique_id=1237209547]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 31.0
+offset_right = 69.0
+offset_bottom = 92.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_n4exh")
+
+[node name="title" type="Label" parent="abilityInfo/panel" unique_id=1445983924]
+layout_mode = 0
+offset_left = 71.0
+offset_top = 3.0
+offset_right = 225.0
+offset_bottom = 20.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_ia8et")
+text = "Ability Info"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="abilityInformation" type="Label" parent="abilityInfo/panel" unique_id=392929709]
+layout_mode = 0
+offset_left = 71.0
+offset_top = 49.0
+offset_right = 262.0
+offset_bottom = 88.0
+theme_override_font_sizes/font_size = 10
+text = "Ability Info Ability Info Ability Info Ability Info Ability Info Ability Info Ability Info Ability Info Ability Info Ability Info Ability Info Ability Info ."
+autowrap_mode = 1
+
+[node name="abilityName" type="Label" parent="abilityInfo/panel" unique_id=2127249799]
+layout_mode = 0
+offset_left = 71.0
+offset_top = 32.0
+offset_right = 203.0
+offset_bottom = 49.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_wjyi2")
+text = "Battle Cry"
+
+[node name="OKbtn" type="Button" parent="abilityInfo/panel" unique_id=1444120657]
+layout_mode = 0
+offset_left = 101.0
+offset_top = 104.0
+offset_right = 196.0
+offset_bottom = 122.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_vws0m")
+text = "OK"
+
+[node name="abilityIcon" type="TextureRect" parent="abilityInfo/panel" unique_id=1599718116]
+layout_mode = 0
+offset_left = 23.0
+offset_top = 36.0
+offset_right = 63.0
+offset_bottom = 76.0
+texture = ExtResource("27_344p7")
+expand_mode = 1
+
+[node name="level" type="Label" parent="abilityInfo/panel" unique_id=1281346932]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 79.0
+offset_right = 75.0
+offset_bottom = 96.0
+scale = Vector2(0.6611385, 0.6818409)
+theme_override_styles/normal = SubResource("StyleBoxFlat_ktgx3")
+text = "Level 3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="type" type="Label" parent="abilityInfo/panel" unique_id=229686368]
+layout_mode = 0
+offset_left = 206.0
+offset_top = 34.999992
+offset_right = 253.0
+offset_bottom = 51.999992
+scale = Vector2(0.6611385, 0.6818409)
+theme_override_styles/normal = SubResource("StyleBoxFlat_3tky0")
+text = "Active"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Panel2" type="Panel" parent="abilityInfo/panel" unique_id=741042106]
+layout_mode = 0
+offset_right = 14.0
+offset_bottom = 14.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_7d6yc")
+
+[node name="Panel3" type="Panel" parent="abilityInfo/panel" unique_id=1587920950]
+layout_mode = 0
+offset_left = 276.0
+offset_top = 110.0
+offset_right = 290.0
+offset_bottom = 124.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_7d6yc")
