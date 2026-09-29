@@ -3681,11 +3681,7 @@ func apply_damage(event: DamageEvent) -> void:
 	_animate_hp_change()
 	_animate_player_hp_overlay_damage(event.final_damage)
 	_show_damage_text(event)
-	# Thorns = tick kecil, shake-nya kalem aja (bukan slam 14.0)
-	if event.source == DamageEvent.Source.THORNS:
-		trigger_camera_shake_and_blood(3.0, 0.2, 0.4)
-	else:
-		trigger_camera_shake_and_blood(14.0, 0.4, 0.85)
+	trigger_camera_shake_and_blood(14.0, 0.4, 0.85)
 	_update_battle_atmosphere(event)
 
 	# MORALE: Enemy attack berhasil (tidak di-parry) -> naikkan morale +25%
