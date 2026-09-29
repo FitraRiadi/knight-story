@@ -745,6 +745,14 @@ func _on_drop_item_clicked(item: ItemData, visual: ItemDropVisual) -> void:
 
 	PlayerDataManager.save()
 	print("[BattleManager] Item ditambahkan: ", item.item_name, " di slot ", slot_index)
+	# SFX pickup
+	var pickup_sfx: AudioStream = load("res://assets/audio/effects/battle/items/itemPickup.mp3")
+	if pickup_sfx:
+		var pickup_player := AudioStreamPlayer.new()
+		add_child(pickup_player)
+		pickup_player.stream = pickup_sfx
+		pickup_player.play()
+		pickup_player.finished.connect(pickup_player.queue_free)
 	# Party kecil kayak parry sukses: burst kunang + shake halus + semburan kiri-kanan
 	if battle_atmosphere:
 		battle_atmosphere.burst()
