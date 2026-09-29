@@ -1,11 +1,12 @@
 [gd_resource type="Resource" script_class="AbilityData" format=3 uid="uid://cq041xql6bmcc"]
 
 [ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/abilities/AbilityData.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://osri2skp6y4m" path="res://assets/art/ability/active/battlecry.jpg" id="1_2odg5"]
 
 [resource]
 script = ExtResource("1")
 ability_id = "life_steal"
 ability_name = "Life Steal"
 ability_type = 2
-activation = 0
+icon = ExtResource("1_2odg5")
 information = "Heals a portion of damage dealt on normal and battle cry hits."

@@ -1,10 +1,12 @@
 [gd_resource type="Resource" script_class="AbilityData" format=3 uid="uid://c0sv4kwsteft7"]
 
 [ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/abilities/AbilityData.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://osri2skp6y4m" path="res://assets/art/ability/active/battlecry.jpg" id="1_05t6r"]
 
 [resource]
 script = ExtResource("1")
 ability_id = "tactical_attack"
 ability_name = "Tactical Attack"
 activation = 1
+icon = ExtResource("1_05t6r")
 information = "Counter-attacks after the player strikes. Higher level: more often, harder."

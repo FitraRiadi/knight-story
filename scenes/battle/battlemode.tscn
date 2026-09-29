@@ -2186,11 +2186,12 @@ vertical_alignment = 1
 layout_mode = 0
 offset_left = 71.0
 offset_top = 49.0
-offset_right = 262.0
-offset_bottom = 88.0
-theme_override_font_sizes/font_size = 10
+offset_right = 1362.6155
+offset_bottom = 462.0
+scale = Vector2(0.122181475, 0.10668502)
+theme_override_font_sizes/font_size = 100
 text = "Ability Info Ability Info Ability Info Ability Info Ability Info Ability Info Ability Info Ability Info Ability Info Ability Info Ability Info Ability Info ."
-autowrap_mode = 1
+autowrap_mode = 3
 
 [node name="abilityName" type="Label" parent="abilityInfo/panel" unique_id=2127249799]
 layout_mode = 0

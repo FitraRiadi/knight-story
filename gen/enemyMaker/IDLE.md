@@ -1,125 +1,81 @@
-[FRAME 1 - IDLE]
+[FRAME 1 — IDLE | REFERENCE LOCK]
 
-Modify ONLY the provided enemy.
+Use the provided image as the MASTER REFERENCE.
 
-Make the enemy stand in a natural IDLE STANCE while LOOKING DIRECTLY AT THE CAMERA / PLAYER.
+DO NOT REDRAW THE ENEMY.
 
-The enemy must face the camera frontally.
-Its head, face, and body must be oriented toward the camera.
-
-Keep EXACTLY the same:
-- enemy design
-- appearance
+Preserve the enemy's EXACT:
+- silhouette
+- body shape
+- pose structure
+- head position
+- limb positions
+- hand positions
+- feet positions
 - proportions
+- clothing
+- armor
+- weapon
 - colors
-- equipment
+- pixel details
 - size
-- position
-- pixel-art style
+- screen position
 
-Only make a subtle relaxed idle pose with natural breathing.
+The enemy must remain in the EXACT SAME LOCATION and occupy the EXACT SAME AREA of the image.
 
-DO NOT add anything.
+The camera, perspective, composition, and background are LOCKED.
+
+ONLY adjust the minimum pixels necessary to create a subtle idle breathing pose.
+
+The body remains stationary.
+Feet remain completely locked.
+Hands remain locked.
+Equipment remains locked.
+Head remains almost completely locked.
+
+Only extremely subtle chest/shoulder breathing movement is allowed.
+
+DO NOT change the enemy's design.
+DO NOT change the silhouette.
+DO NOT rotate the body.
+DO NOT turn the head.
+DO NOT move the limbs.
+DO NOT change the stance.
+DO NOT reposition the enemy.
 
 NO new objects.
 NO new characters.
-NO new equipment.
-NO particles.
 NO effects.
+NO particles.
 NO smoke.
 NO glow.
 NO blood.
-NO shadows.
-NO environment changes.
-NO camera movement.
-NO zoom.
-NO walking.
-NO attacking.
+NO additional shadows.
 
-ONE SINGLE STATIC IMAGE.
-ONE IDLE FRAME ONLY.
+ONE STATIC IMAGE.
+ONE FRAME.
 
 ======================================================================
 
 [FRAME 2 — IDLE]
 
-Use the provided enemy image as the exact reference.
+IDLE BODY MOVEMENT:
 
-Create FRAME 2 of the idle animation.
+The enemy is gently settling downward at the end of the breath.
 
-The enemy continues LOOKING DIRECTLY AT THE CAMERA / PLAYER.
+- Both shoulders lower slightly downward.
+- The chest becomes slightly less expanded.
+- Both knees bend slightly downward.
+- The hips lower by a very small amount.
+- The feet remain completely locked to the ground.
+- The knees move downward naturally, without moving forward or sideways.
 
-Keep the exact same:
-- position
-- size
-- camera
-- perspective
-- design
-- proportions
-- colors
-- equipment
-- background
+The entire body settles DOWN slightly as the enemy exhales.
 
-Only make a VERY SUBTLE idle movement:
-- chest moves slightly from breathing
-- shoulders shift very slightly
-- head moves a tiny amount naturally
-- existing body parts move minimally
+The movement must be subtle and symmetrical.
 
-The enemy remains completely stationary in place.
-
-DO NOT add anything.
-DO NOT change the design.
-DO NOT change the pose significantly.
-DO NOT move the enemy.
-DO NOT attack.
-DO NOT walk.
-DO NOT add effects, particles, objects, characters, shadows, or smoke.
-
-ONE SINGLE STATIC IMAGE.
-ONE IDLE FRAME ONLY.
-
-======================================================================
-
-[FRAME 3 — IDLE]
-
-Use the provided enemy image as the exact reference.
-
-Create FRAME 3 of the idle animation.
-
-The enemy continues LOOKING DIRECTLY AT THE CAMERA / PLAYER.
-
-Keep exactly the same:
-- position
-- size
-- camera
-- perspective
-- design
-- proportions
-- colors
-- equipment
-- background
-
-Continue the idle motion with a VERY SUBTLE change:
-- chest slightly expanded from breathing
-- shoulders slightly raised
-- head subtly shifts back to a natural position
-- existing body parts move minimally
-
-The enemy remains completely stationary.
-
-DO NOT add anything.
-DO NOT redesign.
-DO NOT change equipment.
-DO NOT move the enemy.
-DO NOT attack, walk, or turn.
-NO particles.
-NO effects.
-NO smoke.
-NO glow.
-NO blood.
-NO new objects.
-NO new characters.
-
-ONE SINGLE STATIC IMAGE.
-ONE IDLE FRAME ONLY.
+DO NOT make the enemy crouch.
+DO NOT make the enemy squat.
+DO NOT move the feet.
+DO NOT move the enemy's position horizontally.
+DO NOT sway left or right.

@@ -109,40 +109,67 @@ ONE ATTACK PREPARATION FRAME ONLY.
 
 [ATTACK 3 — HIT / IMPACT]
 
-Use the provided enemy image as the exact reference.
+Use the provided enemy image as the EXACT MASTER REFERENCE.
 
 Create the THIRD FRAME of the attack animation.
 
-The enemy delivers a DIRECT HIT toward the PLAYER / CAMERA.
-
-The attack direction is:
+ATTACK DIRECTION:
 ENEMY → CAMERA / PLAYER
 
-The attacking arm is FULLY EXTENDED FORWARD toward the camera/player.
-Show the exact ACTIVE IMPACT MOMENT.
+The enemy is attacking DIRECTLY toward the center of the camera.
 
-The enemy faces DIRECTLY toward the camera.
-The upper body leans slightly forward naturally.
-Eyes remain focused on the player.
+HEAD LOCK:
+The enemy's HEAD and FACE must face DIRECTLY toward the camera.
+The face must be FRONT-FACING.
+The nose, eyes, and facial center point directly toward the CENTER of the camera.
+
+DO NOT turn the head left.
+DO NOT turn the head right.
+DO NOT look downward.
+DO NOT look upward.
+DO NOT look away from the camera.
+
+The eyes are looking directly at the player/camera.
+
+WEAPON DIRECTION:
+The weapon must point DIRECTLY toward the CENTER of the camera.
+
+The weapon's attack path is a straight line:
+WEAPON → CAMERA CENTER
+
+The weapon must be positioned in front of the enemy's central body line.
+
+Do NOT swing the weapon toward the left.
+Do NOT swing the weapon toward the right.
+Do NOT point the weapon toward the background.
+Do NOT angle the weapon away from the camera.
+
+The attacking arm is FULLY EXTENDED FORWARD toward the camera.
+
+Show the EXACT ACTIVE IMPACT MOMENT.
+
+The upper body may lean slightly forward to support the strike.
 
 Keep exactly the same:
-- position
-- size
-- camera
-- perspective
-- design
+- enemy design
+- silhouette
 - proportions
 - colors
 - equipment
+- size
+- position
+- camera
+- perspective
 - background
 
-The enemy itself remains anchored in place.
+The enemy's feet remain locked in place.
 
-DO NOT move sideways.
-DO NOT walk.
-DO NOT lunge across the scene.
-DO NOT rotate the enemy.
+The enemy does NOT walk.
+The enemy does NOT move sideways.
+The enemy does NOT rotate.
+The enemy does NOT lunge across the scene.
 
+NO redesign.
 NO new objects.
 NO particles.
 NO effects.
@@ -152,7 +179,6 @@ NO blood.
 NO motion trails.
 NO camera movement.
 NO zoom.
-NO redesign.
 
 ONE SINGLE STATIC IMAGE.
 ONE ATTACK HIT FRAME ONLY.

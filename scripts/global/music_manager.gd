@@ -10,7 +10,7 @@ extends Node
 var _current_player: AudioStreamPlayer
 var _current_path: String = ""
 var _fade_tween: Tween
-var _master_volume_db: float = -26.02
+var _master_volume_db: float = -15
 
 
 func _ready() -> void:

@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="AbilityData" format=3 uid="uid://b2265a03f0302"]
 
 [ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/abilities/AbilityData.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://osri2skp6y4m" path="res://assets/art/ability/active/battlecry.jpg" id="1_m1eqv"]
 
 [resource]
 script = ExtResource("1")
@@ -8,4 +9,5 @@ ability_id = "battle_cry"
 ability_name = "Battle Cry"
 ability_type = 1
 activation = 1
+icon = ExtResource("1_m1eqv")
 information = "Roars and strikes a second time with bonus damage. Parry window always opens."

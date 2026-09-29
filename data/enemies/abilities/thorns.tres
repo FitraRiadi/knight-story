@@ -1,11 +1,12 @@
-[gd_resource type="Resource" script_class="AbilityData" format=3]
+[gd_resource type="Resource" script_class="AbilityData" format=3 uid="uid://x0gqihayou7j"]
 
 [ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/abilities/AbilityData.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://osri2skp6y4m" path="res://assets/art/ability/active/battlecry.jpg" id="1_ekgwn"]
 
 [resource]
 script = ExtResource("1")
 ability_id = "thorns"
 ability_name = "Thorns"
 ability_type = 4
-activation = 0
+icon = ExtResource("1_ekgwn")
 information = "Reflects a portion of received damage back. The dead don't reflect."

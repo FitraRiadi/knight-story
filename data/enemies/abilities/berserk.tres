@@ -1,6 +1,7 @@
 [gd_resource type="Resource" script_class="AbilityData" format=3 uid="uid://cnrvpwsecuanr"]
 
 [ext_resource type="Script" uid="uid://sjmfmcxdiljm" path="res://scripts/local/characters/enemy/abilities/AbilityData.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://osri2skp6y4m" path="res://assets/art/ability/active/battlecry.jpg" id="1_dcds5"]
 
 [resource]
 script = ExtResource("1")
@@ -8,4 +9,5 @@ ability_id = "berserk"
 ability_name = "Berserk"
 ability_type = 3
 activation = 1
+icon = ExtResource("1_dcds5")
 information = "Unleashes an unparryable flurry of hits. Higher level: more hits, more pain."

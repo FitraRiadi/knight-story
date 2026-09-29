@@ -12,7 +12,7 @@
 [ext_resource type="Texture2D" uid="uid://hlupngh0nw5u" path="res://assets/art/sprites/enemy/grooter/hit2.png" id="8_drvox"]
 [ext_resource type="Texture2D" uid="uid://b32kx3oikj31r" path="res://assets/art/sprites/enemy/grooter/dead1.png" id="9_66wuw"]
 [ext_resource type="Texture2D" uid="uid://dsay57h3moksf" path="res://assets/art/sprites/enemy/grooter/defend1.png" id="10_vkkbq"]
-[ext_resource type="Resource" path="res://data/enemies/abilities/thorns.tres" id="ab_thorns"]
+[ext_resource type="Resource" uid="uid://x0gqihayou7j" path="res://data/enemies/abilities/thorns.tres" id="ab_thorns"]
 [ext_resource type="Resource" uid="uid://besh3dfkieai5" path="res://data/items/consumable/protection_potion.tres" id="drop_prot"]
 [ext_resource type="Script" uid="uid://d1chgapjpv2yu" path="res://scripts/local/items/ItemData.gd" id="drop_script"]
 
