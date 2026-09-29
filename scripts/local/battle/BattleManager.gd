@@ -30,7 +30,6 @@ extends Control
 @onready var enemy_info_preview: AnimatedSprite2D = $enemyInfo/previewEnemyIdle
 @onready var enemy_info_ability_box: Control = $enemyInfo/enemyAbilityInfo
 @onready var enemy_info_ok: Button = $enemyInfo/OKbtn
-var enemy_info_layer: CanvasLayer
 var is_enemy_info_open := false
 var enemy_info_enemy: BattleEnemy = null
 var enemy_info_intro_tween: Tween = null
@@ -3866,15 +3865,8 @@ func _on_enemy_clicked(clicked_enemy: BattleEnemy) -> void:
 func _setup_enemy_info_layer() -> void:
 	if not enemy_info:
 		return
-	# Layer top sendiri biar selalu di atas enemy/UI (layout full-rect ikut persis)
-	if enemy_info_layer == null:
-		enemy_info_layer = CanvasLayer.new()
-		enemy_info_layer.layer = 200
-		add_child(enemy_info_layer)
-		var old_parent := enemy_info.get_parent()
-		if old_parent:
-			old_parent.remove_child(enemy_info)
-		enemy_info_layer.add_child(enemy_info)
+	# SENGAJA gak pindah parent/CanvasLayer: node tetep di tempat scene
+	# biar layout plek properti. Top order via move_to_front() pas show.
 	if enemy_info_ok and not enemy_info_ok.pressed.is_connected(_on_enemy_info_ok_pressed):
 		enemy_info_ok.pressed.connect(_on_enemy_info_ok_pressed)
 	enemy_info.hide()
@@ -3898,6 +3890,9 @@ func _open_enemy_info(enemy: BattleEnemy) -> void:
 		if is_instance_valid(e) and e.enemy_collision:
 			e.enemy_collision.disabled = true
 	_fill_enemy_info(enemy)
+	# Paling atas di parent yang sama (di atas enemy yang spawn belakangan).
+	# Gak pindah parent/CanvasLayer biar layout plek properti scene.
+	enemy_info.move_to_front()
 	enemy_info.show()
 	_play_enemy_info_intro()
 
@@ -3914,7 +3909,7 @@ func _fill_enemy_info(enemy: BattleEnemy) -> void:
 		enemy_info_preview.sprite_frames = enemy.sprite_frames
 		if enemy_info_preview.sprite_frames and enemy_info_preview.sprite_frames.has_animation(&"idle"):
 			enemy_info_preview.play("idle")
-	for i in range(1, 6):
+	for i in range(1, 7):
 		var slot := enemy_info_ability_box.get_node_or_null("ability" + str(i)) as TextureRect
 		if slot == null:
 			continue
