@@ -787,10 +787,12 @@ func _execute_attack(
 
 	_focus_camera_to_me(camera, true)
 
-	var is_power_attack: bool = damage_multiplier > 1.15
+	var is_power_attack: bool = damage_multiplier > 1.15 or enraged
+	if enraged:
+		text_override = "Enraged Strike!"
 	show_reaction_text(
 		text_override,
-		_get_emotion_color(emotion),
+		Color(1.0, 0.15, 0.05) if enraged else _get_emotion_color(emotion),
 		is_power_attack
 	)
 	try_chatter(&"attack", emotion)
@@ -834,7 +836,7 @@ func _execute_attack(
 	normal_event.can_be_parried = true
 	normal_event.can_trigger_life_steal = true
 	attack_hit.emit(normal_event)
-	_shake_camera(camera, 12.0 * damage_multiplier, 0.25)
+	_shake_camera(camera, (16.0 if enraged else 12.0) * damage_multiplier, 0.25)
 
 	await get_tree().create_timer(0.6).timeout
 
