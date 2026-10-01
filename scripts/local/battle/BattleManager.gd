@@ -241,7 +241,8 @@ var _is_scoreboard_hiding: bool = false
 # Preload langsung biar gak tergantung cache global class editor
 const ProbGen = preload("res://scripts/global/probability_generator.gd")
 const BASIC_ATTACK_PATH := "res://data/action_cards/attack_cards/basic_attack.tres"
-# Pool kartu skill (3 sihir + 2 jurus mechanic). Max SKILL_DECK_MAX.
+# Kartu hasil draft victory: dijamin masuk deck battle berikut (runtime only)
+var next_battle_guaranteed: Array[String] = []
 const SKILL_CARD_POOL: Array[String] = [
 	"res://data/action_cards/poison.tres",
 	"res://data/action_cards/bleed.tres",
@@ -1024,40 +1025,28 @@ func _load_action_cards() -> void:
 	action_cards.clear()
 	action_card_cooldowns.clear()
 
-	# Koleksi permanen dari save; kosong = generate starter acak (weighted)
-	var collection: Array[String] = []
-	var pd = PlayerDataManager.data
-	if pd and pd.skill_deck != null and not pd.skill_deck.is_empty():
-		collection = pd.skill_deck.duplicate()
-	else:
-		collection = _roll_starter_deck()
-		if pd:
-			pd.skill_deck = collection.duplicate()
-			PlayerDataManager.save()
+	# Deck fresh tiap battle: guaranteed (hasil draft victory lalu) dulu,
+	# sisanya weighted acak sampai max. Tanpa koleksi permanen.
+	var paths: Array[String] = []
+	for path in next_battle_guaranteed:
+		if paths.size() < SKILL_DECK_MAX:
+			paths.append(path)
+	next_battle_guaranteed.clear()
+	var pool: Array[String] = []
+	var weights: Array = []
+	for p in SKILL_CARD_POOL:
+		var data := load(p) as ActionCardData
+		if data:
+			pool.append(p)
+			weights.append(data.spawn_probability)
+	while paths.size() < SKILL_DECK_MAX and not pool.is_empty():
+		paths.append(pool[ProbGen.roll_multi(weights, 1, true)[0]])
 
-	for path in collection:
+	for path in paths:
 		var card := load(path) as ActionCardData
 		if card:
 			action_cards.append(card.duplicate())
 			action_card_cooldowns.append(0)
-
-
-func _roll_starter_deck() -> Array[String]:
-	# Starter acak: 5x weighted draw (boleh kembar) dari pool skill
-	var datas: Array = []
-	var weights: Array = []
-	for path in SKILL_CARD_POOL:
-		var data := load(path) as ActionCardData
-		if data:
-			datas.append(path)
-			weights.append(data.spawn_probability)
-	var out: Array[String] = []
-	if datas.is_empty():
-		return out
-	var picks: Array[int] = ProbGen.roll_multi(weights, SKILL_DECK_MAX, true)
-	for idx in picks:
-		out.append(datas[idx])
-	return out
 
 
 func _on_attack_mechanic_done() -> void:
@@ -4470,65 +4459,49 @@ func _hide_scoreboard() -> void:
 
 
 # ============================================================
-# ROGUELIKE DRAFT (post-victory: pick 1 of 3, replace kalau penuh)
+# ROGUELIKE DRAFT (post-victory: pick 1 of 3 -> deck battle berikut)
+# Tanpa koleksi permanen: pick dijamin masuk next battle, skip = acak penuh.
 # ============================================================
 
 var draft_ui: ActionCardUI = null
 var is_draft_open := false
 var draft_offer_paths: Array[String] = []
-var draft_replace_mode := false
 var draft_pending_path := ""
 var _draft_done := false
-var _draft_wants_replace := false
 var draft_hint_label: Label = null
 
 
 func _maybe_open_draft() -> void:
-	_open_draft_popup(false, "")
+	_open_draft_popup()
 
 
-func _open_draft_popup(replace_mode: bool, pending: String) -> void:
+func _open_draft_popup() -> void:
 	if is_draft_open:
 		return
+	# 3 acak weighted (boleh kembar)
 	var offer: Array[ActionCardData] = []
 	var offer_cools: Array[int] = []
 	var paths: Array[String] = []
-	if replace_mode:
-		# Fase replace: tampilkan deck sendiri, pilih 1 buat dibuang
-		var pd0 = PlayerDataManager.data
-		if pd0 == null or pd0.skill_deck == null or pd0.skill_deck.is_empty():
-			_finish_draft_and_respawn()
-			return
-		for path in pd0.skill_deck:
-			var d := load(path) as ActionCardData
-			if d:
-				offer.append(d.duplicate())
-				offer_cools.append(0)
-				paths.append(path)
-	else:
-		# Fase pick: 3 acak weighted (boleh kembar)
-		var datas: Array = []
-		var weights: Array = []
-		for path in SKILL_CARD_POOL:
-			var d := load(path) as ActionCardData
-			if d:
-				datas.append(d)
-				weights.append(d.spawn_probability)
-		if datas.is_empty():
-			_finish_draft_and_respawn()
-			return
-		for idx in ProbGen.roll_multi(weights, 3, true):
-			offer.append((datas[idx] as ActionCardData).duplicate())
-			offer_cools.append(0)
-			paths.append(SKILL_CARD_POOL[idx])
+	var datas: Array = []
+	var weights: Array = []
+	for path in SKILL_CARD_POOL:
+		var d := load(path) as ActionCardData
+		if d:
+			datas.append(d)
+			weights.append(d.spawn_probability)
+	if datas.is_empty():
+		_finish_draft_and_respawn()
+		return
+	for idx in ProbGen.roll_multi(weights, 3, true):
+		offer.append((datas[idx] as ActionCardData).duplicate())
+		offer_cools.append(0)
+		paths.append(SKILL_CARD_POOL[idx])
 	if offer.is_empty():
 		_finish_draft_and_respawn()
 		return
-	draft_replace_mode = replace_mode
-	draft_pending_path = pending
+	draft_pending_path = ""
 	draft_offer_paths = paths
 	_draft_done = false
-	_draft_wants_replace = false
 	is_draft_open = true
 	is_player_turn = false
 	_set_buttons_active(false)
@@ -4538,12 +4511,7 @@ func _open_draft_popup(replace_mode: bool, pending: String) -> void:
 	add_child(draft_ui)
 	draft_ui.card_selected.connect(_on_draft_card_selected)
 	draft_ui.card_closed.connect(_on_draft_card_closed)
-	var pd2 = PlayerDataManager.data
-	var deck_n: int = pd2.skill_deck.size() if (pd2 and pd2.skill_deck != null) else 0
-	if replace_mode:
-		_show_draft_hint("Deck full! Drop 1 to make room (used cards return each battle)")
-	else:
-		_show_draft_hint("Choose 1 card (deck %d/%d)" % [deck_n, SKILL_DECK_MAX])
+	_show_draft_hint("Choose 1 card (next battle)")
 	draft_ui.open()
 
 
@@ -4574,48 +4542,24 @@ func _on_draft_card_selected(index: int) -> void:
 		return
 	if index < 0 or index >= draft_offer_paths.size():
 		return
-	var pd = PlayerDataManager.data
-	if pd == null:
-		return
-	if pd.skill_deck == null:
-		pd.skill_deck = []
-	if not draft_replace_mode:
-		if pd.skill_deck.size() < SKILL_DECK_MAX:
-			pd.skill_deck.append(draft_offer_paths[index])
-			PlayerDataManager.save()
-			_draft_done = true
-		else:
-			# Penuh: simpan pick, lanjut fase replace pas popup ketutup
-			draft_pending_path = draft_offer_paths[index]
-			_draft_wants_replace = true
-	else:
-		# Fase replace: buang yang dipilih, pending masuk
-		var drop_idx := index
-		if drop_idx >= 0 and drop_idx < pd.skill_deck.size():
-			pd.skill_deck.remove_at(drop_idx)
-			pd.skill_deck.append(draft_pending_path)
-			PlayerDataManager.save()
-			_draft_done = true
-			draft_pending_path = ""
+	# Pick masuk guaranteed deck battle berikut (bg-close = skip)
+	draft_pending_path = draft_offer_paths[index]
+	_draft_done = true
 
 
 func _on_draft_card_closed() -> void:
 	is_draft_open = false
 	draft_ui = null
 	_hide_draft_hint()
-	if _draft_wants_replace:
-		_draft_wants_replace = false
-		_open_draft_popup(true, draft_pending_path)
-		return
 	_finish_draft_and_respawn()
 
 
 func _finish_draft_and_respawn() -> void:
+	if _draft_done and draft_pending_path != "":
+		next_battle_guaranteed = [draft_pending_path]
 	_draft_done = false
-	_draft_wants_replace = false
 	draft_pending_path = ""
 	draft_offer_paths.clear()
-	draft_replace_mode = false
 	is_draft_open = false
 	draft_ui = null
 	_hide_draft_hint()
