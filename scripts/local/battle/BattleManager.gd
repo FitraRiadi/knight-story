@@ -191,6 +191,8 @@ var target_attack_qte_pos: Vector2
 const RAPID_HIT_RADIUS: float = 60.0
 # Potongan waktu global (detik) tiap tap meleset.
 const RAPID_MISS_TIME_PENALTY: float = 0.5
+# Durasi total rapid (detik) — jadi penyebut buat rasio bar HUD.
+const RAPID_TOTAL_TIME: float = 5.0
 
 var _is_rapid_active: bool = false
 var _rapid_timer_global: float = 0.0
@@ -204,6 +206,23 @@ var _rapid_enemies_alive: Array = []
 var _rapid_enemy_index: int = 0
 var _rapid_entry_sfx_cache: AudioStream
 var _pending_rapid_deaths: Array = []  # [{exp, gold, drops, enemy}] — di-proses setelah rapid selesai
+
+# --- Rapid HUD (duration bar "RAPID ATTACK") ---
+# Node di layer sendiri (bukan anak rapidAttack) supaya SELALU nempel di
+# tengah atas layar & gak ikut geser sama zoom/pan kamera rapid.
+var _rapid_hud_layer: CanvasLayer = null
+var _rapid_hud_root: Control = null
+var _rapid_hud_fill: ColorRect = null
+var _rapid_hud_shine: ColorRect = null
+var _rapid_hud_flash: ColorRect = null
+var _rapid_hud_label: Label = null
+var _rapid_hud_drain_tween: Tween = null
+var _rapid_hud_danger_tween: Tween = null
+var _rapid_hud_shake_tween: Tween = null
+
+const RAPID_HUD_W: float = 260.0
+const RAPID_HUD_H: float = 14.0
+const RAPID_HUD_DANGER_AT: float = 1.5  # sisa detik -> mulai denyut merah
 
 # PLAYER HP CAMERA OVERLAY
 var player_hp_overlay_layer: CanvasLayer
@@ -388,6 +407,10 @@ func _process(delta: float) -> void:
 				# Semua enemy mati → rapid selesai
 				_finish_raptive()
 				return
+
+		# Bar HUD: denyut bahaya pas sisa waktu menipis
+		if _rapid_timer_global <= RAPID_HUD_DANGER_AT:
+			_start_rapid_hud_danger()
 
 		# 5 detik global habis → rapid selesai
 		if _rapid_timer_global <= 0.0:
@@ -2276,7 +2299,7 @@ func _start_attack_raptive() -> void:
 		return
 
 	_is_rapid_active = true
-	_rapid_timer_global = 5.0
+	_rapid_timer_global = RAPID_TOTAL_TIME
 	_rapid_timer_per_btn = 1.0
 	_rapid_damage_per_hit = player_damage * 0.15
 	_rapid_hits = 0
@@ -2306,6 +2329,9 @@ func _start_attack_raptive() -> void:
 
 	_spawn_raptive_btn_on_enemy(_rapid_current_enemy)
 	_zoom_camera_to_enemy(_rapid_current_enemy, 1.10)
+
+	# === HUD duration bar "RAPID ATTACK" (tengah atas, anti-zoom) ===
+	_show_rapid_hud()
 
 	# === Title + Subtitle — sekali saat rapid mulai ===
 	var title_label := get_node_or_null("rapidAttack/title") as Label
@@ -2342,6 +2368,198 @@ func _start_attack_raptive() -> void:
 			set_meta("_subtitle_blink_tween", blink_tw)
 
 
+# ============================================================
+# RAPID HUD — duration bar "RAPID ATTACK"
+# Di-layer sendiri (CanvasLayer) & anchor di tengah atas viewport, jadi
+# gak pernah ikut bergeser akibat zoom/pan kamera rapid. Bar ngikut
+# timer global sungguhan (bukan timer sendiri) supaya sinkron.
+# ============================================================
+
+func _build_rapid_hud() -> void:
+	if _rapid_hud_layer and is_instance_valid(_rapid_hud_layer):
+		return
+	_rapid_hud_layer = CanvasLayer.new()
+	_rapid_hud_layer.layer = 150
+	add_child(_rapid_hud_layer)
+
+	_rapid_hud_root = Control.new()
+	_rapid_hud_root.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_rapid_hud_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_rapid_hud_layer.add_child(_rapid_hud_root)
+
+	var vp := get_viewport().get_visible_rect().size
+	var cx: float = vp.x * 0.5
+	var top_y: float = 14.0
+
+	# Judul "RAPID ATTACK" di atas bar
+	_rapid_hud_label = Label.new()
+	_rapid_hud_label.text = "RAPID ATTACK"
+	_rapid_hud_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_rapid_hud_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_rapid_hud_label.add_theme_font_size_override("font_size", 15)
+	_rapid_hud_label.add_theme_color_override("font_color", Color(1.0, 0.92, 0.72))
+	_rapid_hud_label.add_theme_constant_override("outline_size", 6)
+	_rapid_hud_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+	_rapid_hud_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_rapid_hud_label.size = Vector2(240.0, 20.0)
+	_rapid_hud_label.position = Vector2(cx - 120.0, top_y)
+	_rapid_hud_root.add_child(_rapid_hud_label)
+
+	var bar_y: float = top_y + 22.0
+
+	# Track gelap + border
+	var track := ColorRect.new()
+	track.color = Color(0.06, 0.05, 0.08, 0.85)
+	track.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	track.size = Vector2(RAPID_HUD_W + 4.0, RAPID_HUD_H + 4.0)
+	track.position = Vector2(cx - RAPID_HUD_W * 0.5 - 2.0, bar_y - 2.0)
+	_rapid_hud_root.add_child(track)
+
+	# Isi bar (di-depan track, diklik dengan cara自己 geser lebarnya)
+	_rapid_hud_fill = ColorRect.new()
+	_rapid_hud_fill.color = Color(1.0, 0.78, 0.25)
+	_rapid_hud_fill.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_rapid_hud_fill.size = Vector2(RAPID_HUD_W, RAPID_HUD_H)
+	_rapid_hud_fill.position = Vector2(cx - RAPID_HUD_W * 0.5, bar_y)
+	_rapid_hud_root.add_child(_rapid_hud_fill)
+
+	# Kilau tipis di atas bar biar keliatan "ber glossy"
+	_rapid_hud_shine = ColorRect.new()
+	_rapid_hud_shine.color = Color(1, 1, 1, 0.22)
+	_rapid_hud_shine.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_rapid_hud_shine.size = Vector2(RAPID_HUD_W, 3.0)
+	_rapid_hud_shine.position = Vector2(cx - RAPID_HUD_W * 0.5, bar_y + 1.0)
+	_rapid_hud_root.add_child(_rapid_hud_shine)
+
+	# Flash merah (miss / bahaya) — full bar, alpha 0 default
+	_rapid_hud_flash = ColorRect.new()
+	_rapid_hud_flash.color = Color(1.0, 0.25, 0.2, 0.0)
+	_rapid_hud_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_rapid_hud_flash.size = Vector2(RAPID_HUD_W, RAPID_HUD_H)
+	_rapid_hud_flash.position = Vector2(cx - RAPID_HUD_W * 0.5, bar_y)
+	_rapid_hud_root.add_child(_rapid_hud_flash)
+
+
+func _show_rapid_hud() -> void:
+	_build_rapid_hud()
+	_rapid_hud_root.visible = true
+	# Reset tampilan
+	_rapid_hud_fill.size.x = RAPID_HUD_W
+	_rapid_hud_fill.color = Color(1.0, 0.78, 0.25)
+	_rapid_hud_flash.color = Color(1.0, 0.25, 0.2, 0.0)
+	_rapid_hud_root.pivot_offset = _rapid_hud_root.size * 0.5
+	# Pop-in halus
+	_rapid_hud_root.scale = Vector2(0.9, 0.9)
+	_rapid_hud_root.modulate.a = 0.0
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(_rapid_hud_root, "modulate:a", 1.0, 0.15)\
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tw.tween_property(_rapid_hud_root, "scale", Vector2.ONE, 0.25)\
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_sync_rapid_hud_drain()
+
+
+func _hide_rapid_hud() -> void:
+	if _rapid_hud_drain_tween and _rapid_hud_drain_tween.is_valid():
+		_rapid_hud_drain_tween.kill()
+	_rapid_hud_drain_tween = null
+	_stop_rapid_hud_danger()
+	if _rapid_hud_shake_tween and _rapid_hud_shake_tween.is_valid():
+		_rapid_hud_shake_tween.kill()
+	_rapid_hud_shake_tween = null
+	if _rapid_hud_root and is_instance_valid(_rapid_hud_root):
+		_rapid_hud_root.visible = false
+
+
+func _sync_rapid_hud_drain() -> void:
+	# Bar ngikut _rapid_timer_global sungguhan (bukan timer sendiri) supaya
+	# sinkron & bar selalu mulai dari penuh lalu habis pas timer habis.
+	if not (_rapid_hud_fill and is_instance_valid(_rapid_hud_fill)):
+		return
+	var ratio: float = clampf(_rapid_timer_global / RAPID_TOTAL_TIME, 0.0, 1.0)
+	if _rapid_hud_drain_tween and _rapid_hud_drain_tween.is_valid():
+		_rapid_hud_drain_tween.kill()
+	_rapid_hud_drain_tween = create_tween()
+	_set_rapid_hud_ratio(ratio)
+	# sisa durasi = sisa timer, linear persis sama kayak hitungan timer
+	_rapid_hud_drain_tween.tween_method(_set_rapid_hud_ratio, ratio, 0.0, _rapid_timer_global)\
+		.set_trans(Tween.TRANS_LINEAR)
+	_rapid_hud_drain_tween.finished.connect(_on_rapid_hud_drain_finished)
+
+
+func _set_rapid_hud_ratio(r: float) -> void:
+	if not (_rapid_hud_fill and is_instance_valid(_rapid_hud_fill)):
+		return
+	_rapid_hud_fill.size.x = maxf(0.0, RAPID_HUD_W * r)
+	# Warna nyambung: hijau-kuning (aman) -> oranye -> merah (bahaya)
+	var color: Color
+	if r > 0.55:
+		color = Color(1.0, 0.78, 0.25)
+	elif r > 0.3:
+		color = Color(1.0, 0.55, 0.18)
+	else:
+		color = Color(1.0, 0.3, 0.2)
+	_rapid_hud_fill.color = color
+
+
+func _on_rapid_hud_drain_finished() -> void:
+	if _rapid_hud_drain_tween and _rapid_hud_drain_tween.is_valid():
+		_rapid_hud_drain_tween.kill()
+	_rapid_hud_drain_tween = null
+	_stop_rapid_hud_danger()
+
+
+func _start_rapid_hud_danger() -> void:
+	# Sisa waktu tipis -> bar denyut merah + kilau, biar "buruan!"
+	if _rapid_hud_danger_tween and _rapid_hud_danger_tween.is_valid():
+		return
+	_rapid_hud_danger_tween = create_tween().set_loops()
+	_rapid_hud_danger_tween.tween_property(_rapid_hud_flash, "color:a", 0.35, 0.28)\
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_rapid_hud_danger_tween.tween_property(_rapid_hud_flash, "color:a", 0.0, 0.28)\
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _stop_rapid_hud_danger() -> void:
+	if _rapid_hud_danger_tween and _rapid_hud_danger_tween.is_valid():
+		_rapid_hud_danger_tween.kill()
+	_rapid_hud_danger_tween = null
+	if _rapid_hud_flash and is_instance_valid(_rapid_hud_flash):
+		_rapid_hud_flash.color.a = 0.0
+
+
+func _rapid_hud_miss_juice() -> void:
+	# MISS: bar bergetar + flash merah + kilat, biarAda "hukuman" yang jelas.
+	if not (_rapid_hud_root and is_instance_valid(_rapid_hud_root)):
+		return
+	_stop_rapid_hud_danger()
+
+	if _rapid_hud_shake_tween and _rapid_hud_shake_tween.is_valid():
+		_rapid_hud_shake_tween.kill()
+	var base_x: float = _rapid_hud_root.position.x
+	_rapid_hud_shake_tween = create_tween()
+	_rapid_hud_shake_tween.tween_property(_rapid_hud_root, "position:x", base_x - 7.0, 0.04)
+	_rapid_hud_shake_tween.tween_property(_rapid_hud_root, "position:x", base_x + 7.0, 0.05)
+	_rapid_hud_shake_tween.tween_property(_rapid_hud_root, "position:x", base_x - 5.0, 0.05)
+	_rapid_hud_shake_tween.tween_property(_rapid_hud_root, "position:x", base_x, 0.05)
+
+	var flash := create_tween()
+	flash.tween_property(_rapid_hud_flash, "color:a", 0.75, 0.04)
+	flash.tween_property(_rapid_hud_flash, "color:a", 0.0, 0.28).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	# Sinkronkan ulang bar (timer barus dipotong 0.5)
+	_sync_rapid_hud_drain()
+
+
+func _rapid_hud_hit_juice() -> void:
+	# HIT: kilat tipis + sedikit nendang, biar tiap hit terasa "mantul".
+	if not (_rapid_hud_root and is_instance_valid(_rapid_hud_root)):
+		return
+	_rapid_hud_root.scale = Vector2(1.06, 1.16)
+	var tw := create_tween()
+	tw.tween_property(_rapid_hud_root, "scale", Vector2.ONE, 0.16)\
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
 func _on_rapid_miss(tap_pos: Vector2) -> void:
 	# Tap meleset: gak ada damage. Teks Miss merah, waktu global dipotong
 	# 0.5 detik, tombol spawn ulang di posisi baru.
@@ -2351,6 +2569,7 @@ func _on_rapid_miss(tap_pos: Vector2) -> void:
 	total_miss += 1
 	_rapid_timer_global = maxf(0.0, _rapid_timer_global - RAPID_MISS_TIME_PENALTY)
 	_spawn_rapid_popup_text(tap_pos, "Miss!", Color(1.0, 0.35, 0.3))
+	_rapid_hud_miss_juice()
 	_advance_raptive_to_next()
 
 
@@ -2524,6 +2743,7 @@ func _on_raptive_btn_pressed() -> void:
 
 	# Combo counter
 	_add_combo(1)
+	_rapid_hud_hit_juice()
 
 	# Kalau enemy mati, _on_enemy_defeated sudah handle _finish_raptive()
 	if not _is_rapid_active:
@@ -2654,6 +2874,9 @@ func _finish_raptive() -> void:
 	if not _is_rapid_active:
 		return
 	_is_rapid_active = false
+
+	# HUD duration bar ikut mati
+	_hide_rapid_hud()
 
 	# Overlay HP ketinggalan nyala dari thorns pas rapid -> sembunyiin
 	_hide_player_hp_camera_overlay()
