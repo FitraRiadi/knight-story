@@ -75,3 +75,12 @@ class_name PlayerData
 @export_group("Chest Inventory")
 
 @export var chest_inventory: InventoryBattleData
+
+
+# ============================================================
+# SKILL DECK (roguelike collection, max 5)
+# ============================================================
+
+## Koleksi permanen path .tres kartu skill. Kosong = generate starter acak.
+## Draft victory nambah (replace kalau penuh). Max SKILL_DECK_MAX.
+@export var skill_deck: Array[String] = []

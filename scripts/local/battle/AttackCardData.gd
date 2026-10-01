@@ -14,10 +14,7 @@ class_name AttackCardData
 ## Jumlah hit (untuk rapid tap nanti)
 @export var hit_count: int = 1
 
-## Bobot spawn 0-100 buat random deck (ProbabilityGenerator).
-## Bebas, gak harus total 100. Gede = sering muncul.
-## Contoh valid: basic 100, charge 90, rapid 100.
-@export_range(0.0, 100.0) var spawn_probability: float = 100.0
+## spawn_probability diwarisi dari ActionCardData (base).
 
 
 # ============================================================

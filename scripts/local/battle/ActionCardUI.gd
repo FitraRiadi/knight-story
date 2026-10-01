@@ -64,6 +64,8 @@ enum CardMode { SKILL, ATTACK }
 var card_mode: CardMode = CardMode.SKILL
 var attack_indicator: Control = null
 var waiting_for_mechanic: bool = false
+# Draft mode (roguelike reward): pilih bebas tanpa cost/cooldown
+var is_draft_mode := false
 
 
 # ============================================================
@@ -317,11 +319,12 @@ func _on_card_hover(index: int) -> void:
 	if index < 0 or index >= card_nodes.size():
 		return
 
-	# Skip hover kalau card cooldown atau stamina kurang
-	var data: ActionCardData = cards_data[index]
-	var cd: int = card_cooldowns[index] if index < card_cooldowns.size() else 0
-	if cd > 0 or current_stamina < data.stamina_cost:
-		return
+	# Skip hover kalau card cooldown atau stamina kurang (draft bebas)
+	if not is_draft_mode:
+		var data: ActionCardData = cards_data[index]
+		var cd: int = card_cooldowns[index] if index < card_cooldowns.size() else 0
+		if cd > 0 or current_stamina < data.stamina_cost:
+			return
 
 	var card: Control = card_nodes[index]
 
@@ -349,11 +352,12 @@ func _on_card_unhover(index: int) -> void:
 	if index < 0 or index >= card_nodes.size():
 		return
 
-	# Skip unhover kalau card cooldown atau stamina kurang
-	var data: ActionCardData = cards_data[index]
-	var cd: int = card_cooldowns[index] if index < card_cooldowns.size() else 0
-	if cd > 0 or current_stamina < data.stamina_cost:
-		return
+	# Skip unhover kalau card cooldown atau stamina kurang (draft bebas)
+	if not is_draft_mode:
+		var data: ActionCardData = cards_data[index]
+		var cd: int = card_cooldowns[index] if index < card_cooldowns.size() else 0
+		if cd > 0 or current_stamina < data.stamina_cost:
+			return
 
 	var card: Control = card_nodes[index]
 
@@ -403,6 +407,18 @@ func _restart_float(index: int) -> void:
 # CARD INPUT
 # ============================================================
 
+func _is_mechanic_card(index: int) -> bool:
+	# Kartu mechanic (charge/rapid) butuh corner indicator + mechanic,
+	# regardless mode UI-nya (Opsi B).
+	if index < 0 or index >= cards_data.size():
+		return false
+	var data: ActionCardData = cards_data[index]
+	if data is AttackCardData:
+		var at: String = (data as AttackCardData).attack_type
+		return at == "Charge" or at == "Rapid"
+	return false
+
+
 func _on_card_input(event: InputEvent, index: int) -> void:
 	if is_selecting:
 		return
@@ -413,13 +429,14 @@ func _on_card_input(event: InputEvent, index: int) -> void:
 	if event.button_index != MOUSE_BUTTON_LEFT:
 		return
 
-	# Cek cooldown dan stamina
-	var data: ActionCardData = cards_data[index]
-	var cd: int = card_cooldowns[index] if index < card_cooldowns.size() else 0
-	if cd > 0:
-		return
-	if current_stamina < data.stamina_cost:
-		return
+	# Cek cooldown dan stamina (draft: bebas, skip semua)
+	if not is_draft_mode:
+		var data: ActionCardData = cards_data[index]
+		var cd: int = card_cooldowns[index] if index < card_cooldowns.size() else 0
+		if cd > 0:
+			return
+		if current_stamina < data.stamina_cost:
+			return
 
 	_select_card(index)
 
@@ -493,8 +510,9 @@ func _select_card(index: int) -> void:
 			.set_ease(Tween.EASE_IN)
 		other_tw.parallel().tween_property(other, "scale", Vector2(0.7, 0.7), 0.2).set_delay(delay)
 
-	# ATTACK MODE: pindah ke pojok kiri atas sebagai indicator
-	if card_mode == CardMode.ATTACK:
+	# Corner indicator buat kartu mechanic ATAU attack mode (Opsi B:
+	# syaratnya kartu mechanic, bukan mode UI). Draft gak ikut (langsung tutup).
+	if (card_mode == CardMode.ATTACK or _is_mechanic_card(index)) and not is_draft_mode:
 		tw.tween_interval(0.3)
 		tw.tween_callback(func() -> void:
 			_move_to_indicator(card)
