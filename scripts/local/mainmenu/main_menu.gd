@@ -8,9 +8,8 @@ extends Control
 @onready var create_character_popup = $"../createCharacterPopup"
 
 func _ready() -> void:
-	GameSettings.load_settings()
-	MusicManager.set_master_volume_linear(GameSettings.get_data().music_volume)
-	# Musik menu lewat MusicManager biar nurut setting volume (bukan $mainBgm)
+	# Load + apply volume udah diurus MusicManager._ready sendiri.
+	# Routing play_music tetep di sini biar jelas scene apa muter apa.
 	var music_path := ""
 	if bgm and bgm.stream:
 		music_path = bgm.stream.resource_path

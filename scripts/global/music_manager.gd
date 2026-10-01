@@ -19,6 +19,11 @@ func _ready() -> void:
 	_current_player.volume_db = _master_volume_db
 	add_child(_current_player)
 
+	# Satu pintu volume: baca settings sendiri pas boot.
+	# Scene gak perlu apply manual satu-satu (anti hardcode tempelan).
+	GameSettings.load_settings()
+	set_master_volume_linear(GameSettings.get_data().music_volume)
+
 
 ## Play music dari path. Kalau path sama, gak diulang.
 ## fade_time: detik untuk crossfade (0 = instant).
