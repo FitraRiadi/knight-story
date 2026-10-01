@@ -2711,6 +2711,10 @@ func _stop_hand_breathing() -> void:
 
 func _play_juicy_hand_attack_animation() -> void:
 	_stop_hand_breathing()
+	if hand_move_tween and hand_move_tween.is_running():
+		hand_move_tween.kill()
+	if hand_left_move_tween and hand_left_move_tween.is_running():
+		hand_left_move_tween.kill()
 	
 	var attack_sfx_player = AudioStreamPlayer.new()
 	attack_sfx_player.stream = load("res://assets/audio/effects/battle/sword/sword-attack.mp3")
@@ -2739,6 +2743,8 @@ func _play_juicy_hand_attack_animation() -> void:
 
 	if hand_left and not is_defending:
 		var left_tween = create_tween().set_parallel(true)
+		left_tween.tween_property(hand_left, "position:x", original_hand_left_pos.x, 0.15)\
+			.set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
 		left_tween.tween_property(hand_left, "position:y", original_hand_left_pos.y + 25.0, 0.15)\
 			.set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
 		left_tween.chain().tween_property(hand_left, "position:y", original_hand_left_pos.y, 0.22)\
@@ -2774,6 +2780,7 @@ func _pull_hand_to_corner(duration: float = 0.4) -> void:
 
 
 func _reset_hand_to_original(duration: float = 0.4) -> void:
+	_stop_hand_breathing()
 	if hand_move_tween and hand_move_tween.is_running():
 		hand_move_tween.kill()
 	if hand_left_move_tween and hand_left_move_tween.is_running():
@@ -2789,13 +2796,23 @@ func _reset_hand_to_original(duration: float = 0.4) -> void:
 		var target_reset_pos = original_hand_left_pos
 		if is_defending:
 			target_reset_pos = original_hand_left_pos + Vector2(150.0, 0.0)
-		
+
 		hand_left_move_tween.tween_property(hand_left, "position", target_reset_pos, duration)\
 			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		
+
 	var callback_node = create_tween()
 	callback_node.tween_interval(duration)
-	callback_node.tween_callback(_start_hand_breathing)
+	callback_node.tween_callback(_on_hand_reset_done)
+
+
+func _on_hand_reset_done() -> void:
+	# Snap eksak: jamin tangan beneran di home walau ada float drift / tween tabrakan.
+	# (Callback gugur otomatis kalau tween di-kill owner baru, jadi gak akan nimpa gerakan baru.)
+	if hand_right:
+		hand_right.position = original_hand_pos
+	if hand_left:
+		hand_left.position = original_hand_left_pos if not is_defending else original_hand_left_pos + Vector2(150.0, 0.0)
+	_start_hand_breathing()
 
 
 func _setup_player_hp_camera_overlay() -> void:
@@ -4128,7 +4145,7 @@ func _on_defend_pressed() -> void:
 		
 	if hand_left:
 		hand_left_move_tween = create_tween()
-		hand_left_move_tween.tween_property(hand_left, "position:x", original_hand_left_pos.x + 150.0, 0.3)\
+		hand_left_move_tween.tween_property(hand_left, "position", original_hand_left_pos + Vector2(150.0, 0.0), 0.3)\
 			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	
 	for enemy in enemies:
@@ -4179,10 +4196,7 @@ func _start_enemies_turn() -> void:
 			
 	if is_defending:
 		is_defending = false
-		if hand_left:
-			var reset_tw = create_tween()
-			reset_tw.tween_property(hand_left, "position:x", original_hand_left_pos.x, 0.4)\
-				.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		_reset_hand_to_original(0.4)
 	
 	_update_target_selection()
 	
