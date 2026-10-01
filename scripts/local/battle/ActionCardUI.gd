@@ -29,6 +29,8 @@ const FAN_ANGLE: float = 4.0
 const FLOAT_AMPLITUDE: float = 4.0
 const FLOAT_SPEED: float = 2.5
 
+const REJECT_SFX_PATH: String = "uid://dl4yf4hktppo5"
+
 
 # ============================================================
 # PRELOADS
@@ -58,6 +60,8 @@ var bg_overlay: ColorRect
 var float_tweens: Array[Tween] = []
 var hover_tweens: Dictionary = {}
 var spawn_tween: Tween  # Track spawn tween to kill on early select
+var _reject_tween: Tween = null  # shake kartu ditolak
+var _deny_label: Label = null
 
 # Attack mode
 enum CardMode { SKILL, ATTACK }
@@ -223,6 +227,23 @@ func _create_card(data: ActionCardData, index: int, has_stamina: bool, is_on_coo
 		# Greyed overlay
 		var greyed: ColorRect = card.get_node("GreyedOverlay")
 		greyed.visible = not has_stamina or is_on_cooldown
+
+		# Kalo kurang stamina: cost jadi merah + gembok biar keliatan
+		# "ini belum kebeli" tanpa harus nekat dipencet.
+		if not has_stamina:
+			cost_label.add_theme_color_override("font_color", Color(1.0, 0.4, 0.35))
+			var lock := Label.new()
+			lock.text = "\u2715"  # ✕-simple, tanpa emoji (gak ada font emoji di HP)
+			lock.add_theme_font_size_override("font_size", 16)
+			lock.add_theme_color_override("font_color", Color(1.0, 0.4, 0.35, 0.9))
+			lock.add_theme_constant_override("outline_size", 4)
+			lock.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.85))
+			lock.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			lock.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+			lock.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			lock.size = Vector2(18.0, 18.0)
+			lock.position = Vector2(CARD_WIDTH * 0.5 - 9.0, CARD_HEIGHT * 0.5 - 9.0)
+			card.add_child(lock)
 
 	# Connect input
 	card.gui_input.connect(_on_card_input.bind(index))
@@ -417,11 +438,82 @@ func _on_card_input(event: InputEvent, index: int) -> void:
 	var data: ActionCardData = cards_data[index]
 	var cd: int = card_cooldowns[index] if index < card_cooldowns.size() else 0
 	if cd > 0:
+		_reject_card(index, false)
 		return
 	if current_stamina < data.stamina_cost:
+		_reject_card(index, true)
 		return
 
 	_select_card(index)
+
+
+func _reject_card(index: int, is_stamina: bool) -> void:
+	# Ditolak? Bilang alasannya, jangan diem-diem (dulu responsnya NOL,
+	# bikin player kira bug). Murni visual/sfx, logic gak berubah.
+	if index < 0 or index >= card_nodes.size():
+		return
+	var card: Control = card_nodes[index]
+	if not is_instance_valid(card):
+		return
+	if _reject_tween and _reject_tween.is_valid():
+		_reject_tween.kill()
+	var base_x: float = card.position.x
+	_reject_tween = create_tween()
+	_reject_tween.tween_property(card, "position:x", base_x - 6.0, 0.05)\
+		.set_trans(Tween.TRANS_SINE)
+	_reject_tween.tween_property(card, "position:x", base_x + 6.0, 0.07)\
+		.set_trans(Tween.TRANS_SINE)
+	_reject_tween.tween_property(card, "position:x", base_x, 0.05)\
+		.set_trans(Tween.TRANS_SINE)
+	if is_stamina:
+		_play_reject_sfx()
+		_show_deny_label(card, "Not enough Stamina")
+
+
+func _play_reject_sfx() -> void:
+	# "Tuk" pendek: pitch rendah dari click jadi walau gak ada asset khusus.
+	var sfx: AudioStream = null
+	if ResourceLoader.exists(REJECT_SFX_PATH):
+		sfx = load(REJECT_SFX_PATH)
+	if sfx == null:
+		return
+	var p := AudioStreamPlayer.new()
+	p.stream = sfx
+	p.pitch_scale = 0.7
+	p.volume_db = -4.0
+	add_child(p)
+	p.play()
+	p.finished.connect(p.queue_free)
+
+
+func _show_deny_label(card: Control, msg: String) -> void:
+	# Tulisan nongol di atas kartu yang dipencet, lalu naik + fade.
+	if _deny_label and is_instance_valid(_deny_label):
+		_deny_label.queue_free()
+	_deny_label = Label.new()
+	_deny_label.text = msg
+	_deny_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_deny_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_deny_label.add_theme_font_size_override("font_size", 15)
+	_deny_label.add_theme_color_override("font_color", Color(1.0, 0.45, 0.4))
+	_deny_label.add_theme_constant_override("outline_size", 5)
+	_deny_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+	_deny_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_deny_label.size = Vector2(CARD_WIDTH, 20.0)
+	_deny_label.position = card.position + Vector2(0.0, -22.0)
+	_deny_label.modulate.a = 0.0
+	canvas_layer.add_child(_deny_label)
+	var tw := create_tween()
+	tw.tween_property(_deny_label, "modulate:a", 1.0, 0.12)\
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tw.parallel().tween_property(_deny_label, "position:y", _deny_label.position.y - 14.0, 0.5)\
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tw.tween_property(_deny_label, "modulate:a", 0.0, 0.3).set_delay(0.35)
+	tw.tween_callback(func() -> void:
+		if is_instance_valid(_deny_label):
+			_deny_label.queue_free()
+		_deny_label = null
+	)
 
 
 func _select_card(index: int) -> void:
@@ -591,6 +683,12 @@ func _cleanup() -> void:
 	selected_index = -1
 	_stop_idle_float()
 	_kill_all_hover_tweens()
+	if _reject_tween and _reject_tween.is_valid():
+		_reject_tween.kill()
+	_reject_tween = null
+	if _deny_label and is_instance_valid(_deny_label):
+		_deny_label.queue_free()
+	_deny_label = null
 
 	if canvas_layer and is_instance_valid(canvas_layer):
 		canvas_layer.queue_free()

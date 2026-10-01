@@ -188,6 +188,11 @@ var is_taking_turn: bool = false
 var base_hit_icon_y: float = 0.0
 var last_spawn_offset: Vector2 = Vector2.ZERO
 
+# Ring target di kaki musuh (marker tha si ke-select). Dibuat via kode biar
+# gak sentuh .tscn. Murni visual: gak nyentuh alur turn sama sekali.
+var target_ring: TextureRect = null
+var target_ring_tween: Tween = null
+
 
 # ============================================================
 # READY
@@ -224,6 +229,7 @@ func _ready() -> void:
 	_setup_buff_particles()
 	_setup_crack_overlay()
 	_setup_outline_material()
+	_setup_target_ring()
 
 	# Sembunyi slash effect secara default
 	if slash:
@@ -689,6 +695,7 @@ func take_turn(camera: Camera2D, default_camera_pos: Vector2) -> void:
 
 	if enemy_target:
 		enemy_target.hide()
+	_set_target_ring(false)
 
 	if enemy_collision:
 		enemy_collision.disabled = true
@@ -1240,6 +1247,7 @@ func _on_death() -> void:
 	if enemy_target: enemy_target.hide()
 	if enemy_hit_icon: enemy_hit_icon.hide()
 	if enemy_collision: enemy_collision.disabled = true
+	_set_target_ring(false)
 
 	_stop_buff_particles()
 	_stop_all_effects_on_death()
@@ -1520,6 +1528,76 @@ func set_highlight(active: bool) -> void:
 		enemy_target.visible = active
 		if active:
 			_animate_target_icon()
+
+	_set_target_ring(active)
+
+
+func _setup_target_ring() -> void:
+	# Ellipse kuning di kaki musuh. Nunjukin "lo lagi nyerbang yang ini"
+	# di layar 740x340 yang hectic. Code-based, nocopy asset.
+	if target_ring:
+		return
+	var grad := Gradient.new()
+	grad.offsets = PackedFloat32Array([0.0, 0.55, 1.0])
+	grad.colors = PackedColorArray([
+		Color(1.0, 0.85, 0.3, 0.0), Color(1.0, 0.85, 0.3, 0.0), Color(1.0, 0.85, 0.3, 0.9)
+	])
+	var grad_tex := GradientTexture2D.new()
+	grad_tex.gradient = grad
+	grad_tex.fill = GradientTexture2D.FILL_RADIAL
+	grad_tex.fill_from = Vector2(0.5, 0.5)
+	grad_tex.fill_to = Vector2(1.0, 0.5)
+	grad_tex.width = 64
+	grad_tex.height = 64
+
+	target_ring = TextureRect.new()
+	target_ring.texture = grad_tex
+	target_ring.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	target_ring.stretch_mode = TextureRect.STRETCH_SCALE
+	target_ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Ellipse pipih +Tgigi ngatas: TextureRect yg gepeng sendiri
+	target_ring.size = Vector2(78.0, 22.0)
+	var frame_tex := sprite_frames.get_frame_texture(animation, frame) as Texture2D if sprite_frames else null
+	var fw: float = frame_tex.get_width() if frame_tex else 64.0
+	var fh: float = frame_tex.get_height() if frame_tex else 64.0
+	target_ring.position = Vector2(-fw * 0.5, -fh * 0.34)
+	target_ring.z_index = -1  # di bawah badan, kayak bayangan
+	target_ring.visible = false
+	add_child(target_ring)
+
+
+func _set_target_ring(active: bool) -> void:
+	if target_ring == null:
+		return
+	if active and current_hp > 0.0:
+		target_ring.visible = true
+		_start_target_ring_pulse()
+	else:
+		_stop_target_ring_pulse()
+		target_ring.visible = false
+
+
+func _start_target_ring_pulse() -> void:
+	if target_ring_tween and target_ring_tween.is_valid():
+		target_ring_tween.kill()
+	target_ring.scale = Vector2(0.9, 0.9)
+	target_ring_tween = create_tween().set_loops()
+	target_ring_tween.set_parallel(true)
+	target_ring_tween.tween_property(target_ring, "scale", Vector2(1.1, 1.0), 0.6)\
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	target_ring_tween.tween_property(target_ring, "modulate:a", 0.55, 0.6)\
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	target_ring_tween.chain().set_parallel(true)
+	target_ring_tween.tween_property(target_ring, "scale", Vector2(0.9, 0.9), 0.6)\
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	target_ring_tween.tween_property(target_ring, "modulate:a", 1.0, 0.6)\
+		.set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _stop_target_ring_pulse() -> void:
+	if target_ring_tween and target_ring_tween.is_valid():
+		target_ring_tween.kill()
+	target_ring_tween = null
 
 
 func _on_profile_pressed() -> void:
