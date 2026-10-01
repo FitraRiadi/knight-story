@@ -10,15 +10,6 @@ class_name GameSettings
 const SAVE_PATH := "user://.knight/sys/settings.res"
 const DEFAULT_PATH := "res://data/settings/default_settings.tres"
 
-# Keyword nama GPU kentang (lowercase, substring match).
-const LOW_GPU_KEYWORDS: Array[String] = [
-	"mali-4", "mali-t6", "mali-t7", "mali-t8",
-	"adreno 3", "adreno 4",
-	"powervr sgx", "powervr",
-	"vivante", "videocore",
-	"swiftshader", "llvmpipe", "softpipe",
-]
-
 static var _data: SettingsData = null
 
 
@@ -64,17 +55,8 @@ static func set_music_volume(v: float) -> void:
 	save_settings()
 
 
-## "high" / "low". "auto" = deteksi GPU.
+## "high" / "low". Gak ada auto (default low, aman di semua HP).
 static func get_effective_tier() -> String:
-	var g := get_data().graphics
-	if g == "high":
+	if get_data().graphics == "high":
 		return "high"
-	if g == "low":
-		return "low"
-	var adapter := RenderingServer.get_video_adapter_name().to_lower()
-	for kw in LOW_GPU_KEYWORDS:
-		if kw in adapter:
-			print("[GameSettings] GPU kentang kedetek (", RenderingServer.get_video_adapter_name(), ") -> tier LOW")
-			return "low"
-	print("[GameSettings] GPU (", RenderingServer.get_video_adapter_name(), ") -> tier HIGH")
-	return "high"
+	return "low"
