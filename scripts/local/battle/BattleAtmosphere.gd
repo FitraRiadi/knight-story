@@ -32,11 +32,26 @@ var _firefly_danger := Color(1.0, 0.45, 0.3, 0.7)
 var _fog_calm := Color(0.6, 0.7, 0.65, 0.10)
 var _fog_danger := Color(0.55, 0.6, 0.6, 0.16)
 
+# Tier LOW (HP kentang): jumlah fix kecil, tanpa color_ramp texture,
+# vignette datar. HIGH = full seperti biasa.
+var _low_mode := false
+var _base_fireflies := 28
+var _base_fog := 10
+var _burst_fireflies := 44
+var _danger_fog := 16
+
 
 func setup(battle_root: Control) -> void:
 	battle_root.add_child(self)
 	# Duduk tepat di atas bg (index 0), di bawah semua UI/enemy
 	battle_root.move_child(self, 1)
+	_low_mode = GameSettings.get_effective_tier() == "low"
+	if _low_mode:
+		_base_fireflies = 16
+		_base_fog = 6
+		_burst_fireflies = 16
+		_danger_fog = 6
+	print("[Atmosphere] tier=", GameSettings.get_effective_tier(), " low=", _low_mode)
 	_setup_vignette()
 	_setup_fireflies()
 	_setup_fog()
@@ -121,6 +136,9 @@ func _make_fade_ramp() -> GradientTexture1D:
 
 
 func _setup_vignette() -> void:
+	if _low_mode:
+		# LOW: vignette dimatikan total (gradient fullscreen = overdraw mahal)
+		return
 	# Vignette murah: radial gradient transparan tengah -> gelap tepi
 	var grad_tex := GradientTexture2D.new()
 	grad_tex.gradient = Gradient.new()
@@ -145,7 +163,7 @@ func _setup_vignette() -> void:
 func _setup_fireflies() -> void:
 	fireflies = GPUParticles2D.new()
 	fireflies.position = VIEW_SIZE / 2.0
-	fireflies.amount = 28
+	fireflies.amount = _base_fireflies
 	fireflies.lifetime = 5.0
 	fireflies.preprocess = 5.0
 	fireflies.texture = _make_dot_texture(12)
@@ -160,7 +178,8 @@ func _setup_fireflies() -> void:
 	pm.scale_min = 0.8
 	pm.scale_max = 1.6
 	pm.color = _firefly_calm
-	pm.color_ramp = _make_fade_ramp()
+	if not _low_mode:
+		pm.color_ramp = _make_fade_ramp()
 	fireflies.process_material = pm
 	_firefly_pm = pm
 	add_child(fireflies)
@@ -169,7 +188,7 @@ func _setup_fireflies() -> void:
 func _setup_fog() -> void:
 	fog = GPUParticles2D.new()
 	fog.position = Vector2(VIEW_SIZE.x / 2.0, 290.0)
-	fog.amount = 10
+	fog.amount = _base_fog
 	fog.lifetime = 9.0
 	fog.preprocess = 9.0
 	fog.texture = _make_dot_texture(64)
@@ -184,7 +203,8 @@ func _setup_fog() -> void:
 	pm.scale_min = 2.0
 	pm.scale_max = 4.0
 	pm.color = _fog_calm
-	pm.color_ramp = _make_fade_ramp()
+	if not _low_mode:
+		pm.color_ramp = _make_fade_ramp()
 	fog.process_material = pm
 	_fog_pm = pm
 	add_child(fog)
@@ -224,24 +244,24 @@ func _apply_state() -> void:
 		return
 	fireflies.modulate = Color(1, 1, 1, 1)
 	if _burst_active:
-		# Hantaman besar: kunang-kunang ngamuk sesaat
-		_set_fireflies_amount(44)
+		# Hantaman besar: kunang-kunang ngamuk sesaat (LOW: speed doang, no realloc)
+		_set_fireflies_amount(_burst_fireflies)
 		fireflies.speed_scale = 1.9
 		fireflies.modulate = Color(1, 1, 1, 1)
 		fog.modulate = Color(1, 1, 1, 1.4)
 	elif _danger:
 		# HP sekarat: kunang redup kemerahan, kabut menebal
-		_set_fireflies_amount(28)
+		_set_fireflies_amount(_base_fireflies)
 		fireflies.speed_scale = 0.8
 		_firefly_pm.color = _firefly_danger
-		_set_fog_amount(16)
+		_set_fog_amount(_danger_fog)
 		_fog_pm.color = _fog_danger
 	else:
-		_set_fireflies_amount(28)
+		_set_fireflies_amount(_base_fireflies)
 		fireflies.speed_scale = 1.0
 		_firefly_pm.color = _firefly_calm
 		fireflies.modulate = Color(1, 1, 1, 1)
-		_set_fog_amount(10)
+		_set_fog_amount(_base_fog)
 		_fog_pm.color = _fog_calm
 		fog.modulate = Color(1, 1, 1, 1)
 

@@ -8,9 +8,26 @@ extends Control
 @onready var create_character_popup = $"../createCharacterPopup"
 
 func _ready() -> void:
+	GameSettings.load_settings()
+	MusicManager.set_master_volume_linear(GameSettings.get_data().music_volume)
 	bgm.play()
+	_add_settings_button()
 	_play_intro()
 	play_button.pressed.connect(_on_play_pressed)
+
+
+func _add_settings_button() -> void:
+	# Duplikat achievement biar style gratis, taruh di bawahnya
+	var b := achievment_button.duplicate() as Button
+	b.name = "SettingsButton"
+	b.text = "Settings"
+	b.position = achievment_button.position + Vector2(0, 61)
+	menu_option.add_child(b)
+	b.pressed.connect(_on_settings_pressed)
+
+
+func _on_settings_pressed() -> void:
+	SettingsPopup.open(self)
 
 func _play_intro() -> void:
 	title.modulate.a = 0
