@@ -1066,6 +1066,7 @@ func open_attack_card_ui() -> void:
 	is_player_turn = false
 	_set_buttons_active(false)
 	_pull_hand_to_corner(0.4)
+	_zoom_camera_to_selected_slight()
 
 	attack_card_ui = ActionCardUI.new()
 	attack_card_ui.setup_attack_mode(attack_hand, current_stamina)
@@ -1125,6 +1126,7 @@ func _on_attack_card_closed() -> void:
 	is_card_ui_open = false
 	attack_card_ui = null
 	_reset_hand_to_original(0.4)
+	_reset_camera_to_default()
 
 	if attack_card_used_this_session:
 		# Card dipakai → enemy turn (skip kalau rapid masih aktif)
@@ -1157,6 +1159,7 @@ func open_action_card_ui() -> void:
 	is_player_turn = false
 	_set_buttons_active(false)
 	_pull_hand_to_corner(0.4)
+	_zoom_camera_to_selected_slight()
 
 	# Kirim semua card + cooldowns ke UI
 	var card_ui := ActionCardUI.new()
@@ -1253,6 +1256,7 @@ func _spawn_card_particle(scene: PackedScene, target: Node, duration: float = 0.
 func _on_action_card_closed() -> void:
 	is_card_ui_open = false
 	_reset_hand_to_original(0.4)
+	_reset_camera_to_default()
 
 	if card_used_this_session:
 		# Card dipakai → enemy turn
@@ -2586,6 +2590,23 @@ func _zoom_camera_to_enemy(enemy: BattleEnemy, zoom_level: float = 1.10) -> void
 		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	cam_tw.tween_property(camera, "zoom", target_zoom, 0.25)\
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+func _zoom_camera_to_selected_slight() -> void:
+	# Buka deck attack/skill: intip target yang udah di-select, zoom DIKIT aja (1.05).
+	if selected_enemy_index < 0 or selected_enemy_index >= enemies.size():
+		return
+	_zoom_camera_to_enemy(enemies[selected_enemy_index], 1.05)
+
+
+func _reset_camera_to_default() -> void:
+	if not camera:
+		return
+	var cam_tw := create_tween().set_parallel(true)
+	cam_tw.tween_property(camera, "zoom", Vector2(1.0, 1.0), 0.3)\
+		.set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN_OUT)
+	cam_tw.tween_property(camera, "global_position", default_camera_pos, 0.3)\
+		.set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN_OUT)
 
 
 func _get_next_raptive_enemy() -> BattleEnemy:
