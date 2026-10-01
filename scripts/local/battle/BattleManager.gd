@@ -3170,6 +3170,9 @@ func _get_scalable_enemy_pool() -> Array[String]:
 func respawn_test_enemies() -> void:
 	selected_enemy_index = 0
 	is_player_turn = true
+	# Deck battle selalu rebuild fresh dari koleksi (ala Spire reshuffle).
+	# Tanpa ini, battle baru mulai dengan sisa exhaust battle lalu!
+	_load_action_cards()
 	# Reset wave system
 	total_waves = randi_range(2, 5)
 	current_wave = 1
@@ -4535,7 +4538,12 @@ func _open_draft_popup(replace_mode: bool, pending: String) -> void:
 	add_child(draft_ui)
 	draft_ui.card_selected.connect(_on_draft_card_selected)
 	draft_ui.card_closed.connect(_on_draft_card_closed)
-	_show_draft_hint("Choose 1 card" if not replace_mode else "Deck full! Drop 1 to make room")
+	var pd2 = PlayerDataManager.data
+	var deck_n: int = pd2.skill_deck.size() if (pd2 and pd2.skill_deck != null) else 0
+	if replace_mode:
+		_show_draft_hint("Deck full! Drop 1 to make room (used cards return each battle)")
+	else:
+		_show_draft_hint("Choose 1 card (deck %d/%d)" % [deck_n, SKILL_DECK_MAX])
 	draft_ui.open()
 
 
