@@ -192,6 +192,8 @@ var target_attack_qte_pos: Vector2
 const RAPID_HIT_GRACE: float = 6.0
 const RAPID_MIN_JUMP: float = 220.0
 const RAPID_MISS_TIME_PENALTY: float = 0.5
+# Damage per hit = player_damage * ini. 0.30 = 24 dari base 80.
+const RAPID_DAMAGE_MULT: float = 0.30
 # Posisi rapidBtn terakhir (dipisah dari node, soalnya node di-hide
 # sebelum spawn berikutnya → visibility gak bisa dipake cek jarak).
 var _rapid_last_btn_pos: Vector2 = Vector2.INF
@@ -2272,7 +2274,9 @@ func _start_attack_raptive() -> void:
 	_is_rapid_active = true
 	_rapid_timer_global = 5.0
 	_rapid_timer_per_btn = 1.0
-	_rapid_damage_per_hit = player_damage * 0.15
+	# 0.15 → 0.30: rapid sekarang jauh lebih susah (tap wajib kena + tombol
+	# lompat jauh + penalti waktu), damage dibalas 2x biar tetep worth it.
+	_rapid_damage_per_hit = player_damage * RAPID_DAMAGE_MULT
 	_rapid_hits = 0
 	_rapid_enemy_index = selected_enemy_index
 	_pending_rapid_deaths.clear()
