@@ -4601,12 +4601,20 @@ func _open_replace_picker() -> void:
 	_set_buttons_active(false)
 	replace_ui = ActionCardUI.new()
 	replace_ui.is_replace_mode = true
-	replace_ui.setup(action_cards, action_card_cooldowns, current_stamina)
+	# Replace = buang kartu, GRATIS: cooldown dinolkan + stamina diabaikan
+	# biar gak disabled gara-gara stamina abis.
+	var free_cools: Array[int] = []
+	for i in range(action_cards.size()):
+		free_cools.append(0)
+	replace_ui.setup(action_cards, free_cools, 9999.0)
 	add_child(replace_ui)
 	replace_ui.card_selected.connect(_on_replace_card_selected)
 	replace_ui.card_closed.connect(_on_replace_card_closed)
 	_show_draft_hint("Deck penuh! Pilih 1 kartu buat diganti")
 	replace_ui.open()
+	var picked := load(replace_pending_path) as ActionCardData
+	if picked:
+		replace_ui.spawn_replace_indicator(picked)
 
 
 func _wait_for_replace_closed() -> void:

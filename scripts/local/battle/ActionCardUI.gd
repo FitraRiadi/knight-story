@@ -69,6 +69,19 @@ var is_draft_mode := false
 # Replace mode (change card): tap = buang kartu ini, SELALU auto-close (no indicator)
 var is_replace_mode := false
 
+# Replace indicator: kartu baru nangkring di corner kiri-atas (ala attack
+# indicator rapid/charge) biar jelas mau gantiin yang mana. Auto-kefree
+# bareng canvas_layer saat close. Gak masuk card_nodes (no input, no anim).
+func spawn_replace_indicator(data: ActionCardData) -> void:
+	if canvas_layer == null:
+		return
+	var ind := _create_card(data, 0, true, false, 0)
+	ind.rotation = 0.0
+	ind.position = Vector2(10, 10)
+	ind.scale = Vector2(0.95, 0.95)
+	_disable_card_input(ind)
+	canvas_layer.add_child(ind)
+
 
 # ============================================================
 # SETUP
