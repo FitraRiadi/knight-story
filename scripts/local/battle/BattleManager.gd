@@ -2511,25 +2511,30 @@ func _on_raptive_btn_pressed() -> void:
 	if _rapid_current_enemy.current_hp <= 0:
 		return
 
-	# Hit enemy
-	_rapid_current_enemy.receive_damage(_rapid_damage_per_hit, false, false)
+	# SNAPSHOT dulu: semua efek di bawah jalanin sprite + koordinat LAMA.
+	var hit_enemy := _rapid_current_enemy
+	var visual_center := rapid_btn.position + Vector2(40, 40)
+
+	# === TOMBOL PINDAH DULU, SEBELUM KERJA BERAT ===
+	# Dulu receive_damage() (damage number + darah + shake + hit-stop +
+	# flash) jalan dulu = frame hitch, tombol baru spawn setelah itu.
+	# Makanya jalur TAP molor tapi jalur TIMEOUT lancar (timeout gak
+	# lewat pipeline itu sama sekali). Sekarang urutan dibalik.
+	_advance_raptive_to_next()
+
+	# Baru kerja beratnya
+	hit_enemy.receive_damage(_rapid_damage_per_hit, false, false)
 	_rapid_hits += 1
-	_pulse_atmosphere()
 
 	# SCOREBOARD
 	total_attacks += 1
 	total_hits += 1
 	total_critical += 1
 
-	# SNAPSHOT dulu: efek visual di bawah jalanin sprite + koordinat LAMA.
-	# Tombol baru di-spawn sebelum efek, biar respons gak nunggu frame hitch
-	# dari pembuatan particle/popup/sfx (di HP kentang itu 1-2 frame).
-	var hit_enemy := _rapid_current_enemy
-	var visual_center := rapid_btn.position + Vector2(40, 40)
-
-	# LANGSUNG spawn tombol berikutnya (dulu efeknya dulu = molor).
-	# Kalau enemy mati, skip efek tapi tetap advance.
-	_advance_raptive_to_next()
+	# Enemy bunuh yang terakhir → tombol yang barusan spawn sia-sia.
+	if _is_rapid_active and (not is_instance_valid(_rapid_current_enemy) or _rapid_current_enemy.current_hp <= 0):
+		_finish_raptive()
+		return
 
 	# Kalau enemy mati, skip visual effects (sudah lanjut di atas)
 	if hit_enemy.current_hp <= 0:
@@ -2538,6 +2543,8 @@ func _on_raptive_btn_pressed() -> void:
 	# udah nutup dengan "N hits!" + reset kamera.
 	if not _is_rapid_active:
 		return
+
+	_pulse_atmosphere()
 
 	# Enemy flash merah
 	var original_modulate := hit_enemy.modulate
