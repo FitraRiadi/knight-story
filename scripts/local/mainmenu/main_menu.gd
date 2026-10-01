@@ -10,7 +10,14 @@ extends Control
 func _ready() -> void:
 	GameSettings.load_settings()
 	MusicManager.set_master_volume_linear(GameSettings.get_data().music_volume)
-	bgm.play()
+	# Musik menu lewat MusicManager biar nurut setting volume (bukan $mainBgm)
+	var music_path := ""
+	if bgm and bgm.stream:
+		music_path = bgm.stream.resource_path
+		bgm.stop()
+		bgm.queue_free()
+	if music_path != "":
+		MusicManager.play_music(music_path)
 	_play_intro()
 	play_button.pressed.connect(_on_play_pressed)
 
