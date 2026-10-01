@@ -4496,8 +4496,8 @@ func _hide_scoreboard() -> void:
 
 # ============================================================
 # ROGUELIKE DRAFT (wave-clear & victory: pick 1 of 3 -> deck sekarang)
-# Tanpa koleksi permanen, tanpa max: pick langsung nambah ke deck battle
-# ini. Skip (bg-click) = gak nambah apa-apa, deck bisa kosong beneran.
+# Deck kunci maks 5 (SKILL_DECK_MAX): lega -> append, penuh -> change-card
+# picker (tukeran 1). Skip (bg-click) = gak nambah apa-apa.
 # ============================================================
 
 var draft_ui: ActionCardUI = null
@@ -4527,6 +4527,11 @@ func _open_victory_draft() -> void:
 	await _wait_for_draft_closed()
 	respawn_test_enemies()
 	if draft_pending_path != "":
+		# Respawn rebuild fresh 5 -> sisakan 1 slot buat reward. Jadi pick
+		# langsung append (4->5), BUKAN replace di atas deck fresh yang asing.
+		if action_cards.size() >= SKILL_DECK_MAX:
+			action_cards.pop_back()
+			action_card_cooldowns.pop_back()
 		await _give_draft_card(draft_pending_path)
 		draft_pending_path = ""
 
