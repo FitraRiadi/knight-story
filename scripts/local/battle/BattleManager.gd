@@ -2594,6 +2594,17 @@ func _finish_raptive() -> void:
 	# SATU wave check — bukan per-death
 	_update_target_selection()
 	if enemies.is_empty():
+		if is_wave_transitioning:
+			# Flow lain transisi wave yang sama — rapid cleanup aja, jangan draft dobel.
+			card_used_this_session = false
+			is_card_ui_open = false
+			mechanic_card_ui = null
+			active_skill_ui = null
+			_reset_hand_to_original(0.4)
+			is_player_turn = true
+			_set_buttons_active(true)
+			return
+		is_wave_transitioning = true
 		if current_wave < total_waves:
 			current_wave += 1
 			wave_progress.set_wave(current_wave, total_waves)
@@ -2606,6 +2617,7 @@ func _finish_raptive() -> void:
 				await _give_draft_card(draft_pending_path)
 				draft_pending_path = ""
 			spawn_random_enemies(1, enemies_per_wave, 1, 5)
+			is_wave_transitioning = false
 			# Cleanup visual state rapid mode
 			card_used_this_session = false  # Reset SEBELUM finish supaya signal gak trigger enemy turn
 			if mechanic_card_ui and is_instance_valid(mechanic_card_ui):
@@ -2621,6 +2633,7 @@ func _finish_raptive() -> void:
 		else:
 			await get_tree().create_timer(0.5).timeout
 			_show_scoreboard()
+			is_wave_transitioning = false
 			# Cleanup visual state rapid mode
 			card_used_this_session = false  # Reset SEBELUM finish supaya signal gak trigger enemy turn
 			if mechanic_card_ui and is_instance_valid(mechanic_card_ui):
@@ -3805,6 +3818,9 @@ func _process_enemy_death(_exp_amount: int, _gold_amount: int, _dropped_items: A
 	_update_target_selection()
 	
 	if enemies.is_empty():
+		if is_wave_transitioning:
+			return
+		is_wave_transitioning = true
 		# Wave completed
 		if current_wave < total_waves:
 			# Advance to next wave
@@ -3819,11 +3835,13 @@ func _process_enemy_death(_exp_amount: int, _gold_amount: int, _dropped_items: A
 				await _give_draft_card(draft_pending_path)
 				draft_pending_path = ""
 			spawn_random_enemies(1, enemies_per_wave, 1, 5)
+			is_wave_transitioning = false
 		else:
 			# All waves completed - show scoreboard
 			await get_tree().create_timer(0.5).timeout
 			await _wait_for_dialogs_done()
 			_show_scoreboard()
+			is_wave_transitioning = false
 
 
 func _on_enemy_clicked(clicked_enemy: BattleEnemy) -> void:
@@ -4486,6 +4504,11 @@ var draft_ui: ActionCardUI = null
 var is_draft_open := false
 var draft_offer_paths: Array[String] = []
 var draft_hint_label: Label = null
+# Anti double-fire: dua coroutine death (rapid-end vs per-death) bisa melihat
+# enemies kosong untuk clear yang SAMA (await interleave). Tanpa ini: draft
+# dobel (kartu +2!), intro ketiban (animasi nyetak), spawn dobel.
+var is_wave_transitioning := false
+var is_giving_draft := false
 # Victory: pick ditahan, ditempel abis respawn rebuild (biar gak ke-wipe).
 # Wave: pick ditahan, ditempel abis draft tutup (append / replace kalau penuh).
 var draft_pending_path := ""
@@ -4584,12 +4607,17 @@ func _on_draft_card_selected(index: int) -> void:
 
 
 func _give_draft_card(path: String) -> void:
+	if is_giving_draft:
+		return
+	is_giving_draft = true
 	var picked := load(path) as ActionCardData
 	if picked == null:
+		is_giving_draft = false
 		return
 	if action_cards.size() < SKILL_DECK_MAX:
 		action_cards.append(picked.duplicate())
 		action_card_cooldowns.append(0)
+		is_giving_draft = false
 		return
 	# Deck penuh 5/5 → change card: kartu baru terbang tengah -> corner dulu,
 	# BARU menu deck nyusul. Lalu tap 1 kartu lama buat tukeran tempat.
@@ -4598,6 +4626,7 @@ func _give_draft_card(path: String) -> void:
 	_open_replace_picker()
 	await _wait_for_replace_closed()
 	replace_pending_path = ""
+	is_giving_draft = false
 
 
 func _animate_replace_intro(picked: ActionCardData) -> void:
