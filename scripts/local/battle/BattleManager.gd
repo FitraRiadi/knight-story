@@ -233,22 +233,15 @@ var action_card_cooldowns: Array[int] = []
 var is_card_ui_open: bool = false
 var card_used_this_session: bool = false
 
-# ATTACK CARD SYSTEM (legacy deck dihapus — basic langsung, charge/rapid di skill)
-# UI skill yang lagi buka + UI yang lagi jalanin mechanic (corner indicator)
-var active_skill_ui: ActionCardUI = null
-var mechanic_card_ui: ActionCardUI = null
+# ATTACK CARD SYSTEM
+var attack_hand: Array[ActionCardData] = []
+var attack_discard: Array[ActionCardData] = []
+var attack_card_ui: ActionCardUI = null
+var attack_card_used_this_session: bool = false
 var _is_scoreboard_hiding: bool = false
+const MAX_ATTACK_HAND: int = 5
 # Preload langsung biar gak tergantung cache global class editor
 const ProbGen = preload("res://scripts/global/probability_generator.gd")
-const BASIC_ATTACK_PATH := "res://data/action_cards/attack_cards/basic_attack.tres"
-const SKILL_CARD_POOL: Array[String] = [
-	"res://data/action_cards/poison.tres",
-	"res://data/action_cards/bleed.tres",
-	"res://data/action_cards/stun.tres",
-	"res://data/action_cards/attack_cards/charge_attack.tres",
-	"res://data/action_cards/attack_cards/rapid_attack.tres",
-]
-const SKILL_DECK_MAX := 5
 
 # ITEM DROP SYSTEM
 var drop_layer: CanvasLayer
@@ -1023,30 +1016,128 @@ func _load_action_cards() -> void:
 	action_cards.clear()
 	action_card_cooldowns.clear()
 
-	# Deck fresh tiap battle: weighted acak 5 (boleh kembar).
-	# Tanpa koleksi permanen, tanpa garansi.
-	var pool: Array[String] = []
-	var weights: Array = []
-	for p in SKILL_CARD_POOL:
-		var data := load(p) as ActionCardData
-		if data:
-			pool.append(p)
-			weights.append(data.spawn_probability)
-	while action_cards.size() < SKILL_DECK_MAX and not pool.is_empty():
-		var picks: Array[int] = ProbGen.roll_multi(weights, 1, true)
-		if picks.is_empty():
-			break
-		var card := load(pool[picks[0]]) as ActionCardData
+	var card_paths: Array[String] = [
+		"res://data/action_cards/poison.tres",
+		"res://data/action_cards/stun.tres",
+		"res://data/action_cards/bleed.tres",
+	]
+
+	for path in card_paths:
+		var card: ActionCardData = load(path) as ActionCardData
 		if card:
-			action_cards.append(card.duplicate())
+			action_cards.append(card)
 			action_card_cooldowns.append(0)
 
 
+func _load_attack_cards() -> void:
+	attack_hand.clear()
+	attack_discard.clear()
+
+	# Random deck 5 kartu dari bobot spawn_probability masing-masing tipe.
+	# allow_multiple = true (boleh kembar) karena tipe baru 3 vs deck 5.
+	var card_paths: Array[String] = [
+		"res://data/action_cards/attack_cards/basic_attack.tres",
+		"res://data/action_cards/attack_cards/charge_attack.tres",
+		"res://data/action_cards/attack_cards/rapid_attack.tres",
+	]
+	var datas: Array[AttackCardData] = []
+	var weights: Array = []
+	for path in card_paths:
+		var data: AttackCardData = load(path) as AttackCardData
+		if data:
+			datas.append(data)
+			weights.append(data.spawn_probability)
+	if datas.is_empty():
+		return
+
+	var picks: Array[int] = ProbGen.roll_multi(weights, 5, true)
+	for idx in picks:
+		attack_hand.append(datas[idx].duplicate())
+
+
+func open_attack_card_ui() -> void:
+	if is_card_ui_open:
+		return
+
+	if attack_hand.is_empty():
+		_load_attack_cards()
+
+	is_card_ui_open = true
+	is_player_turn = false
+	_set_buttons_active(false)
+	_pull_hand_to_corner(0.4)
+
+	attack_card_ui = ActionCardUI.new()
+	attack_card_ui.setup_attack_mode(attack_hand, current_stamina)
+	add_child(attack_card_ui)
+
+	if attack_card_ui.has_signal("card_selected"):
+		attack_card_ui.card_selected.connect(_on_attack_card_selected)
+	if attack_card_ui.has_signal("card_closed"):
+		attack_card_ui.card_closed.connect(_on_attack_card_closed)
+
+	attack_card_ui.open()
+
+
+func _on_attack_card_selected(index: int) -> void:
+	if index < 0 or index >= attack_hand.size():
+		return
+
+	var card: ActionCardData = attack_hand[index]
+
+	# Cek stamina
+	if current_stamina < card.stamina_cost:
+		return
+
+	# Apply effect ke enemy yang udah di-select
+	if selected_enemy_index < 0 or selected_enemy_index >= enemies.size():
+		return
+
+	# Hapus card dari hand → masuk discard
+	attack_hand.remove_at(index)
+	attack_discard.append(card)
+
+	# Kurangi stamina
+	current_stamina = maxf(0.0, current_stamina - card.stamina_cost)
+	_animate_stamina_change()
+
+	# Tandai card sudah dipakai
+	attack_card_used_this_session = true
+
+	# Trigger attack mechanic berdasarkan tipe
+	var attack_type: String = card.get("attack_type") if card.has_method("get") else "Basic"
+	match attack_type:
+		"Basic":
+			_start_attack_qte()
+		"Charge":
+			_start_attack_charge()
+		"Rapid":
+			_start_attack_raptive()
+
+
 func _on_attack_mechanic_done() -> void:
-	"""Dipanggil setelah attack mechanic selesai (basic langsung / charge / rapid)"""
-	if mechanic_card_ui and is_instance_valid(mechanic_card_ui):
-		mechanic_card_ui.finish_attack_indicator()
-		mechanic_card_ui = null
+	"""Dipanggil setelah attack mechanic (QTE) selesai"""
+	if attack_card_ui:
+		attack_card_ui.finish_attack_indicator()
+
+
+func _on_attack_card_closed() -> void:
+	is_card_ui_open = false
+	attack_card_ui = null
+	_reset_hand_to_original(0.4)
+
+	if attack_card_used_this_session:
+		# Card dipakai → enemy turn (skip kalau rapid masih aktif)
+		attack_card_used_this_session = false
+		if not _is_rapid_active:
+			is_player_turn = false
+			_set_buttons_active(false)
+			await get_tree().create_timer(0.3).timeout
+			_start_enemies_turn()
+	else:
+		# Cancel → balik ke player turn
+		is_player_turn = true
+		_set_buttons_active(true)
 
 
 func _on_skill_pressed() -> void:
@@ -1059,8 +1150,9 @@ func open_action_card_ui() -> void:
 	if is_card_ui_open:
 		return
 
-	# Deck boleh kosong beneran (exhaust semua + skip draft).
-	# UI yang nunjukin tulisan, bukan refill diam-diam.
+	if action_cards.is_empty():
+		_load_action_cards()
+
 	is_card_ui_open = true
 	is_player_turn = false
 	_set_buttons_active(false)
@@ -1068,7 +1160,6 @@ func open_action_card_ui() -> void:
 
 	# Kirim semua card + cooldowns ke UI
 	var card_ui := ActionCardUI.new()
-	active_skill_ui = card_ui
 	card_ui.setup(action_cards, action_card_cooldowns, current_stamina)
 	add_child(card_ui)
 
@@ -1080,12 +1171,6 @@ func open_action_card_ui() -> void:
 	card_ui.open()
 
 
-func _active_skill_ui() -> ActionCardUI:
-	if active_skill_ui and is_instance_valid(active_skill_ui):
-		return active_skill_ui
-	return null
-
-
 func _on_action_card_selected(index: int) -> void:
 	# index = index di action_cards (full list)
 	if index < 0 or index >= action_cards.size():
@@ -1093,7 +1178,7 @@ func _on_action_card_selected(index: int) -> void:
 
 	var card: ActionCardData = action_cards[index]
 
-	# Cek cooldown (legacy, selalu 0 — exhaust yang ngatur)
+	# Cek cooldown
 	if action_card_cooldowns[index] > 0:
 		return
 
@@ -1106,26 +1191,6 @@ func _on_action_card_selected(index: int) -> void:
 		return
 
 	var target = enemies[selected_enemy_index]
-
-	# Kurangi stamina
-	current_stamina = maxf(0.0, current_stamina - card.stamina_cost)
-	_animate_stamina_change()
-
-	# Exhaust: sekali pakai per battle (ala Spire, tanpa cooldown)
-	action_cards.remove_at(index)
-	action_card_cooldowns.remove_at(index)
-
-	# Tandai card sudah dipakai
-	card_used_this_session = true
-
-	# Kartu mechanic (charge/rapid) -> corner indicator + mechanic, bukan execute()
-	if card is AttackCardData and (card.attack_type == "Charge" or card.attack_type == "Rapid"):
-		mechanic_card_ui = _active_skill_ui()
-		if card.attack_type == "Charge":
-			_start_attack_charge()
-		else:
-			_start_attack_raptive()
-		return
 
 	# Spawn intro particle
 	_spawn_card_particle(card.intro_scene, target, card.intro_duration)
@@ -1150,6 +1215,16 @@ func _on_action_card_selected(index: int) -> void:
 			if not particles_dict.has(card.card_name):
 				particles_dict[card.card_name] = []
 			particles_dict[card.card_name].append(repeat_instance)
+
+	# Tandai card sudah dipakai
+	card_used_this_session = true
+
+	# Kurangi stamina
+	current_stamina = maxf(0.0, current_stamina - card.stamina_cost)
+	_animate_stamina_change()
+
+	# Set cooldown
+	action_card_cooldowns[index] = card.cooldown
 
 
 func _spawn_card_particle(scene: PackedScene, target: Node, duration: float = 0.0) -> void:
@@ -1177,8 +1252,6 @@ func _spawn_card_particle(scene: PackedScene, target: Node, duration: float = 0.
 
 func _on_action_card_closed() -> void:
 	is_card_ui_open = false
-	active_skill_ui = null
-	mechanic_card_ui = null
 	_reset_hand_to_original(0.4)
 
 	if card_used_this_session:
@@ -1192,6 +1265,12 @@ func _on_action_card_closed() -> void:
 		# Card UI ditutup tanpa pakai → balik ke player turn
 		is_player_turn = true
 		_set_buttons_active(true)
+
+
+func _process_action_card_cooldowns() -> void:
+	for i in range(action_card_cooldowns.size()):
+		if action_card_cooldowns[i] > 0:
+			action_card_cooldowns[i] -= 1
 
 
 # ============================================================
@@ -1821,9 +1900,12 @@ func _apply_hit_stop(duration: float) -> void:
 
 func _execute_actual_attack(result: AttackResult, is_charge_attack: bool = false, charge_multiplier: float = 1.0) -> void:
 	_play_juicy_hand_attack_animation()
-
-	# Stamina selalu deduct duluan di press/select. Gak deduct di sini.
-
+	
+	# Stamina sudah di-deduct oleh attack card system, skip kalau ada attack_card_ui
+	if not attack_card_ui:
+		current_stamina = max(0.0, current_stamina - attack_stamina_cost)
+		_animate_stamina_change()
+	
 	for enemy in enemies:
 		if enemy.enemy_collision:
 			enemy.enemy_collision.disabled = true
@@ -1897,9 +1979,8 @@ func _execute_actual_attack(result: AttackResult, is_charge_attack: bool = false
 		# Balikin z_index
 		target_enemy.z_index = old_z
 
-	# Mechanic dari kartu: fade indicator, enemy turn mulai dari card_closed.
-	# Basic langsung (tanpa kartu): langsung enemy turn.
-	if mechanic_card_ui and is_instance_valid(mechanic_card_ui):
+	# Attack card: fade indicator, enemy turn mulai dari _on_attack_card_closed
+	if attack_card_ui:
 		_on_attack_mechanic_done()
 	else:
 		_start_enemies_turn()
@@ -2594,38 +2675,19 @@ func _finish_raptive() -> void:
 	# SATU wave check — bukan per-death
 	_update_target_selection()
 	if enemies.is_empty():
-		if is_wave_transitioning:
-			# Flow lain transisi wave yang sama — rapid cleanup aja, jangan draft dobel.
-			card_used_this_session = false
-			is_card_ui_open = false
-			mechanic_card_ui = null
-			active_skill_ui = null
-			_reset_hand_to_original(0.4)
-			is_player_turn = true
-			_set_buttons_active(true)
-			return
-		is_wave_transitioning = true
 		if current_wave < total_waves:
 			current_wave += 1
 			wave_progress.set_wave(current_wave, total_waves)
 			await get_tree().create_timer(0.5).timeout
 			await _wait_for_dialogs_done()
-			draft_pending_path = ""
-			_open_draft_popup()
-			await _wait_for_draft_closed()
-			if draft_pending_path != "":
-				await _give_draft_card(draft_pending_path)
-				draft_pending_path = ""
 			spawn_random_enemies(1, enemies_per_wave, 1, 5)
-			is_wave_transitioning = false
 			# Cleanup visual state rapid mode
-			card_used_this_session = false  # Reset SEBELUM finish supaya signal gak trigger enemy turn
-			if mechanic_card_ui and is_instance_valid(mechanic_card_ui):
-				mechanic_card_ui.finish_attack_indicator()
+			attack_card_used_this_session = false  # Reset SEBELUM finish supaya signal gak trigger enemy turn
+			if attack_card_ui:
+				attack_card_ui.finish_attack_indicator()
 				await get_tree().create_timer(0.4).timeout
 			is_card_ui_open = false
-			mechanic_card_ui = null
-			active_skill_ui = null
+			attack_card_ui = null
 			_reset_hand_to_original(0.4)
 			is_player_turn = true
 			_set_buttons_active(true)
@@ -2633,20 +2695,18 @@ func _finish_raptive() -> void:
 		else:
 			await get_tree().create_timer(0.5).timeout
 			_show_scoreboard()
-			is_wave_transitioning = false
 			# Cleanup visual state rapid mode
-			card_used_this_session = false  # Reset SEBELUM finish supaya signal gak trigger enemy turn
-			if mechanic_card_ui and is_instance_valid(mechanic_card_ui):
-				mechanic_card_ui.finish_attack_indicator()
+			attack_card_used_this_session = false  # Reset SEBELUM finish supaya signal gak trigger enemy turn
+			if attack_card_ui:
+				attack_card_ui.finish_attack_indicator()
 				await get_tree().create_timer(0.4).timeout
 			is_card_ui_open = false
-			mechanic_card_ui = null
-			active_skill_ui = null
+			attack_card_ui = null
 			_reset_hand_to_original(0.4)
 			return
 
 	# Trigger enemy turn
-	if mechanic_card_ui and is_instance_valid(mechanic_card_ui):
+	if attack_card_ui:
 		_on_attack_mechanic_done()
 	else:
 		is_player_turn = false
@@ -3187,9 +3247,6 @@ func _get_scalable_enemy_pool() -> Array[String]:
 func respawn_test_enemies() -> void:
 	selected_enemy_index = 0
 	is_player_turn = true
-	# Deck battle selalu rebuild fresh dari koleksi (ala Spire reshuffle).
-	# Tanpa ini, battle baru mulai dengan sisa exhaust battle lalu!
-	_load_action_cards()
 	# Reset wave system
 	total_waves = randi_range(2, 5)
 	current_wave = 1
@@ -3818,9 +3875,6 @@ func _process_enemy_death(_exp_amount: int, _gold_amount: int, _dropped_items: A
 	_update_target_selection()
 	
 	if enemies.is_empty():
-		if is_wave_transitioning:
-			return
-		is_wave_transitioning = true
 		# Wave completed
 		if current_wave < total_waves:
 			# Advance to next wave
@@ -3828,20 +3882,12 @@ func _process_enemy_death(_exp_amount: int, _gold_amount: int, _dropped_items: A
 			wave_progress.set_wave(current_wave, total_waves)
 			await get_tree().create_timer(0.5).timeout
 			await _wait_for_dialogs_done()
-			draft_pending_path = ""
-			_open_draft_popup()
-			await _wait_for_draft_closed()
-			if draft_pending_path != "":
-				await _give_draft_card(draft_pending_path)
-				draft_pending_path = ""
 			spawn_random_enemies(1, enemies_per_wave, 1, 5)
-			is_wave_transitioning = false
 		else:
 			# All waves completed - show scoreboard
 			await get_tree().create_timer(0.5).timeout
 			await _wait_for_dialogs_done()
 			_show_scoreboard()
-			is_wave_transitioning = false
 
 
 func _on_enemy_clicked(clicked_enemy: BattleEnemy) -> void:
@@ -4118,28 +4164,15 @@ func _update_target_selection() -> void:
 		enemies[i].set_highlight(i == selected_enemy_index)
 
 
-func _basic_attack_cost() -> float:
-	var basic := load(BASIC_ATTACK_PATH) as AttackCardData
-	if basic:
-		return basic.stamina_cost
-	return 20.0
-
-
 func _on_attack_pressed() -> void:
 	if not is_player_turn or enemies.size() == 0:
 		return
-	# Basic langsung: tanpa deck, straight ke QTE
-	var cost := _basic_attack_cost()
-	if current_stamina < cost:
-		if atk_btn:
-			_spawn_floating_text("Not enough stamina!", Color(1.0, 0.4, 0.3), atk_btn.global_position)
-		return
-	current_stamina = maxf(0.0, current_stamina - cost)
-	_animate_stamina_change()
-	is_player_turn = false
-	_set_buttons_active(false)
-	_pull_hand_to_corner(0.4)
-	_start_attack_qte()
+	if attack_hand.is_empty():
+		_load_attack_cards()
+	if attack_hand.is_empty():
+		return  # gak ada card tersisa
+
+	open_attack_card_ui()
 
 
 func _on_defend_pressed() -> void:
@@ -4225,6 +4258,7 @@ func _start_enemies_turn() -> void:
 	if enemies.size() > 0:
 		is_player_turn = true
 		_set_buttons_active(true)
+		_process_action_card_cooldowns()
 
 
 func _set_buttons_active(show_buttons: bool, instant: bool = false) -> void:
@@ -4490,286 +4524,8 @@ func _hide_scoreboard() -> void:
 		scoreBoard.visible = false
 		_reset_scoreboard_values()
 		_show_battle_ui_after_scoreboard()
-		_open_victory_draft()
+		respawn_test_enemies()
 	)
-
-
-# ============================================================
-# ROGUELIKE DRAFT (wave-clear & victory: pick 1 of 3 -> deck sekarang)
-# Deck kunci maks 5 (SKILL_DECK_MAX): lega -> append, penuh -> change-card
-# picker (tukeran 1). Skip (bg-click) = gak nambah apa-apa.
-# ============================================================
-
-var draft_ui: ActionCardUI = null
-var is_draft_open := false
-var draft_offer_paths: Array[String] = []
-var draft_hint_label: Label = null
-# Anti double-fire: dua coroutine death (rapid-end vs per-death) bisa melihat
-# enemies kosong untuk clear yang SAMA (await interleave). Tanpa ini: draft
-# dobel (kartu +2!), intro ketiban (animasi nyetak), spawn dobel.
-var is_wave_transitioning := false
-var is_giving_draft := false
-# Victory: pick ditahan, ditempel abis respawn rebuild (biar gak ke-wipe).
-# Wave: pick ditahan, ditempel abis draft tutup (append / replace kalau penuh).
-var draft_pending_path := ""
-# Replace (change card): deck penuh 5/5 saat pick → pilih 1 kartu lama buat dibuang.
-var replace_ui: ActionCardUI = null
-var is_replace_open := false
-var replace_pending_path := ""
-# Intro/swap: kartu baru terbang tengah -> corner, lalu tukeran tempat sama kartu buangan.
-var replace_indicator_layer: CanvasLayer = null
-var replace_corner_card: Control = null
-
-
-func _open_victory_draft() -> void:
-	draft_pending_path = ""
-	_open_draft_popup()
-	await _wait_for_draft_closed()
-	respawn_test_enemies()
-	if draft_pending_path != "":
-		# Respawn rebuild fresh 5 -> sisakan 1 slot buat reward. Jadi pick
-		# langsung append (4->5), BUKAN replace di atas deck fresh yang asing.
-		if action_cards.size() >= SKILL_DECK_MAX:
-			action_cards.pop_back()
-			action_card_cooldowns.pop_back()
-		await _give_draft_card(draft_pending_path)
-		draft_pending_path = ""
-
-
-func _wait_for_draft_closed() -> void:
-	# Watchdog 15 dtk: kalau draft glitch/stuck, paksa tutup biar gak softlock.
-	# (Pick yang udah ke-tap tetap dihitung; kalau belum, dianggap skip.)
-	var t := 0.0
-	while is_draft_open and t < 15.0:
-		await get_tree().process_frame
-		t += get_process_delta_time()
-	if is_draft_open:
-		if draft_ui and is_instance_valid(draft_ui):
-			draft_ui.force_close()
-		is_draft_open = false
-
-
-func _open_draft_popup() -> void:
-	if is_draft_open:
-		return
-	# draft pending diatur caller (wave vs victory), JANGAN reset di sini!
-	# 3 acak weighted (boleh kembar)
-	var offer: Array[ActionCardData] = []
-	var offer_cools: Array[int] = []
-	var paths: Array[String] = []
-	var datas: Array = []
-	var weights: Array = []
-	for path in SKILL_CARD_POOL:
-		var d := load(path) as ActionCardData
-		if d:
-			datas.append(d)
-			weights.append(d.spawn_probability)
-	if datas.is_empty():
-		return
-	for idx in ProbGen.roll_multi(weights, 3, true):
-		offer.append((datas[idx] as ActionCardData).duplicate())
-		offer_cools.append(0)
-		paths.append(SKILL_CARD_POOL[idx])
-	if offer.is_empty():
-		return
-	draft_offer_paths = paths
-	is_draft_open = true
-	is_player_turn = false
-	_set_buttons_active(false)
-	draft_ui = ActionCardUI.new()
-	draft_ui.is_draft_mode = true
-	draft_ui.setup(offer, offer_cools, 9999.0)
-	add_child(draft_ui)
-	draft_ui.card_selected.connect(_on_draft_card_selected)
-	draft_ui.card_closed.connect(_on_draft_card_closed)
-	_show_draft_hint("Choose 1 Card (or skip)")
-	draft_ui.open()
-
-
-func _show_draft_hint(msg: String) -> void:
-	_hide_draft_hint()
-	var vp := get_viewport().get_visible_rect().size
-	var lbl := Label.new()
-	lbl.text = msg
-	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	lbl.add_theme_font_size_override("font_size", 24)
-	lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
-	lbl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
-	lbl.add_theme_constant_override("outline_size", 6)
-	lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
-	lbl.position = Vector2(vp.x * 0.5 - 200.0, 24.0)
-	lbl.size = Vector2(400.0, 36.0)
-	lbl.z_index = 300
-	add_child(lbl)
-	draft_hint_label = lbl
-
-
-func _hide_draft_hint() -> void:
-	if draft_hint_label and is_instance_valid(draft_hint_label):
-		draft_hint_label.queue_free()
-	draft_hint_label = null
-
-
-func _on_draft_card_selected(index: int) -> void:
-	if not is_draft_open or draft_ui == null:
-		return
-	if index < 0 or index >= draft_offer_paths.size():
-		return
-	# Pick selalu ditahan; ditempel caller abis popup tutup (append / replace).
-	draft_pending_path = draft_offer_paths[index]
-
-
-func _give_draft_card(path: String) -> void:
-	if is_giving_draft:
-		return
-	is_giving_draft = true
-	var picked := load(path) as ActionCardData
-	if picked == null:
-		is_giving_draft = false
-		return
-	if action_cards.size() < SKILL_DECK_MAX:
-		action_cards.append(picked.duplicate())
-		action_card_cooldowns.append(0)
-		is_giving_draft = false
-		return
-	# Deck penuh 5/5 → change card: kartu baru terbang tengah -> corner dulu,
-	# BARU menu deck nyusul. Lalu tap 1 kartu lama buat tukeran tempat.
-	replace_pending_path = path
-	await _animate_replace_intro(picked)
-	_open_replace_picker()
-	await _wait_for_replace_closed()
-	replace_pending_path = ""
-	is_giving_draft = false
-
-
-func _animate_replace_intro(picked: ActionCardData) -> void:
-	_free_replace_indicator()
-	replace_indicator_layer = CanvasLayer.new()
-	replace_indicator_layer.layer = 170
-	add_child(replace_indicator_layer)
-	var factory := ActionCardUI.new()
-	var card := factory.create_card_visual(picked, 0, true, false, 0)
-	var vp := get_viewport().get_visible_rect().size
-	card.rotation = 0.0
-	card.position = Vector2((vp.x - ActionCardUI.CARD_WIDTH) / 2.0, (vp.y - ActionCardUI.CARD_HEIGHT) / 2.0)
-	card.scale = Vector2.ONE
-	factory._disable_card_input(card)
-	replace_indicator_layer.add_child(card)
-	factory.free()
-	replace_corner_card = card
-	var tw := create_tween().set_parallel(true)
-	tw.tween_property(card, "position", Vector2(10, 10), 0.45)\
-		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-	tw.tween_property(card, "scale", Vector2(0.95, 0.95), 0.45)\
-		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-	await tw.finished
-
-
-func _free_replace_indicator() -> void:
-	if replace_corner_card and is_instance_valid(replace_corner_card):
-		replace_corner_card.queue_free()
-	replace_corner_card = null
-	if replace_indicator_layer and is_instance_valid(replace_indicator_layer):
-		replace_indicator_layer.queue_free()
-	replace_indicator_layer = null
-
-
-func _open_replace_picker() -> void:
-	if is_replace_open:
-		return
-	is_replace_open = true
-	is_player_turn = false
-	_set_buttons_active(false)
-	replace_ui = ActionCardUI.new()
-	replace_ui.is_replace_mode = true
-	# Replace = buang kartu, GRATIS: cooldown dinolkan + stamina diabaikan
-	# biar gak disabled gara-gara stamina abis.
-	var free_cools: Array[int] = []
-	for i in range(action_cards.size()):
-		free_cools.append(0)
-	replace_ui.setup(action_cards, free_cools, 9999.0)
-	add_child(replace_ui)
-	replace_ui.card_selected.connect(_on_replace_card_selected)
-	replace_ui.card_closed.connect(_on_replace_card_closed)
-	_show_draft_hint("Change 1 Card")
-	replace_ui.open()
-
-
-func _wait_for_replace_closed() -> void:
-	# Watchdog 15 dtk: kalau UI glitch/stuck, paksa tutup biar flow gak softlock.
-	var t := 0.0
-	while is_replace_open and t < 15.0:
-		await get_tree().process_frame
-		t += get_process_delta_time()
-	if is_replace_open:
-		if replace_ui and is_instance_valid(replace_ui):
-			replace_ui.force_close()
-		is_replace_open = false
-
-
-func _on_replace_card_selected(index: int) -> void:
-	if not is_replace_open or replace_ui == null:
-		return
-	if index < 0 or index >= action_cards.size():
-		return
-	if replace_pending_path == "":
-		replace_ui.force_close()
-		return
-	# Fire-and-forget: swap anim jalan, waiter kelar pas force_close.
-	_run_replace_swap(index)
-
-
-func _run_replace_swap(index: int) -> void:
-	if replace_ui == null or not is_instance_valid(replace_ui):
-		is_replace_open = false
-		return
-	var slot: Control = replace_ui.card_nodes[index] if index < replace_ui.card_nodes.size() else null
-	if slot == null or not is_instance_valid(slot):
-		replace_ui.force_close()
-		return
-	var center_pos: Vector2 = slot.position
-	var center_scale: Vector2 = slot.scale
-	# Data swap duluan (visual nyusul, UI langsung tutup abis ini)
-	if replace_pending_path != "":
-		var picked := load(replace_pending_path) as ActionCardData
-		if picked:
-			action_cards[index] = picked.duplicate()
-			action_card_cooldowns[index] = 0
-	# TUKERAN TEMPAT (jelas + imersif): baru corner -> tengah, buangan tengah -> corner.
-	var tw := create_tween().set_parallel(true)
-	if replace_corner_card and is_instance_valid(replace_corner_card):
-		tw.tween_property(replace_corner_card, "position", center_pos, 0.45)\
-			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-		tw.tween_property(replace_corner_card, "scale", center_scale, 0.45)\
-			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-	tw.tween_property(slot, "position", Vector2(10, 10), 0.45)\
-		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-	tw.tween_property(slot, "scale", Vector2(0.95, 0.95), 0.45)\
-		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-	# SENGAJA timer fixed, BUKAN await tw.finished: tween yang ke-kill/glitch
-	# gak pernah emit finished -> waiter gantung -> game softlock. Timer = progres dijamin.
-	await get_tree().create_timer(0.55).timeout
-	# Kasih waktu baca hasil tukeran, baru tutup
-	await get_tree().create_timer(0.4).timeout
-	_free_replace_indicator()
-	if replace_ui and is_instance_valid(replace_ui):
-		replace_ui.force_close()
-	else:
-		is_replace_open = false
-
-
-func _on_replace_card_closed() -> void:
-	is_replace_open = false
-	replace_ui = null
-	_hide_draft_hint()
-	_free_replace_indicator()
-
-
-func _on_draft_card_closed() -> void:
-	is_draft_open = false
-	draft_ui = null
-	_hide_draft_hint()
-	draft_offer_paths.clear()
 
 
 func _update_scoreboard_values() -> void:

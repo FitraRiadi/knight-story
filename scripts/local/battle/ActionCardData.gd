@@ -25,10 +25,6 @@ class_name ActionCardData
 @export var stamina_cost: float = 25.0
 @export var cooldown: int = 3
 
-## Bobot spawn 0-100 buat random deck/draft (ProbabilityGenerator).
-## Bebas, gak harus total 100. Gede = sering muncul.
-@export_range(0.0, 100.0) var spawn_probability: float = 100.0
-
 
 # ============================================================
 # VISUAL — ACCENT

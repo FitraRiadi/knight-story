@@ -10,7 +10,6 @@ script = ExtResource("1_card")
 damage_amplification = 0.8
 attack_reduction = 0.5
 card_name = "Deep Wounds"
-spawn_probability = 100.0
 description = "Bleeds the enemy. Weaker attacks, takes more damage."
 card_art = ExtResource("1_vmeys")
 icon = ExtResource("2_icon")

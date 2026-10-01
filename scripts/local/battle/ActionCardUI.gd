@@ -64,12 +64,6 @@ enum CardMode { SKILL, ATTACK }
 var card_mode: CardMode = CardMode.SKILL
 var attack_indicator: Control = null
 var waiting_for_mechanic: bool = false
-# Draft mode (roguelike reward): pilih bebas tanpa cost/cooldown
-var is_draft_mode := false
-# Replace mode (change card): tap = buang kartu ini, SELALU auto-close (no indicator)
-var is_replace_mode := false
-
-# Replace indicator & intro/swap digerakkan BattleManager (layer sendiri).
 
 
 # ============================================================
@@ -123,32 +117,14 @@ func _build_ui() -> void:
 		var has_stamina: bool = current_stamina >= data.stamina_cost
 		var is_on_cooldown: bool = cd > 0
 
-		var card: Control = create_card_visual(data, i, has_stamina, is_on_cooldown, cd)
+		var card: Control = _create_card(data, i, has_stamina, is_on_cooldown, cd)
 		card.position = Vector2(start_x + i * CARD_SPACING, CARD_Y + 300.0)
 		card.name = "Card_" + str(i)
 		canvas_layer.add_child(card)
 		card_nodes.append(card)
 
-	if cards_data.is_empty():
-		var empty_label := Label.new()
-		empty_label.text = "Empty Deck!"
-		empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		empty_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		empty_label.add_theme_font_size_override("font_size", 28)
-		empty_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
-		empty_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
-		empty_label.add_theme_constant_override("outline_size", 6)
-		empty_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
-		empty_label.position = Vector2(viewport_size.x * 0.5 - 150.0, CARD_Y + 40.0)
-		empty_label.size = Vector2(300.0, 40.0)
-		empty_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		empty_label.modulate.a = 0.0
-		canvas_layer.add_child(empty_label)
-		var fade_tw := create_tween()
-		fade_tw.tween_property(empty_label, "modulate:a", 1.0, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
-
-func create_card_visual(data: ActionCardData, index: int, has_stamina: bool, is_on_cooldown: bool, cooldown_remaining: int) -> Control:
+func _create_card(data: ActionCardData, index: int, has_stamina: bool, is_on_cooldown: bool, cooldown_remaining: int) -> Control:
 	var card: Control
 
 	# Pilih scene berdasarkan mode
@@ -341,12 +317,11 @@ func _on_card_hover(index: int) -> void:
 	if index < 0 or index >= card_nodes.size():
 		return
 
-	# Skip hover kalau card cooldown atau stamina kurang (draft bebas)
-	if not is_draft_mode:
-		var data: ActionCardData = cards_data[index]
-		var cd: int = card_cooldowns[index] if index < card_cooldowns.size() else 0
-		if cd > 0 or current_stamina < data.stamina_cost:
-			return
+	# Skip hover kalau card cooldown atau stamina kurang
+	var data: ActionCardData = cards_data[index]
+	var cd: int = card_cooldowns[index] if index < card_cooldowns.size() else 0
+	if cd > 0 or current_stamina < data.stamina_cost:
+		return
 
 	var card: Control = card_nodes[index]
 
@@ -374,12 +349,11 @@ func _on_card_unhover(index: int) -> void:
 	if index < 0 or index >= card_nodes.size():
 		return
 
-	# Skip unhover kalau card cooldown atau stamina kurang (draft bebas)
-	if not is_draft_mode:
-		var data: ActionCardData = cards_data[index]
-		var cd: int = card_cooldowns[index] if index < card_cooldowns.size() else 0
-		if cd > 0 or current_stamina < data.stamina_cost:
-			return
+	# Skip unhover kalau card cooldown atau stamina kurang
+	var data: ActionCardData = cards_data[index]
+	var cd: int = card_cooldowns[index] if index < card_cooldowns.size() else 0
+	if cd > 0 or current_stamina < data.stamina_cost:
+		return
 
 	var card: Control = card_nodes[index]
 
@@ -429,18 +403,6 @@ func _restart_float(index: int) -> void:
 # CARD INPUT
 # ============================================================
 
-func _is_mechanic_card(index: int) -> bool:
-	# Kartu mechanic (charge/rapid) butuh corner indicator + mechanic,
-	# regardless mode UI-nya (Opsi B).
-	if index < 0 or index >= cards_data.size():
-		return false
-	var data: ActionCardData = cards_data[index]
-	if data is AttackCardData:
-		var at: String = (data as AttackCardData).attack_type
-		return at == "Charge" or at == "Rapid"
-	return false
-
-
 func _on_card_input(event: InputEvent, index: int) -> void:
 	if is_selecting:
 		return
@@ -451,14 +413,13 @@ func _on_card_input(event: InputEvent, index: int) -> void:
 	if event.button_index != MOUSE_BUTTON_LEFT:
 		return
 
-	# Cek cooldown dan stamina (draft: bebas, skip semua)
-	if not is_draft_mode:
-		var data: ActionCardData = cards_data[index]
-		var cd: int = card_cooldowns[index] if index < card_cooldowns.size() else 0
-		if cd > 0:
-			return
-		if current_stamina < data.stamina_cost:
-			return
+	# Cek cooldown dan stamina
+	var data: ActionCardData = cards_data[index]
+	var cd: int = card_cooldowns[index] if index < card_cooldowns.size() else 0
+	if cd > 0:
+		return
+	if current_stamina < data.stamina_cost:
+		return
 
 	_select_card(index)
 
@@ -532,19 +493,11 @@ func _select_card(index: int) -> void:
 			.set_ease(Tween.EASE_IN)
 		other_tw.parallel().tween_property(other, "scale", Vector2(0.7, 0.7), 0.2).set_delay(delay)
 
-	# Corner indicator buat kartu mechanic ATAU attack mode (Opsi B:
-	# syaratnya kartu mechanic, bukan mode UI). Draft/replace gak ikut.
-	if (card_mode == CardMode.ATTACK or _is_mechanic_card(index)) and not is_draft_mode and not is_replace_mode:
+	# ATTACK MODE: pindah ke pojok kiri atas sebagai indicator
+	if card_mode == CardMode.ATTACK:
 		tw.tween_interval(0.3)
 		tw.tween_callback(func() -> void:
 			_move_to_indicator(card)
-		)
-	elif is_replace_mode:
-		# REPLACE MODE: emit aja, BattleManager yang menganimasikan swap
-		# (corner <-> slot) + force_close. JANGAN auto-close di sini.
-		tw.tween_interval(0.6)
-		tw.tween_callback(func() -> void:
-			card_selected.emit(selected_index)
 		)
 	else:
 		# SKILL MODE: hold, then close (sama kayak sekarang)
@@ -628,12 +581,6 @@ func _on_bg_input(event: InputEvent) -> void:
 func close() -> void:
 	if is_selecting:
 		return
-	_cleanup()
-	card_closed.emit()
-
-
-func force_close() -> void:
-	# Tutup paksa abis swap (is_selecting true) — cleanup + signal biar waiter kelar.
 	_cleanup()
 	card_closed.emit()
 
