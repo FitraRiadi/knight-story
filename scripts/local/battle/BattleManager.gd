@@ -2599,10 +2599,12 @@ func _finish_raptive() -> void:
 			wave_progress.set_wave(current_wave, total_waves)
 			await get_tree().create_timer(0.5).timeout
 			await _wait_for_dialogs_done()
-			draft_direct_add = true
 			draft_pending_path = ""
 			_open_draft_popup()
 			await _wait_for_draft_closed()
+			if draft_pending_path != "":
+				await _give_draft_card(draft_pending_path)
+				draft_pending_path = ""
 			spawn_random_enemies(1, enemies_per_wave, 1, 5)
 			# Cleanup visual state rapid mode
 			card_used_this_session = false  # Reset SEBELUM finish supaya signal gak trigger enemy turn
@@ -3810,10 +3812,12 @@ func _process_enemy_death(_exp_amount: int, _gold_amount: int, _dropped_items: A
 			wave_progress.set_wave(current_wave, total_waves)
 			await get_tree().create_timer(0.5).timeout
 			await _wait_for_dialogs_done()
-			draft_direct_add = true
 			draft_pending_path = ""
 			_open_draft_popup()
 			await _wait_for_draft_closed()
+			if draft_pending_path != "":
+				await _give_draft_card(draft_pending_path)
+				draft_pending_path = ""
 			spawn_random_enemies(1, enemies_per_wave, 1, 5)
 		else:
 			# All waves completed - show scoreboard
@@ -4483,22 +4487,21 @@ var is_draft_open := false
 var draft_offer_paths: Array[String] = []
 var draft_hint_label: Label = null
 # Victory: pick ditahan, ditempel abis respawn rebuild (biar gak ke-wipe).
-# Wave: langsung append (deck mid-battle persist).
+# Wave: pick ditahan, ditempel abis draft tutup (append / replace kalau penuh).
 var draft_pending_path := ""
-var draft_direct_add := true
+# Replace (change card): deck penuh 5/5 saat pick → pilih 1 kartu lama buat dibuang.
+var replace_ui: ActionCardUI = null
+var is_replace_open := false
+var replace_pending_path := ""
 
 
 func _open_victory_draft() -> void:
-	draft_direct_add = false
 	draft_pending_path = ""
 	_open_draft_popup()
 	await _wait_for_draft_closed()
 	respawn_test_enemies()
 	if draft_pending_path != "":
-		var card := load(draft_pending_path) as ActionCardData
-		if card:
-			action_cards.append(card.duplicate())
-			action_card_cooldowns.append(0)
+		await _give_draft_card(draft_pending_path)
 		draft_pending_path = ""
 
 
@@ -4510,7 +4513,7 @@ func _wait_for_draft_closed() -> void:
 func _open_draft_popup() -> void:
 	if is_draft_open:
 		return
-	# draft_direct_add + pending diatur caller (wave vs victory), JANGAN reset di sini!
+	# draft pending diatur caller (wave vs victory), JANGAN reset di sini!
 	# 3 acak weighted (boleh kembar)
 	var offer: Array[ActionCardData] = []
 	var offer_cools: Array[int] = []
@@ -4571,15 +4574,62 @@ func _on_draft_card_selected(index: int) -> void:
 		return
 	if index < 0 or index >= draft_offer_paths.size():
 		return
-	if draft_direct_add:
-		# Wave: pick langsung masuk deck battle ini (UI auto-tutup abis ini)
-		var picked := load(draft_offer_paths[index]) as ActionCardData
+	# Pick selalu ditahan; ditempel caller abis popup tutup (append / replace).
+	draft_pending_path = draft_offer_paths[index]
+
+
+func _give_draft_card(path: String) -> void:
+	var picked := load(path) as ActionCardData
+	if picked == null:
+		return
+	if action_cards.size() < SKILL_DECK_MAX:
+		action_cards.append(picked.duplicate())
+		action_card_cooldowns.append(0)
+		return
+	# Deck penuh 5/5 → change card: pilih 1 kartu lama buat dibuang.
+	replace_pending_path = path
+	_open_replace_picker()
+	await _wait_for_replace_closed()
+	replace_pending_path = ""
+
+
+func _open_replace_picker() -> void:
+	if is_replace_open:
+		return
+	is_replace_open = true
+	is_player_turn = false
+	_set_buttons_active(false)
+	replace_ui = ActionCardUI.new()
+	replace_ui.is_replace_mode = true
+	replace_ui.setup(action_cards, action_card_cooldowns, current_stamina)
+	add_child(replace_ui)
+	replace_ui.card_selected.connect(_on_replace_card_selected)
+	replace_ui.card_closed.connect(_on_replace_card_closed)
+	_show_draft_hint("Deck penuh! Pilih 1 kartu buat diganti")
+	replace_ui.open()
+
+
+func _wait_for_replace_closed() -> void:
+	while is_replace_open:
+		await get_tree().process_frame
+
+
+func _on_replace_card_selected(index: int) -> void:
+	if not is_replace_open or replace_ui == null:
+		return
+	if index < 0 or index >= action_cards.size():
+		return
+	if replace_pending_path != "":
+		var picked := load(replace_pending_path) as ActionCardData
 		if picked:
-			action_cards.append(picked.duplicate())
-			action_card_cooldowns.append(0)
-	else:
-		# Victory: tahan dulu, ditempel abis respawn
-		draft_pending_path = draft_offer_paths[index]
+			action_cards[index] = picked.duplicate()
+			action_card_cooldowns[index] = 0
+
+
+func _on_replace_card_closed() -> void:
+	is_replace_open = false
+	replace_ui = null
+	_hide_draft_hint()
 
 
 func _on_draft_card_closed() -> void:

@@ -66,6 +66,8 @@ var attack_indicator: Control = null
 var waiting_for_mechanic: bool = false
 # Draft mode (roguelike reward): pilih bebas tanpa cost/cooldown
 var is_draft_mode := false
+# Replace mode (change card): tap = buang kartu ini, SELALU auto-close (no indicator)
+var is_replace_mode := false
 
 
 # ============================================================
@@ -527,8 +529,8 @@ func _select_card(index: int) -> void:
 		other_tw.parallel().tween_property(other, "scale", Vector2(0.7, 0.7), 0.2).set_delay(delay)
 
 	# Corner indicator buat kartu mechanic ATAU attack mode (Opsi B:
-	# syaratnya kartu mechanic, bukan mode UI). Draft gak ikut (langsung tutup).
-	if (card_mode == CardMode.ATTACK or _is_mechanic_card(index)) and not is_draft_mode:
+	# syaratnya kartu mechanic, bukan mode UI). Draft/replace gak ikut (langsung tutup).
+	if (card_mode == CardMode.ATTACK or _is_mechanic_card(index)) and not is_draft_mode and not is_replace_mode:
 		tw.tween_interval(0.3)
 		tw.tween_callback(func() -> void:
 			_move_to_indicator(card)
