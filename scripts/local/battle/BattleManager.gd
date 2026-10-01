@@ -241,8 +241,6 @@ var _is_scoreboard_hiding: bool = false
 # Preload langsung biar gak tergantung cache global class editor
 const ProbGen = preload("res://scripts/global/probability_generator.gd")
 const BASIC_ATTACK_PATH := "res://data/action_cards/attack_cards/basic_attack.tres"
-# Kartu hasil draft victory: dijamin masuk deck battle berikut (runtime only)
-var next_battle_guaranteed: Array[String] = []
 const SKILL_CARD_POOL: Array[String] = [
 	"res://data/action_cards/poison.tres",
 	"res://data/action_cards/bleed.tres",
@@ -1025,13 +1023,8 @@ func _load_action_cards() -> void:
 	action_cards.clear()
 	action_card_cooldowns.clear()
 
-	# Deck fresh tiap battle: guaranteed (hasil draft victory lalu) dulu,
-	# sisanya weighted acak sampai max. Tanpa koleksi permanen.
-	var paths: Array[String] = []
-	for path in next_battle_guaranteed:
-		if paths.size() < SKILL_DECK_MAX:
-			paths.append(path)
-	next_battle_guaranteed.clear()
+	# Deck fresh tiap battle: weighted acak 5 (boleh kembar).
+	# Tanpa koleksi permanen, tanpa garansi.
 	var pool: Array[String] = []
 	var weights: Array = []
 	for p in SKILL_CARD_POOL:
@@ -1039,11 +1032,11 @@ func _load_action_cards() -> void:
 		if data:
 			pool.append(p)
 			weights.append(data.spawn_probability)
-	while paths.size() < SKILL_DECK_MAX and not pool.is_empty():
-		paths.append(pool[ProbGen.roll_multi(weights, 1, true)[0]])
-
-	for path in paths:
-		var card := load(path) as ActionCardData
+	while action_cards.size() < SKILL_DECK_MAX and not pool.is_empty():
+		var picks: Array[int] = ProbGen.roll_multi(weights, 1, true)
+		if picks.is_empty():
+			break
+		var card := load(pool[picks[0]]) as ActionCardData
 		if card:
 			action_cards.append(card.duplicate())
 			action_card_cooldowns.append(0)
@@ -1066,9 +1059,8 @@ func open_action_card_ui() -> void:
 	if is_card_ui_open:
 		return
 
-	if action_cards.is_empty():
-		_load_action_cards()
-
+	# Deck boleh kosong beneran (exhaust semua + skip draft).
+	# UI yang nunjukin tulisan, bukan refill diam-diam.
 	is_card_ui_open = true
 	is_player_turn = false
 	_set_buttons_active(false)
@@ -2607,6 +2599,10 @@ func _finish_raptive() -> void:
 			wave_progress.set_wave(current_wave, total_waves)
 			await get_tree().create_timer(0.5).timeout
 			await _wait_for_dialogs_done()
+			draft_direct_add = true
+			draft_pending_path = ""
+			_open_draft_popup()
+			await _wait_for_draft_closed()
 			spawn_random_enemies(1, enemies_per_wave, 1, 5)
 			# Cleanup visual state rapid mode
 			card_used_this_session = false  # Reset SEBELUM finish supaya signal gak trigger enemy turn
@@ -3797,6 +3793,10 @@ func _process_enemy_death(_exp_amount: int, _gold_amount: int, _dropped_items: A
 			wave_progress.set_wave(current_wave, total_waves)
 			await get_tree().create_timer(0.5).timeout
 			await _wait_for_dialogs_done()
+			draft_direct_add = true
+			draft_pending_path = ""
+			_open_draft_popup()
+			await _wait_for_draft_closed()
 			spawn_random_enemies(1, enemies_per_wave, 1, 5)
 		else:
 			# All waves completed - show scoreboard
@@ -4454,30 +4454,49 @@ func _hide_scoreboard() -> void:
 		scoreBoard.visible = false
 		_reset_scoreboard_values()
 		_show_battle_ui_after_scoreboard()
-		_maybe_open_draft()
+		_open_victory_draft()
 	)
 
 
 # ============================================================
-# ROGUELIKE DRAFT (post-victory: pick 1 of 3 -> deck battle berikut)
-# Tanpa koleksi permanen: pick dijamin masuk next battle, skip = acak penuh.
+# ROGUELIKE DRAFT (wave-clear & victory: pick 1 of 3 -> deck sekarang)
+# Tanpa koleksi permanen, tanpa max: pick langsung nambah ke deck battle
+# ini. Skip (bg-click) = gak nambah apa-apa, deck bisa kosong beneran.
 # ============================================================
 
 var draft_ui: ActionCardUI = null
 var is_draft_open := false
 var draft_offer_paths: Array[String] = []
-var draft_pending_path := ""
-var _draft_done := false
 var draft_hint_label: Label = null
+# Victory: pick ditahan, ditempel abis respawn rebuild (biar gak ke-wipe).
+# Wave: langsung append (deck mid-battle persist).
+var draft_pending_path := ""
+var draft_direct_add := true
 
 
-func _maybe_open_draft() -> void:
+func _open_victory_draft() -> void:
+	draft_direct_add = false
+	draft_pending_path = ""
 	_open_draft_popup()
+	await _wait_for_draft_closed()
+	respawn_test_enemies()
+	if draft_pending_path != "":
+		var card := load(draft_pending_path) as ActionCardData
+		if card:
+			action_cards.append(card.duplicate())
+			action_card_cooldowns.append(0)
+		draft_pending_path = ""
+
+
+func _wait_for_draft_closed() -> void:
+	while is_draft_open:
+		await get_tree().process_frame
 
 
 func _open_draft_popup() -> void:
 	if is_draft_open:
 		return
+	# draft_direct_add + pending diatur caller (wave vs victory), JANGAN reset di sini!
 	# 3 acak weighted (boleh kembar)
 	var offer: Array[ActionCardData] = []
 	var offer_cools: Array[int] = []
@@ -4490,18 +4509,14 @@ func _open_draft_popup() -> void:
 			datas.append(d)
 			weights.append(d.spawn_probability)
 	if datas.is_empty():
-		_finish_draft_and_respawn()
 		return
 	for idx in ProbGen.roll_multi(weights, 3, true):
 		offer.append((datas[idx] as ActionCardData).duplicate())
 		offer_cools.append(0)
 		paths.append(SKILL_CARD_POOL[idx])
 	if offer.is_empty():
-		_finish_draft_and_respawn()
 		return
-	draft_pending_path = ""
 	draft_offer_paths = paths
-	_draft_done = false
 	is_draft_open = true
 	is_player_turn = false
 	_set_buttons_active(false)
@@ -4511,7 +4526,7 @@ func _open_draft_popup() -> void:
 	add_child(draft_ui)
 	draft_ui.card_selected.connect(_on_draft_card_selected)
 	draft_ui.card_closed.connect(_on_draft_card_closed)
-	_show_draft_hint("Choose 1 card (next battle)")
+	_show_draft_hint("Choose 1 card (or skip)")
 	draft_ui.open()
 
 
@@ -4542,28 +4557,22 @@ func _on_draft_card_selected(index: int) -> void:
 		return
 	if index < 0 or index >= draft_offer_paths.size():
 		return
-	# Pick masuk guaranteed deck battle berikut (bg-close = skip)
-	draft_pending_path = draft_offer_paths[index]
-	_draft_done = true
+	if draft_direct_add:
+		# Wave: pick langsung masuk deck battle ini (UI auto-tutup abis ini)
+		var picked := load(draft_offer_paths[index]) as ActionCardData
+		if picked:
+			action_cards.append(picked.duplicate())
+			action_card_cooldowns.append(0)
+	else:
+		# Victory: tahan dulu, ditempel abis respawn
+		draft_pending_path = draft_offer_paths[index]
 
 
 func _on_draft_card_closed() -> void:
 	is_draft_open = false
 	draft_ui = null
 	_hide_draft_hint()
-	_finish_draft_and_respawn()
-
-
-func _finish_draft_and_respawn() -> void:
-	if _draft_done and draft_pending_path != "":
-		next_battle_guaranteed = [draft_pending_path]
-	_draft_done = false
-	draft_pending_path = ""
 	draft_offer_paths.clear()
-	is_draft_open = false
-	draft_ui = null
-	_hide_draft_hint()
-	respawn_test_enemies()
 
 
 func _update_scoreboard_values() -> void:

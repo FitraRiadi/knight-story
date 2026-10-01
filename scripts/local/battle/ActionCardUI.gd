@@ -125,6 +125,22 @@ func _build_ui() -> void:
 		canvas_layer.add_child(card)
 		card_nodes.append(card)
 
+	if cards_data.is_empty():
+		var empty_label := Label.new()
+		empty_label.text = "Deck Kosong!"
+		empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		empty_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+		empty_label.add_theme_font_size_override("font_size", 28)
+		empty_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+		empty_label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.8))
+		empty_label.position = Vector2(viewport_size.x * 0.5 - 150.0, CARD_Y + 40.0)
+		empty_label.size = Vector2(300.0, 40.0)
+		empty_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		empty_label.modulate.a = 0.0
+		canvas_layer.add_child(empty_label)
+		var fade_tw := create_tween()
+		fade_tw.tween_property(empty_label, "modulate:a", 1.0, 0.3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
 
 func _create_card(data: ActionCardData, index: int, has_stamina: bool, is_on_cooldown: bool, cooldown_remaining: int) -> Control:
 	var card: Control
