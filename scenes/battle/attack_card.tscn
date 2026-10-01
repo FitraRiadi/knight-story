@@ -65,17 +65,17 @@ vertical_alignment = 1
 
 [node name="Label" type="Label" parent="." unique_id=2083259107]
 layout_mode = 0
-offset_left = 12.0
-offset_top = 110.0
-offset_right = 99.0
-offset_bottom = 148.0
+offset_left = 10.0
+offset_top = 111.99999
+offset_right = 1358.373
+offset_bottom = 533.047
+scale = Vector2(0.066120535, 0.083126135)
 theme_override_colors/font_color = Color(0, 0, 0, 1)
-theme_override_font_sizes/font_size = 8
+theme_override_font_sizes/font_size = 100
 text = "Attack Basic Qte to Single Target"
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 3
-text_overrun_behavior = 3
 
 [node name="GreyedOverlay" type="ColorRect" parent="." unique_id=1023065847]
 visible = false
