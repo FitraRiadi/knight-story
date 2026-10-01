@@ -136,18 +136,22 @@ func _make_fade_ramp() -> GradientTexture1D:
 	return ramp_tex
 
 
-func _make_streak_texture(w: int = 8, h: int = 32) -> ImageTexture:
-	# Jarum vertikal tipis, lancip atas-bawah (bukan dot bulet).
-	# Generate sekali pas setup, murah (8x32 px).
-	var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
-	var cx: float = (float(w) - 1.0) / 2.0
-	for y in h:
-		var v: float = float(y) / float(h - 1)
-		var taper: float = pow(sin(v * PI), 1.5)  # 0 di ujung -> lancip
-		for x in w:
-			var dx: float = absf(float(x) - cx) / (cx + 0.001)
-			var core: float = pow(clampf(1.0 - dx, 0.0, 1.0), 2.0)  # tipis di tengah
-			img.set_pixel(x, y, Color(1, 1, 1, clampf(core * taper, 0.0, 1.0)))
+func _make_streak_texture(size: int = 24) -> ImageTexture:
+	# Spark "X": dua garis diagonal tipis nyilang, lancip di ujung-ujungnya.
+	# Generate sekali pas setup, murah (24x24 px).
+	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
+	var last: float = float(size - 1)
+	for y in size:
+		for x in size:
+			# Jarak ke 2 diagonal (px); inti tipis ~1.5px
+			var d1: float = absf(float(x) - float(y)) / 1.4142
+			var d2: float = absf(float(x) - (last - float(y))) / 1.4142
+			# Taper sepanjang garis biar ujung lancip (0 di ujung, 1 di tengah)
+			var t1: float = pow(sin(((float(x) + float(y)) / (2.0 * last)) * PI), 1.5)
+			var t2: float = pow(sin(((float(x) + (last - float(y))) / (2.0 * last)) * PI), 1.5)
+			var l1: float = pow(clampf(1.0 - d1 / 1.5, 0.0, 1.0), 2.0) * t1
+			var l2: float = pow(clampf(1.0 - d2 / 1.5, 0.0, 1.0), 2.0) * t2
+			img.set_pixel(x, y, Color(1, 1, 1, clampf(maxf(l1, l2), 0.0, 1.0)))
 	return ImageTexture.create_from_image(img)
 
 
