@@ -4493,6 +4493,9 @@ var draft_pending_path := ""
 var replace_ui: ActionCardUI = null
 var is_replace_open := false
 var replace_pending_path := ""
+# Intro/swap: kartu baru terbang tengah -> corner, lalu tukeran tempat sama kartu buangan.
+var replace_indicator_layer: CanvasLayer = null
+var replace_corner_card: Control = null
 
 
 func _open_victory_draft() -> void:
@@ -4543,7 +4546,7 @@ func _open_draft_popup() -> void:
 	add_child(draft_ui)
 	draft_ui.card_selected.connect(_on_draft_card_selected)
 	draft_ui.card_closed.connect(_on_draft_card_closed)
-	_show_draft_hint("Choose 1 card (or skip)")
+	_show_draft_hint("Choose 1 Card (or skip)")
 	draft_ui.open()
 
 
@@ -4556,6 +4559,8 @@ func _show_draft_hint(msg: String) -> void:
 	lbl.add_theme_font_size_override("font_size", 24)
 	lbl.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
 	lbl.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.7))
+	lbl.add_theme_constant_override("outline_size", 6)
+	lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
 	lbl.position = Vector2(vp.x * 0.5 - 200.0, 24.0)
 	lbl.size = Vector2(400.0, 36.0)
 	lbl.z_index = 300
@@ -4586,11 +4591,45 @@ func _give_draft_card(path: String) -> void:
 		action_cards.append(picked.duplicate())
 		action_card_cooldowns.append(0)
 		return
-	# Deck penuh 5/5 → change card: pilih 1 kartu lama buat dibuang.
+	# Deck penuh 5/5 → change card: kartu baru terbang tengah -> corner dulu,
+	# BARU menu deck nyusul. Lalu tap 1 kartu lama buat tukeran tempat.
 	replace_pending_path = path
+	await _animate_replace_intro(picked)
 	_open_replace_picker()
 	await _wait_for_replace_closed()
 	replace_pending_path = ""
+
+
+func _animate_replace_intro(picked: ActionCardData) -> void:
+	_free_replace_indicator()
+	replace_indicator_layer = CanvasLayer.new()
+	replace_indicator_layer.layer = 170
+	add_child(replace_indicator_layer)
+	var factory := ActionCardUI.new()
+	var card := factory.create_card_visual(picked, 0, true, false, 0)
+	var vp := get_viewport().get_visible_rect().size
+	card.rotation = 0.0
+	card.position = Vector2((vp.x - ActionCardUI.CARD_WIDTH) / 2.0, (vp.y - ActionCardUI.CARD_HEIGHT) / 2.0)
+	card.scale = Vector2.ONE
+	factory._disable_card_input(card)
+	replace_indicator_layer.add_child(card)
+	factory.free()
+	replace_corner_card = card
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(card, "position", Vector2(10, 10), 0.45)\
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	tw.tween_property(card, "scale", Vector2(0.95, 0.95), 0.45)\
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	await tw.finished
+
+
+func _free_replace_indicator() -> void:
+	if replace_corner_card and is_instance_valid(replace_corner_card):
+		replace_corner_card.queue_free()
+	replace_corner_card = null
+	if replace_indicator_layer and is_instance_valid(replace_indicator_layer):
+		replace_indicator_layer.queue_free()
+	replace_indicator_layer = null
 
 
 func _open_replace_picker() -> void:
@@ -4610,11 +4649,8 @@ func _open_replace_picker() -> void:
 	add_child(replace_ui)
 	replace_ui.card_selected.connect(_on_replace_card_selected)
 	replace_ui.card_closed.connect(_on_replace_card_closed)
-	_show_draft_hint("Deck penuh! Pilih 1 kartu buat diganti")
+	_show_draft_hint("Change 1 Card")
 	replace_ui.open()
-	var picked := load(replace_pending_path) as ActionCardData
-	if picked:
-		replace_ui.spawn_replace_indicator(picked)
 
 
 func _wait_for_replace_closed() -> void:
@@ -4627,17 +4663,47 @@ func _on_replace_card_selected(index: int) -> void:
 		return
 	if index < 0 or index >= action_cards.size():
 		return
+	if replace_pending_path == "":
+		replace_ui.force_close()
+		return
+	# Fire-and-forget: swap anim jalan, waiter kelar pas force_close.
+	_run_replace_swap(index)
+
+
+func _run_replace_swap(index: int) -> void:
+	var slot: Control = replace_ui.card_nodes[index]
+	var center_pos: Vector2 = slot.position
+	var center_scale: Vector2 = slot.scale
+	# Data swap duluan (visual nyusul, UI langsung tutup abis ini)
 	if replace_pending_path != "":
 		var picked := load(replace_pending_path) as ActionCardData
 		if picked:
 			action_cards[index] = picked.duplicate()
 			action_card_cooldowns[index] = 0
+	# TUKERAN TEMPAT (jelas + imersif): baru corner -> tengah, buangan tengah -> corner.
+	var tw := create_tween().set_parallel(true)
+	if replace_corner_card and is_instance_valid(replace_corner_card):
+		tw.tween_property(replace_corner_card, "position", center_pos, 0.45)\
+			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+		tw.tween_property(replace_corner_card, "scale", center_scale, 0.45)\
+			.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	tw.tween_property(slot, "position", Vector2(10, 10), 0.45)\
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	tw.tween_property(slot, "scale", Vector2(0.95, 0.95), 0.45)\
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
+	await tw.finished
+	# Kasih waktu baca hasil tukeran, baru tutup
+	await get_tree().create_timer(0.4).timeout
+	_free_replace_indicator()
+	if replace_ui and is_instance_valid(replace_ui):
+		replace_ui.force_close()
 
 
 func _on_replace_card_closed() -> void:
 	is_replace_open = false
 	replace_ui = null
 	_hide_draft_hint()
+	_free_replace_indicator()
 
 
 func _on_draft_card_closed() -> void:
