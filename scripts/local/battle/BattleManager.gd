@@ -191,16 +191,6 @@ var target_attack_qte_pos: Vector2
 const RAPID_HIT_RADIUS: float = 60.0
 # Potongan waktu global (detik) tiap tap meleset.
 const RAPID_MISS_TIME_PENALTY: float = 0.5
-# Jarak lompatan tombol KONSTAN: rhythmus konsisten, player tinggal
-# "kejar" sejarak yang sama. Area gerak rapid cuma ~480x20px, jadi
-# lompatan miring ke atas selalu kepotong clamp → jaraknya jadi tak
-# konsisten & kadang cuma "nyaris" (kelihatan deket, tapi muscle memory
-# masih ngejar posisi lama → tap meleset → kerasa lambat).
-const RAPID_JUMP_DIST: float = 240.0
-# Posisi rapidBtn terakhir. Pisah dari node karena _hide_raptive_btn()
-# jalan sebelum spawn berikutnya (node hidden) → visibility gak bisa
-# dipake buat cek jarak.
-var _rapid_last_btn_pos: Vector2 = Vector2.INF
 
 var _is_rapid_active: bool = false
 var _rapid_timer_global: float = 0.0
@@ -2292,8 +2282,6 @@ func _start_attack_raptive() -> void:
 	_rapid_hits = 0
 	_rapid_enemy_index = selected_enemy_index
 	_pending_rapid_deaths.clear()
-	# Rapid baru mulai: tombol belum pernah muncul, lompatan pertama bebas.
-	_rapid_last_btn_pos = Vector2.INF
 
 	if not _rapid_sfx_cache:
 		_rapid_sfx_cache = preload("res://assets/audio/effects/battle/sword/sword-attack.mp3")
@@ -2384,38 +2372,15 @@ func _advance_raptive_to_next() -> void:
 func _spawn_raptive_btn_on_enemy(enemy: BattleEnemy) -> void:
 	var viewport_size := get_viewport().get_visible_rect().size
 	var enemy_pos := enemy.global_position
-	var prev_pos: Vector2 = _rapid_last_btn_pos
 
-	var min_x := 80.0
-	var max_x := viewport_size.x - 180.0
-	var min_y := 120.0
-	var max_y := maxf(min_y, viewport_size.y - 200.0)
+	# Jarak spawn KEMBALI ke rapid asli: acak 60-120px dari musuh.
+	var angle := randf() * TAU
+	var radius := randf_range(60.0, 120.0)
+	var random_offset := Vector2(cos(angle), sin(angle)) * radius
+	var target_pos := enemy_pos + random_offset
 
-	var target_pos: Vector2
-	if prev_pos == Vector2.INF:
-		# Spawn pertama (rapid baru mulai): acak di sekitar musuh.
-		var angle := randf() * TAU
-		var radius := randf_range(60.0, 120.0)
-		target_pos = enemy_pos + Vector2(cos(angle), sin(angle)) * radius
-		target_pos.x = clampf(target_pos.x, min_x, max_x)
-		target_pos.y = clampf(target_pos.y, min_y, max_y)
-	else:
-		# Lompat KONSTAN ke kiri/kanan, arah acak. Kalo mentok pinggir,
-		# geser ke sisi seberang — jaraknya tetap jauh, gak pernah kependek.
-		var y: float = clampf(prev_pos.y + randf_range(-6.0, 6.0), min_y, max_y)
-		var dirs: Array[float] = ([1.0, -1.0] as Array[float]) if randf() < 0.5 else ([-1.0, 1.0] as Array[float])
-		var placed := false
-		for d in dirs:
-			var nx: float = prev_pos.x + d * RAPID_JUMP_DIST
-			if nx >= min_x and nx <= max_x:
-				target_pos = Vector2(nx, y)
-				placed = true
-				break
-		if not placed:
-			var far_x: float = min_x if prev_pos.x > (min_x + max_x) * 0.5 else max_x
-			target_pos = Vector2(far_x, y)
-
-	_rapid_last_btn_pos = target_pos
+	target_pos.x = clampf(target_pos.x, 80.0, viewport_size.x - 180.0)
+	target_pos.y = clampf(target_pos.y, 120.0, viewport_size.y - 200.0)
 
 	# Kill tween lama
 	var old_tw = rapid_btn.get_meta("_pop_tween", null) if rapid_btn else null
