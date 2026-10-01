@@ -2402,8 +2402,12 @@ func _spawn_raptive_btn_on_enemy(enemy: BattleEnemy) -> void:
 	_rapid_last_btn_pos = target_pos
 	rapid_btn.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	rapid_btn.position = target_pos
-	rapid_btn.modulate = Color(1, 1, 1, 0)
-	rapid_btn.scale = Vector2(0.01, 0.01)
+	# MUNCUL LANGSUNG — jangan fade dari alpha 0 / scale 0.01. Dulu 0.08s
+	# tombolnya praktis tak terlihat, di HP 30fps (=2-3 frame) mata baca
+	# jadi "delay". Sekarang start udah 70% + alpha 0.75, tinggal "nendang"
+	# ke ukuran final: responsinstant, tetap ada pop.
+	rapid_btn.modulate = Color(1, 1, 1, 0.75)
+	rapid_btn.scale = RAPID_BTN_SCALE * 0.7
 	rapid_btn.mouse_filter = Control.MOUSE_FILTER_STOP
 	rapid_btn.z_index = 100
 	# Show parent dulu biar child visible
@@ -2412,8 +2416,8 @@ func _spawn_raptive_btn_on_enemy(enemy: BattleEnemy) -> void:
 	rapid_btn.show()
 
 	var tw := create_tween().set_parallel(true)
-	tw.tween_property(rapid_btn, "modulate:a", 1.0, 0.06)
-	tw.tween_property(rapid_btn, "scale", RAPID_BTN_SCALE, 0.08)\
+	tw.tween_property(rapid_btn, "modulate:a", 1.0, 0.05)
+	tw.tween_property(rapid_btn, "scale", RAPID_BTN_SCALE, 0.06)\
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	rapid_btn.set_meta("_pop_tween", tw)
 
@@ -2517,26 +2521,35 @@ func _on_raptive_btn_pressed() -> void:
 	total_hits += 1
 	total_critical += 1
 
-	# Kalau enemy mati, skip visual effects tapi tetap advance.
-	# Pakal jalur sama (_advance_raptive_to_next) — dulu ada await 0.3s +
-	# logika duplikat di sini, itu yang bikin tombol kerasa lama muncul
-	# sporadik (kena jalan lambat, gak kena jalan cepat).
-	if _rapid_current_enemy.current_hp <= 0:
-		_advance_raptive_to_next()
+	# SNAPSHOT dulu: efek visual di bawah jalanin sprite + koordinat LAMA.
+	# Tombol baru di-spawn sebelum efek, biar respons gak nunggu frame hitch
+	# dari pembuatan particle/popup/sfx (di HP kentang itu 1-2 frame).
+	var hit_enemy := _rapid_current_enemy
+	var visual_center := rapid_btn.position + Vector2(40, 40)
+
+	# LANGSUNG spawn tombol berikutnya (dulu efeknya dulu = molor).
+	# Kalau enemy mati, skip efek tapi tetap advance.
+	_advance_raptive_to_next()
+
+	# Kalau enemy mati, skip visual effects (sudah lanjut di atas)
+	if hit_enemy.current_hp <= 0:
+		return
+	# Rapid selesai (semua musuh mati) → jangan dobel popup, _finish_raptive
+	# udah nutup dengan "N hits!" + reset kamera.
+	if not _is_rapid_active:
 		return
 
 	# Enemy flash merah
-	var original_modulate := _rapid_current_enemy.modulate
-	_rapid_current_enemy.modulate = Color(10, 10, 10)
+	var original_modulate := hit_enemy.modulate
+	hit_enemy.modulate = Color(10, 10, 10)
 	var flash_tw := create_tween()
-	flash_tw.tween_property(_rapid_current_enemy, "modulate", original_modulate, 0.1)
+	flash_tw.tween_property(hit_enemy, "modulate", original_modulate, 0.1)
 
 	# Damage number
-	if _rapid_current_enemy.has_method("_show_damage_number"):
-		_rapid_current_enemy._show_damage_number(_rapid_damage_per_hit, false)
+	if hit_enemy.has_method("_show_damage_number"):
+		hit_enemy._show_damage_number(_rapid_damage_per_hit, false)
 
 	# "Hit!" popup text
-	var visual_center := rapid_btn.position + Vector2(40, 40)
 	_spawn_rapid_popup_text(visual_center)
 
 	# Yellow particles
@@ -2552,13 +2565,6 @@ func _on_raptive_btn_pressed() -> void:
 
 	# Combo counter
 	_add_combo(1)
-
-	# Kalau enemy mati, _on_enemy_defeated sudah handle _finish_raptive()
-	if not _is_rapid_active:
-		return
-
-	# Langsung pindah ke enemy berikutnya (sama kayak jalur miss/timeout)
-	_advance_raptive_to_next()
 
 
 func _spawn_rapid_popup_text(spawn_pos: Vector2, text_msg: String = "Hit!", text_color: Color = Color(1.0, 1.0, 1.0, 1.0)) -> void:
