@@ -26,9 +26,10 @@ var _pulse_tween: Tween = null
 var _vignette_tween: Tween = null
 var _stopped: bool = false
 
-# Warna dasar kunang-kunang (hijau terang) & mode danger (merah redup)
-var _firefly_calm := Color(0.6, 1.0, 0.3, 0.85)
-var _firefly_danger := Color(1.0, 0.45, 0.3, 0.7)
+# Kunang permanen = gaya pulse sekarat: merah redup, gerak lemes.
+# (Dulu hijau terang ngebut = terlalu mencolok.) Pas HP kritis kunang
+# SENGAJA gak diubah lagi, yang kerja cuma kabut + vignette.
+var _firefly_calm := Color(1.0, 0.45, 0.3, 0.65)
 var _fog_calm := Color(0.6, 0.7, 0.65, 0.10)
 var _fog_danger := Color(0.55, 0.6, 0.6, 0.16)
 
@@ -55,6 +56,7 @@ func setup(battle_root: Control) -> void:
 	_setup_vignette()
 	_setup_fireflies()
 	_setup_fog()
+	_apply_state()
 	_play_vignette_breath()
 
 
@@ -125,7 +127,6 @@ func _make_dot_texture(size: int) -> GradientTexture2D:
 	grad_tex.height = size
 	return grad_tex
 
-
 func _make_fade_ramp() -> GradientTexture1D:
 	var ramp := Gradient.new()
 	ramp.offsets = PackedFloat32Array([0.0, 0.25, 1.0])
@@ -133,6 +134,21 @@ func _make_fade_ramp() -> GradientTexture1D:
 	var ramp_tex := GradientTexture1D.new()
 	ramp_tex.gradient = ramp
 	return ramp_tex
+
+
+func _make_streak_texture(w: int = 8, h: int = 32) -> ImageTexture:
+	# Jarum vertikal tipis, lancip atas-bawah (bukan dot bulet).
+	# Generate sekali pas setup, murah (8x32 px).
+	var img := Image.create(w, h, false, Image.FORMAT_RGBA8)
+	var cx: float = (float(w) - 1.0) / 2.0
+	for y in h:
+		var v: float = float(y) / float(h - 1)
+		var taper: float = pow(sin(v * PI), 1.5)  # 0 di ujung -> lancip
+		for x in w:
+			var dx: float = absf(float(x) - cx) / (cx + 0.001)
+			var core: float = pow(clampf(1.0 - dx, 0.0, 1.0), 2.0)  # tipis di tengah
+			img.set_pixel(x, y, Color(1, 1, 1, clampf(core * taper, 0.0, 1.0)))
+	return ImageTexture.create_from_image(img)
 
 
 func _setup_vignette() -> void:
@@ -166,15 +182,15 @@ func _setup_fireflies() -> void:
 	fireflies.amount = _base_fireflies
 	fireflies.lifetime = 5.0
 	fireflies.preprocess = 5.0
-	fireflies.texture = _make_dot_texture(12)
+	fireflies.texture = _make_streak_texture()
 	var pm := ParticleProcessMaterial.new()
 	pm.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_BOX
 	pm.emission_box_extents = Vector3(VIEW_SIZE.x / 2.0, VIEW_SIZE.y / 2.0, 1.0)
 	pm.direction = Vector3(0, -1, 0)
 	pm.spread = 180.0
 	pm.gravity = Vector3(0, -8, 0)
-	pm.initial_velocity_min = 30.0
-	pm.initial_velocity_max = 70.0
+	pm.initial_velocity_min = 20.0
+	pm.initial_velocity_max = 50.0
 	pm.scale_min = 0.8
 	pm.scale_max = 1.6
 	pm.color = _firefly_calm
@@ -250,15 +266,14 @@ func _apply_state() -> void:
 		fireflies.modulate = Color(1, 1, 1, 1)
 		fog.modulate = Color(1, 1, 1, 1.4)
 	elif _danger:
-		# HP sekarat: kunang redup kemerahan, kabut menebal
+		# HP sekarat: kunang SENGAJA gak diubah (udah merah redup permanen),
+		# yang menebal cuma kabut.
 		_set_fireflies_amount(_base_fireflies)
-		fireflies.speed_scale = 0.8
-		_firefly_pm.color = _firefly_danger
 		_set_fog_amount(_danger_fog)
 		_fog_pm.color = _fog_danger
 	else:
 		_set_fireflies_amount(_base_fireflies)
-		fireflies.speed_scale = 1.0
+		fireflies.speed_scale = 0.8
 		_firefly_pm.color = _firefly_calm
 		fireflies.modulate = Color(1, 1, 1, 1)
 		_set_fog_amount(_base_fog)
