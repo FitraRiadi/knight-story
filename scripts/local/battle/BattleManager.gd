@@ -190,7 +190,10 @@ var target_attack_qte_pos: Vector2
 # Anti-spam: tap harus KENA tombol, kalau meleset tombol wajib loncat jauh
 # (nggak bisa di-spam di satu titik) + waktu global dipotong.
 const RAPID_HIT_GRACE: float = 6.0
-const RAPID_MIN_JUMP: float = 220.0
+# Jarak lompatan KONSTAN (bukan acak) — lihat catatan di
+# _spawn_raptive_btn_on_enemy. 240px: cukup jauh buat gak ketuker
+# muscle memory, tapi masih di jangkauan mata.
+const RAPID_JUMP_DIST: float = 240.0
 const RAPID_MISS_TIME_PENALTY: float = 0.5
 # Damage per hit = player_damage * ini. 0.30 = 24 dari base 80.
 const RAPID_DAMAGE_MULT: float = 0.30
@@ -2354,45 +2357,41 @@ func _spawn_raptive_btn_on_enemy(enemy: BattleEnemy) -> void:
 	# dicek dari node visibility prev_pos selalu INF = lompatan gak kehitung.
 	var prev_pos: Vector2 = _rapid_last_btn_pos
 
-	# Anti-spam: tombol harus mendarat JAUH dari posisi sebelumnya.
-	# Area clamp di layar 740x340 cuma ~480x20px, jadi area acak aja
-	# hampir selalu kepentet clamp jadi titik yang sama. Karena itu:
-	# kumpulin kandidat (acak + 4 sudut area), lalu ambil yang TERJAUH
-	# dari posisi lama — dijamin >= RAPID_MIN_JUMP selama area cukup.
+	# === JARAK LOMPAT KONSTAN, MURNI HORIZONTAL ===
+	# Dulu jaraknya ACAK (220-480px) dan min-nya cuma 220. Zona 220-280
+	# itu "nyaris": keliatan deket sama posisi lama, tapi muscle memory
+	# masih ngejar posisi lama -> tap di ruang kosong -> MISS -> tombol
+	# pindah lagi. Rasanya "lambat" padahal logic-nya cuma 7ms.
+	#
+	# Area gerak rapid cuma ~480x20px (y 120-140 di layar 340), jadi
+	# lompatan diagonal/miring SELALU kepotong clamp dan jaraknya jadi
+	# tak konsisten. Karena itu lompatnya MURNI horizontal: kiri/kanan
+	# sejarak tetap, arah acak. Ritme konsisten +扛 spam.
 	var min_x := 80.0
 	var max_x := viewport_size.x - 180.0
 	var min_y := 120.0
 	var max_y := maxf(min_y, viewport_size.y - 200.0)
 
-	var candidates: Array[Vector2] = []
-	for _i in 8:
-		var angle := randf() * TAU
-		var radius := randf_range(100.0, 180.0)
-		candidates.append(enemy_pos + Vector2(cos(angle), sin(angle)) * radius)
-	# 4 sudut area:arante terakhir lompatan besar walau acak mentok
-	candidates.append(Vector2(min_x, min_y))
-	candidates.append(Vector2(max_x, min_y))
-	candidates.append(Vector2(min_x, max_y))
-	candidates.append(Vector2(max_x, max_y))
-
-	# Utamakan kandidat ACAK selama jaraknya udah cukup jauh (biar
-	# geraknya tetap terasa acak, bukan ngumpet di 4 sudut area). Kalau
-	# area memang sempit sampe gak ada yang cocok, baru ambil terjauh.
-	var target_pos: Vector2 = Vector2.ZERO
-	var found := false
-	var fallback := Vector2.ZERO
-	var best_dist := -1.0
-	for c in candidates:
-		var cc := Vector2(clampf(c.x, min_x, max_x), clampf(c.y, min_y, max_y))
-		var d: float = cc.distance_to(prev_pos) if prev_pos != Vector2.INF else INF
-		if not found and d >= RAPID_MIN_JUMP:
-			target_pos = cc
-			found = true
-		if d > best_dist:
-			best_dist = d
-			fallback = cc
-	if not found:
-		target_pos = fallback
+	var target_pos: Vector2
+	if prev_pos == Vector2.INF:
+		# Spawn pertama: acak di sekitar musuh (belum ada posisi lama).
+		target_pos = Vector2(
+			clampf(enemy_pos.x + randf_range(-140.0, 140.0), min_x, max_x),
+			clampf(randf_range(min_y, max_y), min_y, max_y)
+		)
+	else:
+		var y: float = clampf(prev_pos.y + randf_range(-6.0, 6.0), min_y, max_y)
+		# Coba ke kanan dulu, kalo mentok pinggir -> ke kiri, dst.
+		var dirs: Array[float] = ([1.0, -1.0] as Array[float]) if randf() < 0.5 else ([-1.0, 1.0] as Array[float])
+		for d in dirs:
+			var nx: float = prev_pos.x + d * RAPID_JUMP_DIST
+			if nx >= min_x and nx <= max_x:
+				target_pos = Vector2(nx, y)
+				break
+		# Pinggir => geser ke sisi seberang, jaraknya tetap lebar.
+		if target_pos == Vector2.ZERO:
+			var far_x: float = min_x if prev_pos.x > (min_x + max_x) * 0.5 else max_x
+			target_pos = Vector2(far_x, y)
 
 	# Kill tween lama
 	var old_tw = rapid_btn.get_meta("_pop_tween", null) if rapid_btn else null
