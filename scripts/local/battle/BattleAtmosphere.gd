@@ -136,9 +136,9 @@ func _make_fade_ramp() -> GradientTexture1D:
 	return ramp_tex
 
 
-func _make_streak_texture(size: int = 24) -> ImageTexture:
+func _make_streak_texture(size: int = 16) -> ImageTexture:
 	# Spark "X": dua garis diagonal tipis nyilang, lancip di ujung-ujungnya.
-	# Generate sekali pas setup, murah (24x24 px).
+	# Generate sekali pas setup, murah (16x16 px).
 	var img := Image.create(size, size, false, Image.FORMAT_RGBA8)
 	var last: float = float(size - 1)
 	for y in size:
@@ -195,8 +195,8 @@ func _setup_fireflies() -> void:
 	pm.gravity = Vector3(0, -8, 0)
 	pm.initial_velocity_min = 20.0
 	pm.initial_velocity_max = 50.0
-	pm.scale_min = 0.8
-	pm.scale_max = 1.6
+	pm.scale_min = 0.6
+	pm.scale_max = 1.1
 	pm.color = _firefly_calm
 	if not _low_mode:
 		pm.color_ramp = _make_fade_ramp()
