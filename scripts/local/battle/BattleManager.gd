@@ -187,24 +187,6 @@ var attack_running_tween: Tween
 var target_attack_qte_pos: Vector2
 
 # RAPID ATTACK SYSTEM
-# Anti-spam: tap harus KENA tombol, kalau meleset tombol wajib loncat jauh
-# (nggak bisa di-spam di satu titik) + waktu global dipotong.
-const RAPID_HIT_GRACE: float = 6.0
-# Jarak lompatan KONSTAN (bukan acak) — lihat catatan di
-# _spawn_raptive_btn_on_enemy. 240px: cukup jauh buat gak ketuker
-# muscle memory, tapi masih di jangkauan mata.
-const RAPID_JUMP_DIST: float = 240.0
-const RAPID_MISS_TIME_PENALTY: float = 0.5
-# Damage per hit = player_damage * ini. 0.30 = 24 dari base 80.
-const RAPID_DAMAGE_MULT: float = 0.30
-# Scale FINAL tombol (dipakai pop tween DAN hitbox). Hitbox WAJIB pake
-# nilai ini, bukan rapid_btn.scale yg live — pas pop (0.12s) scale masih
-# 0.01, area tap jadi 4.8px dan tap_fast = miss yg merasa kayak lag.
-const RAPID_BTN_SCALE: Vector2 = Vector2(0.100, 0.095)
-# Posisi rapidBtn terakhir (dipisah dari node, soalnya node di-hide
-# sebelum spawn berikutnya → visibility gak bisa dipake cek jarak).
-var _rapid_last_btn_pos: Vector2 = Vector2.INF
-
 var _is_rapid_active: bool = false
 var _rapid_timer_global: float = 0.0
 var _rapid_timer_per_btn: float = 0.0
@@ -390,7 +372,17 @@ func _process(delta: float) -> void:
 			total_attacks += 1
 			total_miss += 1
 
-			_advance_raptive_to_next()
+			_hide_raptive_btn()
+			_rapid_enemy_index += 1
+			var next_enemy := _get_next_raptive_enemy()
+			if next_enemy:
+				_spawn_raptive_btn_on_enemy(next_enemy)
+				_zoom_camera_to_enemy(next_enemy, 1.10)
+				_position_title_on_enemy(next_enemy, true)
+			else:
+				# Semua enemy mati → rapid selesai
+				_finish_raptive()
+				return
 
 		# 5 detik global habis → rapid selesai
 		if _rapid_timer_global <= 0.0:
@@ -2281,14 +2273,10 @@ func _start_attack_raptive() -> void:
 	_is_rapid_active = true
 	_rapid_timer_global = 5.0
 	_rapid_timer_per_btn = 1.0
-	# 0.15 → 0.30: rapid sekarang jauh lebih susah (tap wajib kena + tombol
-	# lompat jauh + penalti waktu), damage dibalas 2x biar tetep worth it.
-	_rapid_damage_per_hit = player_damage * RAPID_DAMAGE_MULT
+	_rapid_damage_per_hit = player_damage * 0.15
 	_rapid_hits = 0
 	_rapid_enemy_index = selected_enemy_index
 	_pending_rapid_deaths.clear()
-	# Rapid baru mulai: tombol belum pernah muncul, lompatan pertama bebas.
-	_rapid_last_btn_pos = Vector2.INF
 
 	if not _rapid_sfx_cache:
 		_rapid_sfx_cache = preload("res://assets/audio/effects/battle/sword/sword-attack.mp3")
@@ -2352,61 +2340,24 @@ func _start_attack_raptive() -> void:
 func _spawn_raptive_btn_on_enemy(enemy: BattleEnemy) -> void:
 	var viewport_size := get_viewport().get_visible_rect().size
 	var enemy_pos := enemy.global_position
-	# PENTING: pakai posisi TERSIMPAN, bukan rapid_btn.position langsung.
-	# _hide_raptive_btn() jalan sebelum spawn (tombol jadi hidden), kalo
-	# dicek dari node visibility prev_pos selalu INF = lompatan gak kehitung.
-	var prev_pos: Vector2 = _rapid_last_btn_pos
 
-	# === JARAK LOMPAT KONSTAN, MURNI HORIZONTAL ===
-	# Dulu jaraknya ACAK (220-480px) dan min-nya cuma 220. Zona 220-280
-	# itu "nyaris": keliatan deket sama posisi lama, tapi muscle memory
-	# masih ngejar posisi lama -> tap di ruang kosong -> MISS -> tombol
-	# pindah lagi. Rasanya "lambat" padahal logic-nya cuma 7ms.
-	#
-	# Area gerak rapid cuma ~480x20px (y 120-140 di layar 340), jadi
-	# lompatan diagonal/miring SELALU kepotong clamp dan jaraknya jadi
-	# tak konsisten. Karena itu lompatnya MURNI horizontal: kiri/kanan
-	# sejarak tetap, arah acak. Ritme konsisten +扛 spam.
-	var min_x := 80.0
-	var max_x := viewport_size.x - 180.0
-	var min_y := 120.0
-	var max_y := maxf(min_y, viewport_size.y - 200.0)
+	var angle := randf() * TAU
+	var radius := randf_range(60.0, 120.0)
+	var random_offset := Vector2(cos(angle), sin(angle)) * radius
+	var target_pos := enemy_pos + random_offset
 
-	var target_pos: Vector2
-	if prev_pos == Vector2.INF:
-		# Spawn pertama: acak di sekitar musuh (belum ada posisi lama).
-		target_pos = Vector2(
-			clampf(enemy_pos.x + randf_range(-140.0, 140.0), min_x, max_x),
-			clampf(randf_range(min_y, max_y), min_y, max_y)
-		)
-	else:
-		var y: float = clampf(prev_pos.y + randf_range(-6.0, 6.0), min_y, max_y)
-		# Coba ke kanan dulu, kalo mentok pinggir -> ke kiri, dst.
-		var dirs: Array[float] = ([1.0, -1.0] as Array[float]) if randf() < 0.5 else ([-1.0, 1.0] as Array[float])
-		for d in dirs:
-			var nx: float = prev_pos.x + d * RAPID_JUMP_DIST
-			if nx >= min_x and nx <= max_x:
-				target_pos = Vector2(nx, y)
-				break
-		# Pinggir => geser ke sisi seberang, jaraknya tetap lebar.
-		if target_pos == Vector2.ZERO:
-			var far_x: float = min_x if prev_pos.x > (min_x + max_x) * 0.5 else max_x
-			target_pos = Vector2(far_x, y)
+	target_pos.x = clampf(target_pos.x, 80.0, viewport_size.x - 180.0)
+	target_pos.y = clampf(target_pos.y, 120.0, viewport_size.y - 200.0)
 
 	# Kill tween lama
 	var old_tw = rapid_btn.get_meta("_pop_tween", null) if rapid_btn else null
 	if old_tw is Tween and old_tw.is_running():
 		old_tw.kill()
 
-	_rapid_last_btn_pos = target_pos
 	rapid_btn.set_anchors_preset(Control.PRESET_TOP_LEFT)
 	rapid_btn.position = target_pos
-	# MUNCUL LANGSUNG — jangan fade dari alpha 0 / scale 0.01. Dulu 0.08s
-	# tombolnya praktis tak terlihat, di HP 30fps (=2-3 frame) mata baca
-	# jadi "delay". Sekarang start udah 70% + alpha 0.75, tinggal "nendang"
-	# ke ukuran final: responsinstant, tetap ada pop.
-	rapid_btn.modulate = Color(1, 1, 1, 0.75)
-	rapid_btn.scale = RAPID_BTN_SCALE * 0.7
+	rapid_btn.modulate = Color(1, 1, 1, 0)
+	rapid_btn.scale = Vector2(0.01, 0.01)
 	rapid_btn.mouse_filter = Control.MOUSE_FILTER_STOP
 	rapid_btn.z_index = 100
 	# Show parent dulu biar child visible
@@ -2415,8 +2366,8 @@ func _spawn_raptive_btn_on_enemy(enemy: BattleEnemy) -> void:
 	rapid_btn.show()
 
 	var tw := create_tween().set_parallel(true)
-	tw.tween_property(rapid_btn, "modulate:a", 1.0, 0.05)
-	tw.tween_property(rapid_btn, "scale", RAPID_BTN_SCALE, 0.06)\
+	tw.tween_property(rapid_btn, "modulate:a", 1.0, 0.1)
+	tw.tween_property(rapid_btn, "scale", Vector2(0.100, 0.095), 0.12)\
 		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	rapid_btn.set_meta("_pop_tween", tw)
 
@@ -2473,35 +2424,6 @@ func _hide_raptive_btn() -> void:
 			rapid_btn.get_parent().mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
-func _on_rapid_miss(tap_pos: Vector2) -> void:
-	# Tap meleset: gak ada damage. Tombol loncat (wajib jauh dari posisi lama),
-	# teks Miss merah, dan waktu global dipotong 0.5 detik.
-	if not _is_rapid_active:
-		return
-	# SCOREBOARD: dicatat sebagai miss (konsisten sama miss timeout)
-	total_attacks += 1
-	total_miss += 1
-	_rapid_timer_global = maxf(0.0, _rapid_timer_global - RAPID_MISS_TIME_PENALTY)
-	_spawn_rapid_popup_text(tap_pos, "Miss!", Color(1.0, 0.35, 0.3))
-	_advance_raptive_to_next()
-
-
-func _advance_raptive_to_next() -> void:
-	# SATU jalur perpindahan tombol: timeout, meleset, atau hit yang kill.
-	# Semua jalan sama (gak ada await/lagi-lagi lambat) = respawn konsisten.
-	_hide_raptive_btn()
-	_rapid_timer_per_btn = 1.0
-	_rapid_enemy_index += 1
-	var next_enemy := _get_next_raptive_enemy()
-	if next_enemy:
-		_spawn_raptive_btn_on_enemy(next_enemy)
-		_zoom_camera_to_enemy(next_enemy, 1.10)
-		_position_title_on_enemy(next_enemy, true)
-	else:
-		# Semua enemy mati / habis → rapid selesai
-		_finish_raptive()
-
-
 func _on_raptive_btn_pressed() -> void:
 	if not _is_rapid_active:
 		return
@@ -2510,52 +2432,50 @@ func _on_raptive_btn_pressed() -> void:
 	if _rapid_current_enemy.current_hp <= 0:
 		return
 
-	# SNAPSHOT dulu: semua efek di bawah jalanin sprite + koordinat LAMA.
-	var hit_enemy := _rapid_current_enemy
-	var visual_center := rapid_btn.position + Vector2(40, 40)
-
-	# === TOMBOL PINDAH DULU, SEBELUM KERJA BERAT ===
-	# Dulu receive_damage() (damage number + darah + shake + hit-stop +
-	# flash) jalan dulu = frame hitch, tombol baru spawn setelah itu.
-	# Makanya jalur TAP molor tapi jalur TIMEOUT lancar (timeout gak
-	# lewat pipeline itu sama sekali). Sekarang urutan dibalik.
-	_advance_raptive_to_next()
-
-	# Baru kerja beratnya
-	hit_enemy.receive_damage(_rapid_damage_per_hit, false, false)
+	# Hit enemy
+	_rapid_current_enemy.receive_damage(_rapid_damage_per_hit, false, false)
 	_rapid_hits += 1
+	_pulse_atmosphere()
 
 	# SCOREBOARD
 	total_attacks += 1
 	total_hits += 1
 	total_critical += 1
 
-	# Enemy bunuh yang terakhir → tombol yang barusan spawn sia-sia.
-	if _is_rapid_active and (not is_instance_valid(_rapid_current_enemy) or _rapid_current_enemy.current_hp <= 0):
-		_finish_raptive()
-		return
+	# Kalau enemy mati, skip visual effects tapi tetap advance
+	if _rapid_current_enemy.current_hp <= 0:
+		if not _is_rapid_active:
+			return
+		_hide_raptive_btn()
+		_rapid_timer_per_btn = 1.0
+		await get_tree().create_timer(0.3).timeout
 
-	# Kalau enemy mati, skip visual effects (sudah lanjut di atas)
-	if hit_enemy.current_hp <= 0:
-		return
-	# Rapid selesai (semua musuh mati) → jangan dobel popup, _finish_raptive
-	# udah nutup dengan "N hits!" + reset kamera.
-	if not _is_rapid_active:
-		return
+		# Guard: rapid udah berhenti (global timer habis) — jangan spawn lagi
+		if not _is_rapid_active:
+			return
 
-	_pulse_atmosphere()
+		_rapid_enemy_index += 1
+		var next_enemy := _get_next_raptive_enemy()
+		if next_enemy:
+			_spawn_raptive_btn_on_enemy(next_enemy)
+			_zoom_camera_to_enemy(next_enemy, 1.10)
+			_position_title_on_enemy(next_enemy, true)
+		else:
+			_finish_raptive()
+		return
 
 	# Enemy flash merah
-	var original_modulate := hit_enemy.modulate
-	hit_enemy.modulate = Color(10, 10, 10)
+	var original_modulate := _rapid_current_enemy.modulate
+	_rapid_current_enemy.modulate = Color(10, 10, 10)
 	var flash_tw := create_tween()
-	flash_tw.tween_property(hit_enemy, "modulate", original_modulate, 0.1)
+	flash_tw.tween_property(_rapid_current_enemy, "modulate", original_modulate, 0.1)
 
 	# Damage number
-	if hit_enemy.has_method("_show_damage_number"):
-		hit_enemy._show_damage_number(_rapid_damage_per_hit, false)
+	if _rapid_current_enemy.has_method("_show_damage_number"):
+		_rapid_current_enemy._show_damage_number(_rapid_damage_per_hit, false)
 
 	# "Hit!" popup text
+	var visual_center := rapid_btn.position + Vector2(40, 40)
 	_spawn_rapid_popup_text(visual_center)
 
 	# Yellow particles
@@ -2572,14 +2492,29 @@ func _on_raptive_btn_pressed() -> void:
 	# Combo counter
 	_add_combo(1)
 
+	# Kalau enemy mati, _on_enemy_defeated sudah handle _finish_raptive()
+	if not _is_rapid_active:
+		return
 
-func _spawn_rapid_popup_text(spawn_pos: Vector2, text_msg: String = "Hit!", text_color: Color = Color(1.0, 1.0, 1.0, 1.0)) -> void:
+	# Langsung pindah ke enemy berikutnya
+	_hide_raptive_btn()
+	_rapid_enemy_index += 1
+	var next_enemy := _get_next_raptive_enemy()
+	if next_enemy:
+		_spawn_raptive_btn_on_enemy(next_enemy)
+		_zoom_camera_to_enemy(next_enemy, 1.10)
+		_position_title_on_enemy(next_enemy, true)
+	else:
+		_finish_raptive()
+
+
+func _spawn_rapid_popup_text(spawn_pos: Vector2, text_msg: String = "Hit!") -> void:
 	var popup_label := Label.new()
 	popup_label.text = text_msg
 	popup_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	popup_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	popup_label.add_theme_font_size_override("font_size", 22)
-	popup_label.add_theme_color_override("font_color", text_color)
+	popup_label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
 
 	if parry_canvas_layer:
 		parry_canvas_layer.add_child(popup_label)
@@ -4198,28 +4133,24 @@ func _input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			return
 
-	# Rapid attack input — HARUS kena rapidBtn, kalau bukan = MISS
-	# (tombol pindah, waktu_global dipotong). Anti spam tap buta.
+	# Rapid attack input — klik/tap di rapidBtn area = hit
 	if _is_rapid_active and rapid_btn and rapid_btn.visible:
-		if event is InputEventKey and event.pressed and event.is_action("ui_accept"):
-			# Keyboard = niat, gak bisa "meleset posisi"
-			_on_raptive_btn_pressed()
-			return
-		var is_tap := false
+		var is_click := false
+		# Distance-based check — lebih reliable dari rect
+		var btn_center := rapid_btn.global_position + Vector2(
+			rapid_btn.size.x * rapid_btn.scale.x * 0.5,
+			rapid_btn.size.y * rapid_btn.scale.y * 0.5
+		)
+		var click_pos: Vector2 = event.position
+		var click_dist := click_pos.distance_to(btn_center)
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-			is_tap = true
+			is_click = click_dist < 60.0
 		elif event is InputEventScreenTouch and event.pressed:
-			is_tap = true
-		if is_tap:
-			var touch_pos: Vector2 = event.position
-			# Pake scale FINAL, bukan rapid_btn.scale yang live: pas pop
-			# (0.08s) scale masih 0.01, area tap jadi 4.8px dan tap cepat
-			# kehitung miss. get_global_rect() juga gak ikut scale.
-			var btn_rect := Rect2(rapid_btn.global_position, rapid_btn.size * RAPID_BTN_SCALE)
-			if btn_rect.grow(RAPID_HIT_GRACE).has_point(touch_pos):
-				_on_raptive_btn_pressed()
-			else:
-				_on_rapid_miss(touch_pos)
+			is_click = click_dist < 60.0
+		elif event is InputEventKey and event.pressed and event.is_action("ui_accept"):
+			is_click = true
+		if is_click:
+			_on_raptive_btn_pressed()
 			return
 
 	if not is_player_turn:
