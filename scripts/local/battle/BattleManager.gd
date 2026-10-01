@@ -4532,8 +4532,16 @@ func _open_victory_draft() -> void:
 
 
 func _wait_for_draft_closed() -> void:
-	while is_draft_open:
+	# Watchdog 15 dtk: kalau draft glitch/stuck, paksa tutup biar gak softlock.
+	# (Pick yang udah ke-tap tetap dihitung; kalau belum, dianggap skip.)
+	var t := 0.0
+	while is_draft_open and t < 15.0:
 		await get_tree().process_frame
+		t += get_process_delta_time()
+	if is_draft_open:
+		if draft_ui and is_instance_valid(draft_ui):
+			draft_ui.force_close()
+		is_draft_open = false
 
 
 func _open_draft_popup() -> void:
@@ -4683,8 +4691,15 @@ func _open_replace_picker() -> void:
 
 
 func _wait_for_replace_closed() -> void:
-	while is_replace_open:
+	# Watchdog 15 dtk: kalau UI glitch/stuck, paksa tutup biar flow gak softlock.
+	var t := 0.0
+	while is_replace_open and t < 15.0:
 		await get_tree().process_frame
+		t += get_process_delta_time()
+	if is_replace_open:
+		if replace_ui and is_instance_valid(replace_ui):
+			replace_ui.force_close()
+		is_replace_open = false
 
 
 func _on_replace_card_selected(index: int) -> void:
@@ -4700,7 +4715,13 @@ func _on_replace_card_selected(index: int) -> void:
 
 
 func _run_replace_swap(index: int) -> void:
-	var slot: Control = replace_ui.card_nodes[index]
+	if replace_ui == null or not is_instance_valid(replace_ui):
+		is_replace_open = false
+		return
+	var slot: Control = replace_ui.card_nodes[index] if index < replace_ui.card_nodes.size() else null
+	if slot == null or not is_instance_valid(slot):
+		replace_ui.force_close()
+		return
 	var center_pos: Vector2 = slot.position
 	var center_scale: Vector2 = slot.scale
 	# Data swap duluan (visual nyusul, UI langsung tutup abis ini)
@@ -4720,12 +4741,16 @@ func _run_replace_swap(index: int) -> void:
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
 	tw.tween_property(slot, "scale", Vector2(0.95, 0.95), 0.45)\
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN_OUT)
-	await tw.finished
+	# SENGAJA timer fixed, BUKAN await tw.finished: tween yang ke-kill/glitch
+	# gak pernah emit finished -> waiter gantung -> game softlock. Timer = progres dijamin.
+	await get_tree().create_timer(0.55).timeout
 	# Kasih waktu baca hasil tukeran, baru tutup
 	await get_tree().create_timer(0.4).timeout
 	_free_replace_indicator()
 	if replace_ui and is_instance_valid(replace_ui):
 		replace_ui.force_close()
+	else:
+		is_replace_open = false
 
 
 func _on_replace_card_closed() -> void:
