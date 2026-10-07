@@ -108,6 +108,9 @@ var _saved_mouse_filters: Dictionary = {}
 var _saved_process_mode: Dictionary = {}
 # Step yang nunggu giliran player balik (habis enemy turn)
 var _pending_idle_step: Step = Step.IDLE
+# Kapan pending dipasang (msec). Pengaman: kalau kamera macet,
+# pending tetap jalan max 4 dtk ASAL giliran udah bener balik.
+var _pending_idle_since: int = 0
 # Enemy turn paksa (sekali) buat pelajaran parry
 var _force_parry_turn := false
 var _rapid_taught := false
@@ -591,12 +594,18 @@ func _process(_delta: float) -> void:
 	super._process(_delta)
 	if not _tutorial_active:
 		return
-	# Balik ke idle (giliran player, gak ada yang jalan) -> lanjut step.
-	if _pending_idle_step != Step.IDLE and _is_player_idle():
-		var s := _pending_idle_step
-		_pending_idle_step = Step.IDLE
-		_begin_step(s)
-		return
+	# Balik ke idle (giliran player, gak ada yang jalan, kamera udah
+	# balik) -> lanjut step. Timeout 4 dtk asal giliran bener balik,
+	# biar gak softlock kalau kamera macet di tengah tween.
+	if _pending_idle_step != Step.IDLE:
+		var elapsed: int = Time.get_ticks_msec() - _pending_idle_since
+		var ready: bool = _is_player_idle() and _is_camera_settled()
+		var fallback: bool = is_player_turn and elapsed > 4000
+		if ready or fallback:
+			var s := _pending_idle_step
+			_pending_idle_step = Step.IDLE
+			_begin_step(s)
+			return
 	match _step:
 		Step.POTION_SLOT:
 			# Player milih slot potion -> arahin ke tombol USE.
@@ -617,18 +626,18 @@ func _process(_delta: float) -> void:
 			if _rapid_taught and not _is_rapid_active:
 				_rapid_taught = false
 				_live("RAPID COMPLETE", "That's rapid attack! Enemy turn...", TutorialUI.Zone.BOTTOM_LEFT, null)
-				_pending_idle_step = Step.FINISH_INTRO
+				_wait_for_idle_then(Step.FINISH_INTRO)
 		Step.FINISH_AFTER:
-			# Musuh mati + drop nongol -> lanjut loot.
-			if enemies.is_empty() and _drop_node and is_instance_valid(_drop_node):
+			# Musuh mati + drop nongol + kamera siap -> lanjut loot.
+			if enemies.is_empty() and _drop_node and is_instance_valid(_drop_node) and _is_camera_settled():
 				_begin_step(Step.LOOT_INTRO)
 		Step.PACK_VIEW:
 			# Inventory ditutup -> lanjut.
 			if not is_inventory_open:
 				_begin_step(Step.RUN_INTRO)
 		Step.WAVE3_AFTER:
-			# Serangan kelar + giliran balik -> hasil.
-			if _is_player_idle() and total_attacks > _w3_baseline_attacks:
+			# Serangan kelar + giliran balik + kamera siap -> hasil.
+			if _is_player_idle() and _is_camera_settled() and total_attacks > _w3_baseline_attacks:
 				_begin_step(Step.WAVE3_DONE)
 
 
@@ -855,7 +864,7 @@ func _on_defend_pressed() -> void:
 		return
 	_live("GUARD UP!", "Stamina +20. Enemy turn — watch what happens.", TutorialUI.Zone.BOTTOM_LEFT, null)
 	super._on_defend_pressed()
-	_pending_idle_step = Step.SKILL_INTRO
+	_wait_for_idle_then(Step.SKILL_INTRO)
 
 
 func _on_skill_pressed() -> void:
@@ -888,7 +897,7 @@ func _on_action_card_selected(index: int) -> void:
 	_refill_stamina()
 	super._on_action_card_selected(index)
 	_live("SKILL USED!", "Effect applied. Enemy turn...", TutorialUI.Zone.BOTTOM_LEFT, null)
-	_pending_idle_step = Step.ATTACK2_INTRO
+	_wait_for_idle_then(Step.ATTACK2_INTRO)
 
 
 func _on_charge_complete(multiplier: float) -> void:
@@ -899,7 +908,7 @@ func _on_charge_complete(multiplier: float) -> void:
 		return
 	super._on_charge_complete(multiplier)
 	_live("CHARGE COMPLETE!", "Big damage! Enemy turn...", TutorialUI.Zone.BOTTOM_LEFT, null)
-	_pending_idle_step = Step.ATTACK3_INTRO
+	_wait_for_idle_then(Step.ATTACK3_INTRO)
 
 
 func _on_raptive_btn_pressed() -> void:
@@ -1018,7 +1027,7 @@ func _begin_step(step: Step) -> void:
 			_pause_game(false)
 			_lock_all_except([])
 			_live("PARRIED!", "Blocked most damage + bonus stamina. Watch!", TutorialUI.Zone.BOTTOM_LEFT, player_info)
-			_pending_idle_step = Step.DEFEND_INTRO
+			_wait_for_idle_then(Step.DEFEND_INTRO)
 		Step.DEFEND_INTRO:
 			_reveal(defend_btn)
 			_read("BUTTON: DEFEND", "Restores 20 stamina, but skips your attack. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, defend_btn)
@@ -1157,6 +1166,26 @@ func _begin_step(step: Step) -> void:
 			_pause_game(true)
 			_lock_all_except([])
 			_ui_show_final("TRAINING COMPLETE\nYou know: target, attack, cards, timing, parry, defend, skills, charge, rapid, loot, backpack, potions. Good luck, Knight!")
+
+
+# Pasang tunggu-giliran. Dipakai habis tiap aksi yang mancing enemy
+# turn (parry/defend/skill/charge/rapid).
+func _wait_for_idle_then(step: Step) -> void:
+	_pending_idle_step = step
+	_pending_idle_since = Time.get_ticks_msec()
+
+
+# Kamera siap = balik ke default (zoom 1 + posisi awal). Tutorial
+# suka zoom ke musuh; step berikutnya JANGAN nongol selagi kamera
+# masih di jalan — tombol keliatan belum siap, gak nyambung.
+func _is_camera_settled() -> bool:
+	if camera == null:
+		return true
+	if camera.zoom.distance_to(Vector2.ONE) > 0.08:
+		return false
+	if camera.global_position.distance_to(default_camera_pos) > 12.0:
+		return false
+	return true
 
 
 # Step BACA: tree di-pause, panel muncul, player tap panel buat lanjut.
@@ -1391,6 +1420,11 @@ func _ensure_music_bus() -> int:
 		var p = mm.get("_current_player")
 		if p is AudioStreamPlayer:
 			(p as AudioStreamPlayer).bus = "TutMusic"
+			# WAJIB: player musik default pausable -> tree pause ikut
+			# matiin musiknya (playing=false). ALWAYS biar musik JALAN
+			# TERUS walau lagi freeze. Solo bus gak guna kalau playernya
+			# mati sendiri.
+			(p as AudioStreamPlayer).process_mode = Node.PROCESS_MODE_ALWAYS
 	_music_bus_idx = idx
 	return idx
 
