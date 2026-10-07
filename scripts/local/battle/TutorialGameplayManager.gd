@@ -100,6 +100,63 @@ func _setup_tutorial_layer() -> void:
 	add_child(_tutorial_layer)
 	_tutorial_ui = TutorialUI.new()
 	_tutorial_ui.setup(_tutorial_layer)
+	if not _tutorial_ui.tapped.is_connected(_on_tutorial_tapped):
+		_tutorial_ui.tapped.connect(_on_tutorial_tapped)
+
+
+# Player tap layar pas step BACA: panel ilang, lanjut ke step aksi.
+func _on_tutorial_tapped() -> void:
+	if not _tutorial_active or _step == Step.IDLE:
+		return
+	match _step:
+		Step.ATTACK_QTE_RESULT:
+			_advance_to(Step.PARRY)
+		Step.PARRY_RESULT:
+			if _pary_result_ready:
+				_pary_result_ready = false
+				_advance_to(Step.DEFEND)
+		Step.LOOT_APPEARED:
+			_advance_to(Step.LOOT_COLLECT)
+		Step.LOOT_STORED:
+			_advance_to(Step.OPEN_BACKPACK)
+		Step.OPEN_BACKPACK_HURT:
+			_used_potion_this_step = false
+			_advance_to(Step.USE_POTION)
+		Step.HEALED:
+			_unlock_all()
+			_pause_game(false)
+			_spawn_wave3()
+			_advance_to(Step.WAVE3_INTRO)
+		Step.WAVE2_INTRO:
+			# Spawn skeleton ke-2, skripтед hurt jalan di _process.
+			_spawn_wave2()
+			_advance_to(Step.HURT_HP)
+		Step.WAVE3_INTRO:
+			_advance_to(Step.WAVE3_OBSERVE)
+		Step.WAVE3_OBSERVE:
+			_advance_to(Step.COMPLETE)
+		_:
+			pass
+
+
+func _spawn_wave2() -> void:
+	if _wave2_spawned:
+		return
+	_wave2_spawned = true
+	_pending_wave_spawn = 2
+	_unlock_all()
+	_pause_game(false)
+	spawn_wave2_skeleton()
+
+
+func _spawn_wave3() -> void:
+	if _wave3_spawned:
+		return
+	_wave3_spawned = true
+	_pending_wave_spawn = 3
+	_unlock_all()
+	_pause_game(false)
+	spawn_wave3_grimward()
 
 
 # ============================================================
@@ -288,55 +345,27 @@ func _process(_delta: float) -> void:
 	if _pending_wave_spawn == 2:
 		_pending_wave_spawn = 0
 		_hp_was_drained = false
-	if not _hurt_step_done and _wave2_spawned and enemies.size() > 0:
-		var live: int = enemies.filter(func(e): return is_instance_valid(e) and e.current_hp > 0).size()
-		if live > 0 and _step == Step.WAVE2_INTRO and _tutorial_ui:
-			# Muscle: pause + spotlight dulu, baru damage scripted
-			if _hurt_step_done == false:
-				_hurt_step_done = true
-				_advance_to(Step.HURT_HP)
+	# Scripted hurt dipicu di sini karena ini satu-satunya _process yg
+	# jalan: tree di-unpause pas step HURT_HP (tutorial nunggu player
+	# buka backpack), jadi manager aktif lagi.
+	if _hurt_step_done or not _wave2_spawned:
+		return
+	if _step != Step.HURT_HP or enemies.is_empty():
+		return
+	var live: int = enemies.filter(func(e): return is_instance_valid(e) and e.current_hp > 0).size()
+	if live <= 0:
+		return
+	_hurt_step_done = true
+	trigger_scripted_hurt()
+	# CATATAN: step BACA (tap panel buat lanjut) ditangani di
+	# _on_tutorial_tapped() via signal TutorialUI.tapped.
+	# JANGAN pakai try_dismiss_on_tap() di sini — tree paused, _process()
+	# manager = pausable jadi malah GAK PERNAH jalan.
 	match _step:
-		Step.PARRY_RESULT:
-			# Selesai pas player tap (dismiss) — flow ke DEFEND
-			if _pary_result_ready and _tutorial_ui and _tutorial_ui.is_dismiss_armed():
-				if _tutorial_ui.try_dismiss_on_tap():
-					_pary_result_ready = false
-					_advance_to(Step.DEFEND)
-		Step.ATTACK_QTE_RESULT:
-			if _tutorial_ui and _tutorial_ui.is_dismiss_armed():
-				if _tutorial_ui.try_dismiss_on_tap():
-					_advance_to(Step.PARRY)
-		Step.LOOT_STORED:
-			if _tutorial_ui and _tutorial_ui.is_dismiss_armed():
-				if _tutorial_ui.try_dismiss_on_tap():
-					_advance_to(Step.OPEN_BACKPACK)
-		Step.HEALED:
-			if _tutorial_ui and _tutorial_ui.is_dismiss_armed():
-				if _tutorial_ui.try_dismiss_on_tap():
-					_advance_to(Step.WAVE3_INTRO)
-		Step.WAVE3_INTRO:
-			if _tutorial_ui and _tutorial_ui.is_dismiss_armed():
-				if _tutorial_ui.try_dismiss_on_tap():
-					_advance_to(Step.WAVE3_OBSERVE)
-		Step.LOOT_APPEARED:
-			if _drop_node and is_instance_valid(_drop_node):
-				_advance_to(Step.LOOT_COLLECT)
 		Step.LOOT_COLLECT:
 			# Selesai pas item benar-benar masuk inventory player.
 			if _tutorial_inventory_count() > _tutorial_inv_before:
 				_advance_to(Step.LOOT_STORED)
-		Step.WAVE2_INTRO:
-			# Spawn skeleton ke-2, lalu pas gilirannya dia attack
-			# -> trigger scripted hurt (HP ke 25%).
-			if not _wave2_spawned:
-				_wave2_spawned = true
-				_pending_wave_spawn = 2
-				_unlock_all()
-				_pause_game(false)
-				spawn_wave2_skeleton()
-			elif _pending_wave_spawn == 0 and _tutorial_ui and _tutorial_ui.is_dismiss_armed():
-				if _tutorial_ui.try_dismiss_on_tap():
-					_advance_to(Step.HURT_HP)
 		Step.HURT_HP:
 			# Tunggu player buka backpack (tutorial yg trigger setelah
 			# backpack berisi potion -> langsung ke USE_POTION step)
@@ -344,13 +373,13 @@ func _process(_delta: float) -> void:
 				_unlock_all()
 				_pause_game(false)
 				_advance_to(Step.USE_POTION)
-		Step.WAVE3_INTRO:
-			if not _wave3_spawned:
-				_wave3_spawned = true
-				_pending_wave_spawn = 3
+		Step.USE_POTION:
+			# Selesai pas HP naik (potion dipakai).
+			if _tutorial_heal_before >= 0.0 and current_hp > _tutorial_heal_before + 1.0:
+				_tutorial_heal_before = -1.0
 				_unlock_all()
 				_pause_game(false)
-				spawn_wave3_grimward()
+				_advance_to(Step.HEALED)
 		Step.PARRY:
 			if total_parries > 0:
 				_advance_to(Step.PARRY_RESULT)
@@ -458,13 +487,11 @@ func _begin_step(step: Step) -> void:
 	_unlock_all()
 	match step:
 		Step.INTRO_TARGET:
-			_pause_game(true)
-			_lock_all_except([])
-			_ui_show("This is a **Skeleton**. Tap it to select your target.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+			_act_step("This is a **Skeleton**. Tap it to select your target.",
+				TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.INTRO_ATTACK_BTN:
-			_pause_game(true)
-			_lock_all_except([atk_btn])
-			_ui_show("**ATTACK** opens your attack cards.", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
+			_act_step("**ATTACK** opens your attack cards.",
+				TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
 		Step.SELECT_BASIC_CARD:
 			_pause_game(false)  # deck udah kebuka dari step sebelumnya
 			_ui_hide()
@@ -472,26 +499,21 @@ func _begin_step(step: Step) -> void:
 			_pause_game(false)
 			_ui_hide()
 		Step.ATTACK_QTE_RESULT:
-			_pause_game(true)
-			_lock_all_except([])
-			_ui_show(_last_attack_result_text(), TutorialUI.Zone.TOP_RIGHT, null)
+			_read_step(_last_attack_result_text(), TutorialUI.Zone.TOP_RIGHT)
 		Step.PARRY:
 			# Dijagli trigger dari _on_enemy_attack_preparing override
 			pass
 		Step.PARRY_RESULT:
 			# Explanation after parry. Player tap to continue -> DEFEND step.
-			_pause_game(true)
-			_lock_all_except([])
-			_ui_show("**Parried!** It blocked most damage and gave you stamina.", TutorialUI.Zone.BOTTOM_LEFT, null)
+			_read_step("**Parried!** It blocked most damage and gave you stamina.",
+				TutorialUI.Zone.BOTTOM_LEFT)
 			_pary_result_ready = true
 		Step.DEFEND:
-			_pause_game(true)
-			_lock_all_except([defend_btn])
-			_ui_show("**DEFEND** restores stamina — but you skip your attack.", TutorialUI.Zone.BOTTOM_LEFT, defend_btn)
+			_act_step("**DEFEND** restores stamina — but you skip your attack.",
+				TutorialUI.Zone.BOTTOM_LEFT, defend_btn)
 		Step.SKILL:
-			_pause_game(true)
-			_lock_all_except([skill_btn])
-			_ui_show("**SKILL** cards cost more stamina, but hit harder.", TutorialUI.Zone.BOTTOM_LEFT, skill_btn)
+			_act_step("**SKILL** cards cost more stamina, but hit harder.",
+				TutorialUI.Zone.BOTTOM_LEFT, skill_btn)
 		Step.CHARGE:
 			_charge_completed = false
 			_pause_game(false)
@@ -500,61 +522,79 @@ func _begin_step(step: Step) -> void:
 			_pause_game(false)
 			_ui_hide()
 		Step.LOOT_APPEARED:
-			_pause_game(true)
-			_lock_all_except([])
-			_ui_show("The Skeleton dropped something!", TutorialUI.Zone.BOTTOM_LEFT, _drop_node)
+			_read_step("The Skeleton dropped something!", TutorialUI.Zone.BOTTOM_LEFT, _drop_node)
 		Step.LOOT_COLLECT:
 			_tutorial_inv_before = _tutorial_inventory_count()
-			_pause_game(true)
-			# Item drop BUKAN Button biasa di _locked_nodes (dia节点 dari
-			# drop_layer, bukan anak root), jadi lock via mouse_filter langsung.
-			_ui_show("Tap the item to **collect** it.", TutorialUI.Zone.BOTTOM_LEFT, _drop_node)
+			_act_step("Tap the item to **collect** it.", TutorialUI.Zone.BOTTOM_LEFT, _drop_node)
 		Step.LOOT_STORED:
-			_pause_game(true)
-			_lock_all_except([])
-			_ui_show("Collected! It's in your **BACKPACK**.", TutorialUI.Zone.BOTTOM_LEFT, null)
+			_read_step("Collected! It's in your **BACKPACK**.", TutorialUI.Zone.BOTTOM_LEFT)
 		Step.OPEN_BACKPACK:
-			_pause_game(true)
-			_lock_all_except([backpack_btn])
-			_ui_show("Open your **Backpack** to check your items.", TutorialUI.Zone.BOTTOM_LEFT, backpack_btn)
+			_act_step("Open your **Backpack** to check your items.",
+				TutorialUI.Zone.BOTTOM_LEFT, backpack_btn)
 		Step.WAVE2_INTRO:
-			_pause_game(true)
-			_lock_all_except([])
-			_ui_show("Another **Skeleton**! Watch its attack closely.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+			_read_step("Another **Skeleton**! Watch its attack closely.",
+				TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.HURT_HP:
-			_pause_game(true)
-			_lock_all_except([backpack_btn])
-			_ui_show("You're **hurt!** HP is low. Open your **BACKPACK**.", TutorialUI.Zone.BOTTOM_LEFT, backpack_btn)
+			_act_step("You're **hurt!** HP is low. Open your **BACKPACK**.",
+				TutorialUI.Zone.BOTTOM_LEFT, backpack_btn)
 			_ui_set_hp_note(true)
 		Step.OPEN_BACKPACK_HURT:
-			_pause_game(true)
-			_lock_all_except([])
-			_ui_show("Use the **Health Potion** to heal.", TutorialUI.Zone.TOP_CENTER, null)
+			_read_step("Use the **Health Potion** to heal.", TutorialUI.Zone.TOP_CENTER)
 		Step.USE_POTION:
 			_used_potion_this_step = false
 			_tutorial_heal_before = current_hp
 			_pause_game(false)
 			_ui_hide()
 		Step.HEALED:
-			# Selesai pas HP naik (potion dipakai)
-			if current_hp > _tutorial_heal_before + 1.0:
-				_advance_to(Step.HEALED)
-		Step.HEALED:
-			_pause_game(true)
-			_lock_all_except([])
-			_ui_show("Healed! Always keep potions ready for a tough fight.", TutorialUI.Zone.TOP_CENTER, null)
+			_read_step("Healed! Always keep potions ready for a tough fight.",
+				TutorialUI.Zone.TOP_CENTER)
 		Step.WAVE3_INTRO:
-			_pause_game(true)
-			_lock_all_except([])
-			_ui_show("A **GRIMWARD** — tougher, and it can **counter-attack**.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+			_read_step("A **GRIMWARD** — tougher, and it can **counter-attack**.",
+				TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.WAVE3_OBSERVE:
-			_pause_game(true)
-			_lock_all_except([])
-			_ui_show("Watch its HP! Enemies fight harder when low.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+			_read_step("Watch its HP! Enemies fight harder when low.",
+				TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.COMPLETE:
 			_pause_game(true)
 			_lock_all_except([])
 			_ui_show_final("That's everything! You're ready for the real fight.")
+
+
+# Step BACA: tree di-pause, panel muncul, player tap panel buat lanjut.
+func _read_step(text: String, zone: TutorialUI.Zone, spot: Node = null) -> void:
+	_pause_game(true)
+	_lock_all_except([])
+	_tutorial_ui.set_spotlight_target(spot)
+	_tutorial_ui.show_text(text, zone, true)
+
+
+# Step AKSI: tree JANGAN di-pause, player tap target yg di-highlight.
+# Kunci semua input lain, tapi target itself dibikin ALWAYS + unclickable
+# lock, soalnya kalau tree paused target jadi can't-receive-input.
+func _act_step(text: String, zone: TutorialUI.Zone, target: Node) -> void:
+	_pause_game(false)
+	_lock_all_except([target])
+	_allow_interaction(target)
+	_tutorial_ui.set_spotlight_target(target)
+	# dismissable=false: tap harus jatuh ke target, bukan ke panel.
+	_tutorial_ui.show_text(text, zone, true, false)
+
+
+# Marka target jadi bisa diklik: mouse_filter STOP + process_mode ALWAYS
+# (kalau tree paused, node pausable default-nya GAK bisa terima GUI input).
+func _allow_interaction(node: Node) -> void:
+	if node == null or not is_instance_valid(node):
+		return
+	var n := node
+	# Kalau target-nya Enemy (Node2D), yang perlu diklik TextureButton
+	# di dalamnya, bukan si Node2D-nya.
+	if n is BattleEnemy:
+		n = (n as BattleEnemy).enemy_collision
+	if n == null or not is_instance_valid(n):
+		return
+	if n is Control:
+		(n as Control).mouse_filter = Control.MOUSE_FILTER_STOP
+	n.process_mode = Node.PROCESS_MODE_ALWAYS
 
 
 func _advance_to(step: Step) -> void:
@@ -591,6 +631,37 @@ func _lock_all_except(allowed: Array) -> void:
 	for b in all_buttons:
 		if b and not (b in allowed):
 			_disable_node(b)
+	# Kunci juga SEMUA kartu + drop + tombol charge/rapid, bukan cuma
+	# 5 tombol interaction. Kalau kartu masih bisa diklik, player bisa
+	# skip step tutorial tanpa sengaja.
+	for n in _interactive_nodes():
+		if n and not (n in allowed) and not _is_core_button(n):
+			_disable_node(n)
+
+
+func _is_core_button(n: Node) -> bool:
+	return n in [atk_btn, defend_btn, backpack_btn, run_btn, skill_btn]
+
+
+func _interactive_nodes() -> Array:
+	# Tutorial UI sendiri JANGAN dikunci — tombol Continue-nya harus
+	# tetap bisa dipencet di step terakhir.
+	var guard: Array = []
+	if _tutorial_layer:
+		guard = _descendants(_tutorial_layer)
+	var out: Array = []
+	for n in _descendants(self):
+		if n is Button and not (n in guard):
+			out.append(n)
+	return out
+
+
+func _descendants(root_node: Node) -> Array:
+	var out: Array = []
+	for c in root_node.get_children():
+		out.append(c)
+		out.append_array(_descendants(c))
+	return out
 
 
 func _disable_node(node: Node) -> void:
@@ -698,9 +769,3 @@ func trigger_scripted_hurt() -> void:
 	# Script "big damage" -> HP mendarat di floor 25%.
 	_pending_scripted_damage = true
 	apply_damage_raw(999.0)
-
-
-func on_step_tapped() -> void:
-	# Dipanggil UI pas player tap area spotlight (untuk step dismiss)
-	if _tutorial_ui:
-		_tutorial_ui.try_dismiss_on_tap()

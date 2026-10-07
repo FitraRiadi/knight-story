@@ -25,6 +25,10 @@ enum Zone { BOTTOM_LEFT, TOP_RIGHT, TOP_CENTER }
 const PANEL_SIZE := Vector2(360.0, 66.0)
 const MOVE_TIME := 0.25
 
+## Dipanggil manager waktu player tap layar. Manager yang tau ini
+## artinya "lanjut step" atau "aksi yang diNTAHARIN".
+signal tapped
+
 var spotlight: TutorialSpotlight = null
 
 var _panel: Panel = null
@@ -106,10 +110,14 @@ func setup(layer: CanvasLayer) -> void:
 	visible = false
 
 
-func show_text(text: String, zone: Zone = Zone.BOTTOM_LEFT, avoid_target: bool = true) -> void:
+# dismissable: true  = step BACA (tree paused, tap panel buat lanjut)
+# dismissable: false = step AKSI (tree jalan, tap TARGET yg di-highlight,
+#                        panel HARUS ga nyapot tap-nya)
+func show_text(text: String, zone: Zone = Zone.BOTTOM_LEFT, avoid_target: bool = true,
+		dismissable: bool = true) -> void:
 	_label.text = text
 	visible = true
-	_dismiss_armed = true
+	_dismiss_armed = dismissable
 	_continue_btn.visible = false
 	_pending_resize = Vector2.ZERO
 	# PENTING: set spotlight DULU. _avoid_spotlight() butuh
@@ -184,6 +192,35 @@ func try_dismiss_on_tap() -> bool:
 		return false
 	hide_panel()
 	return true
+
+
+# ============================================================
+# TAP INPUT — node ini PROCESS_MODE_ALWAYS, jadi _input() tetap
+# jalan walau tree paused. Ini yang bikin step "baca" (tap panel
+# buat lanjut) gak deadlock.
+# ============================================================
+
+func _input(event: InputEvent) -> void:
+	if not visible:
+		return
+	# Tombol Continue punya alur sendiri (pressed signal).
+	if _continue_btn.visible:
+		return
+	# Step aksi: target yang di-highlight yang harus diklik, JANGAN
+	# semua tap diterjemahkan jadi dismiss (nanti player gak bisa
+	# tap target-nya karena panel keburu ilang).
+	if not _dismiss_armed:
+		return
+	var tap := false
+	if event is InputEventScreenTouch:
+		tap = event.pressed
+	elif event is InputEventMouseButton:
+		var mb := event as InputEventMouseButton
+		tap = mb.pressed and mb.button_index == MOUSE_BUTTON_LEFT
+	if not tap:
+		return
+	get_viewport().set_input_as_handled()
+	tapped.emit()
 
 
 func _zone_pos(zone: Zone) -> Vector2:
