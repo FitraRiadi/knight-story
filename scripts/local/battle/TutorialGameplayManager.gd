@@ -72,6 +72,9 @@ var _hurt_step_done: bool = false
 var _wave2_spawned: bool = false
 var _wave3_spawned: bool = false
 var _locked_nodes: Array[Control] = []
+# Status disabled ASLI tiap node yg kita lock, biar _unlock_all() bisa
+# balikin persis — bukan memaksa semua tombol jadi aktif.
+var _saved_disabled: Dictionary = {}
 var _saved_mouse_filters: Dictionary = {}
 
 # Guard: HP floor HANYA buat damage dari enemy (bukan drain script)
@@ -594,7 +597,33 @@ func _allow_interaction(node: Node) -> void:
 		return
 	if n is Control:
 		(n as Control).mouse_filter = Control.MOUSE_FILTER_STOP
+		if n is Button:
+			(n as Button).disabled = false
 	n.process_mode = Node.PROCESS_MODE_ALWAYS
+	# Parent sembunyiin tombol interaction dgn menggeser y +200px
+	# (lihat _set_buttons_active), bukan visible=false. Kalau target
+	# step ini ada di daftar itu, taruh balik ke posisi aslinya biar
+	# player beneran bisa lihat + klik.
+	var y := _original_y_for(n)
+	if y != INF and n is Control:
+		(n as Control).position.y = y
+
+
+# Posisi Y asli tombol interaction, dicatat parent di _ready()
+# (original_atk_pos / original_def_pos / dst). Return INF kalau node
+# ini bukan salah satu tombol yg di-hide parent.
+func _original_y_for(n: Node) -> float:
+	if n == atk_btn:
+		return original_atk_pos.y
+	if n == defend_btn:
+		return original_def_pos.y
+	if n == backpack_btn:
+		return original_backpack_pos.y
+	if n == run_btn:
+		return original_run_post.y
+	if n == skill_btn:
+		return original_skill_post.y
+	return INF
 
 
 func _advance_to(step: Step) -> void:
@@ -671,22 +700,32 @@ func _disable_node(node: Node) -> void:
 		c.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		_locked_nodes.append(c)
 	if node is Button:
-		(node as Button).disabled = true
+		var b := node as Button
+		# Simpan status disabled ASLI. Parent sembunyiin tombol dgn
+		# geser posisi y+200 (bukan visible=false), jadi run_btn/skill_btn
+		# bisa aja disabled=true. Kalau dipaksa false di _unlock_all(),
+		# tombol yg sengaja disembunyiin parent jadi nongol.
+		_saved_disabled[b.get_instance_id()] = b.disabled
+		b.disabled = true
 
 
 func _unlock_all() -> void:
+	# Balikin HANYA node yang memang kita lock, ke state aslinya.
 	for c in _locked_nodes:
-		if is_instance_valid(c):
-			if c is Button:
-				(c as Button).disabled = false
-			if _saved_mouse_filters.has(c.get_instance_id()):
-				c.mouse_filter = _saved_mouse_filters[c.get_instance_id()]
+		if not is_instance_valid(c):
+			continue
+		if c is Button:
+			var b := c as Button
+			var id := b.get_instance_id()
+			if _saved_disabled.has(id):
+				b.disabled = _saved_disabled[id]
+			else:
+				b.disabled = false
+		if _saved_mouse_filters.has(c.get_instance_id()):
+			c.mouse_filter = _saved_mouse_filters[c.get_instance_id()]
 	_saved_mouse_filters.clear()
+	_saved_disabled.clear()
 	_locked_nodes.clear()
-	# Unlock semua interaction button
-	for b in [atk_btn, defend_btn, backpack_btn, run_btn, skill_btn]:
-		if b:
-			b.disabled = false
 
 
 # ============================================================

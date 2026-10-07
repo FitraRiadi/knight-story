@@ -307,8 +307,10 @@ func _move_panel_to(target: Vector2) -> void:
 	_move_tween = create_tween()
 	_move_tween.tween_property(_panel, "position", target, MOVE_TIME)\
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	_move_tween.parallel().tween_property(_label, "position", target + Vector2(12, 10), MOVE_TIME)\
-		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	# JANGAN ikutin ngermin _label: dia child _panel, jadi position-nya
+	# RELATIF ke panel. Kalau ikut ke target+offset, text-nya ketarik
+	# 2x offset dan keluar dari panel (teks jadi gak keliatan).
+	_label.position = Vector2(12, 10)
 
 
 func _position_continue_btn() -> void:
