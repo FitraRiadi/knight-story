@@ -22,16 +22,19 @@ class_name TutorialUI
 
 enum Zone { BOTTOM_LEFT, TOP_RIGHT, TOP_CENTER }
 
-const PANEL_SIZE := Vector2(360.0, 66.0)
+const PANEL_SIZE := Vector2(360.0, 96.0)
 const MOVE_TIME := 0.25
 
 ## Dipanggil manager waktu player tap layar. Manager yang tau ini
 ## artinya "lanjut step" atau "aksi yang diNTAHARIN".
 signal tapped
+## Dipencet tombol Continue di step terakhir.
+signal finished
 
 var spotlight: TutorialSpotlight = null
 
 var _panel: Panel = null
+var _title: Label = null
 var _label: RichTextLabel = null
 var _hp_note: Label = null
 var _continue_btn: Button = null
@@ -45,7 +48,8 @@ var _pending_resize: Vector2 = Vector2.ZERO
 # Target spotlight baru: di-apply di show_text() SEBELUM panel dipindah,
 # biar _avoid_spotlight() ngitung pakai rect yang BENAR (bukan sisa step lalu).
 var _pending_spotlight_target: Node = null
-var _pending_dim: float = 0.72
+var _pending_has_target: bool = false
+var _pending_dim: float = 0.78
 
 
 func setup(layer: CanvasLayer) -> void:
@@ -72,20 +76,33 @@ func setup(layer: CanvasLayer) -> void:
 	_panel.add_theme_stylebox_override("panel", sb)
 	add_child(_panel)
 
+	# Judul step: "STEP 3/45 — BASIC ATTACK". Satu baris, gold.
+	_title = Label.new()
+	_title.add_theme_font_size_override("font_size", 14)
+	_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35))
+	_title.add_theme_constant_override("outline_size", 4)
+	_title.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+	_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_title.position = Vector2(12, 8)
+	_title.size = Vector2(PANEL_SIZE.x - 24, 20)
+	_title.clip_text = true
+	_panel.add_child(_title)
+
 	# RichTextLabel (bukan Label) karena step text pakai **tebal**.
 	# Label biasa gak punya bbcode.
 	_label = RichTextLabel.new()
 	_label.bbcode_enabled = true
 	_label.fit_content = false
 	_label.scroll_active = false
+	_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_label.add_theme_font_size_override("normal_font_size", 15)
 	_label.add_theme_font_size_override("bold_font_size", 15)
 	_label.add_theme_color_override("default_color", Color(1.0, 0.96, 0.86))
 	_label.add_theme_constant_override("outline_size", 5)
 	_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
 	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_label.position = Vector2(12, 10)
-	_label.size = PANEL_SIZE - Vector2(24, 20)
+	_label.position = Vector2(12, 30)
+	_label.size = Vector2(PANEL_SIZE.x - 24, PANEL_SIZE.y - 40)
 	_panel.add_child(_label)
 
 	# Catatan kecil HP protected (step 14-15)
@@ -110,23 +127,30 @@ func setup(layer: CanvasLayer) -> void:
 	visible = false
 
 
+# Format teks: "JUDUL\nIsi penjelasan...". Baris pertama selalu
+# jadi judul gold (plus counter "STEP k/N" dari manager), sisanya body.
 # dismissable: true  = step BACA (tree paused, tap panel buat lanjut)
-# dismissable: false = step AKSI (tree jalan, tap TARGET yg di-highlight,
+# dismissable: false = step AKSI/LIVE (tap TARGET yg di-highlight,
 #                        panel HARUS ga nyapot tap-nya)
 func show_text(text: String, zone: Zone = Zone.BOTTOM_LEFT, avoid_target: bool = true,
 		dismissable: bool = true) -> void:
-	_label.text = text
+	var title_text := ""
+	var body_text := text
+	var nl := text.find("\n")
+	if nl >= 0:
+		title_text = text.substr(0, nl).strip_edges()
+		body_text = text.substr(nl + 1).strip_edges()
+	_title.text = title_text
+	_title.visible = title_text != ""
+	_label.text = body_text
 	visible = true
 	_dismiss_armed = dismissable
 	_continue_btn.visible = false
 	_pending_resize = Vector2.ZERO
-	# PENTING: set spotlight DULU. _avoid_spotlight() butuh
-	# spotlight.visible + get_target_rect() yg valid, jadi urutannya
-	# spotlight dulu baru panel. Kalau dibalik, _avoid_spotlight()
-	# masih pakai rect step LALU -> panel salah tempat.
-	if _pending_spotlight_target:
-		spotlight.set_spotlight_target(_pending_spotlight_target, _pending_dim)
-		_pending_spotlight_target = null
+	# PENTING: apply spotlight DULU (termasuk null = clear), baru
+	# relocating panel — _avoid_spotlight() butuh rect yang BENAR,
+	# bukan sisa step lalu.
+	_apply_pending_spotlight()
 	var target: Vector2 = _zone_pos(zone)
 	if avoid_target and spotlight and spotlight.visible:
 		target = _avoid_spotlight(zone, target)
@@ -142,7 +166,15 @@ func show_text(text: String, zone: Zone = Zone.BOTTOM_LEFT, avoid_target: bool =
 
 func show_final(text: String) -> void:
 	# Panel + tombol Continue. Gak ada spotlight action di step terakhir.
-	_label.text = text
+	var title_text := ""
+	var body_text := text
+	var nl := text.find("\n")
+	if nl >= 0:
+		title_text = text.substr(0, nl).strip_edges()
+		body_text = text.substr(nl + 1).strip_edges()
+	_title.text = title_text
+	_title.visible = title_text != ""
+	_label.text = body_text
 	visible = true
 	_dismiss_armed = false
 	if spotlight:
@@ -162,14 +194,28 @@ func hide_panel() -> void:
 		spotlight.clear_spotlight()
 
 
-func set_spotlight_target(node: Node, dim: float = 0.72) -> void:
+func set_spotlight_target(node: Node, dim: float = 0.78) -> void:
 	# Disimpan dulu, baru di-apply bareng show_text() (lihat catatan
-	# di _pending_spotlight_target).
+	# di _pending_spotlight_target). NULL = sengaja tanpa spotlight
+	# (step final / welcome) — dibedain dari "belum di-set" pakai flag.
 	_pending_spotlight_target = node
+	_pending_has_target = true
 	_pending_dim = dim
 	if spotlight and visible:
-		spotlight.set_spotlight_target(node, dim)
-		_pending_spotlight_target = null
+		_apply_pending_spotlight()
+
+
+func _apply_pending_spotlight() -> void:
+	if not _pending_has_target:
+		return
+	_pending_has_target = false
+	if not spotlight:
+		return
+	if _pending_spotlight_target == null or not is_instance_valid(_pending_spotlight_target):
+		spotlight.clear_spotlight()
+	else:
+		spotlight.set_spotlight_target(_pending_spotlight_target, _pending_dim)
+	_pending_spotlight_target = null
 
 
 func clear_spotlight() -> void:
@@ -297,7 +343,8 @@ func _avoid_spotlight(zone: Zone, base: Vector2) -> Vector2:
 
 func _apply_panel_size(sz: Vector2) -> void:
 	_panel.size = sz
-	_label.size = sz - Vector2(24, 20)
+	_title.size = Vector2(sz.x - 24, 20)
+	_label.size = Vector2(sz.x - 24, maxf(sz.y - 40, 20.0))
 	_pending_resize = Vector2.ZERO
 
 
@@ -307,10 +354,9 @@ func _move_panel_to(target: Vector2) -> void:
 	_move_tween = create_tween()
 	_move_tween.tween_property(_panel, "position", target, MOVE_TIME)\
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	# JANGAN ikutin ngermin _label: dia child _panel, jadi position-nya
-	# RELATIF ke panel. Kalau ikut ke target+offset, text-nya ketarik
-	# 2x offset dan keluar dari panel (teks jadi gak keliatan).
-	_label.position = Vector2(12, 10)
+	# _title & _label itu child _panel (posisi RELATIF) — jangan digeser.
+	_title.position = Vector2(12, 8)
+	_label.position = Vector2(12, 30)
 
 
 func _position_continue_btn() -> void:
@@ -324,6 +370,7 @@ func _position_continue_btn() -> void:
 func _on_continue_pressed() -> void:
 	_hide_dismiss_arm()
 	hide_panel()
+	finished.emit()
 
 
 func _hide_dismiss_arm() -> void:

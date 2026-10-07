@@ -58,10 +58,17 @@ func get_target_rect() -> Rect2:
 	if _target_node is Control:
 		r = (_target_node as Control).get_global_rect()
 	elif _target_node is Node2D:
-		# Node2D enemy: pakai pos + ukuran sprite kasar
-		var n2 := _target_node as Node2D
-		var scr_pos: Vector2 = get_viewport().get_canvas_transform() * n2.global_position
-		r = Rect2(scr_pos - Vector2(48, 64), Vector2(96, 128))
+		# Musuh: pakai collision button-nya kalau ada (presisi, ngikutin
+		# scale/anim), fallback ke tebakan posisi+sprite.
+		var col: Control = null
+		if _target_node.get("enemy_collision") is Control:
+			col = _target_node.get("enemy_collision") as Control
+		if col and is_instance_valid(col):
+			r = col.get_global_rect()
+		else:
+			var n2 := _target_node as Node2D
+			var scr_pos: Vector2 = get_viewport().get_canvas_transform() * n2.global_position
+			r = Rect2(scr_pos - Vector2(48, 64), Vector2(96, 128))
 	else:
 		r = Rect2(Vector2.ZERO, _min_size)
 	return r.grow_individual(_padding.x, _padding.y, _padding.x, _padding.y)

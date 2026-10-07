@@ -10,7 +10,7 @@ shader_type canvas_item;
 // 1 fullscreen pass. Murah di HP kentang.
 //
 // Uniform di-set dari TutorialSpotlight.gd tiap frame:
-//   spot_center = titik tengah lubang (px, space screen)
+//   spot_center = titik tengah lubang (0..1, UV space)
 //   spot_size   = ukuran lubang (px, sudah + padding)
 //   dim_amount  = 0..1 seberapa gelap area luar lubang
 //   soft_edge   = 0..1 얼마나 lembut transisi tepi
@@ -25,7 +25,12 @@ uniform float soft_edge : hint_range(0.0, 1.0) = 0.10;
 uniform float pulse : hint_range(0.0, 1.0) = 0.0;
 
 void fragment() {
-	vec2 px = (UV - spot_center) * (SCREEN_PIXEL_SIZE / max(spot_size, vec2(1.0)));
+	// UV delta (0..1) -> pecahan ukuran lubang. SCREEN_PIXEL_SIZE itu
+	// 1/resolusi, jadi untuk balik ke pixel DIKALI balik (dibagi):
+	//   px = delta_uv * resolusi_px / ukuran_lubang_px.
+	// (Sebelumnya kebalik: dikali SCREEN_PIXEL_SIZE/spot_size sehingga
+	// px ~= 0 di mana-mana -> outside = 0 -> gelapnya GAK PERNAH muncul.)
+	vec2 px = (UV - spot_center) / (SCREEN_PIXEL_SIZE * max(spot_size, vec2(1.0)));
 	float r = corner_r / max(min(spot_size.x, spot_size.y), 1.0);
 
 	// Jarak ke rounded-rect (0 = di dalam, 1 = di luar tepi)

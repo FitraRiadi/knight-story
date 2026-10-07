@@ -3,13 +3,18 @@ class_name TutorialGameplayManager
 
 # ============================================================
 # TUTORIAL GAMEPLAY MANAGER
-#extends BattleManager. Override HANYA yang perlu dibedain —
+# extends BattleManager. Override HANYA yang perlu dibedain —
 # BattleManager.gd sendiri 100% utuh.
 #
 # Aturan main:
-#  - 3 wave: Skeleton -> Skeleton -> Grimward
-#  - Setiap interaksi: PAUSE TOTAL -> spotlight + teks -> tap -> unpause
-#  - Gagal step: retry sampai sukses
+#  - 3 wave: Skeleton (latihan) -> Skeleton (potion) -> Grimward
+#  - Tiap gerakan ada tutorialnya: baca (pause, tap panel) atau
+#    aksi (target di-spotlight, yang lain dikunci/disembunyiin)
+#  - Tombol action MUNCUL SATU-SATU sesuai kebutuhan (reveal
+#    bertahap), bukan sekaligus di awal
+#  - Deck attack tutorial itu FIX: [Basic, Charge, Rapid]
+#  - Skeleton wave-1 pakai "training armor" (damage ~1) biar gak
+#    mati sebelum semua gerakan kelar diajarin
 #  - HP floor 25% (player gak bisa mati di tutorial)
 #  - Gak ada tombol skip
 #  - Selesai: panel + tombol Continue, emit tutorial_finished
@@ -22,62 +27,107 @@ signal tutorial_complete
 const HP_FLOOR_PCT := 0.25
 const TUTORIAL_DROP_ID := "health_potion"
 const OUT_SCENE := "res://scenes/menu/mainmenu.tscn"  # fallback, tinggal diubah
+const TRAINING_DEFENSE := 9999.0
+const BASIC_PATH := "res://data/action_cards/attack_cards/basic_attack.tres"
+const CHARGE_PATH := "res://data/action_cards/attack_cards/charge_attack.tres"
+const RAPID_PATH := "res://data/action_cards/attack_cards/rapid_attack.tres"
 
-# --- Step ---
+# --- Step (URUT = urutan main; nomor STEP di panel diambil dari sini) ---
 enum Step {
 	IDLE,
-	INTRO_TARGET,        # 1 tap skeleton
-	INTRO_ATTACK_BTN,    # 2 tap atkBtn
-	SELECT_BASIC_CARD,   # 3 pilih basic card
-	ATTACK_QTE,          # 4 QTE
-	ATTACK_QTE_RESULT,   # 4b penjelasan hasil
-	PARRY,               # 5 tap parry
-	PARRY_RESULT,        # 5b penjelasan hasil
-	DEFEND,              # 6 tap defend
-	SKILL,               # 7 pilih skill card
-	CHARGE,              # 8 charge
-	RAPID,               # 9 rapid
-	LOOT_APPEARED,       # 10 drop muncul
-	LOOT_COLLECT,        # 11 tap item
-	LOOT_STORED,         # 12 penjelasan
-	OPEN_BACKPACK,       # 13 buka backpack
-	WAVE2_INTRO,         # 14a skeleton ke-2
-	HURT_HP,             # 14 HP lo 25%
-	OPEN_BACKPACK_HURT,  # 15 buka backpack
-	USE_POTION,          # 16 tap USE
-	HEALED,              # 16b penjelasan
-	WAVE3_INTRO,         # 17 grimward
-	WAVE3_OBSERVE,       # 18 observe HP drop
-	COMPLETE,            # 19 tombol Continue
+	WELCOME,
+	TARGET_INTRO,
+	TARGET_ACT,
+	ATTACK_INTRO,
+	ATTACK_ACT,
+	BASIC_PICK,
+	QTE_DO,
+	QTE_RESULT,
+	PARRY_WAIT,
+	PARRY_ACT,
+	PARRY_RESULT,
+	DEFEND_INTRO,
+	DEFEND_ACT,
+	SKILL_INTRO,
+	SKILL_ACT,
+	SKILL_PICK,
+	ATTACK2_INTRO,
+	ATTACK2_ACT,
+	CHARGE_PICK,
+	CHARGE_DO,
+	ATTACK3_INTRO,
+	ATTACK3_ACT,
+	RAPID_PICK,
+	RAPID_DO,
+	FINISH_INTRO,
+	FINISH_ACT,
+	FINISH_PICK,
+	FINISH_QTE,
+	FINISH_AFTER,
+	FINISH_MISS,
+	LOOT_INTRO,
+	LOOT_ACT,
+	LOOT_DONE,
+	PACK_INTRO,
+	PACK_ACT,
+	PACK_VIEW,
+	RUN_INTRO,
+	WAVE2_INTRO,
+	HURT_ANIM,
+	HURT_INFO,
+	PACK2_ACT,
+	POTION_SLOT,
+	POTION_USE,
+	HEALED,
+	WAVE3_INTRO,
+	WAVE3_FIGHT,
+	WAVE3_PICK,
+	WAVE3_QTE,
+	WAVE3_AFTER,
+	WAVE3_DONE,
+	COMPLETE,
 }
 
 # --- State runtime ---
 var _tutorial_active := false
 var _step: Step = Step.IDLE
-var _target_selected_once := false
 var _tutorial_ui: TutorialUI = null
 var _tutorial_layer: CanvasLayer = null
 var _wave_index := 0
-var _was_paused_by_tutorial := false
 var _pending_scripted_damage := false
-var _charge_completed := false
-var _used_potion_this_step := false
-var _hp_was_drained := false
 var _drop_node: Node = null
-var _tutorial_inv_before: int = 0
-var _tutorial_heal_before: float = 0.0
-var _pary_result_ready: bool = false
-var _pending_wave_spawn: int = 0  # 0 = ga ada, 2 = skeleton, 3 = grimward
-var _hurt_step_done: bool = false
-var _wave2_spawned: bool = false
-var _wave3_spawned: bool = false
+var _tutorial_inv_before := 0
+var _tutorial_heal_before := -1.0
+# Reveal bertahap: tombol yang SUDAH dikenalin (boleh keliatan)
+var _tut_revealed: Array = []
+# ...dan yang lagi BOLEH dipencet
+var _tut_enabled: Array = []
 var _locked_nodes: Array[Control] = []
-# Status disabled ASLI tiap node yg kita lock, biar _unlock_all() bisa
-# balikin persis — bukan memaksa semua tombol jadi aktif.
 var _saved_disabled: Dictionary = {}
 var _saved_mouse_filters: Dictionary = {}
-
-# Guard: HP floor HANYA buat damage dari enemy (bukan drain script)
+var _saved_process_mode: Dictionary = {}
+# Step yang nunggu giliran player balik (habis enemy turn)
+var _pending_idle_step: Step = Step.IDLE
+# Enemy turn paksa (sekali) buat pelajaran parry
+var _force_parry_turn := false
+var _rapid_taught := false
+var _w3_baseline_attacks := 0
+var _potion_index := -1
+var _hurt_step_done := false
+var _wave2_spawned := false
+var _wave3_spawned := false
+# Redundansi: loot kelar kalau count naik ATAU signal collect masuk
+# (keduanya; jangan gambling satu jalur).
+var _loot_collected := false
+var _pick_expected := ""
+var _pick_is_skill := false
+# Ref deck skill yang LAGI kebuka. Parent gak free node ActionCardUI
+# lama pas deck ditutup (cuma canvas_layer-nya), jadi cari via
+# get_children() bisa nemu deck BASI yang card_nodes-nya kosong.
+var _skill_ui_ref: ActionCardUI = null
+# Target yang dibikin ALWAYS (balikin mode-nya pas unlock; jangan
+# pakai instance_from_id membabi-buta — id bisa ke-recycle).
+var _always_nodes: Array = []
 
 
 func _ready() -> void:
@@ -85,11 +135,21 @@ func _ready() -> void:
 	_tutorial_active = true
 	super._ready()
 	_setup_tutorial_layer()
-	# Step 1: pause total + spotlight skeleton. Beri jeda biar
-	# intro battle parent (hand, map title) selesai dulu.
+	# Awal: SEMUA tombol action disembunyiin. Muncul satu-satu
+	# pas dikenalin di step-nya masing-masing.
+	_tut_revealed.clear()
+	_tut_enabled.clear()
+	_apply_button_gating(false)
+	_set_enemy_clickable_all(false)
+	# WaveProgress jujur dari awal: tutorial itu 3 wave.
+	total_waves = 3
+	current_wave = 1
+	if wave_progress:
+		wave_progress.set_wave(1, 3)
+	# Beri jeda biar intro battle parent (hand, map title) selesai dulu.
 	await get_tree().create_timer(1.2).timeout
 	if is_instance_valid(self):
-		_begin_step(Step.INTRO_TARGET)
+		_begin_step(Step.WELCOME)
 
 
 func _setup_tutorial_layer() -> void:
@@ -105,61 +165,168 @@ func _setup_tutorial_layer() -> void:
 	_tutorial_ui.setup(_tutorial_layer)
 	if not _tutorial_ui.tapped.is_connected(_on_tutorial_tapped):
 		_tutorial_ui.tapped.connect(_on_tutorial_tapped)
+	if not _tutorial_ui.finished.is_connected(_on_tutorial_finished):
+		_tutorial_ui.finished.connect(_on_tutorial_finished)
 
 
-# Player tap layar pas step BACA: panel ilang, lanjut ke step aksi.
+# ============================================================
+# TAP PANEL (step BACA) — cuma step BACA yang dismissable,
+# jadi signal ini = "lanjut".
+# ============================================================
+
 func _on_tutorial_tapped() -> void:
 	if not _tutorial_active or _step == Step.IDLE:
 		return
 	match _step:
-		Step.ATTACK_QTE_RESULT:
-			_advance_to(Step.PARRY)
+		Step.WELCOME:
+			_begin_step(Step.TARGET_INTRO)
+		Step.TARGET_INTRO:
+			_begin_step(Step.TARGET_ACT)
+		Step.ATTACK_INTRO:
+			_begin_step(Step.ATTACK_ACT)
+		Step.QTE_RESULT:
+			# Lanjut: musuh giliran nyerang (dipaksa sekali).
+			_force_parry_turn = true
+			_begin_step(Step.PARRY_WAIT)
 		Step.PARRY_RESULT:
-			if _pary_result_ready:
-				_pary_result_ready = false
-				_advance_to(Step.DEFEND)
-		Step.LOOT_APPEARED:
-			_advance_to(Step.LOOT_COLLECT)
-		Step.LOOT_STORED:
-			_advance_to(Step.OPEN_BACKPACK)
-		Step.OPEN_BACKPACK_HURT:
-			_used_potion_this_step = false
-			_advance_to(Step.USE_POTION)
-		Step.HEALED:
-			_unlock_all()
+			# Kasih jalan musuh selesaikan serangannya dulu.
+			_ui_hide()
 			_pause_game(false)
-			_spawn_wave3()
-			_advance_to(Step.WAVE3_INTRO)
+			_pending_idle_step = Step.DEFEND_INTRO
+		Step.DEFEND_INTRO:
+			_begin_step(Step.DEFEND_ACT)
+		Step.SKILL_INTRO:
+			_begin_step(Step.SKILL_ACT)
+		Step.ATTACK2_INTRO:
+			_begin_step(Step.ATTACK2_ACT)
+		Step.ATTACK3_INTRO:
+			_begin_step(Step.ATTACK3_ACT)
+		Step.FINISH_INTRO:
+			# Armor latihan dilepas — sekarang damage beneran.
+			_set_training_armor_all(false)
+			_refill_stamina()
+			set_meta("_tut_fin_miss", total_miss)
+			_begin_step(Step.FINISH_ACT)
+		Step.FINISH_MISS:
+			set_meta("_tut_fin_miss", total_miss)
+			_begin_step(Step.FINISH_ACT)
+		Step.LOOT_INTRO:
+			_begin_step(Step.LOOT_ACT)
+		Step.LOOT_DONE:
+			_begin_step(Step.PACK_INTRO)
+		Step.PACK_INTRO:
+			_begin_step(Step.PACK_ACT)
+		Step.RUN_INTRO:
+			_goto_wave2()
 		Step.WAVE2_INTRO:
-			# Spawn skeleton ke-2, skripтед hurt jalan di _process.
-			_spawn_wave2()
-			_advance_to(Step.HURT_HP)
+			_do_scripted_hurt()
+		Step.HURT_INFO:
+			_begin_step(Step.PACK2_ACT)
+		Step.HEALED:
+			_goto_wave3()
 		Step.WAVE3_INTRO:
-			_advance_to(Step.WAVE3_OBSERVE)
-		Step.WAVE3_OBSERVE:
-			_advance_to(Step.COMPLETE)
+			_begin_step(Step.WAVE3_FIGHT)
+		Step.WAVE3_DONE:
+			_begin_step(Step.COMPLETE)
 		_:
 			pass
 
 
-func _spawn_wave2() -> void:
-	if _wave2_spawned:
+func _on_tutorial_finished() -> void:
+	if not _tutorial_active:
 		return
-	_wave2_spawned = true
-	_pending_wave_spawn = 2
-	_unlock_all()
+	_tutorial_active = false
+	_pending_idle_step = Step.IDLE
 	_pause_game(false)
-	spawn_wave2_skeleton()
+	_unlock_all()
+	# Balikin battle ke kondisi main normal: semua tombol muncul.
+	_tut_revealed = [atk_btn, defend_btn, backpack_btn, run_btn, skill_btn]
+	_tut_enabled = [atk_btn, defend_btn, backpack_btn, run_btn, skill_btn]
+	_apply_button_gating(true)
+	_set_enemy_clickable_all(true)
+	tutorial_finished.emit()
+	tutorial_complete.emit()
 
 
-func _spawn_wave3() -> void:
-	if _wave3_spawned:
+# ============================================================
+# OVERRIDE: DECK — tutorial pakai deck FIX, bukan acak
+# ============================================================
+
+func _load_attack_cards() -> void:
+	if not _tutorial_active:
+		super._load_attack_cards()
 		return
-	_wave3_spawned = true
-	_pending_wave_spawn = 3
-	_unlock_all()
-	_pause_game(false)
-	spawn_wave3_grimward()
+	attack_hand.clear()
+	attack_discard.clear()
+	for path in [BASIC_PATH, CHARGE_PATH, RAPID_PATH]:
+		var data: AttackCardData = load(path) as AttackCardData
+		if data:
+			attack_hand.append(data.duplicate())
+
+
+func _attack_index_of(attack_type: String) -> int:
+	for i in range(attack_hand.size()):
+		var c: AttackCardData = attack_hand[i]
+		if c and c.attack_type == attack_type:
+			return i
+	return -1
+
+
+# ============================================================
+# OVERRIDE: TOMBOL — reveal bertahap, bukan sekaligus
+# ============================================================
+
+func _set_buttons_active(show_buttons: bool, instant: bool = false) -> void:
+	if not _tutorial_active:
+		super._set_buttons_active(show_buttons, instant)
+		return
+	_apply_button_gating(show_buttons)
+
+
+# Parent spawn pertama manggil ini (slide SEMUA tombol masuk).
+# Di tutorial itu persis yang dilarang: tombol muncul satu-satu.
+func _set_buttons_active_staggered() -> void:
+	if not _tutorial_active:
+		super._set_buttons_active_staggered()
+		return
+	_apply_button_gating(false)
+
+
+func _apply_button_gating(show_buttons: bool) -> void:
+	var pairs: Array = [
+		[atk_btn, original_atk_pos],
+		[defend_btn, original_def_pos],
+		[backpack_btn, original_backpack_pos],
+		[run_btn, original_run_post],
+		[skill_btn, original_skill_post],
+	]
+	for pair in pairs:
+		var b: Button = pair[0]
+		var orig: Vector2 = pair[1]
+		if b == null:
+			continue
+		var vis: bool = show_buttons and (b in _tut_revealed)
+		# Instant (tanpa tween): gating jalan juga pas tree paused,
+		# tween tombol pausable bakal beku di tengah jalan.
+		b.position.y = orig.y if vis else orig.y + 200.0
+		b.disabled = not (vis and (b in _tut_enabled))
+
+
+func _reveal(btn: Button, enabled_now: bool = false) -> void:
+	if btn and not (btn in _tut_revealed):
+		_tut_revealed.append(btn)
+	_tut_enabled.clear()
+	if enabled_now and btn:
+		_tut_enabled.append(btn)
+	_apply_button_gating(true)
+
+
+func _enable_only(btns: Array) -> void:
+	_tut_enabled.clear()
+	for b in btns:
+		if b and (b in _tut_revealed) and not (b in _tut_enabled):
+			_tut_enabled.append(b)
+	_apply_button_gating(true)
 
 
 # ============================================================
@@ -170,10 +337,8 @@ func _spawn_enemies(_enemy_ids: Array[String], _custom_levels: Array[int] = []) 
 	if not _tutorial_active:
 		super._spawn_enemies(_enemy_ids, _custom_levels)
 		return
-	# Parent _ready() manggil spawn_random_enemies(1, n, 1, 5) yg
-	#随机 n enemy. Tutorial mau PAKAI 1 skeleton aja di wave 1,
-	# jadi kita emergency-cancel hasil random itu: queue_free semua
-	# enemy yg ke-spawn, baru spawn 1 skeleton.
+	# Parent _ready() manggil spawn_random_enemies yg acak. Tutorial mau
+	# 1 skeleton aja di wave 1: batalkan hasil random, spawn manual.
 	if _wave_index == 0:
 		_wave_index = 1
 		for e in enemies:
@@ -182,17 +347,38 @@ func _spawn_enemies(_enemy_ids: Array[String], _custom_levels: Array[int] = []) 
 		enemies.clear()
 		selected_enemy_index = 0
 		super._spawn_enemies(["skeleton"] as Array[String], [1] as Array[int])
+		# Training armor: damage player jadi ~1 biar musuh gak mati
+		# sebelum semua gerakan kelar diajarin. Dilepas di FINISH_INTRO.
+		await get_tree().process_frame
+		if is_instance_valid(self) and not enemies.is_empty():
+			_set_training_armor(enemies[0], true)
 
 
 func _tutorial_spawn(ids: Array[String], levels: Array[int]) -> void:
 	super._spawn_enemies(ids, levels)
 
 
+func _set_training_armor(enemy: BattleEnemy, on: bool) -> void:
+	if enemy == null or not is_instance_valid(enemy):
+		return
+	if on:
+		if not enemy.has_meta("_tut_base_def"):
+			enemy.set_meta("_tut_base_def", enemy.scaled_defense)
+		enemy.scaled_defense = TRAINING_DEFENSE
+	else:
+		if enemy.has_meta("_tut_base_def"):
+			enemy.scaled_defense = float(enemy.get_meta("_tut_base_def"))
+			enemy.remove_meta("_tut_base_def")
+
+
+func _set_training_armor_all(on: bool) -> void:
+	for e in enemies:
+		if is_instance_valid(e):
+			_set_training_armor(e, on)
+
+
 # ============================================================
-# OVERRIDE: PARRY WINDOW — pause-aware timer
-# create_timer() default process_always=true -> tetep jalan
-# walau tree paused -> parry btn auto-hide di tengah baca.
-# Pakai process_always=false biar ikut beku.
+# OVERRIDE: PARRY WINDOW — pause-aware + instant (tanpa tween)
 # ============================================================
 
 func _show_parry_window(duration: float = 1.0) -> void:
@@ -201,43 +387,37 @@ func _show_parry_window(duration: float = 1.0) -> void:
 		return
 	if not parry_btn:
 		return
-
 	parry_success_this_turn = false
 	is_parry_window_active = true
 	parry_extra_reduction = 0.0
 	total_parry_attempts += 1
 	# Biar parry btn bisa diklik pas tree paused
 	parry_btn.process_mode = Node.PROCESS_MODE_ALWAYS
-
+	parry_btn.disabled = false
+	parry_btn.mouse_filter = Control.MOUSE_FILTER_STOP
+	# Posisi acak kayak parent, tapi INSTANT (tween bakal beku
+	# kalau tutorial pause pas window kebuka).
 	var viewport_size = get_viewport().get_visible_rect().size
-	var min_x = 120.0
-	var max_x = viewport_size.x - 220.0
-	var min_y = 150.0
-	var max_y = viewport_size.y - 250.0
-
 	parry_btn.set_anchors_preset(Control.PRESET_TOP_LEFT)
-	parry_btn.position = Vector2(randf_range(min_x, max_x), randf_range(min_y, max_y))
-	parry_btn.modulate = Color(1, 1, 1, 0)
-	parry_btn.scale = Vector2(0.01, 0.01)
+	parry_btn.position = Vector2(
+		randf_range(120.0, viewport_size.x - 220.0),
+		randf_range(150.0, viewport_size.y - 250.0)
+	)
+	parry_btn.modulate = Color(1, 1, 1, 1)
+	parry_btn.scale = Vector2(0.100, 0.095)
 	parry_btn.show()
-
 	if parry_timing_bar:
 		parry_timing_bar.value = parry_timing_bar.max_value
-		if parry_timing_tween and parry_timing_tween.is_running():
-			parry_timing_tween.kill()
-		parry_timing_tween = create_tween()
-		parry_timing_tween.tween_property(parry_timing_bar, "value", 0.0, duration).set_trans(Tween.TRANS_LINEAR)
-
-	var tw = create_tween().set_parallel(true)
-	tw.tween_property(parry_btn, "modulate:a", 1.0, 0.15)
-	tw.tween_property(parry_btn, "scale", Vector2(0.100, 0.095), 0.18).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-
+	# NOTE: timing bar sengaja TIDAK di-tween di sini. Kalau tree lagi
+	# jalan, _process parry toh jalan normal; kalau paused, bar freeze
+	# penuh = player punya waktu tak terbatas (baik buat tutorial).
 	if parry_timer != null:
 		parry_timer = null
 	# process_always = false -> timer beneran freeze pas tutorial pause
 	parry_timer = get_tree().create_timer(duration, false)
 	await parry_timer.timeout
-
+	if not is_instance_valid(self):
+		return
 	if parry_btn.visible and not parry_success_this_turn:
 		var visual_center = parry_btn.position + Vector2(40, 40)
 		_spawn_missed_popup_text(visual_center)
@@ -245,19 +425,77 @@ func _show_parry_window(duration: float = 1.0) -> void:
 
 
 # ============================================================
-# OVERRIDE: DEATH — paksa drop item
+# OVERRIDE: RAPID START — pastikan tombol enabled
+# ============================================================
+
+func _start_attack_raptive() -> void:
+	super._start_attack_raptive()
+	if _tutorial_active and rapid_btn:
+		rapid_btn.disabled = false
+		rapid_btn.mouse_filter = Control.MOUSE_FILTER_STOP
+		rapid_btn.process_mode = Node.PROCESS_MODE_ALWAYS
+
+
+# ============================================================
+# OVERRIDE: ENEMY TURN PAKSA (sekali, buat pelajaran parry)
+# AI skeleton bisa DEFEND/skip — parry gak boleh gambling.
+# ============================================================
+
+func _start_enemies_turn() -> void:
+	if not _tutorial_active or not _force_parry_turn:
+		super._start_enemies_turn()
+		return
+	_force_parry_turn = false
+	_update_target_selection()
+	var live: Array = enemies.filter(func(e): return is_instance_valid(e) and e.current_hp > 0)
+	if live.is_empty():
+		_finish_forced_turn()
+		return
+	var enemy: BattleEnemy = live[0]
+	current_enemy_attacking = enemy
+	_pull_hand_to_corner(0.4)
+	if enemy.enemy_collision:
+		enemy.enemy_collision.disabled = true
+	await enemy._execute_attack(camera, default_camera_pos, 1.0, "Attacking!", EnemyAI.Emotion.CALM)
+	if not is_instance_valid(self):
+		return
+	_finish_forced_turn()
+
+
+func _finish_forced_turn() -> void:
+	_pull_hand_to_corner(0.4)
+	for e in enemies:
+		if is_instance_valid(e) and e.current_hp > 0 and e.enemy_collision:
+			e.enemy_collision.disabled = false
+	_reset_hand_to_original(0.4)
+	_update_target_selection()
+	if enemies.size() > 0:
+		is_player_turn = true
+		_apply_button_gating(true)
+		_process_action_card_cooldowns()
+
+
+# ============================================================
+# OVERRIDE: DEATH — JANGAN wave logic parent (random spawn /
+# scoreboard). Tutorial yang ngatur spawn manual.
 # ============================================================
 
 func _process_enemy_death(_exp_amount: int, _gold_amount: int, _dropped_items: Array[String], enemy: BattleEnemy) -> void:
-	super._process_enemy_death(_exp_amount, _gold_amount, _dropped_items, enemy)
-	if not _tutorial_active or enemy == null or not is_instance_valid(enemy):
+	if not _tutorial_active:
+		super._process_enemy_death(_exp_amount, _gold_amount, _dropped_items, enemy)
 		return
+	enemies_killed += 1
+	if is_instance_valid(enemy):
+		EventBus.enemy_killed.emit(enemy.enemy_id)
 	# Paksa drop Health Potion (skeleton drop_chance cuma 0.1).
-	# Delay biar selesai animasi kematian dulu.
 	_tutorial_force_drop(enemy)
+	_update_target_selection()
+	# SENGAJA gak ada: exp orbs, wave advance, scoreboard.
 
 
 func _tutorial_force_drop(enemy: BattleEnemy) -> void:
+	if enemy == null or not is_instance_valid(enemy):
+		return
 	var pos := enemy.global_position
 	await get_tree().create_timer(0.8).timeout
 	if not is_instance_valid(self):
@@ -266,13 +504,10 @@ func _tutorial_force_drop(enemy: BattleEnemy) -> void:
 	var drop = _spawn_drop_item_keep(TUTORIAL_DROP_ID, pos, 0.0)
 	if drop:
 		_drop_node = drop
-		# Step 10 (LOOT_APPEARED) dipicu di _process()
 
 
 func _spawn_drop_item_keep(item_id: String, enemy_pos: Vector2, spawn_delay: float = 0.0) -> Node:
 	# Mirip _spawn_drop_item parent, tapi freeze DESPAWN_TIME.
-	# ItemDropVisual punya Timer (line 111) + tween; kita set
-	# process_mode ALWAYS + timer stop biar gak ke-despawn.
 	var item := _load_item_by_id(item_id)
 	if not item or not item_drop_template or not drop_layer:
 		return null
@@ -285,10 +520,6 @@ func _spawn_drop_item_keep(item_id: String, enemy_pos: Vector2, spawn_delay: flo
 	drop_visual.collect_finished.connect(_on_drop_collect_finished)
 	drop_layer.add_child(drop_visual)
 	drop_visual.setup(item, screen_pos, ground_pos, spawn_delay)
-	# Freeze despawn 8 detik. ItemDropVisual bikin Timer-nya sendiri
-	# (line 110-115) dan tween timing bar (line 73-74). Stop keduanya
-	# + pause _process biar idle float & glow tetap jalan tapi item
-	# gak pernah keburu ilang sebelum player sempet klik.
 	drop_visual.set_process(false)
 	var timer := _find_timer_recursive(drop_visual)
 	if timer:
@@ -297,6 +528,11 @@ func _spawn_drop_item_keep(item_id: String, enemy_pos: Vector2, spawn_delay: flo
 	if timing:
 		timing.value = timing.max_value
 	return drop_visual
+
+
+func _on_drop_collect_finished(_item: ItemData) -> void:
+	super._on_drop_collect_finished(_item)
+	_loot_collected = true
 
 
 func _find_timer_recursive(node: Node) -> Timer:
@@ -317,16 +553,12 @@ func apply_damage(event: DamageEvent) -> void:
 	if not _tutorial_active:
 		super.apply_damage(event)
 		return
-	# Step 14: script "big damage" biar HP mendarat PAS di 25%.
-	# Musuh skeleton damage cuma 3, jadi kita karang base_damage.
-	# Tambah ajek biar hasil akhir = floor, bukan floor + durability,
-	# karena apply_damage() parent memotong player_durability (5).
+	# Script "big damage" biar HP mendarat PAS di 25%.
 	if _pending_scripted_damage:
 		_pending_scripted_damage = false
 		var target_hp: float = max_hp * HP_FLOOR_PCT
 		var needed: float = max(0.0, current_hp - target_hp) + player_durability
 		event.base_damage = needed
-	# Override apply_damage, tapi panggil parent biar animasi/UI normal.
 	super.apply_damage(event)
 	# HP floor: jangan pernah di bawah 25%.
 	if current_hp < max_hp * HP_FLOOR_PCT:
@@ -336,60 +568,70 @@ func apply_damage(event: DamageEvent) -> void:
 
 
 # ============================================================
-# FLOW UTAMA
+# FLOW UTAMA (watcher — jalan pas tree live)
 # ============================================================
 
 func _process(_delta: float) -> void:
 	super._process(_delta)
 	if not _tutorial_active:
 		return
-	# Wave 1 clear -> skeleton ke-2 nyerang -> scripted hurt (HP ke 25%).
-	# Dipicu di frame yg sama pas skeleton mulai take_turn.
-	if _pending_wave_spawn == 2:
-		_pending_wave_spawn = 0
-		_hp_was_drained = false
-	# Scripted hurt dipicu di sini karena ini satu-satunya _process yg
-	# jalan: tree di-unpause pas step HURT_HP (tutorial nunggu player
-	# buka backpack), jadi manager aktif lagi.
-	if _hurt_step_done or not _wave2_spawned:
+	# Balik ke idle (giliran player, gak ada yang jalan) -> lanjut step.
+	if _pending_idle_step != Step.IDLE and _is_player_idle():
+		var s := _pending_idle_step
+		_pending_idle_step = Step.IDLE
+		_begin_step(s)
 		return
-	if _step != Step.HURT_HP or enemies.is_empty():
-		return
-	var live: int = enemies.filter(func(e): return is_instance_valid(e) and e.current_hp > 0).size()
-	if live <= 0:
-		return
-	_hurt_step_done = true
-	trigger_scripted_hurt()
-	# CATATAN: step BACA (tap panel buat lanjut) ditangani di
-	# _on_tutorial_tapped() via signal TutorialUI.tapped.
-	# JANGAN pakai try_dismiss_on_tap() di sini — tree paused, _process()
-	# manager = pausable jadi malah GAK PERNAH jalan.
 	match _step:
-		Step.LOOT_COLLECT:
-			# Selesai pas item benar-benar masuk inventory player.
-			if _tutorial_inventory_count() > _tutorial_inv_before:
-				_advance_to(Step.LOOT_STORED)
-		Step.HURT_HP:
-			# Tunggu player buka backpack (tutorial yg trigger setelah
-			# backpack berisi potion -> langsung ke USE_POTION step)
-			if is_inventory_open:
-				_unlock_all()
-				_pause_game(false)
-				_advance_to(Step.USE_POTION)
-		Step.USE_POTION:
+		Step.POTION_SLOT:
+			# Player milih slot potion -> arahin ke tombol USE.
+			if _potion_ready_to_use():
+				_begin_step(Step.POTION_USE)
+		Step.POTION_USE:
 			# Selesai pas HP naik (potion dipakai).
 			if _tutorial_heal_before >= 0.0 and current_hp > _tutorial_heal_before + 1.0:
 				_tutorial_heal_before = -1.0
-				_unlock_all()
-				_pause_game(false)
-				_advance_to(Step.HEALED)
-		Step.PARRY:
-			if total_parries > 0:
-				_advance_to(Step.PARRY_RESULT)
-		Step.INTRO_TARGET:
-			if selected_enemy_index >= 0 and not enemies.is_empty():
-				if enemies[selected_enemy_index] and _target_selected_once:
-					_advance_to(Step.INTRO_ATTACK_BTN)
+				_begin_step(Step.HEALED)
+		Step.LOOT_ACT:
+			# Selesai pas item benar-benar masuk inventory player.
+			if _loot_collected or _tutorial_inventory_count() > _tutorial_inv_before:
+				_loot_collected = false
+				_begin_step(Step.LOOT_DONE)
+		Step.RAPID_DO:
+			# Rapid kelar (timer habis) -> lanjut habis enemy turn.
+			if _rapid_taught and not _is_rapid_active:
+				_rapid_taught = false
+				_live("RAPID COMPLETE", "That's rapid attack! Enemy turn...", TutorialUI.Zone.BOTTOM_LEFT, null)
+				_pending_idle_step = Step.FINISH_INTRO
+		Step.FINISH_AFTER:
+			# Musuh mati + drop nongol -> lanjut loot.
+			if enemies.is_empty() and _drop_node and is_instance_valid(_drop_node):
+				_begin_step(Step.LOOT_INTRO)
+		Step.PACK_VIEW:
+			# Inventory ditutup -> lanjut.
+			if not is_inventory_open:
+				_begin_step(Step.RUN_INTRO)
+		Step.WAVE3_AFTER:
+			# Serangan kelar + giliran balik -> hasil.
+			if _is_player_idle() and total_attacks > _w3_baseline_attacks:
+				_begin_step(Step.WAVE3_DONE)
+
+
+func _is_player_idle() -> bool:
+	if not is_player_turn:
+		return false
+	if is_card_ui_open or is_inventory_open or _is_rapid_active:
+		return false
+	for e in enemies:
+		if is_instance_valid(e) and e.is_taking_turn:
+			return false
+	return true
+
+
+func _enemy_busy() -> bool:
+	for e in enemies:
+		if is_instance_valid(e) and e.is_taking_turn:
+			return true
+	return false
 
 
 func _tutorial_inventory_count() -> int:
@@ -399,86 +641,285 @@ func _tutorial_inventory_count() -> int:
 	return pd.battle_inventory.items.size()
 
 
+# Tutorial run yang ditinggal di tengah jalan bisa ninggalin potion
+# numpuk sampe inventory 9/9 penuh — collect berikutnya FAIL
+# ("Inventory Full!") dan tutorial softlock. Beresin sampah sendiri:
+# kalau penuh, buang 1 health potion biar ada slot buat pelajaran.
+func _ensure_loot_space() -> void:
+	var pd = PlayerDataManager.data
+	if pd == null or pd.battle_inventory == null or pd.battle_inventory.items == null:
+		return
+	var items: Array = pd.battle_inventory.items
+	for it in items:
+		if it == null:
+			return
+	if items.size() < 9:
+		return
+	for i in range(items.size()):
+		var it: ItemData = items[i]
+		if it and it.item_id == TUTORIAL_DROP_ID:
+			PlayerDataManager.remove_item(i)
+			return
+
+
+func _refill_stamina() -> void:
+	current_stamina = max_stamina
+	_animate_stamina_change()
+
+
+# ============================================================
+# HANDLER OVERRIDES
+# ============================================================
+
 func _on_enemy_clicked(clicked_enemy: BattleEnemy) -> void:
 	super._on_enemy_clicked(clicked_enemy)
-	_target_selected_once = true
-	if _step == Step.INTRO_TARGET:
-		# Tap area spotlight = aksi. Panel ilang, unpause.
-		_ui_hide()
-		_unlock_all()
-		_pause_game(false)
-		_advance_to(Step.INTRO_ATTACK_BTN)
+	if not _tutorial_active or _step != Step.TARGET_ACT:
+		return
+	_begin_step(Step.ATTACK_INTRO)
 
 
 func _on_attack_pressed() -> void:
-	super._on_attack_pressed()
-	if _step == Step.INTRO_ATTACK_BTN:
-		# Deck kebuka -> lanjut ke step pilih kartu
-		_ui_hide()
-		_unlock_all()
+	if not _tutorial_active:
+		super._on_attack_pressed()
+		return
+	if _step == Step.ATTACK_ACT:
 		_pause_game(false)
-		_advance_to(Step.SELECT_BASIC_CARD)
+		super._on_attack_pressed()
+		_begin_step(Step.BASIC_PICK)
+	elif _step == Step.ATTACK2_ACT:
+		_pause_game(false)
+		super._on_attack_pressed()
+		_begin_step(Step.CHARGE_PICK)
+	elif _step == Step.ATTACK3_ACT:
+		_pause_game(false)
+		super._on_attack_pressed()
+		_begin_step(Step.RAPID_PICK)
+	elif _step == Step.FINISH_ACT:
+		_pause_game(false)
+		super._on_attack_pressed()
+		_begin_step(Step.FINISH_PICK)
+	elif _step == Step.WAVE3_FIGHT:
+		_pause_game(false)
+		super._on_attack_pressed()
+		_begin_step(Step.WAVE3_PICK)
+	# Step lain: terkunci (tombol disabled), handler gak kepanggil.
 
 
 func _on_attack_card_selected(index: int) -> void:
+	if not _tutorial_active:
+		super._on_attack_card_selected(index)
+		return
+	var expected := ""
+	match _step:
+		Step.BASIC_PICK:
+			expected = "Basic"
+		Step.CHARGE_PICK:
+			expected = "Charge"
+		Step.RAPID_PICK:
+			expected = "Rapid"
+		Step.FINISH_PICK:
+			expected = "Basic"
+		Step.WAVE3_PICK:
+			expected = "Basic"
+		_:
+			return
+	var card: AttackCardData = attack_hand[index] if index >= 0 and index < attack_hand.size() else null
+	if card == null:
+		return
+	if expected != "" and card.attack_type != expected:
+		return  # bukan kartu yang lagi diajarin — abaikan
+	if current_stamina < card.stamina_cost:
+		_refill_stamina()
 	super._on_attack_card_selected(index)
-	if _step == Step.SELECT_BASIC_CARD:
-		var card: AttackCardData = attack_hand[index] if index < attack_hand.size() else null
-		if card and card.attack_type == "Basic":
-			_advance_to(Step.ATTACK_QTE)
+	match _step:
+		Step.BASIC_PICK:
+			_begin_step(Step.QTE_DO)
+		Step.CHARGE_PICK:
+			_begin_step(Step.CHARGE_DO)
+		Step.RAPID_PICK:
+			_rapid_taught = true
+			_begin_step(Step.RAPID_DO)
+		Step.FINISH_PICK:
+			_begin_step(Step.FINISH_QTE)
+		Step.WAVE3_PICK:
+			_w3_baseline_attacks = total_attacks
+			_begin_step(Step.WAVE3_QTE)
 
 
-func _on_defend_pressed() -> void:
-	super._on_defend_pressed()
-	if _step == Step.DEFEND:
-		_advance_to(Step.PARRY_RESULT)  # placeholder, diganti flow beneran di bawah
+func _check_attack_qte_result() -> void:
+	super._check_attack_qte_result()
+	if not _tutorial_active:
+		return
+	match _step:
+		Step.QTE_DO:
+			# Enemy turn (paksa) bakal jalan habis ini; parry lesson
+			# nyusul otomatis pas attack_preparing.
+			_begin_step(Step.QTE_RESULT)
+		Step.FINISH_QTE:
+			if total_miss > _fin_miss_before():
+				_step = Step.FINISH_MISS
+				_read("MISSED!", "No damage. Tap to try the finishing blow again.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+			else:
+				_step = Step.FINISH_AFTER
+				_live("DIRECT HIT!", "Finishing blow landed!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+		Step.WAVE3_QTE:
+			_step = Step.WAVE3_AFTER
+			_live("ATTACK LANDED", "Watch out — Grimward can counter!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 
 
-func _on_charge_complete(multiplier: float) -> void:
-	super._on_charge_complete(multiplier)
-	if _step == Step.CHARGE:
-		_charge_completed = true
-
-
-func _on_raptive_btn_pressed() -> void:
-	super._on_raptive_btn_pressed()
-	if _step == Step.RAPID and _rapid_hits > 0:
-		_advance_to(Step.LOOT_APPEARED)
+func _fin_miss_before() -> int:
+	return int(get_meta("_tut_fin_miss", total_miss))
 
 
 func _on_enemy_attack_preparing() -> void:
 	super._on_enemy_attack_preparing()
-	if _step == Step.PARRY:
-		# Parry window kebuka -> pause total + spotlight parry btn.
-		#_tf_step parry window jalan frozen, player punya waktu tak terbatas.
-		_pause_game(true)
-		_lock_all_except([parry_btn])
-		_ui_show("A **shield icon** appeared! Tap it to **PARRY**!", TutorialUI.Zone.BOTTOM_LEFT, parry_btn)
+	if not _tutorial_active:
+		return
+	# Cuma pelajaran parry wave-1 yang diurus; serangan lain biarin natural.
+	if _step == Step.QTE_RESULT or _step == Step.PARRY_WAIT:
+		var live: Array = enemies.filter(func(e): return is_instance_valid(e) and e.current_hp > 0)
+		if live.is_empty():
+			return
+		_begin_step(Step.PARRY_ACT)
 
 
 func _on_parry_button_clicked() -> void:
-	# Parry successful -> explanation, still paused.
+	if not _tutorial_active:
+		super._on_parry_button_clicked()
+		return
+	if _step != Step.PARRY_ACT:
+		return
 	super._on_parry_button_clicked()
-	if _step == Step.PARRY:
-		_advance_to(Step.PARRY_RESULT)
+	_begin_step(Step.PARRY_RESULT)
+
+
+func _on_defend_pressed() -> void:
+	if not _tutorial_active:
+		super._on_defend_pressed()
+		return
+	if _step != Step.DEFEND_ACT:
+		return
+	_live("GUARD UP!", "Stamina +20. Enemy turn — watch what happens.", TutorialUI.Zone.BOTTOM_LEFT, null)
+	super._on_defend_pressed()
+	_pending_idle_step = Step.SKILL_INTRO
+
+
+func _on_skill_pressed() -> void:
+	if not _tutorial_active:
+		super._on_skill_pressed()
+		return
+	if _step != Step.SKILL_ACT:
+		return
+	super._on_skill_pressed()
+	_skill_ui_ref = null
+	_begin_step(Step.SKILL_PICK)
+
+
+func _on_action_card_closed() -> void:
+	super._on_action_card_closed()
+	# Deck skill ditutup — ref dibuang biar gak nemu deck basi.
+	_skill_ui_ref = null
+
+
+func _on_action_card_selected(index: int) -> void:
+	if not _tutorial_active:
+		super._on_action_card_selected(index)
+		return
+	if _step != Step.SKILL_PICK:
+		return
+	if index != 0:
+		return  # bukan kartu yang di-highlight — abaikan
+	if index < 0 or index >= action_cards.size():
+		return
+	_refill_stamina()
+	super._on_action_card_selected(index)
+	_live("SKILL USED!", "Effect applied. Enemy turn...", TutorialUI.Zone.BOTTOM_LEFT, null)
+	_pending_idle_step = Step.ATTACK2_INTRO
+
+
+func _on_charge_complete(multiplier: float) -> void:
+	if not _tutorial_active:
+		super._on_charge_complete(multiplier)
+		return
+	if _step != Step.CHARGE_DO:
+		return
+	super._on_charge_complete(multiplier)
+	_live("CHARGE COMPLETE!", "Big damage! Enemy turn...", TutorialUI.Zone.BOTTOM_LEFT, null)
+	_pending_idle_step = Step.ATTACK3_INTRO
+
+
+func _on_raptive_btn_pressed() -> void:
+	super._on_raptive_btn_pressed()
+	if _tutorial_active and _step == Step.RAPID_DO and _rapid_hits == 1:
+		_live("RAPID ATTACK", "Good! Keep tapping the buttons — fast!", TutorialUI.Zone.BOTTOM_LEFT, rapid_btn)
 
 
 func _on_backpack_pressed() -> void:
-	super._on_backpack_pressed()
-	if _step == Step.OPEN_BACKPACK:
-		_ui_hide()
-		_unlock_all()
+	if not _tutorial_active:
+		super._on_backpack_pressed()
+		return
+	if _step == Step.PACK_ACT:
 		_pause_game(false)
-		# Tutup inventory otomatis + lanjut
-		await get_tree().create_timer(0.5).timeout
-		close_battle_inventory()
-		_begin_step(Step.WAVE2_INTRO)
+		super._on_backpack_pressed()
+		_begin_step(Step.PACK_VIEW)
+	elif _step == Step.PACK2_ACT:
+		_pause_game(false)
+		super._on_backpack_pressed()
+		_potion_index = _find_potion_slot()
+		_begin_step(Step.POTION_SLOT)
 
 
 func _on_item_used_in_battle(item: ItemData) -> void:
 	super._on_item_used_in_battle(item)
-	if _step == Step.USE_POTION:
-		_used_potion_this_step = true
+	# Heal kedetek di _process (POTION_USE -> HEALED).
+
+
+func _find_potion_slot() -> int:
+	var pd = PlayerDataManager.data
+	if pd == null or pd.battle_inventory == null or pd.battle_inventory.items == null:
+		return -1
+	for i in range(pd.battle_inventory.items.size()):
+		var it: ItemData = pd.battle_inventory.items[i]
+		if it and it.item_id == TUTORIAL_DROP_ID:
+			return i
+	return -1
+
+
+func _potion_ready_to_use() -> bool:
+	if not is_instance_valid(battle_inventory_instance):
+		return false
+	if _potion_index < 0:
+		return false
+	var idx: int = battle_inventory_instance.get("_current_selected_index")
+	if idx != _potion_index:
+		return false
+	var ub: Button = _inventory_use_button()
+	return ub and ub.visible
+
+
+func _inventory_use_button() -> Button:
+	if not is_instance_valid(battle_inventory_instance):
+		return null
+	return battle_inventory_instance.get("use_item_btn") as Button
+
+
+func _inventory_close_button() -> Button:
+	if not is_instance_valid(battle_inventory_instance):
+		return null
+	return battle_inventory_instance.get("close_btn") as Button
+
+
+func _inventory_slot_button(idx: int) -> Button:
+	if not is_instance_valid(battle_inventory_instance):
+		return null
+	var slots: Array = battle_inventory_instance.get("_slots")
+	if slots == null or idx < 0 or idx >= slots.size():
+		return null
+	var slot: Node = slots[idx]
+	for c in slot.get_children():
+		if c is Button:
+			return c as Button
+	return null
 
 
 # ============================================================
@@ -488,99 +929,356 @@ func _on_item_used_in_battle(item: ItemData) -> void:
 func _begin_step(step: Step) -> void:
 	_step = step
 	_unlock_all()
+	_pending_idle_step = Step.IDLE
 	match step:
-		Step.INTRO_TARGET:
-			_act_step("This is a **Skeleton**. Tap it to select your target.",
-				TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
-		Step.INTRO_ATTACK_BTN:
-			_act_step("**ATTACK** opens your attack cards.",
-				TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
-		Step.SELECT_BASIC_CARD:
-			_pause_game(false)  # deck udah kebuka dari step sebelumnya
-			_ui_hide()
-		Step.ATTACK_QTE:
+		Step.WELCOME:
+			_read("WELCOME, KNIGHT", "Battle training, step by step. Tap anywhere to start.", TutorialUI.Zone.TOP_CENTER, null)
+		Step.TARGET_INTRO:
+			_read("MEET THE ENEMY", "This is a Skeleton. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+		Step.TARGET_ACT:
+			_act("SELECT TARGET", "Tap the Skeleton to lock it as your target.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+		Step.ATTACK_INTRO:
+			_reveal(atk_btn)
+			_read("BUTTON: ATTACK", "This opens your attack cards. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
+		Step.ATTACK_ACT:
+			_reveal(atk_btn, true)
+			_act("TAP ATTACK", "Tap the ATTACK button now.", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
+		Step.BASIC_PICK:
+			_pick_setup(false, "Basic", "BASIC CARD", "Tap the glowing BASIC card.")
+		Step.QTE_DO:
+			_lock_all_except([attack_qte_node, reset_target_btn])
+			_live("TIMING BAR", "Tap ANYWHERE when the runner hits GOLD!", TutorialUI.Zone.BOTTOM_LEFT, attack_qte_node)
+		Step.QTE_RESULT:
+			_read(_qte_title(), _last_attack_result_text() + " Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+		Step.PARRY_WAIT:
 			_pause_game(false)
-			_ui_hide()
-		Step.ATTACK_QTE_RESULT:
-			_read_step(_last_attack_result_text(), TutorialUI.Zone.TOP_RIGHT)
-		Step.PARRY:
-			# Dijagli trigger dari _on_enemy_attack_preparing override
-			pass
+			_lock_all_except([])
+			_live("ENEMY TURN", "Skeleton's turn. Watch for a SHIELD button!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+		Step.PARRY_ACT:
+			_act("PARRY!", "A shield appeared! Tap it NOW to parry!", TutorialUI.Zone.BOTTOM_LEFT, parry_btn)
 		Step.PARRY_RESULT:
-			# Explanation after parry. Player tap to continue -> DEFEND step.
-			_read_step("**Parried!** It blocked most damage and gave you stamina.",
-				TutorialUI.Zone.BOTTOM_LEFT)
-			_pary_result_ready = true
-		Step.DEFEND:
-			_act_step("**DEFEND** restores stamina — but you skip your attack.",
-				TutorialUI.Zone.BOTTOM_LEFT, defend_btn)
-		Step.SKILL:
-			_act_step("**SKILL** cards cost more stamina, but hit harder.",
-				TutorialUI.Zone.BOTTOM_LEFT, skill_btn)
-		Step.CHARGE:
-			_charge_completed = false
+			_read("PARRIED!", "Blocked most damage + bonus stamina. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, player_info)
+		Step.DEFEND_INTRO:
+			_reveal(defend_btn)
+			_read("BUTTON: DEFEND", "Restores 20 stamina, but skips your attack. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, defend_btn)
+		Step.DEFEND_ACT:
+			_reveal(defend_btn, true)
+			_act("TAP DEFEND", "Tap DEFEND and watch your stamina.", TutorialUI.Zone.BOTTOM_LEFT, defend_btn)
+		Step.SKILL_INTRO:
+			_reveal(skill_btn)
+			_read("BUTTON: SKILL", "Special cards: poison, stun, bleed. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, skill_btn)
+		Step.SKILL_ACT:
+			_reveal(skill_btn, true)
+			_act("TAP SKILL", "Tap SKILL to open the skill deck.", TutorialUI.Zone.BOTTOM_LEFT, skill_btn)
+		Step.SKILL_PICK:
+			_pick_setup(true, "", "SKILL CARD", "Tap the glowing SKILL card.")
+		Step.ATTACK2_INTRO:
+			_read("ATTACK AGAIN", "New card type: CHARGE. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
+		Step.ATTACK2_ACT:
+			_enable_only([atk_btn])
+			_act("TAP ATTACK", "Open your attack cards again.", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
+		Step.CHARGE_PICK:
+			_pick_setup(false, "Charge", "CHARGE CARD", "Tap the glowing CHARGE card.")
+		Step.CHARGE_DO:
 			_pause_game(false)
-			_ui_hide()
-		Step.RAPID:
+			var cb := _charge_button()
+			_lock_all_except([cb] if cb else [])
+			if cb:
+				_allow_interaction(cb)
+			_live("HOLD & RELEASE", "Hold the button, release inside GOLD for max damage!", TutorialUI.Zone.BOTTOM_LEFT, cb)
+		Step.ATTACK3_INTRO:
+			_read("ONE MORE TYPE", "Last one: RAPID. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
+		Step.ATTACK3_ACT:
+			_enable_only([atk_btn])
+			_act("TAP ATTACK", "Open your attack cards.", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
+		Step.RAPID_PICK:
+			_pick_setup(false, "Rapid", "RAPID CARD", "Tap the glowing RAPID card.")
+		Step.RAPID_DO:
 			_pause_game(false)
-			_ui_hide()
-		Step.LOOT_APPEARED:
-			_read_step("The Skeleton dropped something!", TutorialUI.Zone.BOTTOM_LEFT, _drop_node)
-		Step.LOOT_COLLECT:
+			_lock_all_except([rapid_btn])
+			_allow_interaction(rapid_btn)
+			_live("TAP FAST!", "Tap every button before time runs out!", TutorialUI.Zone.BOTTOM_LEFT, rapid_btn)
+		Step.FINISH_INTRO:
+			_read("ARMOR OFF!", "Training wheels off — real damage now. Finish it!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+		Step.FINISH_ACT:
+			_enable_only([atk_btn])
+			_act("FINISH IT", "Tap ATTACK for the final blow.", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
+		Step.FINISH_PICK:
+			_pick_setup(false, "Basic", "FINAL BLOW", "Tap BASIC to finish the Skeleton.")
+		Step.FINISH_QTE:
+			_lock_all_except([attack_qte_node, reset_target_btn])
+			_live("FINISH!", "Tap when the runner hits GOLD!", TutorialUI.Zone.BOTTOM_LEFT, attack_qte_node)
+		Step.FINISH_AFTER:
+			pass  # dijaga _process (musuh mati + drop)
+		Step.FINISH_MISS:
+			_read("MISSED!", "No damage. Tap to try the finishing blow again.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+		Step.FINISH_MISS:
+			_read("MISSED!", "No damage. Tap to try the finishing blow again.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+		Step.LOOT_INTRO:
 			_tutorial_inv_before = _tutorial_inventory_count()
-			_act_step("Tap the item to **collect** it.", TutorialUI.Zone.BOTTOM_LEFT, _drop_node)
-		Step.LOOT_STORED:
-			_read_step("Collected! It's in your **BACKPACK**.", TutorialUI.Zone.BOTTOM_LEFT)
-		Step.OPEN_BACKPACK:
-			_act_step("Open your **Backpack** to check your items.",
-				TutorialUI.Zone.BOTTOM_LEFT, backpack_btn)
-		Step.WAVE2_INTRO:
-			_read_step("Another **Skeleton**! Watch its attack closely.",
-				TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
-		Step.HURT_HP:
-			_act_step("You're **hurt!** HP is low. Open your **BACKPACK**.",
-				TutorialUI.Zone.BOTTOM_LEFT, backpack_btn)
-			_ui_set_hp_note(true)
-		Step.OPEN_BACKPACK_HURT:
-			_read_step("Use the **Health Potion** to heal.", TutorialUI.Zone.TOP_CENTER)
-		Step.USE_POTION:
-			_used_potion_this_step = false
-			_tutorial_heal_before = current_hp
+			_loot_collected = false
+			_ensure_loot_space()
+			# Musuh terakhir mati -> parent _start_enemies_turn TIDAK
+			# balikin is_player_turn (cuma kalau musuh sisa). Tutorial
+			# yang balikin manual, kalau bukan semua tombol dikira
+			# "bukan giliran player" dan backpack gak bisa dibuka.
+			is_player_turn = true
+			_apply_button_gating(false)
+			_read("LOOT DROPPED!", "The Skeleton dropped something. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, _drop_node)
+		Step.LOOT_ACT:
 			_pause_game(false)
-			_ui_hide()
+			_lock_all_except([_drop_node])
+			_allow_interaction(_drop_node)
+			_live("COLLECT LOOT", "Tap the glowing item to collect it.", TutorialUI.Zone.BOTTOM_LEFT, _drop_node)
+		Step.LOOT_DONE:
+			_reveal(backpack_btn)
+			_read("LOOT SECURED!", "Saved to your BACKPACK permanently. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, backpack_btn)
+		Step.PACK_INTRO:
+			_read("BUTTON: BACKPACK", "All your items live here. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, backpack_btn)
+		Step.PACK_ACT:
+			_reveal(backpack_btn, true)
+			_act("OPEN BACKPACK", "Tap BACKPACK to look inside.", TutorialUI.Zone.BOTTOM_LEFT, backpack_btn)
+		Step.PACK_VIEW:
+			_pause_game(false)
+			var close_b: Button = _inventory_close_button()
+			_lock_all_except([close_b] if close_b else [])
+			if close_b:
+				_allow_interaction(close_b)
+			_live("YOUR BACKPACK", "Potion is in a slot. Tap CLOSE when done.", TutorialUI.Zone.TOP_CENTER, close_b)
+		Step.RUN_INTRO:
+			_reveal(run_btn)
+			_read("BUTTON: RUN", "RUN flees battle — locked during training. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, run_btn)
+		Step.WAVE2_INTRO:
+			_read("WAVE 2", "Another Skeleton! But something feels wrong...", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+		Step.HURT_ANIM:
+			pass  # dijaga _do_scripted_hurt (async)
+		Step.HURT_INFO:
+			_ui_set_hp_note(true)
+			_read("YOU'RE HURT!", "HP dropped to 25%! You need that potion. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, player_info)
+		Step.PACK2_ACT:
+			_reveal(backpack_btn, true)
+			_act("GRAB THE POTION", "Open BACKPACK and use your Health Potion.", TutorialUI.Zone.BOTTOM_LEFT, backpack_btn)
+		Step.POTION_SLOT:
+			_pause_game(false)
+			var slot_b: Button = _inventory_slot_button(_potion_index)
+			_lock_all_except([slot_b] if slot_b else [])
+			if slot_b:
+				_allow_interaction(slot_b)
+			_live("FIND THE POTION", "Tap the glowing Health Potion slot.", TutorialUI.Zone.TOP_CENTER, slot_b)
+		Step.POTION_USE:
+			_pause_game(false)
+			_tutorial_heal_before = current_hp
+			var use_b: Button = _inventory_use_button()
+			_lock_all_except([use_b] if use_b else [])
+			if use_b:
+				_allow_interaction(use_b)
+			_live("DRINK IT!", "Tap USE to drink the Health Potion.", TutorialUI.Zone.TOP_CENTER, use_b)
 		Step.HEALED:
-			_read_step("Healed! Always keep potions ready for a tough fight.",
-				TutorialUI.Zone.TOP_CENTER)
+			_ui_set_hp_note(false)
+			_read("HEALED!", "Always keep potions ready. Tap to continue.", TutorialUI.Zone.TOP_CENTER, player_info)
 		Step.WAVE3_INTRO:
-			_read_step("A **GRIMWARD** — tougher, and it can **counter-attack**.",
-				TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
-		Step.WAVE3_OBSERVE:
-			_read_step("Watch its HP! Enemies fight harder when low.",
-				TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+			_read("WAVE 3: GRIMWARD", "Tougher. It can COUNTER your attacks (30%). Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+		Step.WAVE3_FIGHT:
+			_pause_game(false)
+			_force_basic_hand()
+			_enable_only([atk_btn])
+			_live("YOUR MOVE", "Attack the Grimward — watch for counters!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+		Step.WAVE3_PICK:
+			_pick_setup(false, "Basic", "PICK A CARD", "Tap the glowing BASIC card.")
+		Step.WAVE3_QTE:
+			_lock_all_except([attack_qte_node, reset_target_btn])
+			_live("TIMING!", "Tap when the runner hits GOLD!", TutorialUI.Zone.BOTTOM_LEFT, attack_qte_node)
+		Step.WAVE3_AFTER:
+			pass  # dijaga _process (giliran balik)
+		Step.WAVE3_DONE:
+			_read("WELL FOUGHT!", "You survived a counter-attacker. Tap to finish.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.COMPLETE:
 			_pause_game(true)
 			_lock_all_except([])
-			_ui_show_final("That's everything! You're ready for the real fight.")
+			_ui_show_final("TRAINING COMPLETE\nYou know: target, attack, cards, timing, parry, defend, skills, charge, rapid, loot, backpack, potions. Good luck, Knight!")
 
 
 # Step BACA: tree di-pause, panel muncul, player tap panel buat lanjut.
-func _read_step(text: String, zone: TutorialUI.Zone, spot: Node = null) -> void:
+func _read(title: String, body: String, zone: TutorialUI.Zone, spot: Node) -> void:
 	_pause_game(true)
 	_lock_all_except([])
-	_tutorial_ui.set_spotlight_target(spot)
-	_tutorial_ui.show_text(text, zone, true)
+	_show(title, body, zone, spot, true)
 
 
-# Step AKSI: tree JANGAN di-pause, player tap target yg di-highlight.
-# Kunci semua input lain, tapi target itself dibikin ALWAYS + unclickable
-# lock, soalnya kalau tree paused target jadi can't-receive-input.
-func _act_step(text: String, zone: TutorialUI.Zone, target: Node) -> void:
+# Step AKSI (target tunggal, tree paused): target dibikin ALWAYS.
+func _act(title: String, body: String, zone: TutorialUI.Zone, target: Node) -> void:
+	_pause_game(true)
+	_lock_all_except([target] if target else [])
+	if target:
+		_allow_interaction(target)
+	_show(title, body, zone, target, false)
+
+
+# Step LIVE (tree jalan: kartu, QTE, charge, rapid, inventory, wait).
+func _live(title: String, body: String, zone: TutorialUI.Zone, spot: Node) -> void:
 	_pause_game(false)
-	_lock_all_except([target])
-	_allow_interaction(target)
-	_tutorial_ui.set_spotlight_target(target)
-	# dismissable=false: tap harus jatuh ke target, bukan ke panel.
-	_tutorial_ui.show_text(text, zone, true, false)
+	_show(title, body, zone, spot, false)
+
+
+func _step_no() -> int:
+	return int(_step)
+
+
+func _step_total() -> int:
+	return int(Step.COMPLETE)
+
+
+func _show(title: String, body: String, zone: TutorialUI.Zone, spot: Node, dismissable: bool) -> void:
+	if _tutorial_ui:
+		_tutorial_ui.set_spotlight_target(spot)
+		_tutorial_ui.show_text("STEP %d/%d — %s\n%s" % [_step_no(), _step_total(), title, body], zone, true, dismissable)
+
+
+func _qte_title() -> String:
+	if total_critical > 0:
+		return "PERFECT!"
+	return "HIT!"
+
+
+func _enemy_ref() -> Node:
+	if not enemies.is_empty():
+		return enemies[selected_enemy_index] if selected_enemy_index < enemies.size() else enemies[0]
+	return null
+
+
+func _charge_button() -> Button:
+	if charge_attack_ui:
+		return charge_attack_ui.get("button_charge") as Button
+	return null
+
+
+# Deck W3 dipaksa BASIC only biar mekaniknya pasti QTE
+# (charge/rapid butuh step panel sendiri-sendiri).
+func _force_basic_hand() -> void:
+	attack_hand.clear()
+	attack_discard.clear()
+	var data: AttackCardData = load(BASIC_PATH) as AttackCardData
+	if data:
+		attack_hand.append(data.duplicate())
+
+
+func _attack_card_node(i: int) -> Control:
+	if attack_card_ui and i >= 0 and i < attack_card_ui.card_nodes.size():
+		return attack_card_ui.card_nodes[i]
+	return null
+
+
+func _find_skill_ui() -> ActionCardUI:
+	if _skill_ui_ref and is_instance_valid(_skill_ui_ref) and _skill_ui_ref.is_open:
+		return _skill_ui_ref
+	for c in get_children():
+		if c is ActionCardUI and c != attack_card_ui:
+			var ui := c as ActionCardUI
+			if ui.is_open and ui.card_nodes.size() > 0:
+				_skill_ui_ref = ui
+				return ui
+	return null
+
+
+func _skill_card_node(i: int) -> Control:
+	var ui := _find_skill_ui()
+	if ui and i >= 0 and i < ui.card_nodes.size():
+		return ui.card_nodes[i]
+	return null
+
+
+# Setup pick kartu: kunci semua dulu (deck lagi spawn animation),
+# habis 0.8 dtk baru spotlight + panel ke kartu target.
+func _pick_setup(is_skill: bool, expected: String, title: String, body: String) -> void:
+	_pick_expected = expected
+	_pick_is_skill = is_skill
+	_refill_stamina()
+	_pause_game(false)
+	_lock_all_except([])
+	_ui_hide()
+	await get_tree().create_timer(0.8).timeout
+	if not is_instance_valid(self) or not _tutorial_active:
+		return
+	var card: Control = null
+	if is_skill:
+		card = _skill_card_node(0)
+	else:
+		var idx := _attack_index_of(expected) if expected != "" else 0
+		card = _attack_card_node(idx)
+		if card == null and expected == "":
+			for i in range(attack_card_ui.card_nodes.size() if attack_card_ui else 0):
+				card = _attack_card_node(i)
+				if card:
+					break
+	if card == null:
+		return
+	_lock_all_except([card])
+	_allow_interaction(card)
+	# Tutup jalan kabur: klik background = close deck. Dikunci.
+	_lock_card_bg()
+	_show(title, body, TutorialUI.Zone.BOTTOM_LEFT, card, false)
+
+
+func _lock_card_bg() -> void:
+	for ui in [attack_card_ui, _find_skill_ui()]:
+		if ui and is_instance_valid(ui):
+			var bg = ui.get("bg_overlay")
+			if bg is Control:
+				(bg as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+
+# ============================================================
+# PAUSE
+# ============================================================
+
+func _pause_game(paused: bool) -> void:
+	# Pause tree total. Node tutorial (PROCESS_MODE_ALWAYS) tetap jalan.
+	get_tree().paused = paused
+
+
+# ============================================================
+# INPUT LOCKING — kunci SEMUA, kecuali target step ini
+# ============================================================
+
+func _lock_all_except(allowed: Array) -> void:
+	_unlock_all()
+	for n in _descendants(self):
+		if n == self:
+			continue
+		if _tutorial_layer and (_tutorial_layer == n or _tutorial_layer.is_ancestor_of(n)):
+			continue
+		if n in allowed:
+			continue
+		if n is Node2D:
+			continue  # musuh & efek visual jangan disentuh
+		if n is Control:
+			_disable_node(n)
+	# Klik musuh: collision + profile, kecuali musuh target.
+	for e in enemies:
+		if is_instance_valid(e):
+			_set_enemy_clickable(e, e in allowed)
+	for t in allowed:
+		_allow_interaction(t)
+
+
+func _set_enemy_clickable(enemy: BattleEnemy, allow: bool) -> void:
+	if enemy == null or not is_instance_valid(enemy):
+		return
+	for btn in [enemy.enemy_collision, enemy.get("enemy_profile_btn")]:
+		if btn is Control:
+			if allow:
+				(btn as Control).mouse_filter = Control.MOUSE_FILTER_STOP
+				if btn is Button:
+					(btn as Button).disabled = false
+			else:
+				(btn as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+				if btn is Button:
+					(btn as Button).disabled = true
+
+
+func _set_enemy_clickable_all(allow: bool) -> void:
+	for e in enemies:
+		_set_enemy_clickable(e, allow)
 
 
 # Marka target jadi bisa diklik: mouse_filter STOP + process_mode ALWAYS
@@ -595,23 +1293,22 @@ func _allow_interaction(node: Node) -> void:
 		n = (n as BattleEnemy).enemy_collision
 	if n == null or not is_instance_valid(n):
 		return
+	_save_state_if_needed(n)
 	if n is Control:
 		(n as Control).mouse_filter = Control.MOUSE_FILTER_STOP
 		if n is Button:
 			(n as Button).disabled = false
 	n.process_mode = Node.PROCESS_MODE_ALWAYS
-	# Parent sembunyiin tombol interaction dgn menggeser y +200px
-	# (lihat _set_buttons_active), bukan visible=false. Kalau target
-	# step ini ada di daftar itu, taruh balik ke posisi aslinya biar
-	# player beneran bisa lihat + klik.
+	if not (n in _always_nodes):
+		_always_nodes.append(n)
+	# Parent sembunyiin tombol interaction dgn menggeser y +200px.
+	# Kalau target step ini salah satunya, taruh balik ke posisi asli.
 	var y := _original_y_for(n)
 	if y != INF and n is Control:
 		(n as Control).position.y = y
 
 
-# Posisi Y asli tombol interaction, dicatat parent di _ready()
-# (original_atk_pos / original_def_pos / dst). Return INF kalau node
-# ini bukan salah satu tombol yg di-hide parent.
+# Posisi Y asli tombol interaction, dicatat parent di _ready().
 func _original_y_for(n: Node) -> float:
 	if n == atk_btn:
 		return original_atk_pos.y
@@ -626,55 +1323,12 @@ func _original_y_for(n: Node) -> float:
 	return INF
 
 
-func _advance_to(step: Step) -> void:
-	if step == Step.IDLE:
-		return
-	_begin_step(step)
-
-
-func _enemy_ref() -> Node:
-	if not enemies.is_empty():
-		return enemies[selected_enemy_index] if selected_enemy_index < enemies.size() else enemies[0]
-	return null
-
-
-# ============================================================
-# PAUSE
-# ============================================================
-
-func _pause_game(paused: bool) -> void:
-	# Pause tree total. Node tutorial (PROCESS_MODE_ALWAYS) tetap jalan.
-	get_tree().paused = paused
-	_was_paused_by_tutorial = paused
-
-
-# ============================================================
-# INPUT LOCKING
-# Input battle punya 3 jalur: _input(), Button.pressed, gui_input.
-# Cuma _input() bisa di-swallow, sisanya butuh disabled/mouse_filter.
-# ============================================================
-
-func _lock_all_except(allowed: Array) -> void:
-	_unlock_all()
-	var all_buttons := [atk_btn, defend_btn, backpack_btn, run_btn, skill_btn]
-	for b in all_buttons:
-		if b and not (b in allowed):
-			_disable_node(b)
-	# Kunci juga SEMUA kartu + drop + tombol charge/rapid, bukan cuma
-	# 5 tombol interaction. Kalau kartu masih bisa diklik, player bisa
-	# skip step tutorial tanpa sengaja.
-	for n in _interactive_nodes():
-		if n and not (n in allowed) and not _is_core_button(n):
-			_disable_node(n)
-
-
 func _is_core_button(n: Node) -> bool:
 	return n in [atk_btn, defend_btn, backpack_btn, run_btn, skill_btn]
 
 
 func _interactive_nodes() -> Array:
-	# Tutorial UI sendiri JANGAN dikunci — tombol Continue-nya harus
-	# tetap bisa dipencet di step terakhir.
+	# Tutorial UI sendiri JANGAN dikunci.
 	var guard: Array = []
 	if _tutorial_layer:
 		guard = _descendants(_tutorial_layer)
@@ -693,53 +1347,56 @@ func _descendants(root_node: Node) -> Array:
 	return out
 
 
-func _disable_node(node: Node) -> void:
+func _save_state_if_needed(node: Node) -> void:
 	if node is Control:
 		var c := node as Control
-		_saved_mouse_filters[c.get_instance_id()] = c.mouse_filter
-		c.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var id := c.get_instance_id()
+		if not _saved_mouse_filters.has(id):
+			_saved_mouse_filters[id] = c.mouse_filter
+		if node is Button:
+			var b := node as Button
+			if not _saved_disabled.has(id):
+				_saved_disabled[id] = b.disabled
+	if not _saved_process_mode.has(node.get_instance_id()):
+		_saved_process_mode[node.get_instance_id()] = node.process_mode
+
+
+func _disable_node(node: Node) -> void:
+	_save_state_if_needed(node)
+	if node is Control:
+		var c := node as Control
 		_locked_nodes.append(c)
+		c.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	if node is Button:
-		var b := node as Button
-		# Simpan status disabled ASLI. Parent sembunyiin tombol dgn
-		# geser posisi y+200 (bukan visible=false), jadi run_btn/skill_btn
-		# bisa aja disabled=true. Kalau dipaksa false di _unlock_all(),
-		# tombol yg sengaja disembunyiin parent jadi nongol.
-		_saved_disabled[b.get_instance_id()] = b.disabled
-		b.disabled = true
+		(node as Button).disabled = true
 
 
 func _unlock_all() -> void:
-	# Balikin HANYA node yang memang kita lock, ke state aslinya.
+	# Balikin SEMUA yang pernah kita sentuh ke state aslinya.
 	for c in _locked_nodes:
-		if not is_instance_valid(c):
-			continue
-		if c is Button:
-			var b := c as Button
-			var id := b.get_instance_id()
-			if _saved_disabled.has(id):
-				b.disabled = _saved_disabled[id]
-			else:
-				b.disabled = false
-		if _saved_mouse_filters.has(c.get_instance_id()):
-			c.mouse_filter = _saved_mouse_filters[c.get_instance_id()]
+		if is_instance_valid(c):
+			if c is Button:
+				var b := c as Button
+				var id := b.get_instance_id()
+				if _saved_disabled.has(id):
+					b.disabled = _saved_disabled[id]
+			if _saved_mouse_filters.has(c.get_instance_id()):
+				c.mouse_filter = _saved_mouse_filters[c.get_instance_id()]
 	_saved_mouse_filters.clear()
 	_saved_disabled.clear()
 	_locked_nodes.clear()
+	for n in _always_nodes:
+		if is_instance_valid(n):
+			var id := (n as Node).get_instance_id()
+			if _saved_process_mode.has(id):
+				(n as Node).process_mode = _saved_process_mode[id]
+	_saved_process_mode.clear()
+	_always_nodes.clear()
 
 
 # ============================================================
 # UI HELPERS
 # ============================================================
-
-func _ui_show(text: String, zone: TutorialUI.Zone, target: Node) -> void:
-	if _tutorial_ui:
-		# URUTAN PENTING: spotlight DULU, baru panel. show_text()
-		# mem relocating panel berdasarkan rect spotlight, jadi kalau
-		# panel dulu, dia masih pake rect step LALU.
-		_tutorial_ui.set_spotlight_target(target)
-		_tutorial_ui.show_text(text, zone, true)
-
 
 func _ui_hide() -> void:
 	if _tutorial_ui:
@@ -766,19 +1423,6 @@ func _last_attack_result_text() -> String:
 # WAVE FLOW
 # ============================================================
 
-func _on_enemy_defeated(_exp_amount: int, _gold_amount: int, _dropped_items: Array[String], enemy: BattleEnemy) -> void:
-	super._on_enemy_defeated(_exp_amount, _gold_amount, _dropped_items, enemy)
-	# Wave 1 & 2 punya script drop sendiri, handled di _process_enemy_death.
-	if _tutorial_active and _step == Step.WAVE2_INTRO:
-		pass
-
-
-func tutorial_next_wave() -> void:
-	# Dipanggil dari flow (misal setelah wave 1 clear)
-	_unlock_all()
-	_unlock_all()  # ensure enemy turn buttons back
-
-
 func spawn_wave2_skeleton() -> void:
 	_wave_index = 2
 	total_waves = 3
@@ -794,14 +1438,64 @@ func spawn_wave3_grimward() -> void:
 	wave_progress.set_wave(3, 3)
 	_tutorial_spawn(["grimward"] as Array[String], [3] as Array[int])
 	# Counter di-nerf ke 30%: data grimward punya tactical_attack:3
-	# (=100% counter, tiap Inbound). Beginner gak siap ngadep itu,
-	# jadi turunin ke Lv1. Damage mult ikut turun 1.3x -> 0.8x.
+	# (=100% counter). Beginner gak siap ngadep itu.
 	for e in enemies:
 		if not is_instance_valid(e):
 			continue
 		var ab := e.get_tactical_attack_ability()
 		if ab:
 			ab.level = 1
+
+
+func _goto_wave2() -> void:
+	if _wave2_spawned:
+		return
+	_wave2_spawned = true
+	_step = Step.IDLE
+	_ui_hide()
+	_pause_game(false)
+	_unlock_all()
+	await get_tree().create_timer(0.4).timeout
+	if not is_instance_valid(self) or not _tutorial_active:
+		return
+	spawn_wave2_skeleton()
+	await get_tree().create_timer(1.4).timeout
+	if not is_instance_valid(self) or not _tutorial_active:
+		return
+	_begin_step(Step.WAVE2_INTRO)
+
+
+func _goto_wave3() -> void:
+	if _wave3_spawned:
+		return
+	_wave3_spawned = true
+	_step = Step.IDLE
+	_ui_hide()
+	_pause_game(false)
+	_unlock_all()
+	await get_tree().create_timer(0.4).timeout
+	if not is_instance_valid(self) or not _tutorial_active:
+		return
+	spawn_wave3_grimward()
+	await get_tree().create_timer(1.4).timeout
+	if not is_instance_valid(self) or not _tutorial_active:
+		return
+	_begin_step(Step.WAVE3_INTRO)
+
+
+func _do_scripted_hurt() -> void:
+	if _hurt_step_done:
+		return
+	_hurt_step_done = true
+	_begin_step(Step.HURT_ANIM)
+	_pause_game(false)
+	_lock_all_except([])
+	_live("WATCH OUT!", "The Skeleton strikes with a heavy blow!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+	trigger_scripted_hurt()
+	await get_tree().create_timer(1.2).timeout
+	if not is_instance_valid(self) or not _tutorial_active:
+		return
+	_begin_step(Step.HURT_INFO)
 
 
 func trigger_scripted_hurt() -> void:
