@@ -116,6 +116,9 @@ var _potion_index := -1
 var _hurt_step_done := false
 var _wave2_spawned := false
 var _wave3_spawned := false
+# Jendela parry pelajaran lagi kebuka (beat live 0.35 dtk + freeze).
+# Beda dari step: tap kilat pas beat harus tetap dihitung.
+var _lesson_parry_open := false
 # Redundansi: loot kelar kalau count naik ATAU signal collect masuk
 # (keduanya; jangan gambling satu jalur).
 var _loot_collected := false
@@ -463,6 +466,15 @@ func _start_enemies_turn() -> void:
 
 
 func _finish_forced_turn() -> void:
+	# JANGAN set giliran balik selagi tree paused. Coroutine musuh bisa
+	# kelar sendiri di tengah freeze (timer default gak kenal pause);
+	# kalau tail langsung jalan, is_player_turn=true mendarat pas pause
+	# dan step DEFEND langsung ke-trigger habis tap parry — padahal
+	# serangan musuh belum kelar dimainin. Tunggu live dulu.
+	while get_tree().paused:
+		await get_tree().process_frame
+	if not is_instance_valid(self) or not _tutorial_active:
+		return
 	_pull_hand_to_corner(0.4)
 	for e in enemies:
 		if is_instance_valid(e) and e.current_hp > 0 and e.enemy_collision:
@@ -552,6 +564,15 @@ func _find_timer_recursive(node: Node) -> Timer:
 func apply_damage(event: DamageEvent) -> void:
 	if not _tutorial_active:
 		super.apply_damage(event)
+		return
+	# Pelajaran parry = freeze-frame: musuh dibekuin di tengah ayunan,
+	# TAPI coroutine-nya jalan terus (loop anim nunggu process_frame
+	# yang tetap kepanggil pas pause + SceneTreeTimer default yang
+	# gak kenal pause). Tanpa swallow, damage + suara + shake mendarat
+	# di tengah freeze dan enemy turn kelar sendiri -> step DEFEND
+	# nongol duluan. Jadi: selama PARRY_ACT, semua damage ke player
+	# DIBUANG. Tap parry = berhasil tepat waktu = no damage. Fair.
+	if _step == Step.PARRY_ACT:
 		return
 	# Script "big damage" biar HP mendarat PAS di 25%.
 	if _pending_scripted_damage:
@@ -771,6 +792,15 @@ func _fin_miss_before() -> int:
 	return int(get_meta("_tut_fin_miss", total_miss))
 
 
+# Freeze-frame parry = tanpa shake/blood. Shake parent dipicu dari
+# coroutine musuh yang jalan terus pas pause; kalau lolos, layar goyang
+# + vignette darah padahal damage-nya di-swallow (lihat apply_damage).
+func trigger_camera_shake_and_blood(intensity: float = 6.0, duration: float = 0.3, alpha_intensity: float = 0.6) -> void:
+	if _tutorial_active and _step == Step.PARRY_ACT:
+		return
+	super.trigger_camera_shake_and_blood(intensity, duration, alpha_intensity)
+
+
 func _on_enemy_attack_preparing() -> void:
 	super._on_enemy_attack_preparing()
 	if not _tutorial_active:
@@ -780,17 +810,43 @@ func _on_enemy_attack_preparing() -> void:
 		var live: Array = enemies.filter(func(e): return is_instance_valid(e) and e.current_hp > 0)
 		if live.is_empty():
 			return
-		_begin_step(Step.PARRY_ACT)
+		# Kasih napas 0.35 dtk LIVE dulu (skeleton jalan ~2 frame,
+		# kamera + teks reaksi kebaca), BARU freeze. Langsung pause di
+		# frame 0 keliatan kayak nge-hang, bukan kayak di-stop.
+		_lesson_parry_open = true
+		_delay_parry_freeze()
+
+
+# Beat dramatis sebelum freeze: biarin serangan jalan bentar live,
+# terus pause tepat di tengah ayunan. Guard berlapis biar gak freeze
+# kalau step udah pindah (mis. player tap parry duluan).
+func _delay_parry_freeze() -> void:
+	await get_tree().create_timer(0.35).timeout
+	if not is_instance_valid(self) or not _tutorial_active:
+		return
+	if not _lesson_parry_open:
+		return
+	if _step != Step.QTE_RESULT and _step != Step.PARRY_WAIT:
+		return
+	var live: Array = enemies.filter(func(e): return is_instance_valid(e) and e.current_hp > 0)
+	if live.is_empty():
+		return
+	_begin_step(Step.PARRY_ACT)
 
 
 func _on_parry_button_clicked() -> void:
 	if not _tutorial_active:
 		super._on_parry_button_clicked()
 		return
-	if _step != Step.PARRY_ACT:
+	if _step == Step.PARRY_ACT or (_step == Step.PARRY_WAIT and _lesson_parry_open):
+		# Tap pas beat 0.35 dtk (sebelum freeze) juga sah.
+		_lesson_parry_open = false
+		super._on_parry_button_clicked()
+		_begin_step(Step.PARRY_RESULT)
 		return
+	# Window parry di luar pelajaran (musuh normal nyerang pas wait):
+	# kasih efeknya aja, flow tutorial gak diganggu.
 	super._on_parry_button_clicked()
-	_begin_step(Step.PARRY_RESULT)
 
 
 func _on_defend_pressed() -> void:
@@ -1416,7 +1472,7 @@ func _ui_set_hp_note(shown: bool) -> void:
 func _last_attack_result_text() -> String:
 	if total_critical > 0:
 		return "**Perfect!** Great timing = bonus damage."
-	return "Weak hit — less damage, but still connected."
+	return "Attack connected. Timing decides the damage."
 
 
 # ============================================================
