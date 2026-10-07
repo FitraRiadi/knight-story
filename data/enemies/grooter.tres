@@ -87,6 +87,7 @@ enemy_id = "grooter"
 enemy_name = "Grooter"
 enemy_lore = "An ancient treant rooted in grudge. Its bark hides treasure - and thorns."
 min_level = 2
+spawn_chance = 10.0
 icon_enemy = ExtResource("1_hanjq")
 sprite_frames = SubResource("SpriteFrames_3hfl1")
 max_hp = 150.0

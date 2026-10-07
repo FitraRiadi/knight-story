@@ -16,7 +16,7 @@ items = Array[ExtResource("2_item")]([ExtResource("4_ioold"), ExtResource("2_o4y
 
 [resource]
 script = ExtResource("1_player")
-player_name = "Rayosdelsols"
+player_name = "Ambatukam"
 player_profile = ExtResource("3_1mohm")
 parry_flat_reduction = 30.0
 battle_inventory = SubResource("Resource_inventory")

@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://bu5hkr727us0p"]
 
 [ext_resource type="Script" uid="uid://bm15klo0yfmnk" path="res://scripts/local/battle/BattleManager.gd" id="1_i268m"]
-[ext_resource type="Texture2D" uid="uid://cvqm4gpajgyw4" path="res://assets/art/backgrounds/location/map/forest_of_shadow/forest_of_shadow2.jpg" id="2_lsh83"]
+[ext_resource type="Texture2D" uid="uid://d3essyu6atugf" path="res://assets/art/backgrounds/location/map/forest_of_shadow/forest_of_shadow1.jpg" id="2_344p7"]
 [ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="3_g2c4h"]
 [ext_resource type="FontFile" uid="uid://dx6ognpbk586" path="res://assets/ui/fonts/alagard.ttf" id="3_i268m"]
 [ext_resource type="Texture2D" uid="uid://ct3bvjqujdl0y" path="res://assets/art/playerHand/hand/right-left/base.png" id="4_3b2kv"]
@@ -382,10 +382,10 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-texture = ExtResource("2_lsh83")
+texture = ExtResource("2_344p7")
 expand_mode = 1
 
-[node name="TextureRect" type="TextureRect" parent="bg" unique_id=818512481]
+[node name="framebg" type="TextureRect" parent="bg" unique_id=818512481]
 layout_mode = 0
 offset_left = 596.0
 offset_right = 743.0
@@ -393,45 +393,45 @@ offset_bottom = 11.0
 texture = ExtResource("3_g2c4h")
 expand_mode = 1
 
-[node name="TextureRect6" type="TextureRect" parent="bg" unique_id=1167560304]
+[node name="TextureRect6" type="TextureRect" parent="bg/framebg" unique_id=1167560304]
 layout_mode = 0
-offset_left = 582.0
-offset_right = 743.0
+offset_left = -14.0
+offset_right = 147.0
 offset_bottom = 7.0
 texture = ExtResource("3_g2c4h")
 expand_mode = 1
 
-[node name="TextureRect2" type="TextureRect" parent="bg" unique_id=721929142]
+[node name="TextureRect2" type="TextureRect" parent="bg/framebg" unique_id=721929142]
 layout_mode = 0
-offset_left = 719.0
-offset_right = 743.0
+offset_left = 123.0
+offset_right = 147.0
 offset_bottom = 11.0
 texture = ExtResource("3_g2c4h")
 expand_mode = 1
 
-[node name="TextureRect3" type="TextureRect" parent="bg" unique_id=1970049127]
+[node name="TextureRect3" type="TextureRect" parent="bg/framebg" unique_id=1970049127]
 layout_mode = 0
-offset_left = 725.0
-offset_right = 743.0
+offset_left = 129.0
+offset_right = 147.0
 offset_bottom = 14.0
 texture = ExtResource("3_g2c4h")
 expand_mode = 1
 
-[node name="TextureRect4" type="TextureRect" parent="bg" unique_id=57788033]
+[node name="TextureRect4" type="TextureRect" parent="bg/framebg" unique_id=57788033]
 layout_mode = 0
-offset_left = 728.0
+offset_left = 132.0
 offset_top = 5.0
-offset_right = 746.0
+offset_right = 150.0
 offset_bottom = 19.0
 texture = ExtResource("3_g2c4h")
 expand_mode = 1
 
-[node name="TextureRect5" type="TextureRect" parent="bg" unique_id=1946648865]
+[node name="TextureRect5" type="TextureRect" parent="bg/framebg/TextureRect4" unique_id=1946648865]
 layout_mode = 0
-offset_left = 731.0
-offset_top = 11.0
-offset_right = 749.0
-offset_bottom = 25.0
+offset_left = 3.0
+offset_top = 6.0
+offset_right = 21.0
+offset_bottom = 20.0
 texture = ExtResource("3_g2c4h")
 expand_mode = 1
 

@@ -4,5 +4,3 @@
 
 [resource]
 script = ExtResource("1")
-graphics = "low"
-music_volume = 0.18

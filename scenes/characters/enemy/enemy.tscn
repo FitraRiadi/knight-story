@@ -253,12 +253,14 @@ offset_bottom = 6.3889008
 theme_override_styles/panel = SubResource("StyleBoxFlat_kylmi")
 
 [node name="hp-label" type="Label" parent="enemyStats/bar-hp" unique_id=254578293]
+texture_filter = 1
 layout_mode = 0
-offset_left = 2.222218
-offset_top = 0.83334184
-offset_right = 104.44445
-offset_bottom = 7.8333416
-theme_override_font_sizes/font_size = 6
+offset_left = 46.666626
+offset_top = -0.27770996
+offset_right = 342.66663
+offset_bottom = 100.72229
+scale = Vector2(0.06717064, 0.07156167)
+theme_override_font_sizes/font_size = 100
 text = "100 / 100"
 horizontal_alignment = 1
 vertical_alignment = 1

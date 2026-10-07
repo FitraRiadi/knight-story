@@ -25,7 +25,6 @@
 [ext_resource type="Texture2D" uid="uid://bujnt4w5wxw3t" path="res://assets/cutscenes/prologue/23.jpg" id="22_tu318"]
 [ext_resource type="Texture2D" uid="uid://bsnuspbst0wj5" path="res://assets/ui/popup/basic/UI-Wood1.png" id="23_4xhob"]
 [ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="24_06xgw"]
-[ext_resource type="FontFile" uid="uid://dx6ognpbk586" path="res://assets/ui/fonts/alagard.ttf" id="24_pqskf"]
 [ext_resource type="Script" uid="uid://th50hlbuf0b3" path="res://scripts/local/mainmenu/create_character_popup.gd" id="25_pj0va"]
 [ext_resource type="Texture2D" uid="uid://boqc5sesqvj8w" path="res://assets/art/items/materials/inkwell_01.png" id="25_psgtp"]
 [ext_resource type="AudioStream" uid="uid://ckkvltir2b01h" path="res://assets/audio/bgm/SongScene1.ogg" id="26_tu318"]
@@ -195,7 +194,6 @@ offset_top = 351.0
 offset_right = 691.0
 offset_bottom = 400.0
 theme_override_colors/font_color = Color(0.9984776, 0.9984776, 0.9984776, 1)
-theme_override_fonts/font = ExtResource("24_pqskf")
 theme_override_font_sizes/font_size = 32
 theme_override_styles/normal = SubResource("StyleBoxFlat_2btif")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_f7hpq")
@@ -210,7 +208,6 @@ offset_top = 412.0
 offset_right = 691.0
 offset_bottom = 461.0
 theme_override_colors/font_color = Color(0.9984776, 0.9984776, 0.9984776, 1)
-theme_override_fonts/font = ExtResource("24_pqskf")
 theme_override_font_sizes/font_size = 25
 theme_override_styles/normal = SubResource("StyleBoxFlat_n0uqe")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_aggb6")
@@ -228,22 +225,22 @@ theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_colors/font_outline_color = Color(0.11505515, 0.11663171, 0.10154415, 1)
 theme_override_constants/outline_size = 2
 theme_override_constants/shadow_outline_size = 10
-theme_override_fonts/font = ExtResource("24_pqskf")
 theme_override_font_sizes/font_size = 80
 text = "Knight Story"
+horizontal_alignment = 1
 
 [node name="Subtitle" type="Label" parent="MAINMENU/menu/bg_scene/MenuOption/Title" unique_id=1398455714]
 layout_mode = 0
 offset_left = 40.0
 offset_top = 72.0
-offset_right = 1085.0
+offset_right = 423.3126
 offset_bottom = 147.0
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_colors/font_outline_color = Color(0.11505515, 0.11663171, 0.10154415, 1)
 theme_override_constants/outline_size = 2
-theme_override_fonts/font = ExtResource("24_pqskf")
 theme_override_font_sizes/font_size = 30
 text = "The Knight Adventure Story"
+horizontal_alignment = 1
 
 [node name="vertical-line" type="Panel" parent="MAINMENU/menu/bg_scene/MenuOption/Title" unique_id=1266209359]
 layout_mode = 0
@@ -319,9 +316,9 @@ expand_mode = 1
 [node name="input" type="LineEdit" parent="MAINMENU/createCharacterPopup/bgPopup/nameColumn" unique_id=161642542]
 layout_mode = 0
 offset_left = -10.0
-offset_top = 28.0
+offset_top = 4.7489777
 offset_right = 218.0
-offset_bottom = 59.0
+offset_bottom = 35.748978
 placeholder_text = "Enter your name"
 alignment = 1
 flat = true
@@ -361,9 +358,9 @@ expand_mode = 1
 [node name="perkLabel" type="Label" parent="MAINMENU/createCharacterPopup/bgPopup/perkColumn" unique_id=793984641]
 layout_mode = 0
 offset_left = -2.0
-offset_top = 34.0
+offset_top = 12.537476
 offset_right = 215.0
-offset_bottom = 53.0
+offset_bottom = 31.537476
 theme_override_font_sizes/font_size = 17
 text = "None"
 horizontal_alignment = 1
@@ -371,9 +368,9 @@ horizontal_alignment = 1
 [node name="TextureButton" type="TextureButton" parent="MAINMENU/createCharacterPopup/bgPopup/perkColumn" unique_id=1960682576]
 layout_mode = 0
 offset_left = -8.0
-offset_top = 28.0
+offset_top = 6.537506
 offset_right = 222.0
-offset_bottom = 60.0
+offset_bottom = 38.537506
 
 [node name="confirm" type="TextureRect" parent="MAINMENU/createCharacterPopup/bgPopup" unique_id=109577209]
 layout_mode = 1
