@@ -191,11 +191,6 @@ func _on_tutorial_tapped() -> void:
 			# Lanjut: musuh giliran nyerang (dipaksa sekali).
 			_force_parry_turn = true
 			_begin_step(Step.PARRY_WAIT)
-		Step.PARRY_RESULT:
-			# Kasih jalan musuh selesaikan serangannya dulu.
-			_ui_hide()
-			_pause_game(false)
-			_pending_idle_step = Step.DEFEND_INTRO
 		Step.DEFEND_INTRO:
 			_begin_step(Step.DEFEND_ACT)
 		Step.SKILL_INTRO:
@@ -841,6 +836,9 @@ func _on_parry_button_clicked() -> void:
 	if _step == Step.PARRY_ACT or (_step == Step.PARRY_WAIT and _lesson_parry_open):
 		# Tap pas beat 0.35 dtk (sebelum freeze) juga sah.
 		_lesson_parry_open = false
+		# Resume DULU baru efek: biar sfx parry kedengeran (solo-mute
+		# mati pas unpause), terus musuh selesaikan serangan live.
+		_pause_game(false)
 		super._on_parry_button_clicked()
 		_begin_step(Step.PARRY_RESULT)
 		return
@@ -1013,7 +1011,14 @@ func _begin_step(step: Step) -> void:
 		Step.PARRY_ACT:
 			_act("PARRY!", "A shield appeared! Tap it NOW to parry!", TutorialUI.Zone.BOTTOM_LEFT, parry_btn)
 		Step.PARRY_RESULT:
-			_read("PARRIED!", "Blocked most damage + bonus stamina. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, player_info)
+			# Hasil parry = info LIVE, bukan read-pause. Tap parry =
+			# langsung resume semua (jangan kebanyakan stop): musuh
+			# selesaikan serangannya live, DEFEND_INTRO nunggu giliran
+			# balik beneran via _pending_idle_step.
+			_pause_game(false)
+			_lock_all_except([])
+			_live("PARRIED!", "Blocked most damage + bonus stamina. Watch!", TutorialUI.Zone.BOTTOM_LEFT, player_info)
+			_pending_idle_step = Step.DEFEND_INTRO
 		Step.DEFEND_INTRO:
 			_reveal(defend_btn)
 			_read("BUTTON: DEFEND", "Restores 20 stamina, but skips your attack. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, defend_btn)
@@ -1290,6 +1295,8 @@ func _lock_card_bg() -> void:
 func _pause_game(paused: bool) -> void:
 	# Pause tree total. Node tutorial (PROCESS_MODE_ALWAYS) tetap jalan.
 	get_tree().paused = paused
+	# Audio ikut: pause = senyap total kecuali musik, resume = balik.
+	_set_freeze_audio(paused)
 
 
 # ============================================================
@@ -1364,6 +1371,41 @@ func _allow_interaction(node: Node) -> void:
 		(n as Control).position.y = y
 
 
+# Bus musik khusus tutorial. Semua audio game (musik + SFX) default di
+# bus Master, jadi mute Master ikut bunuh musik. Solusinya: pindahin
+# player musik ke bus sendiri SEKALI, terus pakai bus SOLO pas freeze —
+# solo = cuma bus itu yang bunyi, sisanya senyap total. Musik jalan terus.
+var _music_bus_idx := -1
+
+
+func _ensure_music_bus() -> int:
+	if _music_bus_idx >= 0:
+		return _music_bus_idx
+	var idx := AudioServer.get_bus_index("TutMusic")
+	if idx == -1:
+		AudioServer.add_bus()
+		idx = AudioServer.bus_count - 1
+		AudioServer.set_bus_name(idx, "TutMusic")
+	var mm = get_node_or_null("/root/MusicManager")
+	if mm:
+		var p = mm.get("_current_player")
+		if p is AudioStreamPlayer:
+			(p as AudioStreamPlayer).bus = "TutMusic"
+	_music_bus_idx = idx
+	return idx
+
+
+# Freeze audio: true = senyap total KECUALI musik. Dipanggil sentral
+# dari _pause_game() — setiap pause tutorial = Minden berhenti kecuali
+# musik, setiap resume = balik normal. Gak ada jalur yang bocor.
+func _set_freeze_audio(frozen: bool) -> void:
+	if frozen:
+		var idx := _ensure_music_bus()
+		if idx >= 0:
+			AudioServer.set_bus_solo(idx, true)
+	else:
+		if _music_bus_idx >= 0:
+			AudioServer.set_bus_solo(_music_bus_idx, false)
 # Posisi Y asli tombol interaction, dicatat parent di _ready().
 func _original_y_for(n: Node) -> float:
 	if n == atk_btn:
