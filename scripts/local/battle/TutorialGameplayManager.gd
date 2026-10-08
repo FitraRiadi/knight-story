@@ -78,6 +78,7 @@ enum Step {
 	HURT_INFO,
 	PACK2_ACT,
 	POTION_SLOT,
+	POTION_INFO,
 	POTION_USE,
 	HEALED,
 	WAVE2_FIGHT,
@@ -199,6 +200,8 @@ func _on_tutorial_tapped() -> void:
 			_begin_step(Step.PACK_ACT)
 		Step.PACK_VIEW:
 			_begin_step(Step.PACK_CLOSE)
+		Step.POTION_INFO:
+			_begin_step(Step.POTION_USE)
 		Step.WAVE2_INTRO:
 			_begin_step(Step.HURT_WAIT)
 		Step.HURT_INFO:
@@ -615,7 +618,7 @@ func _process(_delta: float) -> void:
 	match _step:
 		Step.POTION_SLOT:
 			if _potion_ready_to_use():
-				_begin_step(Step.POTION_USE)
+				_begin_step(Step.POTION_INFO)
 		Step.POTION_USE:
 			if _tutorial_heal_before >= 0.0 and current_hp > _tutorial_heal_before + 1.0:
 				_tutorial_heal_before = -1.0
@@ -1022,6 +1025,15 @@ func _inventory_close_button() -> Button:
 	return battle_inventory_instance.get("close_btn") as Button
 
 
+func _inventory_info_panel() -> Control:
+	if not is_instance_valid(battle_inventory_instance):
+		return null
+	var p := battle_inventory_instance.get("item_info") as Control
+	if p and p.visible:
+		return p
+	return null
+
+
 func _inventory_slot_button(idx: int) -> Button:
 	if not is_instance_valid(battle_inventory_instance):
 		return null
@@ -1183,6 +1195,11 @@ func _begin_step(step: Step) -> void:
 			_show_only([backpack_btn], [backpack_btn])
 			_repair_turn_if_no_live_enemies()
 			_act("GRAB THE POTION", "Open BACKPACK and use your Health Potion.", TutorialUI.Zone.BOTTOM_LEFT, backpack_btn)
+		Step.POTION_INFO:
+			# Beat 1: spotlight SELURUH popup info item + penjelasan.
+			var info_p: Control = _inventory_info_panel()
+			_lock_all_except([])
+			_read("ITEM INFO", "Name, effect and power. Read it, then tap to continue.", TutorialUI.Zone.TOP_CENTER, info_p)
 		Step.POTION_SLOT:
 			var slot_b: Button = _inventory_slot_button(_potion_index)
 			_lock_all_except([slot_b] if slot_b else [])
