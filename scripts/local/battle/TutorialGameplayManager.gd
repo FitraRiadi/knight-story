@@ -49,11 +49,14 @@ enum Step {
 	QTE_DO,
 	QTE_RESULT,
 	QTE_MISS,
+	HIT_FOE,
+	HIT_COST,
 	PARRY_WAIT,
 	PARRY_DRILL,
 	PARRY_MISS,
 	PARRY_RESULT,
 	PARRY_WHY,
+	DEFEND_NEXT,
 	DEFEND_ACT,
 	SKILL_ACT,
 	SKILL_PICK,
@@ -187,8 +190,14 @@ func _on_tutorial_tapped() -> void:
 		Step.WELCOME:
 			_begin_step(Step.TARGET_ACT)
 		Step.QTE_RESULT:
+			_begin_step(Step.HIT_FOE)
+		Step.HIT_FOE:
+			_begin_step(Step.HIT_COST)
+		Step.HIT_COST:
 			_begin_step(Step.PARRY_WAIT)
 		Step.PARRY_WHY:
+			_begin_step(Step.DEFEND_NEXT)
+		Step.DEFEND_NEXT:
 			_begin_step(Step.DEFEND_ACT)
 		Step.QTE_MISS:
 			_begin_step(Step.ATTACK_ACT)
@@ -892,9 +901,9 @@ func _check_attack_qte_result() -> void:
 			if total_miss > _w3_baseline_miss:
 				_begin_step(Step.WAVE3_FIGHT)
 			else:
-			_step = Step.WAVE3_AFTER
-			# Tanpa spotlight: counter grimward harus keliatan utuh.
-			_live("ATTACK LANDED", "Watch out — Grimward can counter!", TutorialUI.Zone.BOTTOM_LEFT, null)
+				_step = Step.WAVE3_AFTER
+				# Tanpa spotlight: counter grimward harus keliatan utuh.
+				_live("ATTACK LANDED", "Watch out — Grimward can counter!", TutorialUI.Zone.BOTTOM_LEFT, null)
 
 
 func _on_enemy_attack_preparing() -> void:
@@ -990,7 +999,7 @@ func _on_attack_card_closed() -> void:
 	if not _tutorial_active:
 		super._on_attack_card_closed()
 		return
-	if _hold_enemy_turn and (_step == Step.QTE_RESULT or _step == Step.PARRY_WAIT):
+	if _hold_enemy_turn and (_step == Step.QTE_RESULT or _step == Step.HIT_FOE or _step == Step.HIT_COST or _step == Step.PARRY_WAIT):
 		# TAHAN: cleanup doang (deck tutup, kamera balik, tombol
 		# ngumpet), turn DISTART MANUAL dari PARRY_WAIT. Cek WAIT juga:
 		# tap cepat bisa bikin close jalan SESUDAH masuk WAIT.
@@ -1127,6 +1136,10 @@ func _begin_step(step: Step) -> void:
 			_live("TIMING BAR", "Tap ANYWHERE when the runner hits GOLD!", TutorialUI.Zone.BOTTOM_LEFT, attack_qte_node)
 		Step.QTE_RESULT:
 			_read(_qte_title(), _last_attack_result_text() + " Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+		Step.HIT_FOE:
+			_read("DIRECT HIT!", "You struck the Skeleton — watch its health drop.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+		Step.HIT_COST:
+			_read("STAMINA SPENT", "That attack drained stamina — strong moves cost more.", TutorialUI.Zone.BOTTOM_LEFT, stamina_bar)
 		Step.PARRY_WAIT:
 			_lock_all_except([])
 			_turn_started = false
@@ -1148,6 +1161,8 @@ func _begin_step(step: Step) -> void:
 			_wait_for_idle_then(Step.PARRY_WHY)
 		Step.PARRY_WHY:
 			_read("WHY PARRY?", "Parrying cuts damage and restores stamina. Against heavy hits, it is survival. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, player_info)
+		Step.DEFEND_NEXT:
+			_read("NEXT: DEFEND", "Up next, you will learn to guard and recover stamina. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, null)
 		Step.DEFEND_ACT:
 			_show_only([defend_btn], [defend_btn])
 			_act("TAP DEFEND", "DEFEND restores 20 stamina, but skips your attack.", TutorialUI.Zone.BOTTOM_LEFT, defend_btn)
