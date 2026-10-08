@@ -25,7 +25,6 @@
 [ext_resource type="Script" uid="uid://ceghv4t41joux" path="res://scripts/local/cutscene/prologue/scene_prologue.gd" id="23_n4mt2"]
 [ext_resource type="Script" uid="uid://b0bvg44gii1tb" path="res://scripts/local/cutscene/prologue/scene_prologue_interface.gd" id="24_8c7ml"]
 [ext_resource type="Script" uid="uid://dsp0a3kit2r0f" path="res://scripts/local/cutscene/prologue/prolugue_dialog.gd" id="24_n4mt2"]
-[ext_resource type="Script" uid="uid://dkf1c43p0i8hj" path="res://scripts/local/cutscene/prologue/prologue_dialogue_choosen_1.gd" id="26_8h7v1"]
 [ext_resource type="Script" uid="uid://cspb7a3rv74hb" path="res://scripts/local/cutscene/prologue/scene_prologue_chapter_init_start_btn.gd" id="27_04wx8"]
 [ext_resource type="FontFile" uid="uid://dx6ognpbk586" path="res://assets/ui/fonts/alagard.ttf" id="28_r5bln"]
 
@@ -144,24 +143,6 @@ offset_bottom = 647.0
 scale = Vector2(0.640931, 0.49396184)
 script = ExtResource("24_8c7ml")
 
-[node name="choosePath" type="Control" parent="control_scene/interface" unique_id=109664017]
-visible = false
-anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 40.0
-
-[node name="choosen1" type="Button" parent="control_scene/interface/choosePath" unique_id=1080141273]
-layout_mode = 0
-offset_left = 869.0
-offset_top = 281.0
-offset_right = 1027.0
-offset_bottom = 318.0
-theme_override_fonts/font = ExtResource("28_r5bln")
-theme_override_font_sizes/font_size = 22
-theme_override_styles/normal = SubResource("StyleBoxFlat_26ers")
-text = "Go To Sleep"
-script = ExtResource("26_8h7v1")
-
 [node name="chapterInit" type="Control" parent="control_scene/interface" unique_id=1306430100]
 anchors_preset = 0
 offset_right = 40.0
@@ -191,7 +172,7 @@ scale = Vector2(1.0149164, 1.1414235)
 theme_override_fonts/font = ExtResource("28_r5bln")
 theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
-text = "Start Chapter"
+text = "Start Journey"
 script = ExtResource("27_04wx8")
 
 [node name="dialog" type="Label" parent="control_scene/interface" unique_id=1135880231]

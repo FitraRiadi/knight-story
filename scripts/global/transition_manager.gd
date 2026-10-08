@@ -1,6 +1,6 @@
 extends Node
 
-func pindah_scene(target_scene_path: String) -> void:
+func pindah_scene(target_scene_path: String, display_name: String = "") -> void:
 	var ukuran_layar = get_viewport().get_visible_rect().size
 
 	var canvas_layer = CanvasLayer.new()
@@ -13,7 +13,7 @@ func pindah_scene(target_scene_path: String) -> void:
 	tirai.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var nama_file = target_scene_path.get_file()
-	var nama_tujuan = nama_file.replace(".tscn", "").capitalize()
+	var nama_tujuan = display_name if display_name != "" else nama_file.replace(".tscn", "").capitalize()
 
 	var teks_tujuan = Label.new()
 	teks_tujuan.text = nama_tujuan

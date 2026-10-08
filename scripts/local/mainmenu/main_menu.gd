@@ -32,5 +32,4 @@ func _play_intro() -> void:
 	tween.tween_property(achievment_button, "position:x", achievment_button.position.x - 100, 0.5).set_trans(Tween.TRANS_CIRC)
 
 func _on_play_pressed() -> void:
-	print('Play game')
-	create_character_popup.visible = true
+	TransitionManager.pindah_scene("res://scenes/cutscene/scene_prologue.tscn", "Prologue")
