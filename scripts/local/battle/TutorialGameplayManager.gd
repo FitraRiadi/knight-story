@@ -53,6 +53,7 @@ enum Step {
 	PARRY_DRILL,
 	PARRY_MISS,
 	PARRY_RESULT,
+	PARRY_WHY,
 	DEFEND_ACT,
 	SKILL_ACT,
 	SKILL_PICK,
@@ -118,8 +119,13 @@ var _force_hurt_turn := false
 var _hurt_turn_active := false
 # Drill parry lagi kebuka (window 6 dtk, boleh miss -> retry).
 var _drill_armed := false
-# Retry parry: tap di MISS -> tunggu idle -> mulai forced turn manual.
-var _retry_armed := false
+# Tahan enemy turn pasca-QTE (jangan auto-start), mulai manual
+# habis beat PARRY_WAIT. Cegah balapan: drill dadakan pas baca hasil.
+var _hold_enemy_turn := false
+# Timestamp mulai beat PARRY_WAIT (msec) + turn udah distart manual?
+var _parry_wait_since := 0
+var _turn_started := false
+const PARRY_BEAT_MS := 1500
 var _rapid_taught := false
 var _w3_baseline_attacks := 0
 var _w3_baseline_miss := 0
@@ -180,12 +186,13 @@ func _on_tutorial_tapped() -> void:
 			_begin_step(Step.TARGET_ACT)
 		Step.QTE_RESULT:
 			_begin_step(Step.PARRY_WAIT)
+		Step.PARRY_WHY:
+			_begin_step(Step.DEFEND_ACT)
 		Step.QTE_MISS:
 			_begin_step(Step.ATTACK_ACT)
 		Step.PARRY_MISS:
-			# Retry drill: panel tutup, tunggu idle beneran, forced
-			# attack lagi dari PARRY_WAIT.
-			_retry_armed = true
+			# Retry drill: panel tutup, tunggu idle beneran, balik
+			# ke PARRY_WAIT (beat + manual start di sana).
 			_ui_hide()
 			_wait_for_idle_then(Step.PARRY_WAIT)
 		Step.FINISH_INTRO:
@@ -616,6 +623,16 @@ func _process(_delta: float) -> void:
 			_begin_step(s)
 			return
 	match _step:
+		Step.PARRY_WAIT:
+			# Beat 1.5 dtk, baru turn dimulai manual. Deterministik:
+			# gak peduli tap cepat/lambat, drill selalu mulai sama.
+			if not _turn_started and Time.get_ticks_msec() - _parry_wait_since >= PARRY_BEAT_MS:
+				_turn_started = true
+				_hold_enemy_turn = false
+				_force_parry_turn = true
+				is_player_turn = false
+				_apply_button_gating(false)
+				_start_enemies_turn()
 		Step.POTION_SLOT:
 			if _potion_ready_to_use():
 				_begin_step(Step.POTION_INFO)
@@ -843,6 +860,10 @@ func _check_attack_qte_result() -> void:
 				_step = Step.QTE_MISS
 				_read("MISSED!", "Watch the runner — TAP TO TRY AGAIN.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 			else:
+				# Hit: TAHAN enemy turn (jangan auto-start), mulai manual
+				# habis beat PARRY_WAIT. Biar drill gak dadakan.
+				_hold_enemy_turn = true
+				_turn_started = false
 				_begin_step(Step.QTE_RESULT)
 		Step.FINISH_QTE:
 			if total_miss > int(get_meta("_tut_fin_miss", total_miss)):
@@ -949,6 +970,26 @@ func _on_action_card_selected(index: int) -> void:
 
 func _on_action_card_closed() -> void:
 	super._on_action_card_closed()
+	_skill_ui_ref = null
+
+
+func _on_attack_card_closed() -> void:
+	if not _tutorial_active:
+		super._on_attack_card_closed()
+		return
+	if _hold_enemy_turn and _step == Step.QTE_RESULT:
+		# TAHAN: cleanup doang (deck tutup, kamera balik, tombol
+		# ngumpet), turn DISTART MANUAL dari PARRY_WAIT. Tanpa ini,
+		# enemy turn auto-start ~1 dtk dan drill dadakan pas baca hasil.
+		attack_card_used_this_session = false
+		is_card_ui_open = false
+		attack_card_ui = null
+		_reset_hand_to_original(0.4)
+		_reset_camera_to_default()
+		is_player_turn = false
+		_apply_button_gating(false)
+		return
+	super._on_attack_card_closed()
 	_skill_ui_ref = null
 
 
@@ -1060,7 +1101,7 @@ func _begin_step(step: Step) -> void:
 	_tut_enabled.clear()
 	match step:
 		Step.WELCOME:
-			_read("WELCOME, KNIGHT", "Battle training, step by step. Tap anywhere to start.", TutorialUI.Zone.TOP_CENTER, null)
+			_read("WELCOME, KNIGHT!", "You In The First Battle training. Tap anywhere to start.", TutorialUI.Zone.BOTTOM_LEFT, null)
 		Step.TARGET_ACT:
 			_act("SELECT TARGET", "Tap the Skeleton to lock it as your target.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.ATTACK_ACT:
@@ -1075,18 +1116,10 @@ func _begin_step(step: Step) -> void:
 			_read(_qte_title(), _last_attack_result_text() + " Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.PARRY_WAIT:
 			_lock_all_except([])
-			# Instruksi drill ditaruh DI SINI (sebelum serangan), bukan
-			# pas shield nongol — window cuma ~1 dtk, gak cukup buat baca.
-			_live("WHEN THE ENEMY ATTACKS...", "A SHIELD button will pop up — tap it FAST to parry!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+			_turn_started = false
+			_parry_wait_since = Time.get_ticks_msec()
+			_live("SKELETON ATTACKING!", "Anticipate it — you must parry!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 			_drill_armed = true
-			# Retry pass: giliran belum jalan (idle) -> mulai forced
-			# turn manual. First pass: turn udah jalan via chain deck.
-			if _retry_armed and _is_player_idle():
-				_retry_armed = false
-				is_player_turn = false
-				_apply_button_gating(false)
-				_force_parry_turn = true
-				_start_enemies_turn()
 		Step.PARRY_DRILL:
 			_lock_all_except([parry_btn])
 			_allow_interaction(parry_btn)
@@ -1096,7 +1129,9 @@ func _begin_step(step: Step) -> void:
 			_show("TOO SLOW!", "The hit landed. Watch the wind-up — TAP TO TRY AGAIN.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref(), true)
 		Step.PARRY_RESULT:
 			_live("PARRIED!", "Blocked most damage + bonus stamina. Watch!", TutorialUI.Zone.BOTTOM_LEFT, player_info)
-			_wait_for_idle_then(Step.DEFEND_ACT)
+			_wait_for_idle_then(Step.PARRY_WHY)
+		Step.PARRY_WHY:
+			_read("WHY PARRY?", "Parrying cuts damage and restores stamina. Against heavy hits, it is survival. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, player_info)
 		Step.DEFEND_ACT:
 			_show_only([defend_btn], [defend_btn])
 			_act("TAP DEFEND", "DEFEND restores 20 stamina, but skips your attack.", TutorialUI.Zone.BOTTOM_LEFT, defend_btn)
