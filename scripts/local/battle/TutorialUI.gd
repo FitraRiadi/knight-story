@@ -61,9 +61,18 @@ func setup(layer: CanvasLayer, panel: Panel) -> void:
 	spotlight.name = "Spotlight"
 	add_child(spotlight)
 
+	# Panel scene DIPINDAH ke layer tutorial (300): biar SELALU paling
+	# atas — di atas deck kartu (165), QTE (155), parry/rapid (150) —
+	# dan di atas spotlight (gelap) itu sendiri. Urutan anak di sini:
+	# spotlight, panel, hp_note, continue. Koordinat panel tetap
+	# viewport-space (layer 300 identity), posisi di-set tiap show.
 	if panel == null or not is_instance_valid(panel):
 		push_error("[TutorialUI] tutorialPanel scene tidak ketemu — panel tutorial gak akan muncul!")
 		return
+	var old_parent := panel.get_parent()
+	if old_parent:
+		old_parent.remove_child(panel)
+	add_child(panel)
 	_panel = panel
 	_title = panel.get_node_or_null("title") as Label
 	_info = panel.get_node_or_null("info") as Label
