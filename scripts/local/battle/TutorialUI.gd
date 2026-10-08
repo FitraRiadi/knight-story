@@ -3,30 +3,24 @@ class_name TutorialUI
 
 # ============================================================
 # TUTORIAL UI
-# Panel penjelasan + tombol Continue. Selalu hidup walau tree
-# paused (PROCESS_MODE_ALWAYS) karena step machine perlu jalan
-# pas game di-freeze.
+# Panel-nya PAKAI DESAIN SCENE (tutorialPanel di
+# battle_gameplay_tutorial.tscn): Panel + title + info + badge
+# "STEP k / N". Script ini cuma ngisi teks, mindahin posisi,
+# ngatur show/hide, dan mainin intro stagger. Gak bikin panel
+# manual lagi.
 #
-# PANEL ADAPTIF — 3 zona. Layar cuma 740x340 dan banyak elemen
-# battle occupy area yang sama (kartu y168-328, QTE bar
-# y260-333, charge panel x347-401 full-height, rapid HUD y14-50).
-# Jadi panel pindah zona per step, bukan satu posisi statis:
-#   ZONE_BOTTOM_LEFT  → default, buat enemy/tombol/parry/drop
-#   ZONE_TOP_RIGHT    → buat KARTU & QTE (they eat area bawah)
-#   ZONE_TOP_CENTER   → buat INVENTORY (full-screen panel)
-#
-# Panel juga otomatis NGEHINDAR spotlight: kalau target di sisi
-# kiri, panel geser ke kanan, dan sebaliknya — jadi panel gak
-# pernah nutup target yang lagi diajarin.
+# ZONA — layar 740x340 sempit, jadi panel pindah zona per step:
+#   BOTTOM_LEFT → default (musuh/tombol/parry/drop)
+#   TOP_RIGHT   → kartu & QTE (area bawah penuh)
+#   TOP_CENTER  → inventory (panel fullscreen)
+# Panel juga otomatis NGEHINDAR spotlight biar gak nutup target.
 # ============================================================
 
 enum Zone { BOTTOM_LEFT, TOP_RIGHT, TOP_CENTER }
 
-const PANEL_SIZE := Vector2(360.0, 96.0)
 const MOVE_TIME := 0.25
 
-## Dipanggil manager waktu player tap layar. Manager yang tau ini
-## artinya "lanjut step" atau "aksi yang diNTAHARIN".
+## Dipanggil manager waktu player tap layar.
 signal tapped
 ## Dipencet tombol Continue di step terakhir.
 signal finished
@@ -35,77 +29,59 @@ var spotlight: TutorialSpotlight = null
 
 var _panel: Panel = null
 var _title: Label = null
-var _label: RichTextLabel = null
+var _info: Label = null
+var _step_badge: Label = null
+var _panel_size := Vector2(272.0, 99.0)
+var _panel_dest := Vector2.ZERO
+# Posisi "rumah" (dari scene) buat animasi slide-in stagger.
+var _title_home := Vector2.ZERO
+var _info_home := Vector2.ZERO
+var _badge_home := Vector2.ZERO
 var _hp_note: Label = null
 var _continue_btn: Button = null
 var _move_tween: Tween = null
+var _intro_tween: Tween = null
 
-# Tap handling: tap di spotlight = aksi, tap di panel = juga boleh dismiss
-	# (biar player gak frustrasi kalo panel nutup area yg dia mau tap)
 var _dismiss_armed: bool = false
-# Kalau panel harus diperkecil biar nutup spotlight target
-var _pending_resize: Vector2 = Vector2.ZERO
-# Target spotlight baru: di-apply di show_text() SEBELUM panel dipindah,
-# biar _avoid_spotlight() ngitung pakai rect yang BENAR (bukan sisa step lalu).
+# Target spotlight baru: di-apply SEBELUM panel dipindah biar
+# _avoid_spotlight() ngitung pakai rect yang BENAR.
 var _pending_spotlight_target: Node = null
 var _pending_has_target: bool = false
 var _pending_dim: float = 0.78
 
 
-func setup(layer: CanvasLayer) -> void:
+func setup(layer: CanvasLayer, panel: Panel) -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	name = "TutorialUI"
 	set_anchors_preset(Control.PRESET_FULL_RECT)
-	mouse_filter = Control.MOUSE_FILTER_IGNORE  # full IGNORE, lockpsi kita yg pegang
+	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	layer.add_child(self)
 
 	spotlight = TutorialSpotlight.new()
 	spotlight.name = "Spotlight"
 	add_child(spotlight)
 
-	_panel = Panel.new()
-	_panel.name = "Panel"
-	_panel.size = PANEL_SIZE
-	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE  # tap tembus ke spotlight
-	var sb := StyleBoxFlat.new()
-	sb.bg_color = Color(0.05, 0.04, 0.09, 0.94)
-	sb.border_color = Color(1.0, 0.85, 0.35, 0.85)
-	sb.set_border_width_all(2)
-	sb.set_corner_radius_all(8)
-	sb.set_content_margin_all(10)
-	_panel.add_theme_stylebox_override("panel", sb)
-	add_child(_panel)
+	if panel == null or not is_instance_valid(panel):
+		push_error("[TutorialUI] tutorialPanel scene tidak ketemu — panel tutorial gak akan muncul!")
+		return
+	_panel = panel
+	_title = panel.get_node_or_null("title") as Label
+	_info = panel.get_node_or_null("info") as Label
+	_step_badge = panel.get_node_or_null("Label") as Label
+	if _title == null or _info == null or _step_badge == null:
+		push_error("[TutorialUI] child tutorialPanel kurang (title/info/Label)!")
+		return
+	if _panel.size.x > 0.0 and _panel.size.y > 0.0:
+		_panel_size = _panel.size
+	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE  # tap tembus
+	_panel.pivot_offset = _panel_size * 0.5
+	_step_badge.pivot_offset = _step_badge.size * 0.5
+	_title_home = _title.position
+	_info_home = _info.position
+	_badge_home = _step_badge.position
+	_panel.visible = false
 
-	# Judul step: "STEP 3/45 — BASIC ATTACK". Satu baris, gold.
-	_title = Label.new()
-	_title.add_theme_font_size_override("font_size", 14)
-	_title.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35))
-	_title.add_theme_constant_override("outline_size", 4)
-	_title.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
-	_title.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_title.position = Vector2(12, 8)
-	_title.size = Vector2(PANEL_SIZE.x - 24, 20)
-	_title.clip_text = true
-	_panel.add_child(_title)
-
-	# RichTextLabel (bukan Label) karena step text pakai **tebal**.
-	# Label biasa gak punya bbcode.
-	_label = RichTextLabel.new()
-	_label.bbcode_enabled = true
-	_label.fit_content = false
-	_label.scroll_active = false
-	_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_label.add_theme_font_size_override("normal_font_size", 15)
-	_label.add_theme_font_size_override("bold_font_size", 15)
-	_label.add_theme_color_override("default_color", Color(1.0, 0.96, 0.86))
-	_label.add_theme_constant_override("outline_size", 5)
-	_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
-	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_label.position = Vector2(12, 30)
-	_label.size = Vector2(PANEL_SIZE.x - 24, PANEL_SIZE.y - 40)
-	_panel.add_child(_label)
-
-	# Catatan kecil HP protected (step 14-15)
+	# Catatan kecil HP protected (tetap runtime, di atas panel).
 	_hp_note = Label.new()
 	_hp_note.text = "Tutorial: HP protected (min 25%)"
 	_hp_note.add_theme_font_size_override("font_size", 10)
@@ -127,45 +103,32 @@ func setup(layer: CanvasLayer) -> void:
 	visible = false
 
 
-# Format teks: "JUDUL\nIsi penjelasan...". Baris pertama selalu
-# jadi judul gold (plus counter "STEP k/N" dari manager), sisanya body.
-# dismissable: true  = step BACA (tree paused, tap panel buat lanjut)
-# dismissable: false = step AKSI/LIVE (tap TARGET yg di-highlight,
-#                        panel HARUS ga nyapot tap-nya)
-func show_text(text: String, zone: Zone = Zone.BOTTOM_LEFT, avoid_target: bool = true,
+func show_step(step_no: int, step_total: int, title: String, body: String,
+		zone: Zone = Zone.BOTTOM_LEFT, avoid_target: bool = true,
 		dismissable: bool = true) -> void:
-	var title_text := ""
-	var body_text := text
-	var nl := text.find("\n")
-	if nl >= 0:
-		title_text = text.substr(0, nl).strip_edges()
-		body_text = text.substr(nl + 1).strip_edges()
-	_title.text = title_text
-	_title.visible = title_text != ""
-	_label.text = body_text
+	if _panel == null:
+		return
+	# info scene = Label biasa (bukan bbcode): bersihin marker **.
+	_title.text = title.strip_edges()
+	_info.text = body.strip_edges().replace("**", "")
+	_step_badge.text = "STEP %d / %d" % [step_no, step_total]
+	_step_badge.visible = true
 	visible = true
+	_panel.visible = true
 	_dismiss_armed = dismissable
 	_continue_btn.visible = false
-	_pending_resize = Vector2.ZERO
-	# PENTING: apply spotlight DULU (termasuk null = clear), baru
-	# relocating panel — _avoid_spotlight() butuh rect yang BENAR,
-	# bukan sisa step lalu.
 	_apply_pending_spotlight()
 	var target: Vector2 = _zone_pos(zone)
 	if avoid_target and spotlight and spotlight.visible:
 		target = _avoid_spotlight(zone, target)
 	_move_panel_to(target)
-	if _pending_resize != Vector2.ZERO:
-		_apply_panel_size(_pending_resize)
-	# Fade in halus
-	if _panel.modulate.a < 1.0:
-		_panel.modulate.a = 0.0
-		var tw := create_tween()
-		tw.tween_property(_panel, "modulate:a", 1.0, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_place_hp_note()
+	_play_intro_stagger()
 
 
 func show_final(text: String) -> void:
-	# Panel + tombol Continue. Gak ada spotlight action di step terakhir.
+	if _panel == null:
+		return
 	var title_text := ""
 	var body_text := text
 	var nl := text.find("\n")
@@ -173,16 +136,19 @@ func show_final(text: String) -> void:
 		title_text = text.substr(0, nl).strip_edges()
 		body_text = text.substr(nl + 1).strip_edges()
 	_title.text = title_text
-	_title.visible = title_text != ""
-	_label.text = body_text
+	_info.text = body_text.replace("**", "")
+	_step_badge.text = "DONE"
+	_step_badge.visible = true
 	visible = true
+	_panel.visible = true
 	_dismiss_armed = false
 	if spotlight:
 		spotlight.clear_spotlight()
 	_move_panel_to(_zone_pos(Zone.TOP_CENTER))
+	_place_hp_note()
+	_play_intro_stagger()
 	_continue_btn.visible = true
 	_position_continue_btn()
-	_panel.modulate.a = 1.0
 
 
 func hide_panel() -> void:
@@ -190,14 +156,13 @@ func hide_panel() -> void:
 	_dismiss_armed = false
 	_continue_btn.visible = false
 	_hp_note.visible = false
+	if _panel:
+		_panel.visible = false
 	if spotlight:
 		spotlight.clear_spotlight()
 
 
 func set_spotlight_target(node: Node, dim: float = 0.78) -> void:
-	# Disimpan dulu, baru di-apply bareng show_text() (lihat catatan
-	# di _pending_spotlight_target). NULL = sengaja tanpa spotlight
-	# (step final / welcome) — dibedain dari "belum di-set" pakai flag.
 	_pending_spotlight_target = node
 	_pending_has_target = true
 	_pending_dim = dim
@@ -225,14 +190,14 @@ func clear_spotlight() -> void:
 
 func set_hp_note(shown: bool) -> void:
 	_hp_note.visible = shown and visible
+	if shown:
+		_place_hp_note()
 
 
 func is_dismiss_armed() -> bool:
 	return _dismiss_armed
 
 
-# Dipanggil manager: tap jatuh di spotlight (lubang) = aksi player.
-# Kalau step ini "tap to dismiss panel", baru panel disembunyiin.
 func try_dismiss_on_tap() -> bool:
 	if not _dismiss_armed:
 		return false
@@ -242,8 +207,7 @@ func try_dismiss_on_tap() -> bool:
 
 # ============================================================
 # TAP INPUT — node ini PROCESS_MODE_ALWAYS, jadi _input() tetap
-# jalan walau tree paused. Ini yang bikin step "baca" (tap panel
-# buat lanjut) gak deadlock.
+# jalan walau tree paused.
 # ============================================================
 
 func _input(event: InputEvent) -> void:
@@ -253,8 +217,7 @@ func _input(event: InputEvent) -> void:
 	if _continue_btn.visible:
 		return
 	# Step aksi: target yang di-highlight yang harus diklik, JANGAN
-	# semua tap diterjemahkan jadi dismiss (nanti player gak bisa
-	# tap target-nya karena panel keburu ilang).
+	# semua tap diterjemahkan jadi dismiss.
 	if not _dismiss_armed:
 		return
 	var tap := false
@@ -273,98 +236,92 @@ func _zone_pos(zone: Zone) -> Vector2:
 	var vs := get_viewport_rect().size
 	match zone:
 		Zone.TOP_RIGHT:
-			return Vector2(vs.x - PANEL_SIZE.x - 16, 62)
+			return Vector2(vs.x - _panel_size.x - 16, 62)
 		Zone.TOP_CENTER:
-			return Vector2((vs.x - PANEL_SIZE.x) * 0.5, 14)
+			return Vector2((vs.x - _panel_size.x) * 0.5, 14)
 		_:
-			return Vector2(16, vs.y - PANEL_SIZE.y - 12)
+			return Vector2(16, vs.y - _panel_size.y - 12)
 
 
 func _avoid_spotlight(zone: Zone, base: Vector2) -> Vector2:
-	# Kalau panel & spotlight ada di sisi yg sama, geser ke seberang.
+	# Panel desain FIXED SIZE (dari scene) — gak ada shrink. Cari slot
+	# muat 272x99 yang gak nabrak spotlight, fallback ke base.
 	if not spotlight or not spotlight.visible:
 		return base
 	var vs := get_viewport_rect().size
 	var sr := spotlight.get_target_rect()
-	var pr := Rect2(base, PANEL_SIZE)
-	if not pr.intersects(sr):
+	if not Rect2(base, _panel_size).intersects(sr):
 		return base
-	# Kandidat posisi. Panel di-resize + geser KALAU masih nabrak,
-	# karena di layar 740x340 sometimes gak ada slot 360px yg
-	# beneran kosong (musuh di tengah, kartu full bawah).
 	var candidates: Array[Vector2] = [
 		base,
-		Vector2(16, 62),                                              # kiri-atas
-		Vector2(vs.x - PANEL_SIZE.x - 16, 62),                       # kanan-atas
-		Vector2(16, (vs.y - PANEL_SIZE.y) * 0.5),                    # kiri-tengah
-		Vector2(vs.x - PANEL_SIZE.x - 16, (vs.y - PANEL_SIZE.y) * 0.5), # kanan-tengah
-		Vector2(16, vs.y - PANEL_SIZE.y - 12),                       # kiri-bawah
-		Vector2(vs.x - PANEL_SIZE.x - 16, vs.y - PANEL_SIZE.y - 12),  # kanan-bawah
+		Vector2(16, 62),
+		Vector2(vs.x - _panel_size.x - 16, 62),
+		Vector2(16, (vs.y - _panel_size.y) * 0.5),
+		Vector2(vs.x - _panel_size.x - 16, (vs.y - _panel_size.y) * 0.5),
+		Vector2(16, vs.y - _panel_size.y - 12),
+		Vector2(vs.x - _panel_size.x - 16, vs.y - _panel_size.y - 12),
 	]
 	for c in candidates:
-		if not Rect2(c, PANEL_SIZE).intersects(sr):
-			_pending_resize = Vector2.ZERO  # muat penuh, ga perlu shrink
+		if not Rect2(c, _panel_size).intersects(sr):
 			return c
-	# Semua candidate nabrak: KECILIN dulu satu tingkat, cek ulang.
-	# (grid scan dislike karena shrink tapi posisinya yg dipake stale)
-	for shrink in [Vector2(300.0, 58.0), Vector2(240.0, 48.0), Vector2(180.0, 40.0)]:
-		for c in candidates:
-			if not Rect2(c, shrink).intersects(sr):
-				_pending_resize = shrink
-				return c
-
-	# Semua slot kena: scan SELURUH layar dgn kartu shrunk sampai muat.
-	# Layar 740x340 itu sempit, jadi satu-satunya cara pasti ialah brute
-	# force grid scan— bukan cuma 7 titik tetap.
-	var vs2 := get_viewport_rect().size
-	var widths: Array[float] = [PANEL_SIZE.x, 300.0, 260.0, 220.0, 180.0, 150.0, 120.0]
-	var heights: Array[float] = [PANEL_SIZE.y, 58.0, 52.0, 46.0, 40.0, 34.0, 28.0]
-	var step_x: float = 10.0
-	var step_y: float = 8.0
-	# Scan dari ATAS dulu: spotlight di battle ini loves duduk rendah
-	# (tombol interaction y~215-270, kartu y~168-328), jadi slot atas
-	# hampir selalu free. Scan bawah-dulu dulu ngambil slot yg cuma
-	# "nempel harmlessly" tapi masih kena pinggir lubang.
-	for w in widths:
-		for h in heights:
-			var y: float = 4.0
-			while y <= vs2.y - h - 4.0:
-				var x: float = 4.0
-				while x <= vs2.x - w - 4.0:
-					if not Rect2(Vector2(x, y), Vector2(w, h)).intersects(sr):
-						_pending_resize = Vector2(w, h)
-						return Vector2(x, y)
-					x += step_x
-				y += step_y
-	# benar2 gak ada ruang sama sekali: perkecil terus dgn margin 0
-	_pending_resize = Vector2(120.0, 28.0)
-	return Vector2(4.0, 4.0)
+	var step_x := 10.0
+	var step_y := 8.0
+	var y := 4.0
+	while y <= vs.y - _panel_size.y - 4.0:
+		var x := 4.0
+		while x <= vs.x - _panel_size.x - 4.0:
+			if not Rect2(Vector2(x, y), _panel_size).intersects(sr):
+				return Vector2(x, y)
+			x += step_x
+		y += step_y
+	return base
 
 
-func _apply_panel_size(sz: Vector2) -> void:
-	_panel.size = sz
-	_title.size = Vector2(sz.x - 24, 20)
-	_label.size = Vector2(sz.x - 24, maxf(sz.y - 40, 20.0))
-	_pending_resize = Vector2.ZERO
+# Intro stagger: panel pop + fade, judul geser-masuk, info fade,
+# badge pop belakangan. Tiap show_text diulang dari awal.
+func _play_intro_stagger() -> void:
+	if _intro_tween and _intro_tween.is_valid():
+		_intro_tween.kill()
+	_panel.modulate.a = 1.0
+	_panel.scale = Vector2(0.92, 0.92)
+	_title.modulate.a = 0.0
+	_title.position = _title_home + Vector2(-8, 0)
+	_info.modulate.a = 0.0
+	_step_badge.modulate.a = 0.0
+	_step_badge.scale = Vector2(0.5, 0.5)
+	_intro_tween = create_tween().set_parallel(true)
+	_intro_tween.tween_property(_panel, "scale", Vector2.ONE, 0.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_intro_tween.tween_property(_title, "modulate:a", 1.0, 0.15).set_delay(0.06)
+	_intro_tween.tween_property(_title, "position:x", _title_home.x, 0.15).set_delay(0.06)
+	_intro_tween.tween_property(_info, "modulate:a", 1.0, 0.15).set_delay(0.12)
+	_intro_tween.tween_property(_step_badge, "modulate:a", 1.0, 0.12).set_delay(0.18)
+	_intro_tween.tween_property(_step_badge, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT).set_delay(0.18)
 
 
 func _move_panel_to(target: Vector2) -> void:
+	if _panel == null:
+		return
+	_panel_dest = target
 	if _move_tween and _move_tween.is_valid():
 		_move_tween.kill()
 	_move_tween = create_tween()
 	_move_tween.tween_property(_panel, "position", target, MOVE_TIME)\
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	# _title & _label itu child _panel (posisi RELATIF) — jangan digeser.
-	_title.position = Vector2(12, 8)
-	_label.position = Vector2(12, 30)
+
+
+func _place_hp_note() -> void:
+	if _hp_note == null:
+		return
+	_hp_note.position = _panel_dest + Vector2(0, -18)
 
 
 func _position_continue_btn() -> void:
 	var vs := get_viewport_rect().size
-	_continue_btn.position = Vector2(
-		(vs.x - _continue_btn.custom_minimum_size.x) * 0.5,
-		vs.y - _continue_btn.custom_minimum_size.y - 20
-	)
+	var x := clampf(_panel_dest.x + (_panel_size.x - 120.0) * 0.5, 8.0, vs.x - 128.0)
+	var y := _panel_dest.y + _panel_size.y + 8.0
+	if y + 40.0 > vs.y - 4.0:
+		y = _panel_dest.y - 40.0 - 8.0
+	_continue_btn.position = Vector2(x, maxf(y, 4.0))
 
 
 func _on_continue_pressed() -> void:

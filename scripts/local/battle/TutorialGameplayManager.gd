@@ -159,7 +159,7 @@ func _setup_tutorial_layer() -> void:
 	_tutorial_layer.process_mode = Node.PROCESS_MODE_ALWAYS
 	add_child(_tutorial_layer)
 	_tutorial_ui = TutorialUI.new()
-	_tutorial_ui.setup(_tutorial_layer)
+	_tutorial_ui.setup(_tutorial_layer, get_node_or_null("tutorialPanel") as Panel)
 	if not _tutorial_ui.tapped.is_connected(_on_tutorial_tapped):
 		_tutorial_ui.tapped.connect(_on_tutorial_tapped)
 	if not _tutorial_ui.finished.is_connected(_on_tutorial_finished):
@@ -1255,7 +1255,7 @@ func _step_total() -> int:
 func _show(title: String, body: String, zone: TutorialUI.Zone, spot: Node, dismissable: bool) -> void:
 	if _tutorial_ui:
 		_tutorial_ui.set_spotlight_target(spot)
-		_tutorial_ui.show_text("STEP %d/%d — %s\n%s" % [_step_no(), _step_total(), title, body], zone, true, dismissable)
+		_tutorial_ui.show_step(_step_no(), _step_total(), title, body, zone, true, dismissable)
 
 
 func _qte_title() -> String:
