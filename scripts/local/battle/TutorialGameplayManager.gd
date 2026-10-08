@@ -1178,7 +1178,7 @@ func _begin_step(step: Step) -> void:
 		Step.WAVE2_FIGHT:
 			_force_basic_hand()
 			_show_only([atk_btn], [atk_btn])
-			_live("YOUR MOVE", "Finish the Skeleton — tap ATTACK!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+			_live("YOUR MOVE", "Finish the Skeleton — tap ATTACK!", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
 		Step.WAVE2_PICK:
 			_pick_setup(false, "Basic", "PICK A CARD", "Tap the glowing BASIC card.")
 		Step.WAVE2_QTE:
@@ -1194,7 +1194,7 @@ func _begin_step(step: Step) -> void:
 			# Chain tutup-deck pasca-kill wave-2 bisa telat nimpa turn.
 			# Restore di sini (user-paced, chain udah kelar) biar aman.
 			is_player_turn = true
-			_live("YOUR MOVE", "Attack the Grimward — watch for counters!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+			_live("YOUR MOVE", "Attack the Grimward — watch for counters!", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
 		Step.WAVE3_PICK:
 			_pick_setup(false, "Basic", "PICK A CARD", "Tap the glowing BASIC card.")
 		Step.WAVE3_QTE:
