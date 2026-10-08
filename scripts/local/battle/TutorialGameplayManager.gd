@@ -892,8 +892,9 @@ func _check_attack_qte_result() -> void:
 			if total_miss > _w3_baseline_miss:
 				_begin_step(Step.WAVE3_FIGHT)
 			else:
-				_step = Step.WAVE3_AFTER
-				_live("ATTACK LANDED", "Watch out — Grimward can counter!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+			_step = Step.WAVE3_AFTER
+			# Tanpa spotlight: counter grimward harus keliatan utuh.
+			_live("ATTACK LANDED", "Watch out — Grimward can counter!", TutorialUI.Zone.BOTTOM_LEFT, null)
 
 
 func _on_enemy_attack_preparing() -> void:
