@@ -288,18 +288,16 @@ func _apply_button_gating(show_buttons: bool) -> void:
 		b.disabled = not (vis and (b in _tut_enabled))
 
 
-func _reveal(btn: Button, enabled_now: bool = false) -> void:
-	if btn and not (btn in _tut_revealed):
-		_tut_revealed.append(btn)
+# Tiap step deklarasi TOMBOL APA YANG BOLEH NONGOL (visible) dan
+# mana yang boleh dipencet (enabled). Selain itu = ngumpet di bawah
+# layar + disabled. Gak ada akumulasi: tiap step mulai dari nol.
+func _show_only(vis: Array, en: Array = []) -> void:
+	_tut_revealed.clear()
 	_tut_enabled.clear()
-	if enabled_now and btn:
-		_tut_enabled.append(btn)
-	_apply_button_gating(true)
-
-
-func _enable_only(btns: Array) -> void:
-	_tut_enabled.clear()
-	for b in btns:
+	for b in vis:
+		if b and not (b in _tut_revealed):
+			_tut_revealed.append(b)
+	for b in en:
 		if b and (b in _tut_revealed) and not (b in _tut_enabled):
 			_tut_enabled.append(b)
 	_apply_button_gating(true)
@@ -469,7 +467,9 @@ func _finish_forced_turn() -> void:
 	_update_target_selection()
 	if enemies.size() > 0:
 		is_player_turn = true
-		_apply_button_gating(true)
+		# Tombol tetap ngumpet sampai step berikutnya deklarasi
+		# via _show_only() — jangan nampilin sisa step lama.
+		_apply_button_gating(false)
 		_process_action_card_cooldowns()
 	if _hurt_turn_active:
 		_hurt_turn_active = false
@@ -962,13 +962,17 @@ func _inventory_slot_button(idx: int) -> Button:
 func _begin_step(step: Step) -> void:
 	_step = step
 	_unlock_all()
+	# Default: gak ada tombol yang nongol. Tiap case deklarasi sendiri
+	# via _show_only() kalau butuh tombol.
+	_tut_revealed.clear()
+	_tut_enabled.clear()
 	match step:
 		Step.WELCOME:
 			_read("WELCOME, KNIGHT", "Battle training, step by step. Tap anywhere to start.", TutorialUI.Zone.TOP_CENTER, null)
 		Step.TARGET_ACT:
 			_act("SELECT TARGET", "Tap the Skeleton to lock it as your target.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.ATTACK_ACT:
-			_reveal(atk_btn, true)
+			_show_only([atk_btn], [atk_btn])
 			_act("TAP ATTACK", "This button opens your attack cards. Tap it.", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
 		Step.BASIC_PICK:
 			_pick_setup(false, "Basic", "BASIC CARD", "Tap the glowing BASIC card.")
@@ -1002,15 +1006,15 @@ func _begin_step(step: Step) -> void:
 			_live("PARRIED!", "Blocked most damage + bonus stamina. Watch!", TutorialUI.Zone.BOTTOM_LEFT, player_info)
 			_wait_for_idle_then(Step.DEFEND_ACT)
 		Step.DEFEND_ACT:
-			_reveal(defend_btn, true)
+			_show_only([defend_btn], [defend_btn])
 			_act("TAP DEFEND", "DEFEND restores 20 stamina, but skips your attack.", TutorialUI.Zone.BOTTOM_LEFT, defend_btn)
 		Step.SKILL_ACT:
-			_reveal(skill_btn, true)
+			_show_only([skill_btn], [skill_btn])
 			_act("TAP SKILL", "SKILL opens special cards: poison, stun, bleed.", TutorialUI.Zone.BOTTOM_LEFT, skill_btn)
 		Step.SKILL_PICK:
 			_pick_setup(true, "", "SKILL CARD", "Tap the glowing SKILL card.")
 		Step.CHARGE_PICK_WAIT:
-			_enable_only([atk_btn])
+			_show_only([atk_btn], [atk_btn])
 			_lock_all_except([atk_btn])
 			_allow_interaction(atk_btn)
 			_live("ATTACK AGAIN", "New card type: CHARGE. Tap ATTACK.", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
@@ -1023,7 +1027,7 @@ func _begin_step(step: Step) -> void:
 				_allow_interaction(cb)
 			_live("HOLD & RELEASE", "Hold the button, release inside GOLD for max damage!", TutorialUI.Zone.BOTTOM_LEFT, cb)
 		Step.RAPID_PICK_WAIT:
-			_enable_only([atk_btn])
+			_show_only([atk_btn], [atk_btn])
 			_lock_all_except([atk_btn])
 			_allow_interaction(atk_btn)
 			_live("ONE MORE TYPE", "Last one: RAPID. Tap ATTACK.", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
@@ -1036,7 +1040,7 @@ func _begin_step(step: Step) -> void:
 		Step.FINISH_INTRO:
 			_read("ARMOR OFF!", "Training wheels off — real damage now. Finish it!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.FINISH_ACT:
-			_enable_only([atk_btn])
+			_show_only([atk_btn], [atk_btn])
 			_act("FINISH IT", "Tap ATTACK for the final blow.", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
 		Step.FINISH_PICK:
 			_pick_setup(false, "Basic", "FINAL BLOW", "Tap BASIC to finish the Skeleton.")
@@ -1061,10 +1065,9 @@ func _begin_step(step: Step) -> void:
 			_allow_interaction(_drop_node)
 			_live("COLLECT LOOT", "Tap the glowing item to collect it.", TutorialUI.Zone.BOTTOM_LEFT, _drop_node)
 		Step.LOOT_DONE:
-			_reveal(backpack_btn)
 			_read("LOOT SECURED!", "Saved to your BACKPACK permanently. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, backpack_btn)
 		Step.PACK_ACT:
-			_reveal(backpack_btn, true)
+			_show_only([backpack_btn], [backpack_btn])
 			_act("OPEN BACKPACK", "Tap BACKPACK to look inside.", TutorialUI.Zone.BOTTOM_LEFT, backpack_btn)
 		Step.PACK_VIEW:
 			var close_b: Button = _inventory_close_button()
@@ -1073,7 +1076,8 @@ func _begin_step(step: Step) -> void:
 				_allow_interaction(close_b)
 			_live("YOUR BACKPACK", "Potion is in a slot. Tap CLOSE when done.", TutorialUI.Zone.TOP_CENTER, close_b)
 		Step.RUN_INTRO:
-			_reveal(run_btn)
+			# Satu-satunya momen run_btn nongol — dikenalin tapi dikunci.
+			_show_only([run_btn], [])
 			_read("BUTTON: RUN", "RUN flees battle — locked during training. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, run_btn)
 		Step.WAVE2_INTRO:
 			_read("WAVE 2", "Another Skeleton! But something feels wrong...", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
@@ -1090,7 +1094,7 @@ func _begin_step(step: Step) -> void:
 			_ui_set_hp_note(true)
 			_read("YOU'RE HURT!", "HP dropped to 25%! You need that potion. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, player_info)
 		Step.PACK2_ACT:
-			_reveal(backpack_btn, true)
+			_show_only([backpack_btn], [backpack_btn])
 			_act("GRAB THE POTION", "Open BACKPACK and use your Health Potion.", TutorialUI.Zone.BOTTOM_LEFT, backpack_btn)
 		Step.POTION_SLOT:
 			var slot_b: Button = _inventory_slot_button(_potion_index)
@@ -1112,7 +1116,7 @@ func _begin_step(step: Step) -> void:
 			_read("WAVE 3: GRIMWARD", "Tougher. It can COUNTER your attacks (30%). Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.WAVE3_FIGHT:
 			_force_basic_hand()
-			_enable_only([atk_btn])
+			_show_only([atk_btn], [atk_btn])
 			_live("YOUR MOVE", "Attack the Grimward — watch for counters!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.WAVE3_PICK:
 			_pick_setup(false, "Basic", "PICK A CARD", "Tap the glowing BASIC card.")
