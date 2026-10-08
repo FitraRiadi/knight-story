@@ -48,6 +48,7 @@ enum Step {
 	BASIC_PICK,
 	QTE_DO,
 	QTE_RESULT,
+	QTE_MISS,
 	PARRY_WAIT,
 	PARRY_DRILL,
 	PARRY_MISS,
@@ -72,7 +73,6 @@ enum Step {
 	LOOT_DONE,
 	PACK_ACT,
 	PACK_VIEW,
-	RUN_INTRO,
 	WAVE2_INTRO,
 	HURT_WAIT,
 	HURT_INFO,
@@ -170,6 +170,8 @@ func _on_tutorial_tapped() -> void:
 			_begin_step(Step.TARGET_ACT)
 		Step.QTE_RESULT:
 			_begin_step(Step.PARRY_WAIT)
+		Step.QTE_MISS:
+			_begin_step(Step.ATTACK_ACT)
 		Step.PARRY_MISS:
 			# Retry drill: panel tutup, tunggu idle beneran, forced
 			# attack lagi dari PARRY_WAIT.
@@ -188,8 +190,6 @@ func _on_tutorial_tapped() -> void:
 			_begin_step(Step.LOOT_ACT)
 		Step.LOOT_DONE:
 			_begin_step(Step.PACK_ACT)
-		Step.RUN_INTRO:
-			_goto_wave2()
 		Step.WAVE2_INTRO:
 			_begin_step(Step.HURT_WAIT)
 		Step.HURT_INFO:
@@ -618,7 +618,7 @@ func _process(_delta: float) -> void:
 				_begin_step(Step.LOOT_INTRO)
 		Step.PACK_VIEW:
 			if not is_inventory_open:
-				_begin_step(Step.RUN_INTRO)
+				_goto_wave2()
 		Step.WAVE3_AFTER:
 			if _is_player_idle() and _is_camera_settled() and total_attacks > _w3_baseline_attacks:
 				_begin_step(Step.WAVE3_DONE)
@@ -775,6 +775,7 @@ func _on_attack_card_selected(index: int) -> void:
 
 func _check_attack_qte_result() -> void:
 	var was_active := is_attack_qte_active
+	var miss_before := total_miss
 	super._check_attack_qte_result()
 	if not _tutorial_active:
 		return
@@ -782,7 +783,19 @@ func _check_attack_qte_result() -> void:
 		return  # resolve basi (QTE udah gak aktif) — jangan pindah step
 	match _step:
 		Step.QTE_DO:
-			_begin_step(Step.QTE_RESULT)
+			# Miss = total_miss nambah. Miss -> kartu basic dibalikin,
+			# flag parry + used dimatiin (JANGAN enemy turn dulu),
+			# retry sampai QTE-nya berhasil.
+			if total_miss > miss_before:
+				_force_parry_turn = false
+				attack_card_used_this_session = false
+				var basic: AttackCardData = load(BASIC_PATH) as AttackCardData
+				if basic:
+					attack_hand.append(basic.duplicate())
+				_step = Step.QTE_MISS
+				_read("MISSED!", "Watch the runner — TAP TO TRY AGAIN.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+			else:
+				_begin_step(Step.QTE_RESULT)
 		Step.FINISH_QTE:
 			if total_miss > int(get_meta("_tut_fin_miss", total_miss)):
 				_step = Step.FINISH_MISS
@@ -1079,10 +1092,6 @@ func _begin_step(step: Step) -> void:
 			if close_b:
 				_allow_interaction(close_b)
 			_live("YOUR BACKPACK", "Potion is in a slot. Tap CLOSE when done.", TutorialUI.Zone.TOP_CENTER, close_b)
-		Step.RUN_INTRO:
-			# Satu-satunya momen run_btn nongol — dikenalin tapi dikunci.
-			_show_only([run_btn], [])
-			_read("BUTTON: RUN", "RUN flees battle — locked during training. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, run_btn)
 		Step.WAVE2_INTRO:
 			_read("WAVE 2", "Another Skeleton! But something feels wrong...", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.HURT_WAIT:
