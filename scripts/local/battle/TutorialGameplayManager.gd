@@ -72,6 +72,7 @@ enum Step {
 	LOOT_DONE,
 	PACK_ACT,
 	PACK_VIEW,
+	PACK_CLOSE,
 	WAVE2_INTRO,
 	HURT_WAIT,
 	HURT_INFO,
@@ -195,6 +196,8 @@ func _on_tutorial_tapped() -> void:
 			_begin_step(Step.FINISH_ACT)
 		Step.LOOT_DONE:
 			_begin_step(Step.PACK_ACT)
+		Step.PACK_VIEW:
+			_begin_step(Step.PACK_CLOSE)
 		Step.WAVE2_INTRO:
 			_begin_step(Step.HURT_WAIT)
 		Step.HURT_INFO:
@@ -642,6 +645,8 @@ func _process(_delta: float) -> void:
 				_wave2_cleared_at = -1
 				_begin_step(Step.WAVE2_FIGHT)
 		Step.PACK_VIEW:
+			pass  # read, tap -> PACK_CLOSE (di tapped-match)
+		Step.PACK_CLOSE:
 			if not is_inventory_open:
 				_goto_wave2()
 		Step.WAVE3_AFTER:
@@ -1136,11 +1141,17 @@ func _begin_step(step: Step) -> void:
 			is_player_turn = true
 			_act("OPEN BACKPACK", "Tap BACKPACK to look inside.", TutorialUI.Zone.BOTTOM_LEFT, backpack_btn)
 		Step.PACK_VIEW:
+			# Beat 1: spotlight SELURUH inventory + penjelasan dulu.
+			var inv: Control = battle_inventory_instance if is_instance_valid(battle_inventory_instance) else null
+			_lock_all_except([])
+			_show("YOUR BACKPACK", "Items live in slots — potions, materials, loot. Tap to continue.", TutorialUI.Zone.TOP_CENTER, inv, true)
+		Step.PACK_CLOSE:
+			# Beat 2: baru spotlight tombol CLOSE-nya.
 			var close_b: Button = _inventory_close_button()
 			_lock_all_except([close_b] if close_b else [])
 			if close_b:
 				_allow_interaction(close_b)
-			_live("YOUR BACKPACK", "Potion is in a slot. Tap CLOSE when done.", TutorialUI.Zone.TOP_CENTER, close_b)
+			_live("CLOSE IT", "Tap CLOSE when done looking.", TutorialUI.Zone.TOP_CENTER, close_b)
 		Step.WAVE2_INTRO:
 			_read("WAVE 2", "Another Skeleton! But something feels wrong...", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.HURT_WAIT:
@@ -1176,7 +1187,9 @@ func _begin_step(step: Step) -> void:
 			_live("DRINK IT!", "Tap USE to drink the Health Potion.", TutorialUI.Zone.TOP_CENTER, use_b)
 		Step.HEALED:
 			_ui_set_hp_note(false)
-			_read("HEALED!", "Now finish the weakened Skeleton!", TutorialUI.Zone.TOP_CENTER, player_info)
+			# Tanpa spotlight: momen heal (partikel + HP naik) biar
+			# keliatan utuh.
+			_read("HEALED!", "Now finish the weakened Skeleton!", TutorialUI.Zone.TOP_CENTER, null)
 		Step.WAVE2_FIGHT:
 			_force_basic_hand()
 			_show_only([atk_btn], [atk_btn])
