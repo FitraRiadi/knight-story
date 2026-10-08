@@ -1146,10 +1146,12 @@ func _begin_step(step: Step) -> void:
 		Step.HURT_WAIT:
 			# Skeleton nyerang BENERAN (forced turn, live). Damage
 			# serangannya di-script mendarat pas di 25%.
+			# SENGAJA tanpa spotlight: momen kena hit harus keliatan
+			# UTUH (animasi + shake + HP bar), jangan digelapin.
 			_lock_all_except([])
 			is_player_turn = false
 			_apply_button_gating(false)
-			_live("WATCH OUT!", "The Skeleton is charging a heavy blow!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+			_live("WATCH OUT!", "The Skeleton is charging a heavy blow!", TutorialUI.Zone.BOTTOM_LEFT, null)
 			_force_hurt_turn = true
 			_start_enemies_turn()
 		Step.HURT_INFO:
