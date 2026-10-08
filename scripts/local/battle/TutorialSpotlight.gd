@@ -94,7 +94,11 @@ func _process(delta: float) -> void:
 			_has_cur = true
 	# Glide eksponensial ke target: pindah spot = animasi, bukan snap.
 	# Tetap ngikutin target yang gerak (kartu hover, tombol slide).
-	var t := 1.0 - exp(-GLIDE_SPEED * minf(maxf(delta, 0.0), 0.05))
+	# Fade-out (clear) jalannya 2x lebih kencang biar layar cepat jernih.
+	var spd := GLIDE_SPEED
+	if _target_node == null or not is_instance_valid(_target_node):
+		spd = GLIDE_SPEED * 2.0
+	var t := 1.0 - exp(-spd * minf(maxf(delta, 0.0), 0.05))
 	_cur_center = _cur_center.lerp(want_center, t)
 	_cur_size = _cur_size.lerp(want_size, t)
 	_cur_dim = lerpf(_cur_dim, want_dim, t)

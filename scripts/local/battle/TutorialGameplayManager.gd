@@ -1025,7 +1025,10 @@ func _begin_step(step: Step) -> void:
 			_lock_all_except([cb] if cb else [])
 			if cb:
 				_allow_interaction(cb)
-			_live("HOLD & RELEASE", "Hold the button, release inside GOLD for max damage!", TutorialUI.Zone.BOTTOM_LEFT, cb)
+			# SENGAJA tanpa spotlight: charge itu minigame timing yang
+			# harus keliatan UTUH (bar + zona gold). Kalau cuma tombolnya
+			# yang dilubangin, sisanya gelap dan gak bisa ngeker timing.
+			_live("HOLD & RELEASE", "Hold the button, release inside GOLD for max damage!", TutorialUI.Zone.BOTTOM_LEFT, null)
 		Step.RAPID_PICK_WAIT:
 			_show_only([atk_btn], [atk_btn])
 			_lock_all_except([atk_btn])
