@@ -950,8 +950,8 @@ func _inventory_slot_button(idx: int) -> Button:
 		return null
 	var slot: Node = slots[idx]
 	for c in slot.get_children():
-		if c is Button:
-			return c as Button
+		if c is BaseButton:
+			return c as BaseButton
 	return null
 
 
@@ -1068,6 +1068,7 @@ func _begin_step(step: Step) -> void:
 			_read("LOOT SECURED!", "Saved to your BACKPACK permanently. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, backpack_btn)
 		Step.PACK_ACT:
 			_show_only([backpack_btn], [backpack_btn])
+			_repair_turn_if_no_live_enemies()
 			_act("OPEN BACKPACK", "Tap BACKPACK to look inside.", TutorialUI.Zone.BOTTOM_LEFT, backpack_btn)
 		Step.PACK_VIEW:
 			var close_b: Button = _inventory_close_button()
@@ -1095,6 +1096,7 @@ func _begin_step(step: Step) -> void:
 			_read("YOU'RE HURT!", "HP dropped to 25%! You need that potion. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, player_info)
 		Step.PACK2_ACT:
 			_show_only([backpack_btn], [backpack_btn])
+			_repair_turn_if_no_live_enemies()
 			_act("GRAB THE POTION", "Open BACKPACK and use your Health Potion.", TutorialUI.Zone.BOTTOM_LEFT, backpack_btn)
 		Step.POTION_SLOT:
 			var slot_b: Button = _inventory_slot_button(_potion_index)
@@ -1176,6 +1178,18 @@ func _last_attack_result_text() -> String:
 	if total_critical > 0:
 		return "**Perfect!** Great timing = bonus damage."
 	return "Attack connected. Timing decides the damage."
+
+
+# Pengaman: kalau flag giliran nyangkut false padahal gak ada musuh
+# hidup (=> gak ada turn valid yang jalan), balikin manual. Dipakai
+# sebelum step yang butuh tap tombol (tap ditolak pas bukan giliran).
+func _repair_turn_if_no_live_enemies() -> void:
+	if is_player_turn:
+		return
+	for e in enemies:
+		if is_instance_valid(e) and e.current_hp > 0:
+			return
+	is_player_turn = true
 
 
 func _enemy_ref() -> Node:
@@ -1294,12 +1308,12 @@ func _set_enemy_clickable(enemy: BattleEnemy, allow: bool) -> void:
 		if btn is Control:
 			if allow:
 				(btn as Control).mouse_filter = Control.MOUSE_FILTER_STOP
-				if btn is Button:
-					(btn as Button).disabled = false
+				if btn is BaseButton:
+					(btn as BaseButton).disabled = false
 			else:
 				(btn as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
-				if btn is Button:
-					(btn as Button).disabled = true
+				if btn is BaseButton:
+					(btn as BaseButton).disabled = true
 
 
 func _set_enemy_clickable_all(allow: bool) -> void:
@@ -1320,8 +1334,8 @@ func _allow_interaction(node: Node) -> void:
 	_save_state_if_needed(n)
 	if n is Control:
 		(n as Control).mouse_filter = Control.MOUSE_FILTER_STOP
-		if n is Button:
-			(n as Button).disabled = false
+		if n is BaseButton:
+			(n as BaseButton).disabled = false
 	n.process_mode = Node.PROCESS_MODE_ALWAYS
 	if not (n in _always_nodes):
 		_always_nodes.append(n)
@@ -1362,8 +1376,8 @@ func _save_state_if_needed(node: Node) -> void:
 		var id := c.get_instance_id()
 		if not _saved_mouse_filters.has(id):
 			_saved_mouse_filters[id] = c.mouse_filter
-		if node is Button:
-			var b := node as Button
+		if node is BaseButton:
+			var b := node as BaseButton
 			if not _saved_disabled.has(id):
 				_saved_disabled[id] = b.disabled
 	if not _saved_process_mode.has(node.get_instance_id()):
@@ -1376,15 +1390,15 @@ func _disable_node(node: Node) -> void:
 		var c := node as Control
 		_locked_nodes.append(c)
 		c.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	if node is Button:
-		(node as Button).disabled = true
+	if node is BaseButton:
+		(node as BaseButton).disabled = true
 
 
 func _unlock_all() -> void:
 	for c in _locked_nodes:
 		if is_instance_valid(c):
-			if c is Button:
-				var b := c as Button
+			if c is BaseButton:
+				var b := c as BaseButton
 				var id := b.get_instance_id()
 				if _saved_disabled.has(id):
 					b.disabled = _saved_disabled[id]

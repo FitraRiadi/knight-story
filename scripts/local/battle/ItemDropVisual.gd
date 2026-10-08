@@ -275,6 +275,8 @@ func confirm_collect() -> void:
 		label_hold.text = "Collect " + item_data.item_name
 		label_hold.visible = true
 		label_hold.modulate.a = 0.0
+		# Display only — jangan makan tap tombol di bawahnya.
+		label_hold.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 	# Item: fadeout doang, tanpa squeeze
 	var tween := create_tween()
