@@ -121,6 +121,7 @@ var _drill_armed := false
 var _retry_armed := false
 var _rapid_taught := false
 var _w3_baseline_attacks := 0
+var _w3_baseline_miss := 0
 var _potion_index := -1
 var _loot_collected := false
 # Kapan skeleton wave-2 terpantau mati (msec). Beat jeda sebelum
@@ -220,6 +221,8 @@ func _on_tutorial_finished() -> void:
 	_tutorial_active = false
 	_pending_idle_step = Step.IDLE
 	_unlock_all()
+	# Battle balik normal: lepas semua armor latihan.
+	_set_training_armor_all(false)
 	_tut_revealed = [atk_btn, defend_btn, backpack_btn, run_btn, skill_btn]
 	_tut_enabled = [atk_btn, defend_btn, backpack_btn, run_btn, skill_btn]
 	_apply_button_gating(true)
@@ -629,6 +632,9 @@ func _process(_delta: float) -> void:
 		Step.FINISH_AFTER:
 			if enemies.is_empty() and _drop_node and is_instance_valid(_drop_node) and _is_camera_settled():
 				_begin_step(Step.LOOT_ACT)
+			elif _is_player_idle() and _is_camera_settled():
+				# LOW hit (32 dmg) gak bunuh skeleton 50HP -> serang lagi.
+				_begin_step(Step.FINISH_ACT)
 		Step.WAVE2_AFTER:
 			# Mati -> kasih NAPAS dulu (panel cleared + beat 2.5 dtk),
 			# baru grimward. Jangan langsung spawn, kecepetan.
@@ -808,6 +814,7 @@ func _on_attack_card_selected(index: int) -> void:
 			_begin_step(Step.WAVE2_QTE)
 		Step.WAVE3_PICK:
 			_w3_baseline_attacks = total_attacks
+			_w3_baseline_miss = total_miss
 			_begin_step(Step.WAVE3_QTE)
 
 
@@ -845,8 +852,12 @@ func _check_attack_qte_result() -> void:
 			_step = Step.WAVE2_AFTER
 			_live("STRIKE!", "Did it go down?", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.WAVE3_QTE:
-			_step = Step.WAVE3_AFTER
-			_live("ATTACK LANDED", "Watch out — Grimward can counter!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+			# Miss -> serang lagi (counter cuma keluar pas hit kena).
+			if total_miss > _w3_baseline_miss:
+				_begin_step(Step.WAVE3_FIGHT)
+			else:
+				_step = Step.WAVE3_AFTER
+				_live("ATTACK LANDED", "Watch out — Grimward can counter!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 
 
 func _on_enemy_attack_preparing() -> void:
@@ -1202,7 +1213,7 @@ func _begin_step(step: Step) -> void:
 		Step.WAVE2_AFTER:
 			pass  # dijaga _process (mati -> wave3, miss -> serang lagi)
 		Step.WAVE3_INTRO:
-			_read("WAVE 3: GRIMWARD", "Tougher. It can COUNTER your attacks (30%). Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+			_read("WAVE 3: GRIMWARD", "Tougher. It COUNTERS when struck — watch closely!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.WAVE3_FIGHT:
 			_force_basic_hand()
 			_show_only([atk_btn], [atk_btn])
@@ -1543,14 +1554,16 @@ func spawn_wave3_grimward() -> void:
 	current_wave = 3
 	wave_progress.set_wave(3, 3)
 	_tutorial_spawn(["grimward"] as Array[String], [3] as Array[int])
-	# Counter di-nerf ke 30%: data grimward punya tactical_attack:3
-	# (=100% counter). Beginner gak siap ngadep itu.
+	# Pelajaran counter = DETERMINISTIK: armor ON (damage ~1, gak bisa
+	# mati duluan — crit 130 > HP 125!) + counter level 3 = 100% pasti
+	# keluar pas diserang. Mati cuma kalau tutorial yang nyuruh.
 	for e in enemies:
 		if not is_instance_valid(e):
 			continue
+		_set_training_armor(e, true)
 		var ab := e.get_tactical_attack_ability()
 		if ab:
-			ab.level = 1
+			ab.level = 3
 
 
 func _goto_wave2() -> void:
