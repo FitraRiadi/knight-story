@@ -80,6 +80,10 @@ enum Step {
 	POTION_SLOT,
 	POTION_USE,
 	HEALED,
+	WAVE2_FIGHT,
+	WAVE2_PICK,
+	WAVE2_QTE,
+	WAVE2_AFTER,
 	WAVE3_INTRO,
 	WAVE3_FIGHT,
 	WAVE3_PICK,
@@ -195,7 +199,9 @@ func _on_tutorial_tapped() -> void:
 		Step.HURT_INFO:
 			_begin_step(Step.PACK2_ACT)
 		Step.HEALED:
-			_goto_wave3()
+			# Potion dimimun = giliran kemakan (enemy turn jalan).
+			# FIGHT baru nongol pas idle beneran, bukan di tengah turn.
+			_wait_for_idle_then(Step.WAVE2_FIGHT)
 		Step.WAVE3_INTRO:
 			_begin_step(Step.WAVE3_FIGHT)
 		Step.WAVE3_DONE:
@@ -487,7 +493,10 @@ func _process_enemy_death(_exp_amount: int, _gold_amount: int, _dropped_items: A
 	enemies_killed += 1
 	if is_instance_valid(enemy):
 		EventBus.enemy_killed.emit(enemy.enemy_id)
-	_tutorial_force_drop(enemy)
+	# Drop potion cuma wave-1 (pelajaran loot). Wave-2 mati -> langsung
+	# wave-3, gak ada loot keenam.
+	if _wave_index == 1:
+		_tutorial_force_drop(enemy)
 	_update_target_selection()
 
 
@@ -616,6 +625,13 @@ func _process(_delta: float) -> void:
 		Step.FINISH_AFTER:
 			if enemies.is_empty() and _drop_node and is_instance_valid(_drop_node) and _is_camera_settled():
 				_begin_step(Step.LOOT_INTRO)
+		Step.WAVE2_AFTER:
+			# Mati -> wave3. Miss (masih hidup) -> giliran balik,
+			# serang lagi via FIGHT.
+			if enemies.is_empty() and _is_camera_settled():
+				_goto_wave3()
+			elif _is_player_idle() and _is_camera_settled():
+				_begin_step(Step.WAVE2_FIGHT)
 		Step.PACK_VIEW:
 			if not is_inventory_open:
 				_goto_wave2()
@@ -711,6 +727,10 @@ func _on_attack_pressed() -> void:
 		if _attack_index_of("Basic") == -1:
 			_load_attack_cards()
 		_try_open_attack_deck(Step.FINISH_PICK)
+	elif _step == Step.WAVE2_FIGHT:
+		if _attack_index_of("Basic") == -1:
+			_load_attack_cards()
+		_try_open_attack_deck(Step.WAVE2_PICK)
 	elif _step == Step.WAVE3_FIGHT:
 		_try_open_attack_deck(Step.WAVE3_PICK)
 
@@ -742,6 +762,8 @@ func _on_attack_card_selected(index: int) -> void:
 			expected = "Rapid"
 		Step.FINISH_PICK:
 			expected = "Basic"
+		Step.WAVE2_PICK:
+			expected = "Basic"
 		Step.WAVE3_PICK:
 			expected = "Basic"
 		_:
@@ -768,6 +790,8 @@ func _on_attack_card_selected(index: int) -> void:
 			_begin_step(Step.RAPID_DO)
 		Step.FINISH_PICK:
 			_begin_step(Step.FINISH_QTE)
+		Step.WAVE2_PICK:
+			_begin_step(Step.WAVE2_QTE)
 		Step.WAVE3_PICK:
 			_w3_baseline_attacks = total_attacks
 			_begin_step(Step.WAVE3_QTE)
@@ -803,6 +827,9 @@ func _check_attack_qte_result() -> void:
 			else:
 				_step = Step.FINISH_AFTER
 				_live("DIRECT HIT!", "Finishing blow landed!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+		Step.WAVE2_QTE:
+			_step = Step.WAVE2_AFTER
+			_live("STRIKE!", "Did it go down?", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.WAVE3_QTE:
 			_step = Step.WAVE3_AFTER
 			_live("ATTACK LANDED", "Watch out — Grimward can counter!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
@@ -813,10 +840,25 @@ func _on_enemy_attack_preparing() -> void:
 	if not _tutorial_active:
 		return
 	# Pelajaran parry wave-1: super di atas udah buka window (durasi
-	# drill karena _drill_armed). Langsung masuk DRILL live — musuh
-	# ayun beneran, gak ada freeze.
+	# drill karena _drill_armed). Fade-out spotlight dulu (~0.35 dtk,
+	# live) biar menciut smooth, BARU spot muncul di tombol parry.
 	if _step == Step.PARRY_WAIT or _step == Step.QTE_RESULT:
-		_begin_step(Step.PARRY_DRILL)
+		_fade_then_drill()
+
+
+# Fade-then-spot: gelap lama menciut dulu, baru lubang muncul di
+# tombol parry. Guard berlapis biar gak nyasar kalau step pindah.
+func _fade_then_drill() -> void:
+	_tutorial_ui.clear_spotlight()
+	await get_tree().create_timer(0.35).timeout
+	if not is_instance_valid(self) or not _tutorial_active:
+		return
+	if _step != Step.PARRY_WAIT and _step != Step.QTE_RESULT:
+		return
+	var live: Array = enemies.filter(func(e): return is_instance_valid(e) and e.current_hp > 0)
+	if live.is_empty():
+		return
+	_begin_step(Step.PARRY_DRILL)
 
 
 func _on_parry_button_clicked() -> void:
@@ -1077,6 +1119,9 @@ func _begin_step(step: Step) -> void:
 			_apply_button_gating(false)
 			_read("LOOT DROPPED!", "The Skeleton dropped something. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, _drop_node)
 		Step.LOOT_ACT:
+			# Balikin juga di sini (bukan cuma LOOT_INTRO): chain tutup
+			# deck pasca-kill bisa telat dan nimpa restore yang duluan.
+			is_player_turn = true
 			_lock_all_except([_drop_node])
 			_allow_interaction(_drop_node)
 			_live("COLLECT LOOT", "Tap the glowing item to collect it.", TutorialUI.Zone.BOTTOM_LEFT, _drop_node)
@@ -1085,6 +1130,7 @@ func _begin_step(step: Step) -> void:
 		Step.PACK_ACT:
 			_show_only([backpack_btn], [backpack_btn])
 			_repair_turn_if_no_live_enemies()
+			is_player_turn = true
 			_act("OPEN BACKPACK", "Tap BACKPACK to look inside.", TutorialUI.Zone.BOTTOM_LEFT, backpack_btn)
 		Step.PACK_VIEW:
 			var close_b: Button = _inventory_close_button()
@@ -1125,12 +1171,26 @@ func _begin_step(step: Step) -> void:
 			_live("DRINK IT!", "Tap USE to drink the Health Potion.", TutorialUI.Zone.TOP_CENTER, use_b)
 		Step.HEALED:
 			_ui_set_hp_note(false)
-			_read("HEALED!", "Always keep potions ready. Tap to continue.", TutorialUI.Zone.TOP_CENTER, player_info)
+			_read("HEALED!", "Now finish the weakened Skeleton!", TutorialUI.Zone.TOP_CENTER, player_info)
+		Step.WAVE2_FIGHT:
+			_force_basic_hand()
+			_show_only([atk_btn], [atk_btn])
+			_live("YOUR MOVE", "Finish the Skeleton — tap ATTACK!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+		Step.WAVE2_PICK:
+			_pick_setup(false, "Basic", "PICK A CARD", "Tap the glowing BASIC card.")
+		Step.WAVE2_QTE:
+			_lock_all_except([attack_qte_node, reset_target_btn])
+			_live("TIMING!", "Tap when the runner hits GOLD!", TutorialUI.Zone.BOTTOM_LEFT, attack_qte_node)
+		Step.WAVE2_AFTER:
+			pass  # dijaga _process (mati -> wave3, miss -> serang lagi)
 		Step.WAVE3_INTRO:
 			_read("WAVE 3: GRIMWARD", "Tougher. It can COUNTER your attacks (30%). Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.WAVE3_FIGHT:
 			_force_basic_hand()
 			_show_only([atk_btn], [atk_btn])
+			# Chain tutup-deck pasca-kill wave-2 bisa telat nimpa turn.
+			# Restore di sini (user-paced, chain udah kelar) biar aman.
+			is_player_turn = true
 			_live("YOUR MOVE", "Attack the Grimward — watch for counters!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.WAVE3_PICK:
 			_pick_setup(false, "Basic", "PICK A CARD", "Tap the glowing BASIC card.")
@@ -1506,6 +1566,9 @@ func _goto_wave3() -> void:
 	# sama grimward di titik spawn yang sama.
 	_cleanup_battlefield()
 	_reset_camera_to_default()
+	# Musuh terakhir mati -> parent TIDAK balikin is_player_turn.
+	# Balikin manual, kalau gak semua tap habis ini ditolak.
+	is_player_turn = true
 	await get_tree().create_timer(0.4).timeout
 	if not is_instance_valid(self) or not _tutorial_active:
 		return
