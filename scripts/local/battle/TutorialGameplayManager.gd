@@ -68,7 +68,6 @@ enum Step {
 	FINISH_QTE,
 	FINISH_MISS,
 	FINISH_AFTER,
-	LOOT_INTRO,
 	LOOT_ACT,
 	LOOT_DONE,
 	PACK_ACT,
@@ -194,8 +193,6 @@ func _on_tutorial_tapped() -> void:
 		Step.FINISH_MISS:
 			set_meta("_tut_fin_miss", total_miss)
 			_begin_step(Step.FINISH_ACT)
-		Step.LOOT_INTRO:
-			_begin_step(Step.LOOT_ACT)
 		Step.LOOT_DONE:
 			_begin_step(Step.PACK_ACT)
 		Step.WAVE2_INTRO:
@@ -628,7 +625,7 @@ func _process(_delta: float) -> void:
 				_wait_for_idle_then(Step.FINISH_INTRO)
 		Step.FINISH_AFTER:
 			if enemies.is_empty() and _drop_node and is_instance_valid(_drop_node) and _is_camera_settled():
-				_begin_step(Step.LOOT_INTRO)
+				_begin_step(Step.LOOT_ACT)
 		Step.WAVE2_AFTER:
 			# Mati -> kasih NAPAS dulu (panel cleared + beat 2.5 dtk),
 			# baru grimward. Jangan langsung spawn, kecepetan.
@@ -1121,22 +1118,16 @@ func _begin_step(step: Step) -> void:
 			_read("MISSED!", "No damage. Tap to try the finishing blow again.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.FINISH_AFTER:
 			pass  # dijaga _process (musuh mati + drop + kamera siap)
-		Step.LOOT_INTRO:
+		Step.LOOT_ACT:
 			_tutorial_inv_before = _tutorial_inventory_count()
 			_loot_collected = false
 			_ensure_loot_space()
-			# Musuh terakhir mati -> parent TIDAK balikin is_player_turn.
-			# Tutorial yang balikin manual, kalau gak backpack kekunci.
-			is_player_turn = true
-			_apply_button_gating(false)
-			_read("LOOT DROPPED!", "The Skeleton dropped something. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, _drop_node)
-		Step.LOOT_ACT:
-			# Balikin juga di sini (bukan cuma LOOT_INTRO): chain tutup
-			# deck pasca-kill bisa telat dan nimpa restore yang duluan.
+			# Balikin giliran di sini: chain tutup deck pasca-kill bisa
+			# telat dan nimpa restore yang duluan.
 			is_player_turn = true
 			_lock_all_except([_drop_node])
 			_allow_interaction(_drop_node)
-			_live("COLLECT LOOT", "Tap the glowing item to collect it.", TutorialUI.Zone.BOTTOM_LEFT, _drop_node)
+			_live("COLLECT LOOT", "The Skeleton dropped something! Tap the glowing item.", TutorialUI.Zone.BOTTOM_LEFT, _drop_node)
 		Step.LOOT_DONE:
 			_read("LOOT SECURED!", "Saved to your BACKPACK permanently. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, backpack_btn)
 		Step.PACK_ACT:
