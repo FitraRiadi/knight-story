@@ -39,11 +39,29 @@ func _ready() -> void:
 	_mat.set_shader_parameter("soft_edge", 0.10)
 	_mat.set_shader_parameter("pulse", 0.0)
 	material = _mat
+	# WAJIB dua-duanya: anchors_preset DOANG gak ngembangin size
+	# (kebukti: size tetap (0,0) -> overlay gak pernah ke-render!).
 	set_anchors_preset(Control.PRESET_FULL_RECT)
+	set_offsets_preset(Control.PRESET_FULL_RECT)
+	_force_full_rect()
 	visible = false
 
 
+# Sabuk pengaman: paksa fullscreen tiap frame (rotasi/resize HP).
+func _force_full_rect() -> void:
+	var vs := get_viewport_rect().size
+	if vs.x <= 0.0 or vs.y <= 0.0:
+		return
+	position = Vector2.ZERO
+	size = vs
+	offset_left = 0.0
+	offset_top = 0.0
+	offset_right = 0.0
+	offset_bottom = 0.0
+
+
 func _process(_delta: float) -> void:
+	_force_full_rect()
 	# Ikutin target tiap frame (target bisa gerak: kartu hover, tombol slide)
 	if _target_node and is_instance_valid(_target_node):
 		var r := get_target_rect()

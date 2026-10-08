@@ -45,9 +45,10 @@ void fragment() {
 	// Alpha: 0 di dalam lubang -> dim_amount di luar
 	float alpha = outside * dim_amount;
 
-	// Cincin tipis terang di pinggir lubang biar mata nempel
+	// Cincin tipis terang di pinggir lubang biar mata nempel.
+	// Dibikin samar (0.04) biar target di dalam lubang tetap JERNIH.
 	float ring = 1.0 - smoothstep(0.0, soft_edge * 0.9, t);
-	float ring_alpha = ring * (0.10 + 0.16 * pulse);
+	float ring_alpha = ring * (0.04 + 0.10 * pulse);
 
 	vec3 col = mix(vec3(0.0, 0.0, 0.0), vec3(1.0, 0.92, 0.65), ring * pulse * 0.35);
 
