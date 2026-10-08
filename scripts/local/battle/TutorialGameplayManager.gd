@@ -1270,7 +1270,6 @@ func _begin_step(step: Step) -> void:
 			_force_hurt_turn = true
 			_start_enemies_turn()
 		Step.HURT_INFO:
-			_ui_set_hp_note(true)
 			_read("YOU'RE HURT!", "HP dropped to 25%! You need that potion. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, player_info)
 		Step.PACK2_ACT:
 			_show_only([backpack_btn], [backpack_btn])
@@ -1295,7 +1294,6 @@ func _begin_step(step: Step) -> void:
 				_allow_interaction(use_b)
 			_live("DRINK IT!", "Tap USE to drink the Health Potion.", TutorialUI.Zone.TOP_CENTER, use_b)
 		Step.HEALED:
-			_ui_set_hp_note(false)
 			# Tanpa spotlight: momen heal (partikel + HP naik) biar
 			# keliatan utuh.
 			_read("HEALED!", "Now finish the weakened Skeleton!", TutorialUI.Zone.TOP_CENTER, null)
@@ -1627,11 +1625,6 @@ func _ui_hide() -> void:
 func _ui_show_final(text: String) -> void:
 	if _tutorial_ui:
 		_tutorial_ui.show_final(text)
-
-
-func _ui_set_hp_note(shown: bool) -> void:
-	if _tutorial_ui:
-		_tutorial_ui.set_hp_note(shown)
 
 
 # ============================================================

@@ -41,7 +41,6 @@ var _panel_sfx: AudioStream = null
 var _title_home := Vector2.ZERO
 var _info_home := Vector2.ZERO
 var _badge_home := Vector2.ZERO
-var _hp_note: Label = null
 var _continue_btn: Button = null
 var _count_label: Label = null
 var _move_tween: Tween = null
@@ -70,7 +69,7 @@ func setup(layer: CanvasLayer, panel: Panel) -> void:
 	# Panel scene DIPINDAH ke layer tutorial (300): biar SELALU paling
 	# atas — di atas deck kartu (165), QTE (155), parry/rapid (150) —
 	# dan di atas spotlight (gelap) itu sendiri. Urutan anak di sini:
-	# spotlight, panel, hp_note, continue. Koordinat panel tetap
+	# spotlight, panel, continue. Koordinat panel tetap
 	# viewport-space (layer 300 identity), posisi di-set tiap show.
 	if panel == null or not is_instance_valid(panel):
 		push_error("[TutorialUI] tutorialPanel scene tidak ketemu — panel tutorial gak akan muncul!")
@@ -95,17 +94,6 @@ func setup(layer: CanvasLayer, panel: Panel) -> void:
 	_info_home = _info.position
 	_badge_home = _step_badge.position
 	_panel.visible = false
-
-	# Catatan kecil HP protected (tetap runtime, di atas panel).
-	_hp_note = Label.new()
-	_hp_note.text = "Tutorial: HP protected (min 25%)"
-	_hp_note.add_theme_font_size_override("font_size", 10)
-	_hp_note.add_theme_color_override("font_color", Color(0.75, 0.8, 0.95, 0.95))
-	_hp_note.add_theme_constant_override("outline_size", 4)
-	_hp_note.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
-	_hp_note.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_hp_note.visible = false
-	add_child(_hp_note)
 
 	_continue_btn = Button.new()
 	_continue_btn.text = "Continue"
@@ -153,7 +141,6 @@ func show_step(step_no: int, step_total: int, title: String, body: String,
 	if avoid_target and spotlight and spotlight.visible:
 		target = _avoid_spotlight(zone, target)
 	_move_panel_to(target)
-	_place_hp_note()
 	_play_intro_stagger()
 	_play_panel_sfx()
 
@@ -177,7 +164,6 @@ func show_final(text: String) -> void:
 	if spotlight:
 		spotlight.clear_spotlight()
 	_move_panel_to(_zone_pos(Zone.TOP_CENTER))
-	_place_hp_note()
 	_play_intro_stagger()
 	_play_panel_sfx()
 	_continue_btn.visible = true
@@ -188,7 +174,6 @@ func hide_panel() -> void:
 	visible = false
 	_dismiss_armed = false
 	_continue_btn.visible = false
-	_hp_note.visible = false
 	if _panel:
 		_panel.visible = false
 	if spotlight:
@@ -219,12 +204,6 @@ func _apply_pending_spotlight() -> void:
 func clear_spotlight() -> void:
 	if spotlight:
 		spotlight.clear_spotlight()
-
-
-func set_hp_note(shown: bool) -> void:
-	_hp_note.visible = shown and visible
-	if shown:
-		_place_hp_note()
 
 
 func is_dismiss_armed() -> bool:
@@ -377,12 +356,6 @@ func _move_panel_to(target: Vector2) -> void:
 	_move_tween = create_tween()
 	_move_tween.tween_property(_panel, "position", target, MOVE_TIME)\
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-
-
-func _place_hp_note() -> void:
-	if _hp_note == null:
-		return
-	_hp_note.position = _panel_dest + Vector2(0, -18)
 
 
 func _position_continue_btn() -> void:
