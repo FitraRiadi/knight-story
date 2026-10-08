@@ -17,7 +17,8 @@ class_name TutorialGameplayManager
 #    mati sebelum semua gerakan kelar diajarin
 #  - Wave 2: HP ke 25% lewat serangan skeleton BENERAN (damage
 #    serangannya di-script), bukan damage dadakan
-#  - Freeze parry = senyap total (bus solo + sweep stream_paused)
+#  - Drill parry LIVE & bisa diulang: jendela 6 dtk, miss -> "TRY
+#    AGAIN" -> forced attack lagi. Tanpa pause, tanpa swallow.
 #    KECUALI musik yang jalan terus
 #  - Transisi step nunggu: giliran beneran balik + kamera settle
 #    + dwell min 1.2 detik (gak kecepetan, gak kebanyakan stop)
@@ -48,7 +49,8 @@ enum Step {
 	QTE_DO,
 	QTE_RESULT,
 	PARRY_WAIT,
-	PARRY_ACT,
+	PARRY_DRILL,
+	PARRY_MISS,
 	PARRY_RESULT,
 	DEFEND_ACT,
 	SKILL_ACT,
@@ -109,8 +111,10 @@ var _pending_idle_since: int = 0
 var _force_parry_turn := false
 var _force_hurt_turn := false
 var _hurt_turn_active := false
-var _lesson_parry_open := false
-var _parry_preparing_seen := false
+# Drill parry lagi kebuka (window 6 dtk, boleh miss -> retry).
+var _drill_armed := false
+# Retry parry: tap di MISS -> tunggu idle -> mulai forced turn manual.
+var _retry_armed := false
 var _rapid_taught := false
 var _w3_baseline_attacks := 0
 var _potion_index := -1
@@ -118,7 +122,6 @@ var _loot_collected := false
 var _pick_expected := ""
 var _pick_is_skill := false
 var _skill_ui_ref: ActionCardUI = null
-var _music_bus_idx := -1
 
 
 func _ready() -> void:
@@ -167,6 +170,12 @@ func _on_tutorial_tapped() -> void:
 			_begin_step(Step.TARGET_ACT)
 		Step.QTE_RESULT:
 			_begin_step(Step.PARRY_WAIT)
+		Step.PARRY_MISS:
+			# Retry drill: panel tutup, tunggu idle beneran, forced
+			# attack lagi dari PARRY_WAIT.
+			_retry_armed = true
+			_ui_hide()
+			_wait_for_idle_then(Step.PARRY_WAIT)
 		Step.FINISH_INTRO:
 			_set_training_armor_all(false)
 			_refill_stamina()
@@ -200,7 +209,6 @@ func _on_tutorial_finished() -> void:
 		return
 	_tutorial_active = false
 	_pending_idle_step = Step.IDLE
-	_pause_game(false)
 	_unlock_all()
 	_tut_revealed = [atk_btn, defend_btn, backpack_btn, run_btn, skill_btn]
 	_tut_enabled = [atk_btn, defend_btn, backpack_btn, run_btn, skill_btn]
@@ -385,12 +393,20 @@ func _show_parry_window(duration: float = 1.0) -> void:
 		parry_timing_bar.value = parry_timing_bar.max_value
 	if parry_timer != null:
 		parry_timer = null
-	# process_always = false -> timer beneran freeze pas tutorial pause
-	parry_timer = get_tree().create_timer(duration, false)
+	# Drill parry: jendela PANJANG (6 dtk) biar sempat baca prompt.
+	# Window natural (di luar drill): durasi parent apa adanya.
+	var real_duration := 6.0 if _drill_armed else duration
+	parry_timer = get_tree().create_timer(real_duration, false)
 	await parry_timer.timeout
 	if not is_instance_valid(self):
 		return
 	if parry_btn.visible and not parry_success_this_turn:
+		if _tutorial_active and _drill_armed and _step == Step.PARRY_DRILL:
+			# MISS pas drill -> sembunyiin window, kasih rute retry.
+			_drill_armed = false
+			_hide_parry_window()
+			_begin_step(Step.PARRY_MISS)
+			return
 		var visual_center = parry_btn.position + Vector2(40, 40)
 		_spawn_missed_popup_text(visual_center)
 		_hide_parry_window()
@@ -443,10 +459,6 @@ func _start_enemies_turn() -> void:
 
 
 func _finish_forced_turn() -> void:
-	# JANGAN set giliran balik selagi tree paused (tail coroutine bisa
-	# kelar sendiri di tengah freeze).
-	while get_tree().paused:
-		await get_tree().process_frame
 	if not is_instance_valid(self) or not _tutorial_active:
 		return
 	_pull_hand_to_corner(0.4)
@@ -530,17 +542,26 @@ func _find_timer_recursive(node: Node) -> Timer:
 
 
 # ============================================================
-# OVERRIDE: DAMAGE — swallow pas freeze + HP floor + hurt script
+# OVERRIDE: DAMAGE — HP floor + hurt script wave-2
+# (Tanpa pause = mekanik real semua; gak ada yang perlu di-swallow.)
 # ============================================================
 
 func apply_damage(event: DamageEvent) -> void:
 	if not _tutorial_active:
 		super.apply_damage(event)
 		return
-	# Freeze parry = no damage sama sekali (tap parry = sukses tepat
-	# waktu). Coroutine musuh jalan terus di balik freeze, jadi tanpa
-	# swallow ini damage + suara + shake tembus di tengah pause.
-	if _step == Step.PARRY_ACT:
+	# Drill miss: hit musuh mendarat TANPA parry (window ditutup parent
+	# pas damage masuk, ~1 dtk — jadi timeout gak pernah kepanggil;
+	# miss dideteksi dari sini, bukan dari timer). Super tetap jalan
+	# biar HP/suara/visual natural, terus rute retry.
+	if _step == Step.PARRY_DRILL and event.source == DamageEvent.Source.NORMAL:
+		super.apply_damage(event)
+		if current_hp < max_hp * HP_FLOOR_PCT:
+			current_hp = max_hp * HP_FLOOR_PCT
+			if hp_bar:
+				_update_player_ui_instant()
+		_drill_armed = false
+		_begin_step(Step.PARRY_MISS)
 		return
 	# Hurt wave-2: damage serangan di-script mendarat PAS di 25%.
 	if _pending_scripted_damage:
@@ -554,13 +575,6 @@ func apply_damage(event: DamageEvent) -> void:
 		current_hp = max_hp * HP_FLOOR_PCT
 		if hp_bar:
 			_update_player_ui_instant()
-
-
-# Freeze-frame parry = tanpa shake/blood juga.
-func trigger_camera_shake_and_blood(intensity: float = 6.0, duration: float = 0.3, alpha_intensity: float = 0.6) -> void:
-	if _tutorial_active and _step == Step.PARRY_ACT:
-		return
-	super.trigger_camera_shake_and_blood(intensity, duration, alpha_intensity)
 
 
 # ============================================================
@@ -675,6 +689,8 @@ func _on_enemy_clicked(clicked_enemy: BattleEnemy) -> void:
 	super._on_enemy_clicked(clicked_enemy)
 	if not _tutorial_active or _step != Step.TARGET_ACT:
 		return
+	if not is_player_turn:
+		return  # bukan giliran — tap lagi nanti
 	_begin_step(Step.ATTACK_ACT)
 
 
@@ -683,25 +699,33 @@ func _on_attack_pressed() -> void:
 		super._on_attack_pressed()
 		return
 	if _step == Step.ATTACK_ACT:
-		_pause_game(false)
-		super._on_attack_pressed()
-		_begin_step(Step.BASIC_PICK)
+		_try_open_attack_deck(Step.BASIC_PICK)
 	elif _step == Step.CHARGE_PICK_WAIT:
-		_pause_game(false)
-		super._on_attack_pressed()
-		_begin_step(Step.CHARGE_PICK)
+		_try_open_attack_deck(Step.CHARGE_PICK)
 	elif _step == Step.RAPID_PICK_WAIT:
-		_pause_game(false)
-		super._on_attack_pressed()
-		_begin_step(Step.RAPID_PICK)
+		_try_open_attack_deck(Step.RAPID_PICK)
 	elif _step == Step.FINISH_ACT:
-		_pause_game(false)
-		super._on_attack_pressed()
-		_begin_step(Step.FINISH_PICK)
+		# Retry MISS menghabiskan Basic (hand sisa [Charge, Rapid]) ->
+		# reload trio biar finisher selalu ada. Tanpa ini PICK stuck
+		# tanpa kartu Basic dan player gak bisa lanjut.
+		if _attack_index_of("Basic") == -1:
+			_load_attack_cards()
+		_try_open_attack_deck(Step.FINISH_PICK)
 	elif _step == Step.WAVE3_FIGHT:
-		_pause_game(false)
-		super._on_attack_pressed()
-		_begin_step(Step.WAVE3_PICK)
+		_try_open_attack_deck(Step.WAVE3_PICK)
+
+
+# Buka deck attack + pindah step HANYA kalau deck beneran kebuka.
+# Dua arah dijaga: jangan buka selagi deck lama masih nutup (callback
+# close basi ngebunuh referensi deck baru), dan jangan pindah step kalau
+# super diem-diem return (mis. tap pas bukan giliran).
+func _try_open_attack_deck(next: Step) -> void:
+	if is_card_ui_open:
+		return
+	super._on_attack_pressed()
+	if not is_card_ui_open:
+		return
+	_begin_step(next)
 
 
 func _on_attack_card_selected(index: int) -> void:
@@ -750,9 +774,12 @@ func _on_attack_card_selected(index: int) -> void:
 
 
 func _check_attack_qte_result() -> void:
+	var was_active := is_attack_qte_active
 	super._check_attack_qte_result()
 	if not _tutorial_active:
 		return
+	if not was_active:
+		return  # resolve basi (QTE udah gak aktif) — jangan pindah step
 	match _step:
 		Step.QTE_DO:
 			_begin_step(Step.QTE_RESULT)
@@ -772,44 +799,26 @@ func _on_enemy_attack_preparing() -> void:
 	super._on_enemy_attack_preparing()
 	if not _tutorial_active:
 		return
-	if _step == Step.PARRY_WAIT:
-		_lesson_parry_open = true
-		_delay_parry_freeze()
-	elif _step == Step.QTE_RESULT:
-		# Player belum tap hasil QTE tapi serangan udah mulai — tunda,
-		# beat jalan pas masuk PARRY_WAIT.
-		_parry_preparing_seen = true
-
-
-# Beat dramatis sebelum freeze: serangan jalan ~2 frame dulu (live),
-# terus freeze tepat di tengah ayunan. Guard berlapis.
-func _delay_parry_freeze() -> void:
-	await get_tree().create_timer(0.35).timeout
-	if not is_instance_valid(self) or not _tutorial_active:
-		return
-	if not _lesson_parry_open:
-		return
-	if _step != Step.PARRY_WAIT:
-		return
-	var live: Array = enemies.filter(func(e): return is_instance_valid(e) and e.current_hp > 0)
-	if live.is_empty():
-		return
-	_begin_step(Step.PARRY_ACT)
+	# Pelajaran parry wave-1: super di atas udah buka window (durasi
+	# drill karena _drill_armed). Langsung masuk DRILL live — musuh
+	# ayun beneran, gak ada freeze.
+	if _step == Step.PARRY_WAIT or _step == Step.QTE_RESULT:
+		_begin_step(Step.PARRY_DRILL)
 
 
 func _on_parry_button_clicked() -> void:
 	if not _tutorial_active:
 		super._on_parry_button_clicked()
 		return
-	if _step == Step.PARRY_ACT or (_step == Step.PARRY_WAIT and _lesson_parry_open):
-		# Tap pas beat 0.35 dtk (sebelum freeze) juga sah.
-		_lesson_parry_open = false
-		# Resume DULU baru efek: sfx parry kedengeran (solo-mute mati),
-		# musuh selesaikan serangan live, damage real (reduksi parry).
-		_pause_game(false)
+	if _step == Step.PARRY_DRILL:
+		if not is_parry_window_active:
+			return  # window udah tutup — tap basi, abaikan
+		# Sukses — drill selesai, musuh selesaikan serangan live.
+		_drill_armed = false
 		super._on_parry_button_clicked()
 		_begin_step(Step.PARRY_RESULT)
 		return
+	# Window parry di luar drill (mis. cry wave-3): efeknya aja.
 	super._on_parry_button_clicked()
 
 
@@ -819,6 +828,8 @@ func _on_defend_pressed() -> void:
 		return
 	if _step != Step.DEFEND_ACT:
 		return
+	if not is_player_turn:
+		return  # bukan giliran — tap lagi nanti
 	_live("GUARD UP!", "Stamina +20. Enemy turn — watch what happens.", TutorialUI.Zone.BOTTOM_LEFT, null)
 	super._on_defend_pressed()
 	_wait_for_idle_then(Step.SKILL_ACT)
@@ -831,6 +842,8 @@ func _on_skill_pressed() -> void:
 	if _step != Step.SKILL_ACT:
 		return
 	super._on_skill_pressed()
+	if not is_card_ui_open:
+		return  # deck gagal kebuka — tap lagi nanti
 	_skill_ui_ref = null
 	_begin_step(Step.SKILL_PICK)
 
@@ -878,12 +891,14 @@ func _on_backpack_pressed() -> void:
 		super._on_backpack_pressed()
 		return
 	if _step == Step.PACK_ACT:
-		_pause_game(false)
 		super._on_backpack_pressed()
+		if not is_inventory_open:
+			return  # inventory gagal kebuka — tap lagi nanti
 		_begin_step(Step.PACK_VIEW)
 	elif _step == Step.PACK2_ACT:
-		_pause_game(false)
 		super._on_backpack_pressed()
+		if not is_inventory_open:
+			return
 		_potion_index = _find_potion_slot()
 		_begin_step(Step.POTION_SLOT)
 
@@ -963,17 +978,27 @@ func _begin_step(step: Step) -> void:
 		Step.QTE_RESULT:
 			_read(_qte_title(), _last_attack_result_text() + " Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.PARRY_WAIT:
-			_pause_game(false)
 			_lock_all_except([])
-			_live("ENEMY TURN", "Skeleton's turn. Watch for a SHIELD button!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
-			if _parry_preparing_seen:
-				_parry_preparing_seen = false
-				_delay_parry_freeze()
-		Step.PARRY_ACT:
-			_act("PARRY!", "A shield appeared! Tap it NOW to parry!", TutorialUI.Zone.BOTTOM_LEFT, parry_btn)
+			# Instruksi drill ditaruh DI SINI (sebelum serangan), bukan
+			# pas shield nongol — window cuma ~1 dtk, gak cukup buat baca.
+			_live("WHEN THE ENEMY ATTACKS...", "A SHIELD button will pop up — tap it FAST to parry!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+			_drill_armed = true
+			# Retry pass: giliran belum jalan (idle) -> mulai forced
+			# turn manual. First pass: turn udah jalan via chain deck.
+			if _retry_armed and _is_player_idle():
+				_retry_armed = false
+				is_player_turn = false
+				_apply_button_gating(false)
+				_force_parry_turn = true
+				_start_enemies_turn()
+		Step.PARRY_DRILL:
+			_lock_all_except([parry_btn])
+			_allow_interaction(parry_btn)
+			_live("NOW! TAP THE SHIELD!", "Tap it before the hit lands!", TutorialUI.Zone.BOTTOM_LEFT, parry_btn)
+		Step.PARRY_MISS:
+			_lock_all_except([])
+			_show("TOO SLOW!", "The hit landed. Watch the wind-up — TAP TO TRY AGAIN.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref(), true)
 		Step.PARRY_RESULT:
-			_pause_game(false)
-			_lock_all_except([])
 			_live("PARRIED!", "Blocked most damage + bonus stamina. Watch!", TutorialUI.Zone.BOTTOM_LEFT, player_info)
 			_wait_for_idle_then(Step.DEFEND_ACT)
 		Step.DEFEND_ACT:
@@ -985,7 +1010,6 @@ func _begin_step(step: Step) -> void:
 		Step.SKILL_PICK:
 			_pick_setup(true, "", "SKILL CARD", "Tap the glowing SKILL card.")
 		Step.CHARGE_PICK_WAIT:
-			_pause_game(false)
 			_enable_only([atk_btn])
 			_lock_all_except([atk_btn])
 			_allow_interaction(atk_btn)
@@ -993,14 +1017,12 @@ func _begin_step(step: Step) -> void:
 		Step.CHARGE_PICK:
 			_pick_setup(false, "Charge", "CHARGE CARD", "Tap the glowing CHARGE card.")
 		Step.CHARGE_DO:
-			_pause_game(false)
 			var cb := _charge_button()
 			_lock_all_except([cb] if cb else [])
 			if cb:
 				_allow_interaction(cb)
 			_live("HOLD & RELEASE", "Hold the button, release inside GOLD for max damage!", TutorialUI.Zone.BOTTOM_LEFT, cb)
 		Step.RAPID_PICK_WAIT:
-			_pause_game(false)
 			_enable_only([atk_btn])
 			_lock_all_except([atk_btn])
 			_allow_interaction(atk_btn)
@@ -1008,7 +1030,6 @@ func _begin_step(step: Step) -> void:
 		Step.RAPID_PICK:
 			_pick_setup(false, "Rapid", "RAPID CARD", "Tap the glowing RAPID card.")
 		Step.RAPID_DO:
-			_pause_game(false)
 			_lock_all_except([rapid_btn])
 			_allow_interaction(rapid_btn)
 			_live("TAP FAST!", "Tap every button before time runs out!", TutorialUI.Zone.BOTTOM_LEFT, rapid_btn)
@@ -1036,7 +1057,6 @@ func _begin_step(step: Step) -> void:
 			_apply_button_gating(false)
 			_read("LOOT DROPPED!", "The Skeleton dropped something. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, _drop_node)
 		Step.LOOT_ACT:
-			_pause_game(false)
 			_lock_all_except([_drop_node])
 			_allow_interaction(_drop_node)
 			_live("COLLECT LOOT", "Tap the glowing item to collect it.", TutorialUI.Zone.BOTTOM_LEFT, _drop_node)
@@ -1047,7 +1067,6 @@ func _begin_step(step: Step) -> void:
 			_reveal(backpack_btn, true)
 			_act("OPEN BACKPACK", "Tap BACKPACK to look inside.", TutorialUI.Zone.BOTTOM_LEFT, backpack_btn)
 		Step.PACK_VIEW:
-			_pause_game(false)
 			var close_b: Button = _inventory_close_button()
 			_lock_all_except([close_b] if close_b else [])
 			if close_b:
@@ -1060,9 +1079,7 @@ func _begin_step(step: Step) -> void:
 			_read("WAVE 2", "Another Skeleton! But something feels wrong...", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.HURT_WAIT:
 			# Skeleton nyerang BENERAN (forced turn, live). Damage
-			# serangannya di-script mendarat pas di 25%. Semua dikunci
-			# (parry window muncul natural tapi gak bisa dipencet).
-			_pause_game(false)
+			# serangannya di-script mendarat pas di 25%.
 			_lock_all_except([])
 			is_player_turn = false
 			_apply_button_gating(false)
@@ -1076,14 +1093,12 @@ func _begin_step(step: Step) -> void:
 			_reveal(backpack_btn, true)
 			_act("GRAB THE POTION", "Open BACKPACK and use your Health Potion.", TutorialUI.Zone.BOTTOM_LEFT, backpack_btn)
 		Step.POTION_SLOT:
-			_pause_game(false)
 			var slot_b: Button = _inventory_slot_button(_potion_index)
 			_lock_all_except([slot_b] if slot_b else [])
 			if slot_b:
 				_allow_interaction(slot_b)
 			_live("FIND THE POTION", "Tap the glowing Health Potion slot.", TutorialUI.Zone.TOP_CENTER, slot_b)
 		Step.POTION_USE:
-			_pause_game(false)
 			_tutorial_heal_before = current_hp
 			var use_b: Button = _inventory_use_button()
 			_lock_all_except([use_b] if use_b else [])
@@ -1096,7 +1111,6 @@ func _begin_step(step: Step) -> void:
 		Step.WAVE3_INTRO:
 			_read("WAVE 3: GRIMWARD", "Tougher. It can COUNTER your attacks (30%). Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.WAVE3_FIGHT:
-			_pause_game(false)
 			_force_basic_hand()
 			_enable_only([atk_btn])
 			_live("YOUR MOVE", "Attack the Grimward — watch for counters!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
@@ -1110,30 +1124,27 @@ func _begin_step(step: Step) -> void:
 		Step.WAVE3_DONE:
 			_read("WELL FOUGHT!", "You survived a counter-attacker. Tap to finish.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.COMPLETE:
-			_pause_game(true)
 			_lock_all_except([])
 			_ui_show_final("TRAINING COMPLETE\nYou know: target, attack, cards, timing, parry, defend, skills, charge, rapid, loot, backpack, potions. Good luck, Knight!")
 
 
-# Step BACA: tree di-pause, panel muncul, player tap panel buat lanjut.
+# Step BACA: panel muncul, player tap panel buat lanjut.
+# (Tanpa pause: pas idle gak ada yang gerak sendiri.)
 func _read(title: String, body: String, zone: TutorialUI.Zone, spot: Node) -> void:
-	_pause_game(true)
 	_lock_all_except([])
 	_show(title, body, zone, spot, true)
 
 
-# Step AKSI (target tunggal, tree paused): target dibikin ALWAYS.
+# Step AKSI (target tunggal): target dibuka + spotlight, sisanya kunci.
 func _act(title: String, body: String, zone: TutorialUI.Zone, target: Node) -> void:
-	_pause_game(true)
 	_lock_all_except([target] if target else [])
 	if target:
 		_allow_interaction(target)
 	_show(title, body, zone, target, false)
 
 
-# Step LIVE (tree jalan: kartu, QTE, charge, rapid, inventory, wait).
+# Step LIVE (kartu, QTE, charge, rapid, inventory, wait).
 func _live(title: String, body: String, zone: TutorialUI.Zone, spot: Node) -> void:
-	_pause_game(false)
 	_show(title, body, zone, spot, false)
 
 
@@ -1206,7 +1217,6 @@ func _pick_setup(is_skill: bool, expected: String, title: String, body: String) 
 	_pick_expected = expected
 	_pick_is_skill = is_skill
 	_refill_stamina()
-	_pause_game(false)
 	_lock_all_except([])
 	_ui_hide()
 	await get_tree().create_timer(0.8).timeout
@@ -1239,66 +1249,14 @@ func _lock_card_bg() -> void:
 				(bg as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
+# (Pause dihapus total dari tutorial: semua step jalan live.
+# Idle giliran player itu quiescent — gak ada yang gerak sendiri,
+# jadi gak ada yang perlu di-freeze. Musik & SFX jalan natural.)
+
+
 # ============================================================
-# PAUSE + AUDIO FREEZE
+# INPUT LOCKING — kunci SEMUA, kecuali target step ini
 # ============================================================
-
-func _pause_game(paused: bool) -> void:
-	get_tree().paused = paused
-	_set_freeze_audio(paused)
-
-
-# Bus musik khusus tutorial: musik dipindah ke bus sendiri SEKALI,
-# terus pakai bus SOLO pas freeze — cuma musik yang bunyi, SFX senyap
-# total. Player musik juga WAJIB ALWAYS (default pausable -> ikut mati).
-func _ensure_music_bus() -> int:
-	if _music_bus_idx >= 0:
-		return _music_bus_idx
-	var idx := AudioServer.get_bus_index("TutMusic")
-	if idx == -1:
-		AudioServer.add_bus()
-		idx = AudioServer.bus_count - 1
-		AudioServer.set_bus_name(idx, "TutMusic")
-	var mm = get_node_or_null("/root/MusicManager")
-	if mm:
-		var p = mm.get("_current_player")
-		if p is AudioStreamPlayer:
-			(p as AudioStreamPlayer).bus = "TutMusic"
-			(p as AudioStreamPlayer).process_mode = Node.PROCESS_MODE_ALWAYS
-	_music_bus_idx = idx
-	return idx
-
-
-# Freeze audio = 2 lapis pengaman:
-# 1. bus SOLO ke musik (ngebungkam SFX apapun, termasuk yang baru dibuat)
-# 2. stream_paused sweep semua SFX (ngebungkam player yang udah ada,
-#    termasuk suara ayunan yang coroutine-nya masih jalan di balik freeze)
-func _set_freeze_audio(frozen: bool) -> void:
-	if frozen:
-		var idx := _ensure_music_bus()
-		if idx >= 0:
-			AudioServer.set_bus_solo(idx, true)
-	else:
-		if _music_bus_idx >= 0:
-			AudioServer.set_bus_solo(_music_bus_idx, false)
-	_set_sfx_paused(frozen)
-
-
-func _set_sfx_paused(paused_sfx: bool) -> void:
-	_sweep_sfx(get_tree().root, paused_sfx)
-
-
-func _sweep_sfx(node: Node, paused_sfx: bool) -> void:
-	for c in node.get_children():
-		if c is AudioStreamPlayer:
-			var p := c as AudioStreamPlayer
-			if p.bus != "TutMusic":
-				p.stream_paused = paused_sfx
-		elif c is AudioStreamPlayer2D:
-			var p2 := c as AudioStreamPlayer2D
-			if p2.bus != "TutMusic":
-				p2.stream_paused = paused_sfx
-		_sweep_sfx(c, paused_sfx)
 
 
 # ============================================================
@@ -1493,7 +1451,6 @@ func _goto_wave2() -> void:
 	set_meta("_tut_w2", true)
 	_step = Step.IDLE
 	_ui_hide()
-	_pause_game(false)
 	_unlock_all()
 	# Bersihin corpse wave-1 + reset kamera biar gak overlap/ancur.
 	_cleanup_battlefield()
@@ -1514,7 +1471,6 @@ func _goto_wave3() -> void:
 	set_meta("_tut_w3", true)
 	_step = Step.IDLE
 	_ui_hide()
-	_pause_game(false)
 	_unlock_all()
 	# Skeleton wave-2 MASIH HIDUP — bersihin dulu biar gak bertubrukan
 	# sama grimward di titik spawn yang sama.
