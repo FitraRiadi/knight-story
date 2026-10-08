@@ -1131,7 +1131,9 @@ func _begin_step(step: Step) -> void:
 			_turn_started = false
 			_count_phase = -1
 			_parry_wait_since = Time.get_ticks_msec()
-			_live("SKELETON ATTACKING!", "Anticipate it — you must parry!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+			# SENGAJA tanpa spotlight: countdown 3-2-1 + musuhnya
+			# biar keliatan utuh pas aba-aba.
+			_live("SKELETON ATTACKING!", "Anticipate it — you must parry!", TutorialUI.Zone.BOTTOM_LEFT, null)
 			_drill_armed = true
 		Step.PARRY_DRILL:
 			_lock_all_except([parry_btn])
