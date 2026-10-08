@@ -25,6 +25,9 @@ signal tapped
 ## Dipencet tombol Continue di step terakhir.
 signal finished
 
+## SFX tiap panel tutorial muncul (zoomIntoEnemy).
+const PANEL_SFX_PATH := "res://assets/audio/effects/battle/ui/zoomIntoEnemy.mp3"
+
 var spotlight: TutorialSpotlight = null
 
 var _panel: Panel = null
@@ -33,14 +36,17 @@ var _info: Label = null
 var _step_badge: Label = null
 var _panel_size := Vector2(272.0, 99.0)
 var _panel_dest := Vector2.ZERO
+var _panel_sfx: AudioStream = null
 # Posisi "rumah" (dari scene) buat animasi slide-in stagger.
 var _title_home := Vector2.ZERO
 var _info_home := Vector2.ZERO
 var _badge_home := Vector2.ZERO
 var _hp_note: Label = null
 var _continue_btn: Button = null
+var _count_label: Label = null
 var _move_tween: Tween = null
 var _intro_tween: Tween = null
+var _count_tween: Tween = null
 
 var _dismiss_armed: bool = false
 # Target spotlight baru: di-apply SEBELUM panel dipindah biar
@@ -109,6 +115,22 @@ func setup(layer: CanvasLayer, panel: Panel) -> void:
 	_continue_btn.pressed.connect(_on_continue_pressed)
 	add_child(_continue_btn)
 
+	# Label countdown gede di tengah (3-2-1 parry).
+	_count_label = Label.new()
+	_count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_count_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_count_label.add_theme_font_size_override("font_size", 64)
+	_count_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.35))
+	_count_label.add_theme_constant_override("outline_size", 10)
+	_count_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+	_count_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_count_label.size = Vector2(200, 120)
+	_count_label.visible = false
+	add_child(_count_label)
+
+	if ResourceLoader.exists(PANEL_SFX_PATH):
+		_panel_sfx = load(PANEL_SFX_PATH)
+
 	visible = false
 
 
@@ -133,6 +155,7 @@ func show_step(step_no: int, step_total: int, title: String, body: String,
 	_move_panel_to(target)
 	_place_hp_note()
 	_play_intro_stagger()
+	_play_panel_sfx()
 
 
 func show_final(text: String) -> void:
@@ -156,6 +179,7 @@ func show_final(text: String) -> void:
 	_move_panel_to(_zone_pos(Zone.TOP_CENTER))
 	_place_hp_note()
 	_play_intro_stagger()
+	_play_panel_sfx()
 	_continue_btn.visible = true
 	_position_continue_btn()
 
@@ -305,6 +329,43 @@ func _play_intro_stagger() -> void:
 	_intro_tween.tween_property(_info, "modulate:a", 1.0, 0.15).set_delay(0.12)
 	_intro_tween.tween_property(_step_badge, "modulate:a", 1.0, 0.12).set_delay(0.18)
 	_intro_tween.tween_property(_step_badge, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT).set_delay(0.18)
+
+
+# Countdown gede tengah layar (3-2-1 parry). Tiap angka pop.
+func show_count(text: String) -> void:
+	if _count_label == null:
+		return
+	var vs := get_viewport_rect().size
+	_count_label.position = (vs - _count_label.size) * 0.5
+	_count_label.pivot_offset = _count_label.size * 0.5
+	_count_label.text = text
+	_count_label.visible = true
+	_count_label.modulate.a = 0.0
+	_count_label.scale = Vector2(1.5, 1.5)
+	if _count_tween and _count_tween.is_valid():
+		_count_tween.kill()
+	_count_tween = create_tween().set_parallel(true)
+	_count_tween.tween_property(_count_label, "modulate:a", 1.0, 0.12)
+	_count_tween.tween_property(_count_label, "scale", Vector2.ONE, 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+
+func hide_count() -> void:
+	if _count_tween and _count_tween.is_valid():
+		_count_tween.kill()
+	if _count_label:
+		_count_label.visible = false
+
+
+# Bunyi tiap panel tutorial muncul.
+func _play_panel_sfx() -> void:
+	if _panel_sfx == null:
+		return
+	var p := AudioStreamPlayer.new()
+	p.stream = _panel_sfx
+	p.volume_db = -4.0
+	add_child(p)
+	p.play()
+	p.finished.connect(p.queue_free)
 
 
 func _move_panel_to(target: Vector2) -> void:

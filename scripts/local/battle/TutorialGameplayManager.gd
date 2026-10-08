@@ -125,6 +125,8 @@ var _hold_enemy_turn := false
 # Timestamp mulai beat PARRY_WAIT (msec) + turn udah distart manual?
 var _parry_wait_since := 0
 var _turn_started := false
+# Fase countdown 3-2-1 yang lagi tampil (-1 = belum mulai).
+var _count_phase := -1
 const PARRY_BEAT_MS := 1500
 var _rapid_taught := false
 var _w3_baseline_attacks := 0
@@ -624,10 +626,20 @@ func _process(_delta: float) -> void:
 			return
 	match _step:
 		Step.PARRY_WAIT:
-			# Beat 1.5 dtk, baru turn dimulai manual. Deterministik:
-			# gak peduli tap cepat/lambat, drill selalu mulai sama.
-			if not _turn_started and Time.get_ticks_msec() - _parry_wait_since >= PARRY_BEAT_MS:
+			# Beat 1.5 dtk + countdown 3-2-1, baru turn dimulai manual.
+			# Deterministik: gak peduli tap cepat/lambat.
+			var elapsed: int = Time.get_ticks_msec() - _parry_wait_since
+			var phase := 0
+			if elapsed >= 1000:
+				phase = 2
+			elif elapsed >= 500:
+				phase = 1
+			if phase != _count_phase:
+				_count_phase = phase
+				_tutorial_ui.show_count(str(3 - phase))
+			if not _turn_started and elapsed >= PARRY_BEAT_MS:
 				_turn_started = true
+				_tutorial_ui.hide_count()
 				_hold_enemy_turn = false
 				_force_parry_turn = true
 				is_player_turn = false
@@ -977,10 +989,10 @@ func _on_attack_card_closed() -> void:
 	if not _tutorial_active:
 		super._on_attack_card_closed()
 		return
-	if _hold_enemy_turn and _step == Step.QTE_RESULT:
+	if _hold_enemy_turn and (_step == Step.QTE_RESULT or _step == Step.PARRY_WAIT):
 		# TAHAN: cleanup doang (deck tutup, kamera balik, tombol
-		# ngumpet), turn DISTART MANUAL dari PARRY_WAIT. Tanpa ini,
-		# enemy turn auto-start ~1 dtk dan drill dadakan pas baca hasil.
+		# ngumpet), turn DISTART MANUAL dari PARRY_WAIT. Cek WAIT juga:
+		# tap cepat bisa bikin close jalan SESUDAH masuk WAIT.
 		attack_card_used_this_session = false
 		is_card_ui_open = false
 		attack_card_ui = null
@@ -1117,6 +1129,7 @@ func _begin_step(step: Step) -> void:
 		Step.PARRY_WAIT:
 			_lock_all_except([])
 			_turn_started = false
+			_count_phase = -1
 			_parry_wait_since = Time.get_ticks_msec()
 			_live("SKELETON ATTACKING!", "Anticipate it — you must parry!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 			_drill_armed = true
