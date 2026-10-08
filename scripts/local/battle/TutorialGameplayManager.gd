@@ -48,6 +48,8 @@ enum Step {
 	BASIC_PICK,
 	QTE_DO,
 	QTE_RESULT,
+	TURN_EXPLAIN,
+	PARRY_HINT,
 	QTE_MISS,
 	HIT_FOE,
 	HIT_COST,
@@ -58,6 +60,7 @@ enum Step {
 	PARRY_WHY,
 	DEFEND_NEXT,
 	DEFEND_ACT,
+	STAMINA_BACK,
 	SKILL_ACT,
 	SKILL_PICK,
 	CHARGE_PICK_WAIT,
@@ -194,9 +197,15 @@ func _on_tutorial_tapped() -> void:
 		Step.HIT_FOE:
 			_begin_step(Step.HIT_COST)
 		Step.HIT_COST:
+			_begin_step(Step.TURN_EXPLAIN)
+		Step.TURN_EXPLAIN:
+			_begin_step(Step.PARRY_HINT)
+		Step.PARRY_HINT:
 			_begin_step(Step.PARRY_WAIT)
 		Step.PARRY_WHY:
 			_begin_step(Step.DEFEND_NEXT)
+		Step.STAMINA_BACK:
+			_begin_step(Step.SKILL_ACT)
 		Step.DEFEND_NEXT:
 			_begin_step(Step.DEFEND_ACT)
 		Step.QTE_MISS:
@@ -958,7 +967,7 @@ func _on_defend_pressed() -> void:
 		return  # bukan giliran — tap lagi nanti
 	_live("GUARD UP!", "Stamina +20. Enemy turn — watch what happens.", TutorialUI.Zone.BOTTOM_LEFT, null)
 	super._on_defend_pressed()
-	_wait_for_idle_then(Step.SKILL_ACT)
+	_wait_for_idle_then(Step.STAMINA_BACK)
 
 
 func _on_skill_pressed() -> void:
@@ -999,7 +1008,7 @@ func _on_attack_card_closed() -> void:
 	if not _tutorial_active:
 		super._on_attack_card_closed()
 		return
-	if _hold_enemy_turn and (_step == Step.QTE_RESULT or _step == Step.HIT_FOE or _step == Step.HIT_COST or _step == Step.PARRY_WAIT):
+	if _hold_enemy_turn and (_step == Step.QTE_RESULT or _step == Step.HIT_FOE or _step == Step.HIT_COST or _step == Step.TURN_EXPLAIN or _step == Step.PARRY_HINT or _step == Step.PARRY_WAIT):
 		# TAHAN: cleanup doang (deck tutup, kamera balik, tombol
 		# ngumpet), turn DISTART MANUAL dari PARRY_WAIT. Cek WAIT juga:
 		# tap cepat bisa bikin close jalan SESUDAH masuk WAIT.
@@ -1136,6 +1145,10 @@ func _begin_step(step: Step) -> void:
 			_live("TIMING BAR", "Tap ANYWHERE when the runner hits GOLD!", TutorialUI.Zone.BOTTOM_LEFT, attack_qte_node)
 		Step.QTE_RESULT:
 			_read(_qte_title(), _last_attack_result_text() + " Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+		Step.TURN_EXPLAIN:
+			_read("YOUR TURN, THEN THEIRS", "After you act, the enemy takes its turn. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, null)
+		Step.PARRY_HINT:
+			_read("YOU CAN PARRY", "When the enemy attacks, tap the SHIELD to parry. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, null)
 		Step.HIT_FOE:
 			_read("DIRECT HIT!", "You struck the Skeleton — watch its health drop.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.HIT_COST:
@@ -1166,6 +1179,8 @@ func _begin_step(step: Step) -> void:
 		Step.DEFEND_ACT:
 			_show_only([defend_btn], [defend_btn])
 			_act("TAP DEFEND", "DEFEND restores 20 stamina, but skips your attack.", TutorialUI.Zone.BOTTOM_LEFT, defend_btn)
+		Step.STAMINA_BACK:
+			_read("STAMINA BACK!", "Guarding restored stamina — see the blue bar fill. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, stamina_bar)
 		Step.SKILL_ACT:
 			_show_only([skill_btn], [skill_btn])
 			_act("TAP SKILL", "SKILL opens special cards: poison, stun, bleed.", TutorialUI.Zone.BOTTOM_LEFT, skill_btn)
