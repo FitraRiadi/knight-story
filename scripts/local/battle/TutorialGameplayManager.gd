@@ -123,6 +123,10 @@ var _rapid_taught := false
 var _w3_baseline_attacks := 0
 var _potion_index := -1
 var _loot_collected := false
+# Kapan skeleton wave-2 terpantau mati (msec). Beat jeda sebelum
+# grimward spawn biar gak nempel: cleared panel dulu 2.5 dtk.
+var _wave2_cleared_at: int = -1
+const WAVE_CLEAR_BEAT_MS := 2500
 var _pick_expected := ""
 var _pick_is_skill := false
 var _skill_ui_ref: ActionCardUI = null
@@ -626,11 +630,19 @@ func _process(_delta: float) -> void:
 			if enemies.is_empty() and _drop_node and is_instance_valid(_drop_node) and _is_camera_settled():
 				_begin_step(Step.LOOT_INTRO)
 		Step.WAVE2_AFTER:
-			# Mati -> wave3. Miss (masih hidup) -> giliran balik,
-			# serang lagi via FIGHT.
-			if enemies.is_empty() and _is_camera_settled():
-				_goto_wave3()
+			# Mati -> kasih NAPAS dulu (panel cleared + beat 2.5 dtk),
+			# baru grimward. Jangan langsung spawn, kecepetan.
+			# Miss (masih hidup) -> giliran balik, serang lagi via FIGHT.
+			if enemies.is_empty():
+				if _wave2_cleared_at < 0:
+					_wave2_cleared_at = Time.get_ticks_msec()
+					_apply_button_gating(false)
+					_live("WAVE 2 CLEARED!", "The Skeleton crumbles. Catch your breath...", TutorialUI.Zone.TOP_CENTER, null)
+				elif Time.get_ticks_msec() - _wave2_cleared_at >= WAVE_CLEAR_BEAT_MS and _is_camera_settled():
+					_wave2_cleared_at = -1
+					_goto_wave3()
 			elif _is_player_idle() and _is_camera_settled():
+				_wave2_cleared_at = -1
 				_begin_step(Step.WAVE2_FIGHT)
 		Step.PACK_VIEW:
 			if not is_inventory_open:
