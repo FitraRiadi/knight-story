@@ -46,7 +46,8 @@ func _on_play_pressed() -> void:
 
 func start_prologue_phase() -> void:
 	menu_option.visible = false
-	# Fase PROLOGUE mulai
+	# Fase PROLOGUE mulai (kosongin dialog dulu biar placeholder nggak kecolongan)
+	prologue_dialog.text = ""
 	prologue_ui.visible = true
 	prologue_ui.modulate.a = 0.0
 	var fade_in := create_tween()

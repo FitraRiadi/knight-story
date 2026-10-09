@@ -296,7 +296,7 @@ offset_bottom = 101.95346
 scale = Vector2(1.1001993, 1.3882272)
 theme_override_fonts/font = ExtResource("28_r5bln")
 theme_override_font_sizes/font_size = 21
-text = "- Dialogue -"
+text = ""
 script = ExtResource("24_n4mt2")
 
 [node name="chapterInit" type="Control" parent="MAINMENU/menu/bg_scene/prologueUI"]
