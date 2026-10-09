@@ -15,6 +15,7 @@ extends Node
 #       "bg": $bg,              # TextureRect background (di-shake pas impact)
 #       "enemy_id": "skeleton", # art diambil dari EnemyDatabase (konsisten battle)
 #       "warning_text": "Something moved behind the trees!",
+#       "impact_text": "Ambush!",  # teks miring di segitiga slash (opsional)
 #   })
 #   await ambush.finished
 #   ambush.queue_free()
@@ -33,6 +34,15 @@ const ENEMY_START_X := 1050.0
 const ENEMY_END_X := 520.0
 const ENEMY_Y := 200.0
 const SHAKE_PX := 20.0
+# Slash segitiga siku-siku (local coords, pivot = sudut kanan-atas layar):
+# P0 (0,0) -> layar (740,0); P1 (0,340) -> (740,340); P2 (-640,340) -> (100,340).
+const SLASH_POINTS := [Vector2(0, 0), Vector2(0, 340), Vector2(-640, 340)]
+const SLASH_POS := Vector2(740, 0)
+const SLASH_COLOR := Color(1, 1, 1, 1)
+# Teks impact: miring ngikutin sisi miring segitiga.
+const IMPACT_FONT_SIZE := 56
+const IMPACT_ROT_DEG := -18.0
+const IMPACT_COLOR := Color(0.7, 0.05, 0.05, 1)
 
 const SFX_STING := "res://assets/audio/effects/battle/ui/zoomIntoEnemy.mp3"
 const SFX_REVEAL := "res://assets/audio/effects/battle/ui/attackQte-open.mp3"
@@ -42,9 +52,10 @@ const FONT_PATH := "res://assets/ui/fonts/alagard.ttf"
 var _running := false
 
 var _vignette: ColorRect
-var _flash: ColorRect
 var _warn_label: Label
 var _enemy: AnimatedSprite2D
+var _slash: Polygon2D
+var _impact_label: Label
 
 
 func play(cfg: Dictionary) -> void:
@@ -56,6 +67,7 @@ func play(cfg: Dictionary) -> void:
 	var bg: TextureRect = cfg.get("bg")
 	var enemy_id: String = cfg.get("enemy_id", "skeleton")
 	var warn_text: String = cfg.get("warning_text", "Something moved behind the trees!")
+	var impact_text: String = cfg.get("impact_text", "Ambush!")
 
 	if root == null or not is_instance_valid(root):
 		push_error("[AmbushPlayer] cfg['root'] invalid!")
@@ -73,7 +85,7 @@ func play(cfg: Dictionary) -> void:
 	await _beat_reveal(enemy_id)
 	if not _alive():
 		return
-	await _beat_impact(bg)
+	await _beat_impact(bg, impact_text)
 	_cleanup()
 	_running = false
 	finished.emit()
@@ -94,12 +106,6 @@ func _build_overlays(root: Control) -> void:
 	_vignette.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(_vignette)
 
-	_flash = ColorRect.new()
-	_flash.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_flash.color = Color(1, 1, 1, 0)
-	_flash.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(_flash)
-
 	_warn_label = Label.new()
 	_warn_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_warn_label.add_theme_font_size_override("font_size", 28)
@@ -116,15 +122,38 @@ func _build_overlays(root: Control) -> void:
 	_enemy.visible = false
 	root.add_child(_enemy)
 
+	# Slash segitiga (di atas vignette + enemy) + teks miring (paling atas).
+	_slash = Polygon2D.new()
+	_slash.polygon = PackedVector2Array(SLASH_POINTS)
+	_slash.color = SLASH_COLOR
+	_slash.position = SLASH_POS
+	_slash.scale = Vector2(0.01, 0.01)
+	_slash.visible = false
+	root.add_child(_slash)
+
+	_impact_label = Label.new()
+	_impact_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_impact_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_impact_label.add_theme_font_size_override("font_size", IMPACT_FONT_SIZE)
+	_impact_label.add_theme_color_override("font_color", IMPACT_COLOR)
+	_impact_label.add_theme_constant_override("outline_size", 10)
+	_impact_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+	if ResourceLoader.exists(FONT_PATH):
+		_impact_label.add_theme_font_override("font", load(FONT_PATH) as Font)
+	_impact_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_impact_label.visible = false
+	root.add_child(_impact_label)
+
 
 func _cleanup() -> void:
-	for n in [_vignette, _flash, _warn_label, _enemy]:
+	for n in [_vignette, _warn_label, _enemy, _slash, _impact_label]:
 		if is_instance_valid(n):
 			n.queue_free()
 	_vignette = null
-	_flash = null
 	_warn_label = null
 	_enemy = null
+	_slash = null
+	_impact_label = null
 
 
 # ============================================================
@@ -179,11 +208,29 @@ func _beat_reveal(enemy_id: String) -> void:
 	await tw.finished
 
 
-# Beat 4 — IMPACT (0.5s): shake + flash + impact SFX.
-func _beat_impact(bg: TextureRect) -> void:
+# Beat 4 — IMPACT (~0.8s): segitiga slash nyabet + teks miring pop
+# + shake + impact SFX. Bukan fullscreen — bg masih kelihatan di sisi kiri.
+func _beat_impact(bg: TextureRect, impact_text: String) -> void:
 	_play_sfx(SFX_IMPACT)
+
+	# Teks "Ambush!" miring ngikutin sisi miring segitiga.
+	_impact_label.text = impact_text
+	_impact_label.position = Vector2(300.0, 125.0)
+	_impact_label.size = Vector2(400.0, 90.0)
+	_impact_label.pivot_offset = Vector2(200.0, 45.0)
+	_impact_label.rotation_degrees = IMPACT_ROT_DEG
+	_impact_label.scale = Vector2(0.5, 0.5)
+	_impact_label.modulate.a = 0.0
+	_impact_label.visible = true
+
+	_slash.visible = true
 	var tw := create_tween().set_parallel(true)
-	tw.tween_property(_flash, "color:a", 1.0, 0.1)
+	# Slash nyabet dari sudut kanan-atas (0.18s, snappy).
+	tw.tween_property(_slash, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	# Teks pop nyusul dikit (delay 0.08s).
+	tw.tween_property(_impact_label, "modulate:a", 1.0, 0.15).set_delay(0.08)
+	tw.tween_property(_impact_label, "scale", Vector2.ONE, 0.25).set_delay(0.08).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	# Warn label + vignette settle, bg shake.
 	tw.tween_property(_warn_label, "modulate:a", 0.0, 0.2)
 	tw.tween_property(_vignette, "color:a", 0.4, 0.3)
 	if bg != null and is_instance_valid(bg):
@@ -193,11 +240,8 @@ func _beat_impact(bg: TextureRect) -> void:
 			tw.tween_property(bg, "position", base_pos + off, 0.06)
 		tw.tween_property(bg, "position", base_pos, 0.08)
 	await tw.finished
-	# Flash turun (vignette ditahan merah — nyambung ke curtain)
-	if is_instance_valid(_flash):
-		var fade := create_tween()
-		fade.tween_property(_flash, "color:a", 0.0, 0.2)
-		await fade.finished
+	# Tahan 0.4s biar slash + teks kebaca, baru curtain.
+	await get_tree().create_timer(0.4).timeout
 
 
 func _play_sfx(path: String) -> void:
