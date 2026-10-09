@@ -118,6 +118,17 @@ corner_radius_bottom_left = 20
 
 [node name="scene_prologue" type="Node" unique_id=1057061224]
 
+[node name="BlackBG" type="CanvasLayer" parent="."]
+layer = -10
+
+[node name="bg" type="ColorRect" parent="BlackBG"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 1)
+
 [node name="control_scene" type="Control" parent="." unique_id=1129545714]
 texture_filter = 1
 layout_mode = 3
