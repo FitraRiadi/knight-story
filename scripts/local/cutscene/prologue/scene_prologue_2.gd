@@ -2,7 +2,6 @@ extends Control
 
 @onready var bg: TextureRect = $bg
 @onready var dialog_label: Label = $dialog
-@onready var flash: ColorRect = $flash
 
 func _ready() -> void:
 	# 0. FADE IN — mulus dari prologue 1 (yang fade out)
@@ -28,12 +27,16 @@ func _ready() -> void:
 	tw.play()
 
 func _on_dialog_done(_label) -> void:
-	# 3. AMBUSH — flash + shake, lalu masuk battle tutorial
-	flash.visible = true
-	var ambush := create_tween().set_parallel(true)
-	ambush.tween_property(flash, "color:a", 1.0, 0.15)
-	ambush.tween_property(bg, "position:x", bg.position.x + 12.0, 0.08)
-	ambush.tween_property(bg, "position:x", bg.position.x - 12.0, 0.08).set_delay(0.08)
+	# 3. AMBUSH — via komponen reusable, lalu masuk battle tutorial
+	var ambush := AmbushPlayer.new()
+	add_child(ambush)
+	ambush.play({
+		"root": self,
+		"bg": bg,
+		"enemy_id": "skeleton",
+		"warning_text": "Something moved behind the trees!",
+	})
 	await ambush.finished
+	ambush.queue_free()
 	TransitionManager.pindah_scene(
 		"res://scenes/battle/battle_gameplay_tutorial.tscn", "Ambush")
