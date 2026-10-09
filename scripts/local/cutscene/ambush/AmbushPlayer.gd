@@ -34,14 +34,15 @@ const ENEMY_START_X := 1050.0
 const ENEMY_END_X := 520.0
 const ENEMY_Y := 200.0
 const SHAKE_PX := 20.0
-# Slash segitiga siku-siku (local coords, pivot = sudut kanan-atas layar):
-# P0 (0,0) -> layar (740,0); P1 (0,340) -> (740,340); P2 (-640,340) -> (100,340).
-const SLASH_POINTS := [Vector2(0, 0), Vector2(0, 340), Vector2(-640, 340)]
-const SLASH_POS := Vector2(740, 0)
-const SLASH_COLOR := Color(1, 1, 1, 1)
-# Teks impact: miring ngikutin sisi miring segitiga.
+# Slash art bawaan (12 frame, arah diagonal `\` — teks ngikutin arah ini).
+const SLASH_PATTERN := "res://assets/art/particles/slash/slash4_%05d.png"
+const SLASH_COUNT := 12
+const SLASH_SPEED := 20
+const SLASH_SCALE := Vector2(2.0, 2.0)
+const SLASH_POS := Vector2(520, 170)
+# Teks impact: miring +22° (searah garis slash `\`).
 const IMPACT_FONT_SIZE := 56
-const IMPACT_ROT_DEG := -18.0
+const IMPACT_ROT_DEG := 22.0
 const IMPACT_COLOR := Color(0.7, 0.05, 0.05, 1)
 
 const SFX_STING := "res://assets/audio/effects/battle/ui/zoomIntoEnemy.mp3"
@@ -54,7 +55,8 @@ var _running := false
 var _vignette: ColorRect
 var _warn_label: Label
 var _enemy: AnimatedSprite2D
-var _slash: Polygon2D
+var _slash_fx: AnimatedSprite2D
+var _slash_frames: SpriteFrames
 var _impact_label: Label
 
 
@@ -122,14 +124,15 @@ func _build_overlays(root: Control) -> void:
 	_enemy.visible = false
 	root.add_child(_enemy)
 
-	# Slash segitiga (di atas vignette + enemy) + teks miring (paling atas).
-	_slash = Polygon2D.new()
-	_slash.polygon = PackedVector2Array(SLASH_POINTS)
-	_slash.color = SLASH_COLOR
-	_slash.position = SLASH_POS
-	_slash.scale = Vector2(0.01, 0.01)
-	_slash.visible = false
-	root.add_child(_slash)
+	# Slash art + teks miring (paling atas, di atas vignette + enemy).
+	_slash_frames = _build_slash_frames()
+	_slash_fx = AnimatedSprite2D.new()
+	_slash_fx.sprite_frames = _slash_frames
+	_slash_fx.position = SLASH_POS
+	_slash_fx.scale = SLASH_SCALE * 0.9
+	_slash_fx.modulate.a = 0.0
+	_slash_fx.visible = false
+	root.add_child(_slash_fx)
 
 	_impact_label = Label.new()
 	_impact_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
@@ -146,13 +149,14 @@ func _build_overlays(root: Control) -> void:
 
 
 func _cleanup() -> void:
-	for n in [_vignette, _warn_label, _enemy, _slash, _impact_label]:
+	for n in [_vignette, _warn_label, _enemy, _slash_fx, _impact_label]:
 		if is_instance_valid(n):
 			n.queue_free()
 	_vignette = null
 	_warn_label = null
 	_enemy = null
-	_slash = null
+	_slash_fx = null
+	_slash_frames = null
 	_impact_label = null
 
 
@@ -208,12 +212,29 @@ func _beat_reveal(enemy_id: String) -> void:
 	await tw.finished
 
 
-# Beat 4 — IMPACT (~0.8s): segitiga slash nyabet + teks miring pop
-# + shake + impact SFX. Bukan fullscreen — bg masih kelihatan di sisi kiri.
+# Bangun SpriteFrames slash dari 12 file. File yang hilang di-skip;
+# kalau 0 yang keload, beat impact jalan tanpa slash (teks + shake tetap).
+func _build_slash_frames() -> SpriteFrames:
+	var sf := SpriteFrames.new()
+	sf.add_animation("slash")
+	sf.set_animation_speed("slash", SLASH_SPEED)
+	sf.set_animation_loop("slash", false)
+	for i in range(1, SLASH_COUNT + 1):
+		var path := SLASH_PATTERN % i
+		if not ResourceLoader.exists(path):
+			continue
+		var tex := load(path) as Texture2D
+		if tex != null:
+			sf.add_frame("slash", tex)
+	return sf
+
+
+# Beat 4 — IMPACT (~1.0s): slash art nyabet + teks miring pop
+# + shake + impact SFX.
 func _beat_impact(bg: TextureRect, impact_text: String) -> void:
 	_play_sfx(SFX_IMPACT)
 
-	# Teks "Ambush!" miring ngikutin sisi miring segitiga.
+	# Teks "Ambush!" miring +22° (searah garis slash `\`).
 	_impact_label.text = impact_text
 	_impact_label.position = Vector2(300.0, 125.0)
 	_impact_label.size = Vector2(400.0, 90.0)
@@ -223,13 +244,21 @@ func _beat_impact(bg: TextureRect, impact_text: String) -> void:
 	_impact_label.modulate.a = 0.0
 	_impact_label.visible = true
 
-	_slash.visible = true
+	var has_slash := false
+	if is_instance_valid(_slash_fx) and _slash_fx.sprite_frames != null:
+		has_slash = _slash_fx.sprite_frames.has_animation("slash") \
+			and _slash_fx.sprite_frames.get_frame_count("slash") > 0
+
 	var tw := create_tween().set_parallel(true)
-	# Slash nyabet dari sudut kanan-atas (0.18s, snappy).
-	tw.tween_property(_slash, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	# Teks pop nyusul dikit (delay 0.08s).
-	tw.tween_property(_impact_label, "modulate:a", 1.0, 0.15).set_delay(0.08)
-	tw.tween_property(_impact_label, "scale", Vector2.ONE, 0.25).set_delay(0.08).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	# Slash main + scale punch.
+	if has_slash:
+		_slash_fx.visible = true
+		_slash_fx.modulate.a = 1.0
+		_slash_fx.play("slash")
+		tw.tween_property(_slash_fx, "scale", SLASH_SCALE * 1.1, 0.2).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	# Teks pop nyusul dikit (delay 0.1s).
+	tw.tween_property(_impact_label, "modulate:a", 1.0, 0.15).set_delay(0.1)
+	tw.tween_property(_impact_label, "scale", Vector2.ONE, 0.25).set_delay(0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	# Warn label + vignette settle, bg shake.
 	tw.tween_property(_warn_label, "modulate:a", 0.0, 0.2)
 	tw.tween_property(_vignette, "color:a", 0.4, 0.3)
@@ -240,8 +269,12 @@ func _beat_impact(bg: TextureRect, impact_text: String) -> void:
 			tw.tween_property(bg, "position", base_pos + off, 0.06)
 		tw.tween_property(bg, "position", base_pos, 0.08)
 	await tw.finished
-	# Tahan 0.4s biar slash + teks kebaca, baru curtain.
-	await get_tree().create_timer(0.4).timeout
+	# Slash fade out, tahan bentar biar teks kebaca, baru curtain.
+	if has_slash and is_instance_valid(_slash_fx) and _slash_fx.visible:
+		var fade := create_tween()
+		fade.tween_property(_slash_fx, "modulate:a", 0.0, 0.3)
+		await fade.finished
+	await get_tree().create_timer(0.2).timeout
 
 
 func _play_sfx(path: String) -> void:
