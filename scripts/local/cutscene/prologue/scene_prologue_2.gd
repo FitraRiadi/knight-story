@@ -5,6 +5,11 @@ extends Control
 @onready var flash: ColorRect = $flash
 
 func _ready() -> void:
+	# 0. FADE IN — mulus dari prologue 1 (yang fade out)
+	modulate.a = 0.0
+	var fade_in := create_tween()
+	fade_in.tween_property(self, "modulate:a", 1.0, 0.8).set_trans(Tween.TRANS_CIRC)
+
 	# 1. WALK — bg zoom pelan (kesan jalan, first-person)
 	bg.pivot_offset = bg.size / 2
 	var walk := create_tween()

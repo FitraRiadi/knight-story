@@ -32,4 +32,10 @@ func _play_intro() -> void:
 	tween.tween_property(achievment_button, "position:x", achievment_button.position.x - 100, 0.5).set_trans(Tween.TRANS_CIRC)
 
 func _on_play_pressed() -> void:
-	TransitionManager.pindah_scene("res://scenes/cutscene/scene_prologue.tscn", "Prologue")
+	# Fade out UI menu (bg sama kayak prologue 1, jadi mulus tanpa curtain)
+	play_button.disabled = true
+	achievment_button.disabled = true
+	var fade := create_tween()
+	fade.tween_property(menu_option, "modulate:a", 0.0, 0.6).set_trans(Tween.TRANS_CIRC)
+	await fade.finished
+	get_tree().change_scene_to_file("res://scenes/cutscene/scene_prologue.tscn")
