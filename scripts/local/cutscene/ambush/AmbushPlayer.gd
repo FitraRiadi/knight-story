@@ -34,6 +34,7 @@ const ENEMY_END_X := 520.0
 const ENEMY_Y := 200.0
 const SHAKE_PX := 20.0
 # Lunge musuh ke kamera (horor): scale-up + maju + animasi attack.
+# LUNGE_TIME cuma fallback — durasi real dibaca dari resource (frames/fps).
 const LUNGE_SCALE_MULT := 1.6
 const LUNGE_POS := Vector2(400, 210)
 const LUNGE_TIME := 0.25
@@ -185,22 +186,31 @@ func _beat_reveal(enemy_id: String) -> void:
 	await tw.finished
 
 
-# Beat 4 — IMPACT (~0.6s): musuh NERJANG ke kamera (ganti idle ->
-# attack + scale-up + maju) + red burst + shake + impact SFX.
+# Beat 4 — IMPACT (~1.1s), DUA FASE:
+#   4a. ATTACK DULU — musuh main animasi attack SAMPAI FRAME TERAKHIR
+#       (lunge scale+move ngikutin durasi real animasi, bukan fixed 0.25s).
+#   4b. IMPACT — BARU red burst + shake + SFX (attack udah kebaca jelas).
 # Tanpa shape grafis, tanpa teks — musuhnya sendiri yang jadi efeknya.
 func _beat_impact(bg: TextureRect, enemy_id: String) -> void:
-	_play_sfx(SFX_IMPACT)
-
-	# Musuh nerjang: animasi attack (fallback idle) + membesar + maju.
+	# 4a. ATTACK DULU sampai habis.
+	var atk_sec := LUNGE_TIME
 	if is_instance_valid(_enemy) and _enemy.visible:
 		var data: EnemyData = EnemyDatabase.get_enemy_data(enemy_id)
 		var base_scale: Vector2 = data.sprite_scale if data != null else Vector2(0.8, 0.8)
 		if _enemy.sprite_frames != null and _enemy.sprite_frames.has_animation("attack"):
+			var fc := _enemy.sprite_frames.get_frame_count("attack")
+			var fps := _enemy.sprite_frames.get_animation_speed("attack")
+			if fps > 0.0 and fc > 0:
+				atk_sec = float(fc) / fps
 			_enemy.play("attack")
-		var tw := create_tween().set_parallel(true)
-		tw.tween_property(_enemy, "scale", base_scale * LUNGE_SCALE_MULT, LUNGE_TIME).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-		tw.tween_property(_enemy, "position", LUNGE_POS, LUNGE_TIME).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-	# Red burst cepat + warn label + vignette settle, bg shake.
+		var lunge := create_tween().set_parallel(true)
+		lunge.tween_property(_enemy, "scale", base_scale * LUNGE_SCALE_MULT, atk_sec).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+		lunge.tween_property(_enemy, "position", LUNGE_POS, atk_sec).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+		await lunge.finished
+		if not _alive():
+			return
+	# 4b. IMPACT — attack udah kelar, baru efeknya.
+	_play_sfx(SFX_IMPACT)
 	var fx := create_tween().set_parallel(true)
 	fx.tween_property(_redburst, "color:a", 0.7, 0.1)
 	fx.tween_property(_warn_label, "modulate:a", 0.0, 0.2)
