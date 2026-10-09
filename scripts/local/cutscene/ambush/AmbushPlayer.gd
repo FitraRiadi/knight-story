@@ -15,7 +15,6 @@ extends Node
 #       "bg": $bg,              # TextureRect background (di-shake pas impact)
 #       "enemy_id": "skeleton", # art diambil dari EnemyDatabase (konsisten battle)
 #       "warning_text": "Something moved behind the trees!",
-#       "impact_text": "Ambush!",  # teks miring di segitiga slash (opsional)
 #   })
 #   await ambush.finished
 #   ambush.queue_free()
@@ -34,16 +33,11 @@ const ENEMY_START_X := 1050.0
 const ENEMY_END_X := 520.0
 const ENEMY_Y := 200.0
 const SHAKE_PX := 20.0
-# Slash art bawaan (12 frame, arah diagonal `\` — teks ngikutin arah ini).
-const SLASH_PATTERN := "res://assets/art/particles/slash/slash4_%05d.png"
-const SLASH_COUNT := 12
-const SLASH_SPEED := 20
-const SLASH_SCALE := Vector2(2.0, 2.0)
-const SLASH_POS := Vector2(520, 170)
-# Teks impact: miring +22° (searah garis slash `\`).
-const IMPACT_FONT_SIZE := 56
-const IMPACT_ROT_DEG := 22.0
-const IMPACT_COLOR := Color(0.7, 0.05, 0.05, 1)
+# Lunge musuh ke kamera (horor): scale-up + maju + animasi attack.
+const LUNGE_SCALE_MULT := 1.6
+const LUNGE_POS := Vector2(400, 210)
+const LUNGE_TIME := 0.25
+const REDBURST_COLOR := Color(0.5, 0.0, 0.0, 1)
 
 const SFX_STING := "res://assets/audio/effects/battle/ui/zoomIntoEnemy.mp3"
 const SFX_REVEAL := "res://assets/audio/effects/battle/ui/attackQte-open.mp3"
@@ -55,9 +49,7 @@ var _running := false
 var _vignette: ColorRect
 var _warn_label: Label
 var _enemy: AnimatedSprite2D
-var _slash_fx: AnimatedSprite2D
-var _slash_frames: SpriteFrames
-var _impact_label: Label
+var _redburst: ColorRect
 
 
 func play(cfg: Dictionary) -> void:
@@ -69,7 +61,6 @@ func play(cfg: Dictionary) -> void:
 	var bg: TextureRect = cfg.get("bg")
 	var enemy_id: String = cfg.get("enemy_id", "skeleton")
 	var warn_text: String = cfg.get("warning_text", "Something moved behind the trees!")
-	var impact_text: String = cfg.get("impact_text", "Ambush!")
 
 	if root == null or not is_instance_valid(root):
 		push_error("[AmbushPlayer] cfg['root'] invalid!")
@@ -87,7 +78,7 @@ func play(cfg: Dictionary) -> void:
 	await _beat_reveal(enemy_id)
 	if not _alive():
 		return
-	await _beat_impact(bg, impact_text)
+	await _beat_impact(bg, enemy_id)
 	_cleanup()
 	_running = false
 	finished.emit()
@@ -124,40 +115,22 @@ func _build_overlays(root: Control) -> void:
 	_enemy.visible = false
 	root.add_child(_enemy)
 
-	# Slash art + teks miring (paling atas, di atas vignette + enemy).
-	_slash_frames = _build_slash_frames()
-	_slash_fx = AnimatedSprite2D.new()
-	_slash_fx.sprite_frames = _slash_frames
-	_slash_fx.position = SLASH_POS
-	_slash_fx.scale = SLASH_SCALE * 0.9
-	_slash_fx.modulate.a = 0.0
-	_slash_fx.visible = false
-	root.add_child(_slash_fx)
-
-	_impact_label = Label.new()
-	_impact_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_impact_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_impact_label.add_theme_font_size_override("font_size", IMPACT_FONT_SIZE)
-	_impact_label.add_theme_color_override("font_color", IMPACT_COLOR)
-	_impact_label.add_theme_constant_override("outline_size", 10)
-	_impact_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
-	if ResourceLoader.exists(FONT_PATH):
-		_impact_label.add_theme_font_override("font", load(FONT_PATH) as Font)
-	_impact_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_impact_label.visible = false
-	root.add_child(_impact_label)
+	# Red burst (paling atas) — darah, bukan flash putih.
+	_redburst = ColorRect.new()
+	_redburst.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_redburst.color = Color(REDBURST_COLOR.r, REDBURST_COLOR.g, REDBURST_COLOR.b, 0.0)
+	_redburst.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	root.add_child(_redburst)
 
 
 func _cleanup() -> void:
-	for n in [_vignette, _warn_label, _enemy, _slash_fx, _impact_label]:
+	for n in [_vignette, _warn_label, _enemy, _redburst]:
 		if is_instance_valid(n):
 			n.queue_free()
 	_vignette = null
 	_warn_label = null
 	_enemy = null
-	_slash_fx = null
-	_slash_frames = null
-	_impact_label = null
+	_redburst = null
 
 
 # ============================================================
@@ -212,69 +185,35 @@ func _beat_reveal(enemy_id: String) -> void:
 	await tw.finished
 
 
-# Bangun SpriteFrames slash dari 12 file. File yang hilang di-skip;
-# kalau 0 yang keload, beat impact jalan tanpa slash (teks + shake tetap).
-func _build_slash_frames() -> SpriteFrames:
-	var sf := SpriteFrames.new()
-	sf.add_animation("slash")
-	sf.set_animation_speed("slash", SLASH_SPEED)
-	sf.set_animation_loop("slash", false)
-	for i in range(1, SLASH_COUNT + 1):
-		var path := SLASH_PATTERN % i
-		if not ResourceLoader.exists(path):
-			continue
-		var tex := load(path) as Texture2D
-		if tex != null:
-			sf.add_frame("slash", tex)
-	return sf
-
-
-# Beat 4 — IMPACT (~1.0s): slash art nyabet + teks miring pop
-# + shake + impact SFX.
-func _beat_impact(bg: TextureRect, impact_text: String) -> void:
+# Beat 4 — IMPACT (~0.6s): musuh NERJANG ke kamera (ganti idle ->
+# attack + scale-up + maju) + red burst + shake + impact SFX.
+# Tanpa shape grafis, tanpa teks — musuhnya sendiri yang jadi efeknya.
+func _beat_impact(bg: TextureRect, enemy_id: String) -> void:
 	_play_sfx(SFX_IMPACT)
 
-	# Teks "Ambush!" miring +22° (searah garis slash `\`).
-	_impact_label.text = impact_text
-	_impact_label.position = Vector2(300.0, 125.0)
-	_impact_label.size = Vector2(400.0, 90.0)
-	_impact_label.pivot_offset = Vector2(200.0, 45.0)
-	_impact_label.rotation_degrees = IMPACT_ROT_DEG
-	_impact_label.scale = Vector2(0.5, 0.5)
-	_impact_label.modulate.a = 0.0
-	_impact_label.visible = true
-
-	var has_slash := false
-	if is_instance_valid(_slash_fx) and _slash_fx.sprite_frames != null:
-		has_slash = _slash_fx.sprite_frames.has_animation("slash") \
-			and _slash_fx.sprite_frames.get_frame_count("slash") > 0
-
-	var tw := create_tween().set_parallel(true)
-	# Slash main + scale punch.
-	if has_slash:
-		_slash_fx.visible = true
-		_slash_fx.modulate.a = 1.0
-		_slash_fx.play("slash")
-		tw.tween_property(_slash_fx, "scale", SLASH_SCALE * 1.1, 0.2).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	# Teks pop nyusul dikit (delay 0.1s).
-	tw.tween_property(_impact_label, "modulate:a", 1.0, 0.15).set_delay(0.1)
-	tw.tween_property(_impact_label, "scale", Vector2.ONE, 0.25).set_delay(0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	# Warn label + vignette settle, bg shake.
-	tw.tween_property(_warn_label, "modulate:a", 0.0, 0.2)
-	tw.tween_property(_vignette, "color:a", 0.4, 0.3)
+	# Musuh nerjang: animasi attack (fallback idle) + membesar + maju.
+	if is_instance_valid(_enemy) and _enemy.visible:
+		var data: EnemyData = EnemyDatabase.get_enemy_data(enemy_id)
+		var base_scale: Vector2 = data.sprite_scale if data != null else Vector2(0.8, 0.8)
+		if _enemy.sprite_frames != null and _enemy.sprite_frames.has_animation("attack"):
+			_enemy.play("attack")
+		var tw := create_tween().set_parallel(true)
+		tw.tween_property(_enemy, "scale", base_scale * LUNGE_SCALE_MULT, LUNGE_TIME).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+		tw.tween_property(_enemy, "position", LUNGE_POS, LUNGE_TIME).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	# Red burst cepat + warn label + vignette settle, bg shake.
+	var fx := create_tween().set_parallel(true)
+	fx.tween_property(_redburst, "color:a", 0.7, 0.1)
+	fx.tween_property(_warn_label, "modulate:a", 0.0, 0.2)
+	fx.tween_property(_vignette, "color:a", 0.4, 0.3)
 	if bg != null and is_instance_valid(bg):
 		var base_pos: Vector2 = bg.position
 		for i in range(6):
 			var off := Vector2(randf_range(-SHAKE_PX, SHAKE_PX), randf_range(-SHAKE_PX, SHAKE_PX))
-			tw.tween_property(bg, "position", base_pos + off, 0.06)
-		tw.tween_property(bg, "position", base_pos, 0.08)
-	await tw.finished
-	# Slash fade out, tahan bentar biar teks kebaca, baru curtain.
-	if has_slash and is_instance_valid(_slash_fx) and _slash_fx.visible:
-		var fade := create_tween()
-		fade.tween_property(_slash_fx, "modulate:a", 0.0, 0.3)
-		await fade.finished
-	await get_tree().create_timer(0.2).timeout
+			fx.tween_property(bg, "position", base_pos + off, 0.06)
+		fx.tween_property(bg, "position", base_pos, 0.08)
+	await fx.finished
+	# Tahan 0.3s (musuh di muka + merah), baru curtain.
+	await get_tree().create_timer(0.3).timeout
 
 
 func _play_sfx(path: String) -> void:
