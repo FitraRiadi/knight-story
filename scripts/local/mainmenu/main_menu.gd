@@ -5,6 +5,9 @@ extends Control
 @onready var play_button = $bg_scene/MenuOption/PlayButton
 @onready var achievment_button = $bg_scene/MenuOption/AchievmentButton
 @onready var title = $bg_scene/MenuOption/Title
+@onready var info_label = $bg_scene/information
+@onready var prologue_ui = $bg_scene/prologueUI
+@onready var prologue_dialog = $bg_scene/prologueUI/dialog
 @onready var create_character_popup = $"../createCharacterPopup"
 
 func _ready() -> void:
@@ -32,10 +35,21 @@ func _play_intro() -> void:
 	tween.tween_property(achievment_button, "position:x", achievment_button.position.x - 100, 0.5).set_trans(Tween.TRANS_CIRC)
 
 func _on_play_pressed() -> void:
-	# Fade out UI menu (bg sama kayak prologue 1, jadi mulus tanpa curtain)
+	# Fase MENU -> PROLOGUE, satu scene (campfire jalan terus, nol kedip)
 	play_button.disabled = true
 	achievment_button.disabled = true
-	var fade := create_tween()
+	var fade := create_tween().set_parallel(true)
 	fade.tween_property(menu_option, "modulate:a", 0.0, 0.6).set_trans(Tween.TRANS_CIRC)
+	fade.tween_property(info_label, "modulate:a", 0.0, 0.6).set_trans(Tween.TRANS_CIRC)
 	await fade.finished
-	get_tree().change_scene_to_file("res://scenes/cutscene/scene_prologue.tscn")
+	start_prologue_phase()
+
+func start_prologue_phase() -> void:
+	menu_option.visible = false
+	# Fase PROLOGUE mulai
+	prologue_ui.visible = true
+	prologue_ui.modulate.a = 0.0
+	var fade_in := create_tween()
+	fade_in.tween_property(prologue_ui, "modulate:a", 1.0, 0.5).set_trans(Tween.TRANS_CIRC)
+	await fade_in.finished
+	prologue_dialog.start_prologue()

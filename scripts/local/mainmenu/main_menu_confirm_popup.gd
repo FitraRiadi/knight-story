@@ -2,6 +2,7 @@ extends Control
 
 @onready var create_character_popup = $"../createCharacterPopup"
 @onready var menu_ui = $"../menu/bg_scene/MenuOption"
+@onready var menu_node = $"../menu"
 
 var on_create := false
 
@@ -11,7 +12,10 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	if on_create and menu_ui.modulate.a == 0:
-		get_tree().change_scene_to_file("res://scenes/cutscene/scene_prologue.tscn")
+		on_create = false
+		visible = false
+		# Menu + prologue 1 sudah satu scene — mulai fase prologue di tempat
+		menu_node.start_prologue_phase()
 
 func intro() -> void:
 	modulate.a = 0

@@ -1,6 +1,14 @@
 extends Label
 
+var _started := false
+
 func _ready():
+	pass  # nunggu dipanggil main_menu.gd via start_prologue()
+
+func start_prologue():
+	if _started:
+		return
+	_started = true
 	var dialogs = [
 		["Long time ago...", 3.0],
 		["A lone knight sits by a quiet flame.", 3.0],

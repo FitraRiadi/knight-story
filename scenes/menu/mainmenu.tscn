@@ -34,6 +34,9 @@
 [ext_resource type="Texture2D" uid="uid://bdlsfc6rsxrqn" path="res://assets/ui/perks/ui-Arcane.png" id="41_1ymof"]
 [ext_resource type="Texture2D" uid="uid://b586ro8cdtio6" path="res://assets/ui/perks/ui-Blade.png" id="43_o77u3"]
 [ext_resource type="Texture2D" uid="uid://dkq6hmrhad4g7" path="res://assets/ui/perks/Ui-Stone.png" id="45_uqx6y"]
+[ext_resource type="FontFile" uid="uid://dx6ognpbk586" path="res://assets/ui/fonts/alagard.ttf" id="28_r5bln"]
+[ext_resource type="Script" uid="uid://dsp0a3kit2r0f" path="res://scripts/local/cutscene/prologue/prolugue_dialog.gd" id="24_n4mt2"]
+[ext_resource type="Script" uid="uid://cspb7a3rv74hb" path="res://scripts/local/cutscene/prologue/scene_prologue_chapter_init_start_btn.gd" id="27_04wx8"]
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_kylmi"]
 animations = [{
@@ -151,12 +154,19 @@ corner_radius_top_right = 20
 corner_radius_bottom_right = 20
 corner_radius_bottom_left = 20
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_moojr"]
+bg_color = Color(0.13319641, 0.13319641, 0.13319635, 0.6862745)
+corner_radius_top_left = 20
+corner_radius_top_right = 20
+corner_radius_bottom_right = 20
+corner_radius_bottom_left = 20
+
 [node name="mainmenu" type="Node" unique_id=1109444388]
 
-[node name="BlackBG" type="CanvasLayer" parent="."]
+[node name="BlackBG" type="CanvasLayer" parent="." unique_id=378897203]
 layer = -10
 
-[node name="bg" type="ColorRect" parent="BlackBG"]
+[node name="bg" type="ColorRect" parent="BlackBG" unique_id=1070549302]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -167,9 +177,11 @@ color = Color(0, 0, 0, 1)
 [node name="MAINMENU" type="Control" parent="." unique_id=286024908]
 texture_filter = 1
 layout_mode = 3
-anchors_preset = 0
-offset_right = 740.0
-offset_bottom = 320.0
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
 
 [node name="menu" type="Control" parent="MAINMENU" unique_id=280389962]
 anchors_preset = 0
@@ -267,6 +279,57 @@ offset_bottom = 348.0
 theme_override_colors/font_color = Color(1, 1, 1, 0.49411765)
 theme_override_font_sizes/font_size = 10
 text = "IamFit Craft - Knight Story BETA Version 0.1"
+
+[node name="prologueUI" type="Control" parent="MAINMENU/menu/bg_scene"]
+visible = false
+anchors_preset = 0
+offset_right = 1153.0
+offset_bottom = 647.0
+scale = Vector2(0.640931, 0.49396184)
+
+[node name="dialog" type="Label" parent="MAINMENU/menu/bg_scene/prologueUI"]
+layout_mode = 0
+offset_left = 70.210365
+offset_top = 78.95346
+offset_right = 211.21036
+offset_bottom = 101.95346
+scale = Vector2(1.1001993, 1.3882272)
+theme_override_fonts/font = ExtResource("28_r5bln")
+theme_override_font_sizes/font_size = 21
+text = "- Dialogue -"
+script = ExtResource("24_n4mt2")
+
+[node name="chapterInit" type="Control" parent="MAINMENU/menu/bg_scene/prologueUI"]
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+
+[node name="title" type="Label" parent="MAINMENU/menu/bg_scene/prologueUI/chapterInit"]
+visible = false
+layout_mode = 0
+offset_left = 226.0
+offset_top = 281.0
+offset_right = 472.0
+offset_bottom = 360.0
+scale = Vector2(0.957587, 1.1047277)
+theme_override_fonts/font = ExtResource("28_r5bln")
+theme_override_font_sizes/font_size = 39
+text = "Knight Story Chapter 1"
+autowrap_mode = 1
+
+[node name="startBtn" type="Button" parent="MAINMENU/menu/bg_scene/prologueUI/chapterInit"]
+visible = false
+layout_mode = 0
+offset_left = 232.0
+offset_top = 376.0
+offset_right = 398.0
+offset_bottom = 424.0
+scale = Vector2(1.0149164, 1.1414235)
+theme_override_fonts/font = ExtResource("28_r5bln")
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
+text = "Start Journey"
+script = ExtResource("27_04wx8")
 
 [node name="mainBgm" type="AudioStreamPlayer" parent="MAINMENU/menu" unique_id=1706798138]
 stream = ExtResource("26_tu318")

@@ -1,6 +1,6 @@
 extends Button
 
-@onready var control_scene := $"../../.."
+@onready var fade_root := $"../../.."
 var press := false
 
 func _pressed() -> void:
@@ -10,6 +10,6 @@ func _pressed() -> void:
 	disabled = true
 	# Fade out seluruh scene (campfire + UI), tanpa curtain
 	var tw := create_tween()
-	tw.tween_property(control_scene, "modulate:a", 0.0, 0.8).set_trans(Tween.TRANS_CIRC)
+	tw.tween_property(fade_root, "modulate:a", 0.0, 0.8).set_trans(Tween.TRANS_CIRC)
 	await tw.finished
 	get_tree().change_scene_to_file("res://scenes/cutscene/scene_prologue_2.tscn")
