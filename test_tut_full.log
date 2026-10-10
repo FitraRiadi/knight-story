@@ -1,0 +1,122 @@
+Godot Engine v4.7.1.stable.official.a13da4feb - https://godotengine.org
+
+[EnemyDatabase] Sukses -> ID: 'banditRaider' | File: banditRaider.tres
+[EnemyDatabase] Sukses -> ID: 'grimfald' | File: grimfald.tres
+[EnemyDatabase] Sukses -> ID: 'grimward' | File: grimward.tres
+[EnemyDatabase] Sukses -> ID: 'grooter' | File: grooter.tres
+[EnemyDatabase] Sukses -> ID: 'skeleton' | File: skeleton.tres
+[EnemyDatabase] Sukses -> ID: 'warewolf' | File: warewolf.tres
+[EnemyDatabase] Total musuh berhasil dimuat: ["banditRaider", "grimfald", "grimward", "grooter", "skeleton", "warewolf"]
+[QuestDatabase] Loaded -> ID: 'battleborn_subordinate' | battleborn_subordinate.tres
+[QuestDatabase] Loaded -> ID: 'battle_ready' | battle_ready.tres
+[QuestDatabase] Loaded -> ID: 'card_master' | card_master.tres
+[QuestDatabase] Loaded -> ID: 'herbal_remedy' | herbal_remedy.tres
+[QuestDatabase] Loaded -> ID: 'master_brewer' | master_brewer.tres
+[QuestDatabase] Loaded -> ID: 'potion_collector' | potion_collector.tres
+[QuestDatabase] Loaded -> ID: 'scouting_ruins' | scouting_ruins.tres
+[QuestDatabase] Loaded -> ID: 'stock_up' | stock_up.tres
+[QuestDatabase] Loaded -> ID: 'word_wizard' | word_wizard.tres
+[QuestDatabase] Total quest dimuat: ["battleborn_subordinate", "battle_ready", "card_master", "herbal_remedy", "master_brewer", "potion_collector", "scouting_ruins", "stock_up", "word_wizard"]
+[PlayerDataManager] Save path: C:/Users/DADEUNK/AppData/Roaming/Godot/app_userdata/KnightStory/.knight/sys/cache/data.res
+[LocationDatabase] Sukses -> ID: 'asylumLand' | File: asylumLand.tres
+[LocationDatabase] Sukses -> ID: 'asylumTown' | File: asylumTown.tres
+[LocationDatabase] Sukses -> ID: 'colloseum' | File: colloseum.tres
+[LocationDatabase] Sukses -> ID: 'darkRuin' | File: dark_ruin.tres
+[LocationDatabase] Sukses -> ID: 'deathLand' | File: death_land.tres
+[LocationDatabase] Sukses -> ID: 'forestOfShadows' | File: forest_of_shadows.tres
+[LocationDatabase] Sukses -> ID: 'grayAltar' | File: grayAltar.tres
+[LocationDatabase] Sukses -> ID: 'graymore' | File: graymore.tres
+[LocationDatabase] Sukses -> ID: 'graymoreHill' | File: graymoreHill.tres
+[LocationDatabase] Sukses -> ID: 'haskalVillage' | File: haskal_village.tres
+[LocationDatabase] Sukses -> ID: 'lotusVillage' | File: lotus_village.tres
+[LocationDatabase] Sukses -> ID: 'shadowMountain' | File: shadow_mountain.tres
+[LocationDatabase] Sukses -> ID: 'sunkenCity' | File: sunkenCity.tres
+[LocationDatabase] Sukses -> ID: 'sunkenGroto' | File: sunkenGroto.tres
+[LocationDatabase] Total lokasi berhasil dimuat: ["asylumLand", "asylumTown", "colloseum", "darkRuin", "deathLand", "forestOfShadows", "grayAltar", "graymore", "graymoreHill", "haskalVillage", "lotusVillage", "shadowMountain", "sunkenCity", "sunkenGroto"]
+[Atmosphere] tier=high low=false
+PASS tui ada
+FAIL badge STEP 1/68, dapat=[STEP 1 / 30] INTRO | Welcome To the Tutorial!, Your Text Here.  Lorep Ipsum Dolar Si Amet Lorep Ipsum Dolar Si AmetLorep Ipsum Dolar Si Amet Lorep Ipsum Do efwefwefwefwefwefwefwef
+PASS TARGET spot on, spot=?nospotnode
+PASS ATTACK spot on
+PASS step=1
+FAIL DECK text, dapat=[STEP 1 / 68] WELCOME, KNIGHT! | You In The First Battle training. Tap anywhere to start.
+FAIL DECK no spot
+PASS step=2
+FAIL CARD text, dapat=[STEP 2 / 68] SELECT TARGET | Tap the Skeleton to lock it as your target.
+FAIL CARD spot kartu, spot=?nospotnode
+FAIL COST text, dapat=[STEP 2 / 68] SELECT TARGET | Tap the Skeleton to lock it as your target.
+FAIL COST spot=cost, spot=?nospotnode
+FAIL INFO text, dapat=[STEP 2 / 68] SELECT TARGET | Tap the Skeleton to lock it as your target.
+FAIL INFO spot=desc, spot=?nospotnode
+PASS PICK spot on, spot=?nospotnode
+FAIL QTE text, dapat=[STEP 2 / 68] SELECT TARGET | Tap the Skeleton to lock it as your target.
+FAIL RESULT text, dapat=[STEP 2 / 68] SELECT TARGET | Tap the Skeleton to lock it as your target.
+PASS HIT_FOE spot on
+FAIL HIT_COST text, dapat=[STEP 2 / 68] SELECT TARGET | Tap the Skeleton to lock it as your target.
+FAIL TURN no spot
+FAIL WAIT text, dapat=[STEP 2 / 68] SELECT TARGET | Tap the Skeleton to lock it as your target.
+FAIL WAIT no spot
+FAIL DRILL text, dapat=[STEP 2 / 68] SELECT TARGET | Tap the Skeleton to lock it as your target.
+FAIL PRES text, dapat=[STEP 2 / 68] SELECT TARGET | Tap the Skeleton to lock it as your target.
+FAIL WHY text, dapat=[STEP 2 / 68] SELECT TARGET | Tap the Skeleton to lock it as your target.
+FAIL STAM text, dapat=[STEP 2 / 68] SELECT TARGET | Tap the Skeleton to lock it as your target.
+FAIL SDECK text, dapat=[STEP 2 / 68] SELECT TARGET | Tap the Skeleton to lock it as your target.
+FAIL SDECK no spot
+FAIL wait step=3 mau=3 dapat=2
+FAIL wait step=5 mau=5 dapat=2
+FAIL SCARD text, dapat=[STEP 2 / 68] SELECT TARGET | Tap the Skeleton to lock it as your target.
+FAIL SCARD spot kartu, spot=?nospotnode
+FAIL wait step=6 mau=6 dapat=2
+FAIL SCOST text, dapat=[STEP 2 / 68] SELECT TARGET | Tap the Skeleton to lock it as your target.
+FAIL SCOST spot=cost, spot=?nospotnode
+FAIL wait step=7 mau=7 dapat=2
+FAIL SINFO text, dapat=[STEP 2 / 68] SELECT TARGET | Tap the Skeleton to lock it as your target.
+FAIL SINFO spot=desc, spot=?nospotnode
+FAIL wait step=8 mau=8 dapat=2
+FAIL wait step=4 mau=4 dapat=2
+FAIL SEFF text, dapat=[STEP 2 / 68] SELECT TARGET | Tap the Skeleton to lock it as your target.
+FAIL SEFF spot effect, spot=?nospotnode
+FAIL SEFF turn musuh ketahan (bukan giliran player)
+PASS SEFF musuh belum gerak
+FAIL wait step=11 mau=11 dapat=2
+FAIL wait step=12 mau=12 dapat=2
+FAIL wait step=13 mau=13 dapat=2
+FAIL wait step=14 mau=14 dapat=2
+FAIL wait step=16 mau=16 dapat=2
+FAIL wait step=21 mau=21 dapat=2
+FAIL wait step=22 mau=22 dapat=2
+FAIL wait step=24 mau=24 dapat=2
+FAIL wait step=9 mau=9 dapat=2
+FAIL wait step=26 mau=26 dapat=2
+FAIL SEFF masih nunggu tap
+FAIL wait step=17 mau=17 dapat=2
+FAIL wait step=19 mau=19 dapat=2
+FAIL wait step=23 mau=23 dapat=2
+FAIL wait step=25 mau=25 dapat=2
+FAIL wait step=27 mau=27 dapat=2
+PASS charge btn ada
+FAIL wait step=10 mau=10 dapat=2
+FAIL wait step=28 mau=28 dapat=2
+FAIL wait step=29 mau=29 dapat=2
+FAIL FININTRO text, dapat=[STEP 2 / 68] SELECT TARGET | Tap the Skeleton to lock it as your target.
+FAIL LOOT text, dapat=[STEP 2 / 68] SELECT TARGET | Tap the Skeleton to lock it as your target.
+FAIL drop ada
+FAIL wait step=30 mau=30 dapat=2
+FAIL wait step=20 mau=20 dapat=2
+FAIL wait step=38 mau=38 dapat=2
+FAIL wait step=33 mau=33 dapat=2
+FAIL wait step=32 mau=32 dapat=2
+FAIL wait step=38 mau=38 dapat=2
+FAIL wait step=36 mau=36 dapat=2
+FAIL wait step=35 mau=35 dapat=2
+FAIL wait step=40 mau=40 dapat=2
+FAIL wait step=37 mau=37 dapat=2
+FAIL wait step=39 mau=39 dapat=2
+FAIL wait step=40 mau=40 dapat=2
+FAIL wait step=41 mau=41 dapat=2
+FAIL wait step=39 mau=39 dapat=2
+FAIL wait step=42 mau=42 dapat=2
+FAIL wait step=31 mau=31 dapat=2
+FAIL wait step=34 mau=34 dapat=2
+FAIL wait step=37 mau=37 dapat=2
+FAIL wait step=43 mau=43 dapat=2

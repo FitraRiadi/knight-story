@@ -1,0 +1,105 @@
+shader_type canvas_item;
+
+uniform float transition : hint_range(0.0, 1.0) = 1.0;
+
+uniform vec4 flame_color : source_color = vec4(0.537, 0.890, 0.882, 1.0);
+uniform vec4 outline_color : source_color = vec4(0.027, 0.027, 0.031, 1.0);
+
+uniform float flame_percent : hint_range(0.0, 100.0) = 50.0;     
+uniform float outline_percent : hint_range(0.0, 100.0) = 50.0;   
+
+uniform float flame_size : hint_range(0.0, 0.2) = 0.05;
+uniform float speed : hint_range(0.0, 10.0) = 4.0;
+
+uniform float shrink_factor : hint_range(0.5, 1.0) = 0.85;   
+uniform float noise_scale : hint_range(1.0, 30.0) = 10.0;
+uniform float upward_bias : hint_range(0.0, 1.0) = 0.6;
+
+varying vec4 modulate_color;
+
+void vertex() {
+    modulate_color = COLOR;
+}
+
+float hash(vec2 p) {
+    vec3 p3 = fract(vec3(p.xyx) * .1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    return fract((p3.x + p3.y) * p3.z);
+}
+
+float noise(vec2 x) {
+    vec2 p = floor(x);
+    vec2 f = fract(x);
+    f = f * f * (3.0 - 2.0 * f);
+    return mix(mix(hash(p + vec2(0.0, 0.0)), hash(p + vec2(1.0, 0.0)), f.x),
+               mix(hash(p + vec2(0.0, 1.0)), hash(p + vec2(1.0, 1.0)), f.x), f.y);
+}
+
+float get_alpha(sampler2D tex, vec2 uv) {
+    if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
+        return 0.0;
+    }
+    return texture(tex, uv).a;
+}
+
+float find_distance(sampler2D tex, vec2 uv, float radius, vec2 aspect, vec2 bias) {
+    float d = 99.0;
+    for (int r = 1; r <= 8; r++) {
+        float rr = float(r) / 8.0;
+        for (int i = 0; i < 12; i++) {
+            float ang = float(i) * TAU / 12.0;
+            vec2 dir = vec2(cos(ang), sin(ang)) * aspect;
+            vec2 s = uv + dir * radius * rr + bias * rr;
+            if (get_alpha(tex, s) > 0.5) {
+                d = min(d, rr);
+            }
+        }
+        if (d < 99.0) break;
+    }
+    return d;
+}
+
+void fragment() {
+    vec2 uv = (UV - 0.5) / shrink_factor + 0.5;
+
+    vec4 base = vec4(0.0);
+    if (uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0) {
+        base = texture(TEXTURE, uv);
+    }
+
+    vec4 result = base;
+
+    if (transition > 0.001) {
+        vec2 aspect = vec2(1.0, TEXTURE_PIXEL_SIZE.y / TEXTURE_PIXEL_SIZE.x);
+
+        vec2 noise_uv = uv * noise_scale * vec2(1.0, TEXTURE_PIXEL_SIZE.x / TEXTURE_PIXEL_SIZE.y);
+        
+        noise_uv.y += TIME * speed;
+        
+        float n = noise(noise_uv) * 0.6 + noise(noise_uv * 2.0) * 0.4;
+
+        float radius = flame_size * transition * (0.4 + n * 0.9);
+
+        vec2 bias = vec2(0.0, radius * upward_bias) * aspect;
+
+        float d = find_distance(TEXTURE, uv, radius, aspect, bias);
+
+        float total = flame_percent + outline_percent;
+        float flame_edge = total > 0.0001 ? flame_percent / total : 0.5;
+
+        vec4 fx = vec4(0.0);
+        if (d <= flame_edge) {
+            fx = flame_color;
+        } else if (d <= 1.0) {
+            fx = outline_color;
+        }
+
+        fx.a *= smoothstep(0.0, 0.25, transition);
+
+        float out_a = base.a + fx.a * (1.0 - base.a);
+        vec3 out_rgb = (base.rgb * base.a + fx.rgb * fx.a * (1.0 - base.a)) / max(out_a, 0.0001);
+        result = vec4(out_rgb, out_a);
+    }
+
+    COLOR = result * modulate_color;
+}

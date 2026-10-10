@@ -188,6 +188,18 @@ func set_spotlight_target(node: Node, dim: float = 0.78) -> void:
 		_apply_pending_spotlight()
 
 
+# Update teks TANPA stagger/sfx/pindah panel: buat transisi antar bagian
+# kartu (cost -> desc) biar spotlight-nya glide mulus, panel anteng.
+func soft_update(step_no: int, step_total: int, title: String, body: String) -> void:
+	if _panel == null:
+		return
+	_title.text = title.strip_edges()
+	_info.text = body.strip_edges().replace("**", "")
+	_step_badge.text = "STEP %d / %d" % [step_no, step_total]
+	_step_badge.visible = true
+	_apply_pending_spotlight()
+
+
 func _apply_pending_spotlight() -> void:
 	if not _pending_has_target:
 		return

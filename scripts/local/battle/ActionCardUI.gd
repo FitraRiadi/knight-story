@@ -38,7 +38,6 @@ const REJECT_SFX_PATH: String = "uid://dl4yf4hktppo5"
 
 const CARD_SCENE: PackedScene = preload("res://scenes/battle/action_card.tscn")
 const ATTACK_CARD_SCENE: PackedScene = preload("res://scenes/battle/attack_card.tscn")
-const CARD_FLAME_SHADER: Shader = preload("res://shaders/CardFlameLite.gdshader")
 
 
 # ============================================================
@@ -129,34 +128,6 @@ func _build_ui() -> void:
 		card_nodes.append(card)
 
 
-# Api rarity di frame kartu (CardFlame = FlameShader 1:1 + gate jendela).
-# Warna = rarity color (Common silver-putih biar keliatan), param api =
-# RARITY_FLAME. shrink 1.0 (frame jangan menciut, label misah node).
-# Material unik per kartu (uniform beda), Shader-nya share.
-func _apply_card_flame(card: Control, frame_node_name: String, data: ActionCardData) -> void:
-	if CARD_FLAME_SHADER == null or data == null:
-		return
-	var frame: TextureRect = card.get_node_or_null(frame_node_name) as TextureRect
-	if frame == null:
-		return
-	var rc: Color = data.get_rarity_color()
-	if str(data.rarity) == "Common":
-		# Abu di atas frame abu = ilang. Common pake silver-putih aja:
-		# kalem tapi keliatan.
-		rc = Color(0.82, 0.85, 0.95)
-	var fp: Dictionary = data.get_flame_params()
-	var mat := ShaderMaterial.new()
-	mat.shader = CARD_FLAME_SHADER
-	mat.set_shader_parameter("flame_color", rc)
-	mat.set_shader_parameter("outline_color", rc.darkened(0.65))
-	mat.set_shader_parameter("transition", 1.0)
-	mat.set_shader_parameter("flame_size", float(fp.get("flame_size", 0.08)))
-	mat.set_shader_parameter("speed", float(fp.get("speed", 2.5)))
-	mat.set_shader_parameter("shrink_factor", 1.0)
-	mat.set_shader_parameter("card_px", Vector2(CARD_WIDTH, CARD_HEIGHT))
-	frame.material = mat
-
-
 func _create_card(data: ActionCardData, index: int, has_stamina: bool, is_on_cooldown: bool, cooldown_remaining: int) -> Control:
 	var card: Control
 
@@ -187,7 +158,6 @@ func _create_card(data: ActionCardData, index: int, has_stamina: bool, is_on_coo
 			art.texture = null
 
 		# placeholder → CardFrame (sudah ada default)
-		_apply_card_flame(card, "placeholder", data)
 
 		# title → NameLabel
 		var title_label: Label = card.get_node("title")
@@ -214,7 +184,6 @@ func _create_card(data: ActionCardData, index: int, has_stamina: bool, is_on_coo
 		card_art.texture = data.card_art
 
 		# Card Frame (cardPlaceholder.png) — already set in tscn
-		_apply_card_flame(card, "CardFrame", data)
 
 		# Glow Panel
 		var glow: Panel = card.get_node("Glow")
