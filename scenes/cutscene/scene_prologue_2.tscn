@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Texture2D" uid="uid://d3essyu6atugf" path="res://assets/art/backgrounds/location/map/forest_of_shadow/forest_of_shadow1.jpg" id="1_bg"]
-[ext_resource type="FontFile" uid="uid://dx6ognpbk586" path="res://assets/ui/fonts/alagard.ttf" id="2_font"]
+[ext_resource type="FontFile" uid="uid://dq04br7pre1ps" path="res://assets/ui/fonts/Jersey15-Regular.ttf" id="2_font"]
 [ext_resource type="Script" path="res://scripts/local/cutscene/prologue/scene_prologue_2.gd" id="3_script"]
 
 [node name="scene_prologue_2" type="Control"]

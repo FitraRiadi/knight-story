@@ -35,6 +35,7 @@
 [ext_resource type="Texture2D" uid="uid://b586ro8cdtio6" path="res://assets/ui/perks/ui-Blade.png" id="43_o77u3"]
 [ext_resource type="Texture2D" uid="uid://dkq6hmrhad4g7" path="res://assets/ui/perks/Ui-Stone.png" id="45_uqx6y"]
 [ext_resource type="FontFile" uid="uid://dx6ognpbk586" path="res://assets/ui/fonts/alagard.ttf" id="28_r5bln"]
+[ext_resource type="FontFile" uid="uid://dq04br7pre1ps" path="res://assets/ui/fonts/Jersey15-Regular.ttf" id="50_jersey"]
 [ext_resource type="Script" uid="uid://dsp0a3kit2r0f" path="res://scripts/local/cutscene/prologue/prolugue_dialog.gd" id="24_n4mt2"]
 [ext_resource type="Script" uid="uid://cspb7a3rv74hb" path="res://scripts/local/cutscene/prologue/scene_prologue_chapter_init_start_btn.gd" id="27_04wx8"]
 
@@ -294,7 +295,7 @@ offset_top = 78.95346
 offset_right = 211.21036
 offset_bottom = 101.95346
 scale = Vector2(1.1001993, 1.3882272)
-theme_override_fonts/font = ExtResource("28_r5bln")
+theme_override_fonts/font = ExtResource("50_jersey")
 theme_override_font_sizes/font_size = 21
 text = ""
 script = ExtResource("24_n4mt2")
@@ -312,7 +313,7 @@ offset_top = 281.0
 offset_right = 472.0
 offset_bottom = 360.0
 scale = Vector2(0.957587, 1.1047277)
-theme_override_fonts/font = ExtResource("28_r5bln")
+theme_override_fonts/font = ExtResource("50_jersey")
 theme_override_font_sizes/font_size = 39
 text = "Knight Story Chapter 1"
 autowrap_mode = 1
@@ -325,7 +326,7 @@ offset_top = 376.0
 offset_right = 398.0
 offset_bottom = 424.0
 scale = Vector2(1.0149164, 1.1414235)
-theme_override_fonts/font = ExtResource("28_r5bln")
+theme_override_fonts/font = ExtResource("50_jersey")
 theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
 text = "Start Journey"
