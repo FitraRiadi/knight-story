@@ -372,7 +372,7 @@ func _ready() -> void:
 	_auto_detect_enemy_pool()
 	# Hide buttons dulu, nanti muncul setelah intro
 	_set_buttons_active(false, true)
-	# Intro: title HUD -> player info slide -> hands.
+	# Intro: framebg -> title HUD -> player info slide -> hands.
 	# Musuh SELALU paling akhir (spawn di bawah habis intro kelar).
 	# WaveProgress + framebg + player_info ngumpet dari FRAME PERTAMA
 	# (jangan nongol di posisi ready dulu baru loncat).
@@ -387,9 +387,10 @@ func _ready() -> void:
 		wave_progress.scale = Vector2.ZERO
 	if player_info:
 		player_info_orig_x = player_info.position.x
-		# Mentok keluar layar kiri (jauh, bukan mepet) biar awal bersih.
-		player_info.position.x = -player_info.size.x - 60.0
+		# Jauh keluar layar kiri biar awal beneran bersih.
+		player_info.position.x = -player_info.size.x - 400.0
 	_hide_framebg_instant()
+	await _animate_framebg_intro()
 	await _play_battle_intro()
 	_animate_player_info_intro()
 	await _animate_hands_intro()
@@ -3635,12 +3636,11 @@ func _animate_enemies_spawn() -> void:
 	var spawn_duration: float = 0.45 if first_spawn else 0.3
 	var stagger: float = 0.2 if first_spawn else 0.15
 
-	# Kalau first spawn, button muncul stagger smooth + wave UI reveal
-	# (progress pop + framebg kanan-kiri) BARENG musuh nongol.
+	# Kalau first spawn, button muncul stagger smooth + wave progress
+	# pop BARENG musuh nongol. (framebg udah duluan di intro.)
 	if first_spawn:
 		_set_buttons_active_staggered()
 		_pop_wave_progress_intro()
-		_animate_framebg_intro()
 	else:
 		_set_buttons_active(false)
 
@@ -4651,7 +4651,7 @@ func _play_battle_intro() -> void:
 		return
 	map_title.modulate.a = 0.0
 	var tw := create_tween()
-	tw.tween_property(map_title, "modulate:a", 1.0, 1.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tw.tween_property(map_title, "modulate:a", 1.0, 2.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	await tw.finished
 
 
@@ -4666,12 +4666,13 @@ func _pop_wave_progress_intro() -> void:
 	await tw.finished
 
 
-# framebg (hiasan bar atas): slices ngumpet di awal, reveal stagger
-# KANAN -> KIRI bareng spawn musuh.
+# framebg (hiasan bar atas): INDUK + slices ngumpet di awal, reveal
+# stagger KANAN -> KIRI (induk fade dulu, baru slices).
 func _hide_framebg_instant() -> void:
 	var framebg := get_node_or_null("bg/framebg") as TextureRect
 	if not framebg:
 		return
+	framebg.modulate.a = 0.0
 	for c in framebg.get_children():
 		if c is CanvasItem:
 			(c as CanvasItem).modulate.a = 0.0
@@ -4681,12 +4682,16 @@ func _animate_framebg_intro() -> void:
 	var framebg := get_node_or_null("bg/framebg") as TextureRect
 	if not framebg:
 		return
+	var tw0 := create_tween()
+	tw0.tween_property(framebg, "modulate:a", 1.0, 0.3).set_trans(Tween.TRANS_SINE)
+	await tw0.finished
 	var slices: Array = []
 	for c in framebg.get_children():
 		if c is Control:
 			slices.append(c)
 	# Kanan -> kiri = x gede dulu
 	slices.sort_custom(func(a: Control, b: Control) -> bool: return a.position.x > b.position.x)
+	var last_tw: Tween = null
 	var i := 0
 	for s in slices:
 		var sc := s as Control
@@ -4697,7 +4702,10 @@ func _animate_framebg_intro() -> void:
 		var tw := create_tween().set_parallel(true)
 		tw.tween_property(sc, "position:x", orig_x, 0.45).set_delay(i * 0.12).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 		tw.tween_property(sc, "modulate:a", 1.0, 0.35).set_delay(i * 0.12).set_trans(Tween.TRANS_SINE)
+		last_tw = tw
 		i += 1
+	if last_tw:
+		await last_tw.finished
 
 
 func _animate_player_info_intro() -> void:
@@ -4707,10 +4715,10 @@ func _animate_player_info_intro() -> void:
 	# Tujuan = posisi tersimpan di _ready (BUKAN posisi pas dipanggil,
 	# soalnya pas dipanggil dia lagi ngumpet di kiri).
 	var orig_x := player_info_orig_x
-	player_info.position.x = -player_info.size.x - 60.0
+	player_info.position.x = -player_info.size.x - 400.0
 
 	var tw := create_tween()
-	tw.tween_property(player_info, "position:x", orig_x, 0.6).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(player_info, "position:x", orig_x, 0.7).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 # ============================================================
