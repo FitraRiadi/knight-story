@@ -11,17 +11,21 @@ extends Node
 #   var ambush := AmbushPlayer.new()
 #   add_child(ambush)
 #   ambush.play({
-#       "root": self,            # Control pemanggil (overlay ditempel di sini)
-#       "bg": $bg,              # TextureRect background (di-shake pas impact)
-#       "enemy_id": "skeleton", # art diambil dari EnemyDatabase (konsisten battle)
+#       "root": self,         # Control pemanggil (overlay ditempel di sini)
+#       "bg": $bg,           # TextureRect background (di-shake pas impact)
 #       "warning_text": "Something moved behind the trees!",
+#       "impact_text": "Ambush!",  # teks miring di segitiga (opsional)
 #   })
 #   await ambush.finished
 #   ambush.queue_free()
 #   TransitionManager.pindah_scene("...", "Ambush")
 #
-# AmbushPlayer CUMA urus drama (tension -> warning -> reveal ->
-# impact). Habis ini ke mana = urusan caller (via signal finished).
+# Visual: segitiga siku-siku pojok kanan-bawah + api FlameShader
+# di sisinya + blink + teks miring + shake. Penyerang TIDAK
+# ditampilin (misterius) — pertama kelihatan di battle.
+#
+# AmbushPlayer CUMA urus drama (tension -> warning -> impact).
+# Habis ini ke mana = urusan caller (via signal finished).
 # ============================================================
 
 signal finished
@@ -29,19 +33,28 @@ signal finished
 # Tunable (viewport 740x340) — eyeball pas test:
 const TENSION_SEC := 0.8
 const WARNING_SEC := 1.2
-const ENEMY_START_X := 1050.0
-const ENEMY_END_X := 520.0
-const ENEMY_Y := 200.0
 const SHAKE_PX := 20.0
-# Lunge musuh ke kamera (horor): scale-up + maju + animasi attack.
-# LUNGE_TIME cuma fallback — durasi real dibaca dari resource (frames/fps).
-const LUNGE_SCALE_MULT := 1.6
-const LUNGE_POS := Vector2(400, 210)
-const LUNGE_TIME := 0.25
-const REDBURST_COLOR := Color(0.5, 0.0, 0.0, 1)
+# Segitiga: box 320x220, siku di kanan-bawah (740, 340).
+const TRI_W := 320
+const TRI_H := 220
+const TRI_POS := Vector2(420, 120)
+# Teks impact: miring -28° (naik ke kanan, ngikutin sisi miring).
+const IMPACT_FONT_SIZE := 56
+const IMPACT_ROT_DEG := -28.0
+const IMPACT_COLOR := Color(0.7, 0.05, 0.05, 1)
+const IMPACT_POS := Vector2(453.0, 227.0)
+const IMPACT_SIZE := Vector2(360.0, 80.0)
+# Api di sisi segitiga.
+const FLAME_COLOR := Color(1.0, 0.35, 0.05, 1.0)
+const FLAME_OUTLINE := Color(0.1, 0.02, 0.02, 1.0)
+const FLAME_SHADER := "res://shaders/FlameShader.gdshader"
+# Blink segitiga putih <-> oranye (3x).
+const BLINK_COLOR := Color(1.0, 0.55, 0.2, 1.0)
+const BLINK_HALF_SEC := 0.075
+const BLINK_COUNT := 3
 
 const SFX_STING := "res://assets/audio/effects/battle/ui/zoomIntoEnemy.mp3"
-const SFX_REVEAL := "res://assets/audio/effects/battle/ui/attackQte-open.mp3"
+const SFX_SLAM := "res://assets/audio/effects/battle/ui/attackQte-open.mp3"
 const SFX_IMPACT := "res://assets/audio/effects/battle/sword/sword-attack.mp3"
 const FONT_PATH := "res://assets/ui/fonts/alagard.ttf"
 
@@ -49,8 +62,9 @@ var _running := false
 
 var _vignette: ColorRect
 var _warn_label: Label
-var _enemy: AnimatedSprite2D
-var _redburst: ColorRect
+var _tri: TextureRect
+var _flame_mat: ShaderMaterial
+var _impact_label: Label
 
 
 func play(cfg: Dictionary) -> void:
@@ -60,8 +74,8 @@ func play(cfg: Dictionary) -> void:
 
 	var root: Control = cfg.get("root")
 	var bg: TextureRect = cfg.get("bg")
-	var enemy_id: String = cfg.get("enemy_id", "skeleton")
 	var warn_text: String = cfg.get("warning_text", "Something moved behind the trees!")
+	var impact_text: String = cfg.get("impact_text", "Ambush!")
 
 	if root == null or not is_instance_valid(root):
 		push_error("[AmbushPlayer] cfg['root'] invalid!")
@@ -76,10 +90,7 @@ func play(cfg: Dictionary) -> void:
 	await _beat_warning(warn_text)
 	if not _alive():
 		return
-	await _beat_reveal(enemy_id)
-	if not _alive():
-		return
-	await _beat_impact(bg, enemy_id)
+	await _beat_impact(bg, impact_text)
 	_cleanup()
 	_running = false
 	finished.emit()
@@ -112,26 +123,63 @@ func _build_overlays(root: Control) -> void:
 	_warn_label.visible = false
 	root.add_child(_warn_label)
 
-	_enemy = AnimatedSprite2D.new()
-	_enemy.visible = false
-	root.add_child(_enemy)
+	# Segitiga + teks miring (paling atas).
+	_tri = TextureRect.new()
+	_tri.texture = _make_triangle_texture()
+	_tri.position = TRI_POS
+	_tri.size = Vector2(TRI_W, TRI_H)
+	_tri.pivot_offset = Vector2(TRI_W, TRI_H)
+	_tri.scale = Vector2(0.01, 0.01)
+	_tri.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	_tri.stretch_mode = TextureRect.STRETCH_SCALE
+	_tri.texture_filter = CanvasItem.TEXTURE_FILTER_LINEAR
+	_tri.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_tri.visible = false
+	if ResourceLoader.exists(FLAME_SHADER):
+		_flame_mat = ShaderMaterial.new()
+		_flame_mat.shader = load(FLAME_SHADER) as Shader
+		_flame_mat.set_shader_parameter("flame_color", FLAME_COLOR)
+		_flame_mat.set_shader_parameter("outline_color", FLAME_OUTLINE)
+		_flame_mat.set_shader_parameter("transition", 0.0)
+		_tri.material = _flame_mat
+	root.add_child(_tri)
 
-	# Red burst (paling atas) — darah, bukan flash putih.
-	_redburst = ColorRect.new()
-	_redburst.set_anchors_preset(Control.PRESET_FULL_RECT)
-	_redburst.color = Color(REDBURST_COLOR.r, REDBURST_COLOR.g, REDBURST_COLOR.b, 0.0)
-	_redburst.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	root.add_child(_redburst)
+	_impact_label = Label.new()
+	_impact_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_impact_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_impact_label.add_theme_font_size_override("font_size", IMPACT_FONT_SIZE)
+	_impact_label.add_theme_color_override("font_color", IMPACT_COLOR)
+	_impact_label.add_theme_constant_override("outline_size", 10)
+	_impact_label.add_theme_color_override("font_outline_color", Color(0, 0, 0, 0.9))
+	if ResourceLoader.exists(FONT_PATH):
+		_impact_label.add_theme_font_override("font", load(FONT_PATH) as Font)
+	_impact_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_impact_label.visible = false
+	root.add_child(_impact_label)
+
+
+# Segitiga siku-siku (siku di kanan-bawah), digenerate runtime —
+# tanpa file aset. Half-plane test per piksel, sekali jalan.
+func _make_triangle_texture() -> ImageTexture:
+	var img := Image.create(TRI_W, TRI_H, false, Image.FORMAT_RGBA8)
+	img.fill(Color(0, 0, 0, 0))
+	for y in range(TRI_H):
+		var t := float(TRI_H - 1 - y) / float(TRI_H - 1)
+		var x_left := int(float(TRI_W - 1) * (1.0 - t))
+		for x in range(x_left, TRI_W):
+			img.set_pixel(x, y, Color(1, 1, 1, 1))
+	return ImageTexture.create_from_image(img)
 
 
 func _cleanup() -> void:
-	for n in [_vignette, _warn_label, _enemy, _redburst]:
+	for n in [_vignette, _warn_label, _tri, _impact_label]:
 		if is_instance_valid(n):
 			n.queue_free()
 	_vignette = null
 	_warn_label = null
-	_enemy = null
-	_redburst = null
+	_tri = null
+	_flame_mat = null
+	_impact_label = null
 
 
 # ============================================================
@@ -163,66 +211,54 @@ func _beat_warning(warn_text: String) -> void:
 	await get_tree().create_timer(WARNING_SEC).timeout
 
 
-# Beat 3 — REVEAL (1.0s): musuh slide in dari kanan pakai art asli.
-func _beat_reveal(enemy_id: String) -> void:
-	var data: EnemyData = EnemyDatabase.get_enemy_data(enemy_id)
-	if data == null or data.sprite_frames == null:
-		push_warning("[AmbushPlayer] enemy '%s' tidak ketemu — reveal diskip." % enemy_id)
-		return
-	_play_sfx(SFX_REVEAL)
-	_enemy.sprite_frames = data.sprite_frames
-	_enemy.scale = data.sprite_scale
-	if _enemy.sprite_frames.has_animation("idle"):
-		_enemy.play("idle")
-	else:
-		_enemy.play()
-	_enemy.position = Vector2(ENEMY_START_X, ENEMY_Y)
-	_enemy.modulate.a = 0.0
-	_enemy.visible = true
+# Beat 3 — IMPACT (~1.2s): segitiga nyabet dari sudut + api meletup
+# di sisinya + blink + teks miring pop + shake + SFX.
+func _beat_impact(bg: TextureRect, impact_text: String) -> void:
+	_play_sfx(SFX_SLAM)
 
+	# Teks miring -28° di tengah wedge.
+	_impact_label.text = impact_text
+	_impact_label.position = IMPACT_POS
+	_impact_label.size = IMPACT_SIZE
+	_impact_label.pivot_offset = IMPACT_SIZE * 0.5
+	_impact_label.rotation_degrees = IMPACT_ROT_DEG
+	_impact_label.scale = Vector2(0.5, 0.5)
+	_impact_label.modulate.a = 0.0
+	_impact_label.visible = true
+
+	_tri.visible = true
 	var tw := create_tween().set_parallel(true)
-	tw.tween_property(_enemy, "position:x", ENEMY_END_X, 0.8).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-	tw.tween_property(_enemy, "modulate:a", 1.0, 0.5)
-	await tw.finished
-
-
-# Beat 4 — IMPACT (~1.1s), DUA FASE:
-#   4a. ATTACK DULU — musuh main animasi attack SAMPAI FRAME TERAKHIR
-#       (lunge scale+move ngikutin durasi real animasi, bukan fixed 0.25s).
-#   4b. IMPACT — BARU red burst + shake + SFX (attack udah kebaca jelas).
-# Tanpa shape grafis, tanpa teks — musuhnya sendiri yang jadi efeknya.
-func _beat_impact(bg: TextureRect, enemy_id: String) -> void:
-	# 4a. ATTACK DULU sampai habis.
-	var atk_sec := LUNGE_TIME
-	if is_instance_valid(_enemy) and _enemy.visible:
-		var data: EnemyData = EnemyDatabase.get_enemy_data(enemy_id)
-		var base_scale: Vector2 = data.sprite_scale if data != null else Vector2(0.8, 0.8)
-		if _enemy.sprite_frames != null and _enemy.sprite_frames.has_animation("attack"):
-			var fc := _enemy.sprite_frames.get_frame_count("attack")
-			var fps := _enemy.sprite_frames.get_animation_speed("attack")
-			if fps > 0.0 and fc > 0:
-				atk_sec = float(fc) / fps
-			_enemy.play("attack")
-		var lunge := create_tween().set_parallel(true)
-		lunge.tween_property(_enemy, "scale", base_scale * LUNGE_SCALE_MULT, atk_sec).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-		lunge.tween_property(_enemy, "position", LUNGE_POS, atk_sec).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
-		await lunge.finished
-		if not _alive():
-			return
-	# 4b. IMPACT — attack udah kelar, baru efeknya.
-	_play_sfx(SFX_IMPACT)
-	var fx := create_tween().set_parallel(true)
-	fx.tween_property(_redburst, "color:a", 0.7, 0.1)
-	fx.tween_property(_warn_label, "modulate:a", 0.0, 0.2)
-	fx.tween_property(_vignette, "color:a", 0.4, 0.3)
+	# Segitiga nyabet (0.18s, snappy) + api meletup (0.4s).
+	tw.tween_property(_tri, "scale", Vector2.ONE, 0.18).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	if _flame_mat != null:
+		tw.tween_property(_flame_mat, "shader_parameter/transition", 1.0, 0.4)
+	# Teks pop nyusul dikit (delay 0.1s).
+	tw.tween_property(_impact_label, "modulate:a", 1.0, 0.15).set_delay(0.1)
+	tw.tween_property(_impact_label, "scale", Vector2.ONE, 0.25).set_delay(0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	# Warn label + vignette settle, bg shake, SFX impact pas teks pop.
+	tw.tween_property(_warn_label, "modulate:a", 0.0, 0.2)
+	tw.tween_property(_vignette, "color:a", 0.4, 0.3)
 	if bg != null and is_instance_valid(bg):
 		var base_pos: Vector2 = bg.position
 		for i in range(6):
 			var off := Vector2(randf_range(-SHAKE_PX, SHAKE_PX), randf_range(-SHAKE_PX, SHAKE_PX))
-			fx.tween_property(bg, "position", base_pos + off, 0.06)
-		fx.tween_property(bg, "position", base_pos, 0.08)
-	await fx.finished
-	# Tahan 0.3s (musuh di muka + merah), baru curtain.
+			tw.tween_property(bg, "position", base_pos + off, 0.06)
+		tw.tween_property(bg, "position", base_pos, 0.08)
+	await tw.finished
+	if not _alive():
+		return
+	_play_sfx(SFX_IMPACT)
+
+	# Blink segitiga putih <-> oranye (tween sekuensial terpisah —
+	# gabung ke parallel di atas bakal tabrakan di properti sama).
+	var blink := create_tween()
+	for i in range(BLINK_COUNT):
+		blink.tween_property(_tri, "modulate", BLINK_COLOR, BLINK_HALF_SEC)
+		blink.tween_property(_tri, "modulate", Color(1, 1, 1, 1), BLINK_HALF_SEC)
+	await blink.finished
+	if not _alive():
+		return
+	# Tahan 0.3s (segitiga api + teks), baru curtain.
 	await get_tree().create_timer(0.3).timeout
 
 

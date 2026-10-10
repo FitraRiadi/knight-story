@@ -33,7 +33,6 @@ func _on_dialog_done(_label) -> void:
 	ambush.play({
 		"root": self,
 		"bg": bg,
-		"enemy_id": "skeleton",
 		"warning_text": "Something moved behind the trees!",
 	})
 	await ambush.finished
