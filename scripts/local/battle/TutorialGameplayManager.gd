@@ -1933,17 +1933,41 @@ func spawn_wave3_grimward() -> void:
 	total_waves = 3
 	current_wave = 3
 	wave_progress.set_wave(3, 3)
-	_tutorial_spawn(["grimward"] as Array[String], [3] as Array[int])
+	_tutorial_spawn(["grimward"] as Array[String], [1] as Array[int])
+	# Aturan tutorial: SEMUA musuh level 1. Data grimward min_level 3
+	# (setup_enemy clamp max(custom, min)) -> paksa turun manual.
 	# Pelajaran counter = DETERMINISTIK: armor ON (damage ~1, gak bisa
-	# mati duluan — crit 130 > HP 125!) + counter level 3 = 100% pasti
-	# keluar pas diserang. Mati cuma kalau tutorial yang nyuruh.
+	# mati duluan) + counter level 3 = 100% pasti keluar pas diserang.
+	# Ability gak kefilter level jadi counter aman. Mati cuma kalau
+	# tutorial yang nyuruh.
 	for e in enemies:
 		if not is_instance_valid(e):
 			continue
+		_force_enemy_level_one(e)
 		_set_training_armor(e, true)
 		var ab := e.get_tactical_attack_ability()
 		if ab:
 			ab.level = 3
+
+
+# Turunin musuh ke level 1 manual (mirror blok scaling setup_enemy).
+# Dipakai karena min_level data bisa > 1 (grimward min 3).
+func _force_enemy_level_one(e: BattleEnemy) -> void:
+	if e == null or not is_instance_valid(e):
+		return
+	var st = e.stats
+	if st == null:
+		return
+	e.level = 1
+	var sc: Dictionary = st.get_scaled_stats(1)
+	e.scaled_max_hp = float(sc.get("max_hp", 100.0))
+	e.scaled_damage = float(sc.get("damage", 15.0))
+	e.scaled_defense = float(sc.get("defense", 0.0))
+	e.scaled_exp = int(sc.get("exp", 20))
+	e.scaled_gold = int(sc.get("gold", 10))
+	e.current_hp = e.scaled_max_hp
+	if e.enemy_level_label:
+		e.enemy_level_label.text = "Lv. 1"
 
 
 func _goto_wave2() -> void:
