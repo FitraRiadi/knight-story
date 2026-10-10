@@ -6,6 +6,7 @@ extends Control
 @onready var achievment_button = $bg_scene/MenuOption/AchievmentButton
 @onready var title = $bg_scene/MenuOption/Title
 @onready var info_label = $bg_scene/information
+@onready var campfire = $bg_scene/AnimatedSprite2D
 @onready var prologue_ui = $bg_scene/prologueUI
 @onready var prologue_dialog = $bg_scene/prologueUI/dialog
 @onready var create_character_popup = $"../createCharacterPopup"
@@ -41,6 +42,10 @@ func _on_play_pressed() -> void:
 	var fade := create_tween().set_parallel(true)
 	fade.tween_property(menu_option, "modulate:a", 0.0, 0.6).set_trans(Tween.TRANS_CIRC)
 	fade.tween_property(info_label, "modulate:a", 0.0, 0.6).set_trans(Tween.TRANS_CIRC)
+	# Zoom sinematik pelan (push-in ~8%, jalan terus sampai fase prologue)
+	if campfire != null:
+		var zoom := create_tween()
+		zoom.tween_property(campfire, "scale", campfire.scale * 1.08, 2.5).set_trans(Tween.TRANS_SINE)
 	await fade.finished
 	start_prologue_phase()
 
