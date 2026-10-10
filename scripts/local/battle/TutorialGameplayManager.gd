@@ -178,6 +178,12 @@ func _ready() -> void:
 	if wave_progress:
 		wave_progress.set_wave(1, 3)
 	await get_tree().create_timer(1.2).timeout
+	# Intro parent sekarang sinematik (~4 dtk): jangan WELCOME sebelum
+	# musuh wave-1 beneran spawn, biar tap-ahead gak nyasar ke step kosong.
+	var wait_t := 0.0
+	while is_instance_valid(self) and _tutorial_active and enemies.is_empty() and wait_t < 15.0:
+		await get_tree().create_timer(0.2).timeout
+		wait_t += 0.2
 	if is_instance_valid(self):
 		_begin_step(Step.WELCOME)
 

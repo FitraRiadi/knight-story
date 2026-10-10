@@ -371,9 +371,11 @@ func _ready() -> void:
 	_auto_detect_enemy_pool()
 	# Hide buttons dulu, nanti muncul setelah intro
 	_set_buttons_active(false, true)
-	# Intro: map title fade + player info slide (barengan)
-	_play_battle_intro()
+	# Intro: title card tengah -> UI stagger satu-satu -> hands.
+	# Musuh SELALU paling akhir (spawn di bawah habis intro kelar).
+	await _play_battle_intro()
 	_animate_player_info_intro()
+	await _pop_wave_progress_intro()
 	await _animate_hands_intro()
 	
 	# Initialize wave system
@@ -4625,13 +4627,56 @@ func _set_player_turn_true() -> void:
 # ============================================================
 
 func _play_battle_intro() -> void:
+	# Sinematik: judul map GEDE di tengah -> tahan -> fade out ->
+	# balik ke HUD atas (kecil). Baru UI lain stagger masuk. Musuh
+	# SELALU terakhir (spawn di _ready habis intro kelar).
 	if not map_title:
 		return
-
+	var vp: Vector2 = get_viewport().get_visible_rect().size
+	# Simpan posisi HUD asli
+	var o_left := map_title.offset_left
+	var o_top := map_title.offset_top
+	var o_right := map_title.offset_right
+	var o_bottom := map_title.offset_bottom
+	var o_font := map_title.get_theme_font_size("font_size")
+	var sub: Label = map_title.get_node_or_null("Label") as Label
+	# Mode title-card: full-width tengah, font gede, subtitle ngumpet
+	map_title.offset_left = 0.0
+	map_title.offset_right = vp.x
+	map_title.offset_top = vp.y * 0.34
+	map_title.offset_bottom = vp.y * 0.34 + 120.0
+	map_title.add_theme_font_size_override("font_size", 64)
+	if sub:
+		sub.visible = false
 	map_title.modulate.a = 0.0
+	var tw_in := create_tween()
+	tw_in.tween_property(map_title, "modulate:a", 1.0, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	await tw_in.finished
+	await get_tree().create_timer(1.4).timeout
+	var tw_out := create_tween()
+	tw_out.tween_property(map_title, "modulate:a", 0.0, 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	await tw_out.finished
+	# Balik ke HUD + fade in
+	map_title.offset_left = o_left
+	map_title.offset_top = o_top
+	map_title.offset_right = o_right
+	map_title.offset_bottom = o_bottom
+	map_title.add_theme_font_size_override("font_size", o_font)
+	if sub:
+		sub.visible = true
+	var tw_hud := create_tween()
+	tw_hud.tween_property(map_title, "modulate:a", 1.0, 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	await tw_hud.finished
 
+
+func _pop_wave_progress_intro() -> void:
+	if not wave_progress:
+		return
+	wave_progress.pivot_offset = wave_progress.size * 0.5
+	wave_progress.scale = Vector2.ZERO
 	var tw := create_tween()
-	tw.tween_property(map_title, "modulate:a", 1.0, 3).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tw.tween_property(wave_progress, "scale", Vector2.ONE, 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	await tw.finished
 
 
 func _animate_player_info_intro() -> void:
