@@ -46,30 +46,6 @@ float noise(vec2 x) {
 			mix(hash(p + vec2(0.0, 1.0)), hash(p + vec2(1.0, 1.0)), f.x), f.y);
 }
 
-float get_alpha(sampler2D tex, vec2 uv) {
-	if (uv.x < 0.0 || uv.x > 1.0 || uv.y < 0.0 || uv.y > 1.0) {
-		return 0.0;
-	}
-	return texture(tex, uv).a;
-}
-
-float find_distance(sampler2D tex, vec2 uv, float radius, vec2 aspect, vec2 bias) {
-	float d = 99.0;
-	for (int r = 1; r <= 8; r++) {
-		float rr = float(r) / 8.0;
-		for (int i = 0; i < 12; i++) {
-			float ang = float(i) * TAU / 12.0;
-			vec2 dir = vec2(cos(ang), sin(ang)) * aspect;
-			vec2 s = uv + dir * radius * rr + bias * rr;
-			if (get_alpha(tex, s) > 0.5) {
-				d = min(d, rr);
-			}
-		}
-		if (d < 99.0) break;
-	}
-	return d;
-}
-
 float sd_round_box(vec2 p, vec2 b, float r) {
 	vec2 q = abs(p) - b + r;
 	return length(max(q, 0.0)) + min(max(q.x, q.y), 0.0) - r;
@@ -103,7 +79,25 @@ void fragment() {
 
 		vec2 bias = vec2(0.0, radius * upward_bias) * aspect;
 
-		float d = find_distance(TEXTURE, uv, radius, aspect, bias);
+		// Inline (TANPA oper TEXTURE ke fungsi — pola sampler2D sbg
+		// parameter broken di Godot 4: sampling balikin 0 -> api mati).
+		// Logika 1:1 FlameShader: 8 ring x 12 arah.
+		float d = 99.0;
+		for (int r = 1; r <= 8; r++) {
+			float rr = float(r) / 8.0;
+			for (int i = 0; i < 12; i++) {
+				float ang = float(i) * TAU / 12.0;
+				vec2 s = uv + vec2(cos(ang), sin(ang)) * aspect * radius * rr + bias * rr;
+				float sa = 0.0;
+				if (s.x >= 0.0 && s.x <= 1.0 && s.y >= 0.0 && s.y <= 1.0) {
+					sa = texture(TEXTURE, s).a;
+				}
+				if (sa > 0.5) {
+					d = min(d, rr);
+				}
+			}
+			if (d < 99.0) break;
+		}
 
 		float total = flame_percent + outline_percent;
 		float flame_edge = total > 0.0001 ? flame_percent / total : 0.5;
