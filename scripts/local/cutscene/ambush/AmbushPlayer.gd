@@ -40,7 +40,7 @@ const HOLD_SEC := 0.3
 # Zoom pelan selama dread (push-in halus, total SILENCE + DARKEN).
 const ZOOM_ADD := Vector2(0.06, 0.06)
 
-const FONT_PATH := "res://assets/ui/fonts/alagard.ttf"
+const FONT_PATH := "res://assets/ui/fonts/Jersey15-Regular.ttf"
 
 var _running := false
 

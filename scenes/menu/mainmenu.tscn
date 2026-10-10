@@ -316,7 +316,7 @@ scale = Vector2(0.957587, 1.1047277)
 theme_override_fonts/font = ExtResource("50_jersey")
 theme_override_font_sizes/font_size = 39
 text = "Knight Story Chapter 1"
-autowrap_mode = 1
+autowrap_mode = 3
 
 [node name="startBtn" type="Button" parent="MAINMENU/menu/bg_scene/prologueUI/chapterInit"]
 visible = false

@@ -40,7 +40,7 @@ func _on_done(_label):
 	chapterInit.visible = true
 	
 	var dialogs2 = [
-		["Knight Story Chapter 1",1.0]
+		["Knight Story\nChapter 1",1.0]
 	]
 
 	var tw2 = TypewriterPlayers.new()
