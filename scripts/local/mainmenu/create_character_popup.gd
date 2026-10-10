@@ -67,6 +67,11 @@ func _on_confirm_pressed() -> void:
 	if len(name_input.text) > 12:
 		show_information("Name to long!")
 		return
+	# Simpan identitas knight (dipakai battle label dll).
+	if PlayerDataManager.data != null:
+		PlayerDataManager.data.player_name = name_input.text
+		PlayerDataManager.data.player_perk = perk_current
+		PlayerDataManager.save()
 	show_information("")
 	confirm_popup.visible = true
 	confirm_popup.intro()

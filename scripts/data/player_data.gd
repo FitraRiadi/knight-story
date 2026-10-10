@@ -10,6 +10,8 @@ class_name PlayerData
 
 @export var player_name: String = "Knight"
 
+@export var player_perk: String = "NONE"
+
 @export var player_level: int = 1
 
 @export var player_exp: int = 0

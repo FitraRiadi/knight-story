@@ -36,21 +36,16 @@ func _play_intro() -> void:
 	tween.tween_property(achievment_button, "position:x", achievment_button.position.x - 100, 0.5).set_trans(Tween.TRANS_CIRC)
 
 func _on_play_pressed() -> void:
-	# Fase MENU -> PROLOGUE, satu scene (campfire jalan terus, nol kedip)
-	play_button.disabled = true
-	achievment_button.disabled = true
-	var fade := create_tween().set_parallel(true)
-	fade.tween_property(menu_option, "modulate:a", 0.0, 0.6).set_trans(Tween.TRANS_CIRC)
-	fade.tween_property(info_label, "modulate:a", 0.0, 0.6).set_trans(Tween.TRANS_CIRC)
-	# Zoom sinematik pelan (push-in ~8%, jalan terus sampai fase prologue)
-	if campfire != null:
-		var zoom := create_tween()
-		zoom.tween_property(campfire, "scale", campfire.scale * 1.08, 2.5).set_trans(Tween.TRANS_SINE)
-	await fade.finished
-	start_prologue_phase()
+	create_character_popup.visible = true
 
 func start_prologue_phase() -> void:
 	menu_option.visible = false
+	# Sinematik (dulu di Play, pindah ke sini biar confirm path ikut):
+	# fade info + zoom campfire pelan, jalan bareng prologue fade-in.
+	var cin := create_tween().set_parallel(true)
+	cin.tween_property(info_label, "modulate:a", 0.0, 0.6).set_trans(Tween.TRANS_CIRC)
+	if campfire != null:
+		cin.tween_property(campfire, "scale", campfire.scale * 1.08, 2.5).set_trans(Tween.TRANS_SINE)
 	# Fase PROLOGUE mulai (kosongin dialog dulu biar placeholder nggak kecolongan)
 	prologue_dialog.text = ""
 	prologue_ui.visible = true
