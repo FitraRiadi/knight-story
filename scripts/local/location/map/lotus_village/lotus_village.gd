@@ -32,6 +32,9 @@ func _ready() -> void:
 		go_home.visible = false
 	if go_colloseum:
 		go_colloseum.visible = false
+	# HUD (map, journey, dll) disembunyiin dulu sampai ada keputusan.
+	if hud:
+		hud.visible = false
 
 	# Reveal building bertahap: pengenalan (tavern) dulu, sisanya
 	# kebuka habis masuk tavern sekali.
@@ -42,9 +45,6 @@ func _ready() -> void:
 		_hide_building(go_black_smith)
 		_hide_building(go_quest_board)
 		_hide_building(go_tavern)
-		# HUD (map, journey, dll) juga sembunyi selama arrival.
-		if hud:
-			hud.visible = false
 		# Arrival sinematik (cuma kunjungan pertama)
 		_play_arrival()
 	else:
@@ -129,7 +129,7 @@ func _play_arrival() -> void:
 	tw.play()
 
 func _on_arrival_done(_label, blocker: Control, dialog_label: Label) -> void:
-	print("[Lotus] arrival done — reveal tavern + HUD")
+	print("[Lotus] arrival done — reveal tavern (HUD tetap hidden)")
 	PlayerDataManager.mark_visited("lotus_village")
 	if is_instance_valid(blocker):
 		blocker.queue_free()
@@ -137,12 +137,6 @@ func _on_arrival_done(_label, blocker: Control, dialog_label: Label) -> void:
 		dialog_label.queue_free()
 	# Reveal batch pengenalan: tavern dulu.
 	_reveal_tavern()
-	# HUD (map, journey, dll) fade-in bareng.
-	if hud:
-		hud.visible = true
-		hud.modulate.a = 0.0
-		var tw := create_tween()
-		tw.tween_property(hud, "modulate:a", 1.0, 0.5).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
 
 # Fungsi untuk memunculkan pop-up Quest Menu (sejajar dengan gui-player-base)
 func show_quest_popup() -> void:
