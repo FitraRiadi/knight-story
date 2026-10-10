@@ -4725,7 +4725,7 @@ func _animate_player_info_intro() -> void:
 	player_info.position.x = -player_info.size.x - 400.0
 
 	var tw := create_tween()
-	tw.tween_property(player_info, "position:x", orig_x, 0.5).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(player_info, "position:x", orig_x, 0.5).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
 
 
 # ============================================================
