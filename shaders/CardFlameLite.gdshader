@@ -55,7 +55,10 @@ void fragment() {
 		vec2 bias = vec2(0.0, radius * upward_bias) * aspect;
 
 		// Lite distance-field: 3 ring x 8 arah (asli 8 x 12).
-		float d = 99.0;
+		// Dua jarak sekaligus: ke opaque (api luar) + ke transparan
+		// (lapisan dalam = frame-nya sendiri ikut kebakar).
+		float d_op = 99.0;
+		float d_tr = 99.0;
 		for (int r = 1; r <= 3; r++) {
 			float rr = float(r) / 3.0;
 			for (int i = 0; i < 8; i++) {
@@ -66,24 +69,36 @@ void fragment() {
 					sa = texture(TEXTURE, s).a;
 				}
 				if (sa > 0.5) {
-					d = min(d, rr);
+					d_op = min(d_op, rr);
+				} else {
+					d_tr = min(d_tr, rr);
 				}
 			}
-			if (d < 99.0) break;
+			if (d_op < 99.0 && d_tr < 99.0) break;
 		}
 
-		// 60% api, 40% outline gelap.
-		vec4 fx = vec4(0.0);
-		if (d <= 0.6) {
-			fx = flame_color;
-		} else if (d <= 1.0) {
-			fx = outline_color;
-		}
-		fx.a *= gate * smoothstep(0.0, 0.25, transition);
+		if (base.a < 0.5) {
+			// Api LUAR: pixel transparan yang nempel opaque.
+			vec4 fx = vec4(0.0);
+			if (d_op <= 0.6) {
+				fx = flame_color;
+			} else if (d_op <= 1.0) {
+				fx = outline_color;
+			}
+			fx.a *= gate * smoothstep(0.0, 0.25, transition);
 
-		float out_a = base.a + fx.a * (1.0 - base.a);
-		vec3 out_rgb = (base.rgb * base.a + fx.rgb * fx.a * (1.0 - base.a)) / max(out_a, 0.0001);
-		result = vec4(out_rgb, out_a);
+			float out_a = base.a + fx.a * (1.0 - base.a);
+			vec3 out_rgb = (base.rgb * base.a + fx.rgb * fx.a * (1.0 - base.a)) / max(out_a, 0.0001);
+			result = vec4(out_rgb, out_a);
+		} else {
+			// Lapisan DALAM: tepi opaque yang nempel transparan ikut
+			// ketint flame — frame-nya sendiri keliatan kebakar.
+			float coat = (1.0 - clamp(d_tr, 0.0, 1.0)) * gate;
+			vec3 coated = mix(base.rgb, flame_color.rgb, coat * 0.85);
+			// Pulse halus biar api hidup (noise yang sama).
+			coated += flame_color.rgb * coat * 0.25 * n;
+			result = vec4(coated, base.a);
+		}
 	}
 
 	COLOR = result * modulate_color;
