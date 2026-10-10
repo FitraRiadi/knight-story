@@ -56,12 +56,16 @@ void fragment() {
 			// Jilatan: noise 1 oktaf + bias ke atas (api naik).
 			float n = noise(cuv * noise_scale + vec2(0.0, -TIME * speed * 0.35));
 			float n2 = noise(cuv * noise_scale * 2.3 + vec2(3.7, -TIME * speed * 0.6));
-			float wob = (n * 0.65 + n2 * 0.35 - 0.5) * reach_px * 0.9;
+			float wob = (n * 0.65 + n2 * 0.35 - 0.5) * reach_px * 0.55;
 			float reach = reach_px * (1.0 + upward_bias * (0.5 - cuv.y) * 1.6);
 			// Nempel frame: wobble 0 di akar (d=0 -> api full), makin liar
 			// ke luar. Biar gak ada ruang bolong antara frame dan api.
 			float hug = smoothstep(0.0, max(reach, 0.001) * 0.6, d);
 			float t = 1.0 - smoothstep(0.0, max(reach, 0.001), d + wob * hug);
+			// Api dasar (glow statis tanpa noise) di bawah jilatan biar
+			// pita api nyambung terus, gak bolong-bolong.
+			float baselayer = (1.0 - smoothstep(0.0, max(reach, 0.001), d)) * 0.6;
+			t = max(t, baselayer);
 			if (t > 0.003) {
 				// Inti terang -> ekor gelap (outline_color).
 				vec3 col = mix(outline_color.rgb, flame_color.rgb, smoothstep(0.0, 0.55, t));

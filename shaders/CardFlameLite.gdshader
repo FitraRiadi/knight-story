@@ -29,7 +29,7 @@ void fragment() {
 		// Jarak ke tepi rect (UV). Sudut membulat art gak masalah:
 		// yang transparan diskip via base.a, yang opaque di pita kena.
 		float edge_d = min(min(UV.x, 1.0 - UV.x), min(UV.y, 1.0 - UV.y));
-		float coat = flame_size * 0.35;
+		float coat = flame_size * 0.6;
 		float band = 1.0 - smoothstep(0.0, coat, edge_d);
 		if (band > 0.003) {
 			// Pulse hidup: gelombang jalan keliling border.
