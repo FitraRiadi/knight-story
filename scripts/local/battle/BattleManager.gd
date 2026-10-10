@@ -127,6 +127,7 @@ var original_def_pos: Vector2
 var original_backpack_pos: Vector2
 var original_run_post: Vector2
 var original_skill_post: Vector2
+var player_info_orig_x: float = 0.0
 var default_camera_pos: Vector2 = Vector2.ZERO
 
 @export var center_spawn_position: Vector2 = Vector2(380, 180)
@@ -373,11 +374,14 @@ func _ready() -> void:
 	_set_buttons_active(false, true)
 	# Intro: title HUD -> player info slide -> hands.
 	# Musuh SELALU paling akhir (spawn di bawah habis intro kelar).
-	# WaveProgress + framebg ngumpet dari awal; reveal-nya BARENG
-	# spawn musuh (data wave beneran), bukan pas placeholder.
+	# WaveProgress + framebg + player_info ngumpet dari FRAME PERTAMA
+	# (jangan nongol di posisi ready dulu baru loncat).
 	if wave_progress:
 		wave_progress.pivot_offset = wave_progress.size * 0.5
 		wave_progress.scale = Vector2.ZERO
+	if player_info:
+		player_info_orig_x = player_info.position.x
+		player_info.position.x = -player_info.size.x - 10.0
 	_hide_framebg_instant()
 	await _play_battle_intro()
 	_animate_player_info_intro()
@@ -4691,11 +4695,13 @@ func _animate_player_info_intro() -> void:
 	if not player_info:
 		return
 
-	var orig_pos: Vector2 = player_info.position
+	# Tujuan = posisi tersimpan di _ready (BUKAN posisi pas dipanggil,
+	# soalnya pas dipanggil dia lagi ngumpet di kiri).
+	var orig_x := player_info_orig_x
 	player_info.position.x = -player_info.size.x - 10.0
 
 	var tw := create_tween()
-	tw.tween_property(player_info, "position:x", orig_pos.x, 0.45).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(player_info, "position:x", orig_x, 0.45).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 # ============================================================
