@@ -8,6 +8,7 @@ const QUEST_MENU_SCENE: PackedScene = preload("res://scenes/gui/popup/quest/ques
 @onready var go_quest_board: Button = $bg/goQuestBoard
 @onready var go_tavern: Button = $bg/goTavern
 @onready var go_home: Button = $bg/goHome
+@onready var go_colloseum: Button = $bg/goColloseum
 @onready var hud: Control = $"gui-player-base"
 
 var active_quest_popup: Node = null
@@ -26,9 +27,11 @@ func _ready() -> void:
 	
 	MusicManager.play_music(LOTUS_VILLAGE_BGM)
 
-	# Home selalu hidden sampai di-wire.
+	# Home + Colloseum selalu hidden sampai di-wire (tombol mati).
 	if go_home:
 		go_home.visible = false
+	if go_colloseum:
+		go_colloseum.visible = false
 
 	# Reveal building bertahap: pengenalan (tavern) dulu, sisanya
 	# kebuka habis masuk tavern sekali.
