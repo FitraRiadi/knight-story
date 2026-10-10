@@ -316,10 +316,26 @@ func _show_buy_confirmation_popup(item_data: Dictionary, item_res: ItemData) -> 
 	popup_panel.scale = Vector2(0.2, 0.2)
 	popup_panel.modulate.a = 0.0
 
+	# Alas gelap solid (frame art transparan — tanpa ini popup tembus).
+	# Rect + animasi disamain persis sama popup, di belakangnya.
+	var popup_bg := ColorRect.new()
+	popup_bg.name = "BuyPopupBG"
+	popup_bg.color = Color(0.07, 0.08, 0.12, 0.97)
+	popup_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	popup_bg.position = popup_panel.position
+	popup_bg.size = popup_panel.size
+	popup_bg.pivot_offset = popup_panel.size / 2.0
+	popup_bg.scale = Vector2(0.2, 0.2)
+	popup_bg.modulate.a = 0.0
+	popup_overlay.add_child(popup_bg)
+	popup_overlay.move_child(popup_bg, popup_panel.get_index())
+
 	# Animasi muncul
 	var tween := popup_panel.create_tween().set_parallel(true)
 	tween.tween_property(popup_panel, "scale", Vector2(1.0, 1.0), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(popup_panel, "modulate:a", 1.0, 0.15)
+	tween.tween_property(popup_bg, "scale", Vector2(1.0, 1.0), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(popup_bg, "modulate:a", 1.0, 0.15)
 
 	# Signal tombol
 	yes_btn.pressed.connect(_confirm_buy_item.bind(item_data, item_res, popup_overlay, popup_panel))
@@ -365,6 +381,10 @@ func _close_buy_popup(overlay_node: Node, popup_panel: Node) -> void:
 	var tween := popup_panel.create_tween().set_parallel(true)
 	tween.tween_property(popup_panel, "scale", Vector2(0.8, 0.8), 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	tween.tween_property(popup_panel, "modulate:a", 0.0, 0.15)
+	var popup_bg := overlay_node.get_node_or_null("BuyPopupBG")
+	if popup_bg:
+		tween.tween_property(popup_bg, "scale", Vector2(0.8, 0.8), 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+		tween.tween_property(popup_bg, "modulate:a", 0.0, 0.15)
 	tween.chain().tween_callback(overlay_node.queue_free)
 
 
