@@ -370,6 +370,24 @@ func clear_active_quest() -> void:
 	save_quest_state()
 
 
+# ============================================================
+# VISITED LOCATIONS (arrival sinematik sekali per lokasi)
+# ============================================================
+
+func has_visited(location_id: String) -> bool:
+	if data == null:
+		return false
+	return location_id in data.visited_locations
+
+
+func mark_visited(location_id: String) -> void:
+	if data == null:
+		return
+	if location_id not in data.visited_locations:
+		data.visited_locations.append(location_id)
+		save()
+
+
 func set_displayed_quests(ids: Array) -> void:
 	displayed_quest_ids = ids
 	save_quest_state()

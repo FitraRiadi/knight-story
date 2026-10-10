@@ -77,3 +77,12 @@ class_name PlayerData
 @export_group("Chest Inventory")
 
 @export var chest_inventory: InventoryBattleData
+
+
+# ============================================================
+# EXPLORATION
+# ============================================================
+
+@export_group("Exploration")
+
+@export var visited_locations: Array[String] = []

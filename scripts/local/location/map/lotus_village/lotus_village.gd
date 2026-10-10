@@ -24,6 +24,57 @@ func _ready() -> void:
 	
 	MusicManager.play_music(LOTUS_VILLAGE_BGM)
 
+	# Arrival sinematik (cuma kunjungan pertama)
+	if not PlayerDataManager.has_visited("lotus_village"):
+		_play_arrival()
+
+# ============================================================
+# ARRIVAL (kunjungan pertama): walk-in + teks, lalu bebas explore
+# ============================================================
+
+const ARRIVAL_FONT := "res://assets/ui/fonts/Jersey15-Regular.ttf"
+
+func _play_arrival() -> void:
+	# Blocker input selama sinematik (tombol lokasi jangan bisa diklik).
+	var blocker := Control.new()
+	blocker.set_anchors_preset(Control.PRESET_FULL_RECT)
+	blocker.mouse_filter = Control.MOUSE_FILTER_STOP
+	add_child(blocker)
+	# Dialog di atas blocker.
+	var dialog_label := Label.new()
+	dialog_label.position = Vector2(40, 240)
+	dialog_label.size = Vector2(660, 80)
+	dialog_label.add_theme_font_size_override("font_size", 18)
+	dialog_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	if ResourceLoader.exists(ARRIVAL_FONT):
+		dialog_label.add_theme_font_override("font", load(ARRIVAL_FONT) as Font)
+	add_child(dialog_label)
+
+	# Walk-in: bg zoom pelan (first-person masuk desa).
+	var bg_node := $bg as TextureRect
+	if bg_node != null:
+		bg_node.pivot_offset = bg_node.size / 2
+		var walk := create_tween()
+		walk.tween_property(bg_node, "scale", bg_node.scale * 1.08, 10.0).set_trans(Tween.TRANS_SINE)
+
+	var dialogs = [
+		["The village he sought.", 3.0],
+		["Lotus Village.", 3.0],
+		["Smoke rose from chimneys. Behind him, the forest kept its silence.", 3.5],
+	]
+	var tw = TypewriterPlayers.new()
+	add_child(tw)
+	tw.setup(dialog_label, dialogs, 0.03, 0.5, false, "|", false)
+	tw.finished.connect(_on_arrival_done.bind(blocker, dialog_label))
+	tw.play()
+
+func _on_arrival_done(_label, blocker: Control, dialog_label: Label) -> void:
+	PlayerDataManager.mark_visited("lotus_village")
+	if is_instance_valid(blocker):
+		blocker.queue_free()
+	if is_instance_valid(dialog_label):
+		dialog_label.queue_free()
+
 # Fungsi untuk memunculkan pop-up Quest Menu (sejajar dengan gui-player-base)
 func show_quest_popup() -> void:
 	# Cegah pembuatan instansi ganda jika pop-up sudah terbuka
