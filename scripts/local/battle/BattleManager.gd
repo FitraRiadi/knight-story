@@ -387,7 +387,8 @@ func _ready() -> void:
 		wave_progress.scale = Vector2.ZERO
 	if player_info:
 		player_info_orig_x = player_info.position.x
-		player_info.position.x = -player_info.size.x - 10.0
+		# Mentok keluar layar kiri (jauh, bukan mepet) biar awal bersih.
+		player_info.position.x = -player_info.size.x - 60.0
 	_hide_framebg_instant()
 	await _play_battle_intro()
 	_animate_player_info_intro()
@@ -4650,7 +4651,7 @@ func _play_battle_intro() -> void:
 		return
 	map_title.modulate.a = 0.0
 	var tw := create_tween()
-	tw.tween_property(map_title, "modulate:a", 1.0, 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tw.tween_property(map_title, "modulate:a", 1.0, 1.6).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	await tw.finished
 
 
@@ -4690,10 +4691,12 @@ func _animate_framebg_intro() -> void:
 	for s in slices:
 		var sc := s as Control
 		var orig_x := sc.position.x
-		sc.position.x = orig_x + 24.0
+		# Mentok keluar layar kanan dulu (+200px, viewport 740),
+		# baru slide ke posisi. Biar entrance-nya kebaca jelas.
+		sc.position.x = orig_x + 200.0
 		var tw := create_tween().set_parallel(true)
-		tw.tween_property(sc, "position:x", orig_x, 0.35).set_delay(i * 0.12).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
-		tw.tween_property(sc, "modulate:a", 1.0, 0.3).set_delay(i * 0.12).set_trans(Tween.TRANS_SINE)
+		tw.tween_property(sc, "position:x", orig_x, 0.45).set_delay(i * 0.12).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		tw.tween_property(sc, "modulate:a", 1.0, 0.35).set_delay(i * 0.12).set_trans(Tween.TRANS_SINE)
 		i += 1
 
 
@@ -4704,10 +4707,10 @@ func _animate_player_info_intro() -> void:
 	# Tujuan = posisi tersimpan di _ready (BUKAN posisi pas dipanggil,
 	# soalnya pas dipanggil dia lagi ngumpet di kiri).
 	var orig_x := player_info_orig_x
-	player_info.position.x = -player_info.size.x - 10.0
+	player_info.position.x = -player_info.size.x - 60.0
 
 	var tw := create_tween()
-	tw.tween_property(player_info, "position:x", orig_x, 0.45).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(player_info, "position:x", orig_x, 0.6).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 # ============================================================
