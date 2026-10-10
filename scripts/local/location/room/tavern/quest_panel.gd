@@ -61,18 +61,16 @@ func _build_ui() -> void:
 	panel = Panel.new()
 	panel.position = Vector2(35, 21)
 	panel.size = Vector2(438, 280)
-	var panel_style = StyleBoxFlat.new()
-	panel_style.bg_color = PANEL_BG
-	panel.add_theme_stylebox_override("panel", panel_style)
+	panel.add_theme_stylebox_override("panel", UISkin.fill())
 	add_child(panel)
+	UISkin.frame(panel)
 
 	title_bar = Panel.new()
 	title_bar.position = Vector2(0, 0)
 	title_bar.size = Vector2(438, 30)
-	var title_bar_style = StyleBoxFlat.new()
-	title_bar_style.bg_color = Color(0.1098, 0.0667, 0.0157, 0.85)
-	title_bar.add_theme_stylebox_override("panel", title_bar_style)
+	title_bar.add_theme_stylebox_override("panel", UISkin.fill(Color(0.1098, 0.0667, 0.0157, 0.85)))
 	panel.add_child(title_bar)
+	UISkin.frame(title_bar)
 
 	var title = Label.new()
 	title.text = "Quest Board"
@@ -112,20 +110,7 @@ func _build_ui() -> void:
 	close_btn.size = Vector2(28, 18)
 	close_btn.focus_mode = Control.FOCUS_NONE
 
-	var close_style = StyleBoxFlat.new()
-	close_style.bg_color = Color(0.317, 0.097, 0.125, 0.6)
-	close_style.corner_radius_top_left = 4
-	close_style.corner_radius_top_right = 4
-	close_style.corner_radius_bottom_left = 4
-	close_style.corner_radius_bottom_right = 4
-	close_btn.add_theme_stylebox_override("normal", close_style)
-
-	var close_hover = close_style.duplicate()
-	close_hover.bg_color = Color(0.4, 0.15, 0.18, 0.8)
-	close_btn.add_theme_stylebox_override("hover", close_hover)
-
-	close_btn.add_theme_font_size_override("font_size", 12)
-	close_btn.add_theme_color_override("font_color", TEXT_COLOR)
+	UISkin.apply_button(close_btn, 12, Color(0.317, 0.097, 0.125, 0.6), Color(0.4, 0.15, 0.18, 0.8), TEXT_COLOR)
 	close_btn.pressed.connect(_on_close_pressed)
 	panel.add_child(close_btn)
 
@@ -194,17 +179,16 @@ func _create_quest_row(quest: QuestData, active_id: String) -> PanelContainer:
 	var row = PanelContainer.new()
 	row.custom_minimum_size = Vector2(0, 72)
 
+	# Warna identitas (active = biru, normal = coklat) dipertahankan.
+	var row_color := Color(0.08, 0.12, 0.22, 0.55) if active_id == quest.quest_id else Color(0.11, 0.067, 0.016, 0.5)
 	var row_style = StyleBoxFlat.new()
-	row_style.bg_color = Color(0.08, 0.12, 0.22, 0.55) if active_id == quest.quest_id else Color(0.11, 0.067, 0.016, 0.5)
-	row_style.corner_radius_top_left = 4
-	row_style.corner_radius_top_right = 4
-	row_style.corner_radius_bottom_left = 4
-	row_style.corner_radius_bottom_right = 4
+	row_style.bg_color = row_color
 	row_style.content_margin_left = 10
 	row_style.content_margin_right = 10
 	row_style.content_margin_top = 6
 	row_style.content_margin_bottom = 6
 	row.add_theme_stylebox_override("panel", row_style)
+	UISkin.frame(row)
 
 	var hbox = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 10)
@@ -294,6 +278,8 @@ func _create_quest_row(quest: QuestData, active_id: String) -> PanelContainer:
 
 	action_btn.add_theme_font_size_override("font_size", 11)
 	btn_vbox.add_child(action_btn)
+	# Frame Kenney di atas (warna state dipertahankan).
+	UISkin.frame(action_btn)
 
 	return row
 
@@ -358,16 +344,7 @@ func _show_accept_popup(quest: QuestData) -> void:
 	popup_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var popup_panel := PanelContainer.new()
-	var ps := StyleBoxFlat.new()
-	ps.bg_color = Color(0.12, 0.12, 0.14, 0.95)
-	ps.set_border_width_all(2)
-	ps.border_color = Color(0.2, 0.5, 0.15, 0.8)
-	ps.set_corner_radius_all(6)
-	ps.content_margin_left = 16.0
-	ps.content_margin_right = 16.0
-	ps.content_margin_top = 14.0
-	ps.content_margin_bottom = 14.0
-	popup_panel.add_theme_stylebox_override("panel", ps)
+	popup_panel.add_theme_stylebox_override("panel", UISkin.frame_box([16, 14, 16, 14]))
 
 	var vbox := VBoxContainer.new()
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -398,18 +375,10 @@ func _show_accept_popup(quest: QuestData) -> void:
 	vbox.add_child(obj_lbl)
 
 	# Reward info
-	var reward_info_style := StyleBoxFlat.new()
-	reward_info_style.bg_color = Color(0.08, 0.06, 0.02, 0.7)
-	reward_info_style.set_corner_radius_all(4)
-	reward_info_style.content_margin_left = 10.0
-	reward_info_style.content_margin_right = 10.0
-	reward_info_style.content_margin_top = 6.0
-	reward_info_style.content_margin_bottom = 6.0
-
 	var reward_vbox := VBoxContainer.new()
 	reward_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	reward_vbox.add_theme_constant_override("separation", 2)
-	reward_vbox.add_theme_stylebox_override("panel", reward_info_style)
+	reward_vbox.add_theme_stylebox_override("panel", UISkin.frame_box([10, 6, 10, 6]))
 
 	var reward_lbl := Label.new()
 	reward_lbl.text = "Reward: " + quest.get_reward_text()
@@ -433,6 +402,7 @@ func _show_accept_popup(quest: QuestData) -> void:
 	yes_btn.add_theme_stylebox_override("hover", _make_btn_style(ACCEPT_HOVER, ACCEPT_BORDER))
 	yes_btn.add_theme_font_size_override("font_size", 12)
 	yes_btn.add_theme_color_override("font_color", TEXT_COLOR)
+	UISkin.frame(yes_btn)
 
 	var no_btn := Button.new()
 	no_btn.text = "No"
@@ -442,6 +412,7 @@ func _show_accept_popup(quest: QuestData) -> void:
 	no_btn.add_theme_stylebox_override("hover", _make_btn_style(Color(0.4, 0.15, 0.18, 0.8), Color(0.5, 0.15, 0.18, 0.8)))
 	no_btn.add_theme_font_size_override("font_size", 12)
 	no_btn.add_theme_color_override("font_color", TEXT_COLOR)
+	UISkin.frame(no_btn)
 
 	hbox_btns.add_child(yes_btn)
 	hbox_btns.add_child(no_btn)
@@ -458,9 +429,24 @@ func _show_accept_popup(quest: QuestData) -> void:
 	popup_panel.scale = Vector2(0.2, 0.2)
 	popup_panel.modulate.a = 0.0
 
+	# Alas gelap solid (frame transparan — tanpa ini popup tembus).
+	var popup_bg := ColorRect.new()
+	popup_bg.name = "QuestPopupBG"
+	popup_bg.color = Color(0.07, 0.08, 0.12, 0.97)
+	popup_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	popup_bg.position = popup_panel.position
+	popup_bg.size = popup_panel.size
+	popup_bg.pivot_offset = popup_panel.size / 2.0
+	popup_bg.scale = Vector2(0.2, 0.2)
+	popup_bg.modulate.a = 0.0
+	popup_overlay.add_child(popup_bg)
+	popup_overlay.move_child(popup_bg, popup_panel.get_index())
+
 	var tween := popup_panel.create_tween().set_parallel(true)
 	tween.tween_property(popup_panel, "scale", Vector2(1.0, 1.0), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(popup_panel, "modulate:a", 1.0, 0.15)
+	tween.tween_property(popup_bg, "scale", Vector2(1.0, 1.0), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(popup_bg, "modulate:a", 1.0, 0.15)
 
 	yes_btn.pressed.connect(func():
 		_close_popup(popup_overlay)
@@ -481,16 +467,7 @@ func _show_claim_popup(quest: QuestData) -> void:
 	popup_overlay.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var popup_panel := PanelContainer.new()
-	var ps := StyleBoxFlat.new()
-	ps.bg_color = Color(0.12, 0.12, 0.14, 0.95)
-	ps.set_border_width_all(2)
-	ps.border_color = Color(0.7, 0.55, 0.1, 0.8)
-	ps.set_corner_radius_all(6)
-	ps.content_margin_left = 16.0
-	ps.content_margin_right = 16.0
-	ps.content_margin_top = 14.0
-	ps.content_margin_bottom = 14.0
-	popup_panel.add_theme_stylebox_override("panel", ps)
+	popup_panel.add_theme_stylebox_override("panel", UISkin.frame_box([16, 14, 16, 14]))
 
 	var vbox := VBoxContainer.new()
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -513,18 +490,10 @@ func _show_claim_popup(quest: QuestData) -> void:
 	vbox.add_child(name_lbl)
 
 	# Reward
-	var reward_info_style := StyleBoxFlat.new()
-	reward_info_style.bg_color = Color(0.08, 0.06, 0.02, 0.7)
-	reward_info_style.set_corner_radius_all(4)
-	reward_info_style.content_margin_left = 10.0
-	reward_info_style.content_margin_right = 10.0
-	reward_info_style.content_margin_top = 6.0
-	reward_info_style.content_margin_bottom = 6.0
-
 	var reward_vbox := VBoxContainer.new()
 	reward_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	reward_vbox.add_theme_constant_override("separation", 2)
-	reward_vbox.add_theme_stylebox_override("panel", reward_info_style)
+	reward_vbox.add_theme_stylebox_override("panel", UISkin.frame_box([10, 6, 10, 6]))
 
 	var gold_lbl := Label.new()
 	if quest.reward_gold > 0:
@@ -561,6 +530,7 @@ func _show_claim_popup(quest: QuestData) -> void:
 	yes_btn.add_theme_stylebox_override("hover", _make_btn_style(CLAIM_HOVER, CLAIM_BORDER))
 	yes_btn.add_theme_font_size_override("font_size", 12)
 	yes_btn.add_theme_color_override("font_color", GOLD_COLOR)
+	UISkin.frame(yes_btn)
 
 	var no_btn := Button.new()
 	no_btn.text = "No"
@@ -570,6 +540,7 @@ func _show_claim_popup(quest: QuestData) -> void:
 	no_btn.add_theme_stylebox_override("hover", _make_btn_style(Color(0.4, 0.15, 0.18, 0.8), Color(0.5, 0.15, 0.18, 0.8)))
 	no_btn.add_theme_font_size_override("font_size", 12)
 	no_btn.add_theme_color_override("font_color", TEXT_COLOR)
+	UISkin.frame(no_btn)
 
 	hbox_btns.add_child(yes_btn)
 	hbox_btns.add_child(no_btn)
@@ -586,9 +557,24 @@ func _show_claim_popup(quest: QuestData) -> void:
 	popup_panel.scale = Vector2(0.2, 0.2)
 	popup_panel.modulate.a = 0.0
 
+	# Alas gelap solid (frame transparan — tanpa ini popup tembus).
+	var popup_bg := ColorRect.new()
+	popup_bg.name = "QuestPopupBG"
+	popup_bg.color = Color(0.07, 0.08, 0.12, 0.97)
+	popup_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	popup_bg.position = popup_panel.position
+	popup_bg.size = popup_panel.size
+	popup_bg.pivot_offset = popup_panel.size / 2.0
+	popup_bg.scale = Vector2(0.2, 0.2)
+	popup_bg.modulate.a = 0.0
+	popup_overlay.add_child(popup_bg)
+	popup_overlay.move_child(popup_bg, popup_panel.get_index())
+
 	var tween := popup_panel.create_tween().set_parallel(true)
 	tween.tween_property(popup_panel, "scale", Vector2(1.0, 1.0), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(popup_panel, "modulate:a", 1.0, 0.15)
+	tween.tween_property(popup_bg, "scale", Vector2(1.0, 1.0), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(popup_bg, "modulate:a", 1.0, 0.15)
 
 	yes_btn.pressed.connect(func():
 		_close_popup(popup_overlay)
