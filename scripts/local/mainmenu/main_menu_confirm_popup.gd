@@ -25,6 +25,13 @@ func _on_yes_pressed() -> void:
 	visible = false
 	print('Letsgo')
 	on_create = true
+	# Titik commit New Game: WIPE dulu, BARU tulis identitas
+	# (kebalik = nama kehapus balik default).
+	PlayerDataManager.reset_data()
+	if PlayerDataManager.data != null:
+		PlayerDataManager.data.player_name = create_character_popup.name_input.text
+		PlayerDataManager.data.player_perk = create_character_popup.perk_current
+		PlayerDataManager.save()
 	create_character_popup.visible = false
 	create_tween().tween_property(menu_ui, "modulate:a", 0.0, 0.3).set_trans(Tween.TRANS_CIRC)
 	create_tween().tween_property(menu_ui, "position:y", menu_ui.position.y - 500, 0.5).set_trans(Tween.TRANS_CIRC)

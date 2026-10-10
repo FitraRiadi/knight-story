@@ -36,8 +36,6 @@ func _play_intro() -> void:
 	tween.tween_property(achievment_button, "position:x", achievment_button.position.x - 100, 0.5).set_trans(Tween.TRANS_CIRC)
 
 func _on_play_pressed() -> void:
-	# New Game = start fresh (reset save biar arrival/flag ngulang dari nol).
-	PlayerDataManager.reset_data()
 	create_character_popup.visible = true
 
 func start_prologue_phase() -> void:
