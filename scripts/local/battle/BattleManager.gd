@@ -389,6 +389,10 @@ func _ready() -> void:
 		player_info_orig_x = player_info.position.x
 		# Jauh keluar layar kiri biar awal beneran bersih.
 		player_info.position.x = -player_info.size.x - 400.0
+	# mapTitle ngumpet dari awal juga (fade-in-nya nanti pas giliran,
+	# jangan nongol dulu di posisi ready baru kedip).
+	if map_title:
+		map_title.modulate.a = 0.0
 	_hide_framebg_instant()
 	await _animate_framebg_intro()
 	await _play_battle_intro()
