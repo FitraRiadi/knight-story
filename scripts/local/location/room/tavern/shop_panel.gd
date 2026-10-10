@@ -101,7 +101,7 @@ func _build_ui() -> void:
 	close_btn.position = Vector2(405, 258)
 	close_btn.size = Vector2(28, 18)
 
-	UISkin.apply_button(close_btn, 12)
+	UISkin.apply_button(close_btn, 12, Color(0.317, 0.097, 0.125, 0.6), Color(0.4, 0.15, 0.18, 0.8), TEXT_COLOR)
 	close_btn.pressed.connect(_on_close_pressed)
 	panel.add_child(close_btn)
 
@@ -168,7 +168,7 @@ func _create_item_row(item_data: Dictionary) -> PanelContainer:
 	buy_btn.text = "Buy"
 	buy_btn.custom_minimum_size = Vector2(50, 28)
 
-	UISkin.apply_button(buy_btn, 12)
+	UISkin.apply_button(buy_btn, 12, BUY_NORMAL, BUY_HOVER, TEXT_COLOR)
 	buy_btn.pressed.connect(_on_buy_pressed.bind(item_data))
 	hbox.add_child(buy_btn)
 
@@ -283,14 +283,14 @@ func _show_buy_confirmation_popup(item_data: Dictionary, item_res: ItemData) -> 
 	yes_btn.custom_minimum_size = Vector2(64, 28)
 	yes_btn.focus_mode = Control.FOCUS_NONE
 
-	UISkin.apply_button(yes_btn, 12)
+	UISkin.apply_button(yes_btn, 12, Color(0.11, 0.35, 0.08, 0.85), Color(0.15, 0.45, 0.1, 1.0), TEXT_COLOR)
 
 	var no_btn := Button.new()
 	no_btn.text = "No"
 	no_btn.custom_minimum_size = Vector2(64, 28)
 	no_btn.focus_mode = Control.FOCUS_NONE
 
-	UISkin.apply_button(no_btn, 12)
+	UISkin.apply_button(no_btn, 12, Color(0.317, 0.097, 0.125, 0.6), Color(0.4, 0.15, 0.18, 0.8), TEXT_COLOR)
 
 	hbox_btns.add_child(yes_btn)
 	hbox_btns.add_child(no_btn)

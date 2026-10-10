@@ -71,27 +71,21 @@ static func frame(parent: Control) -> void:
 	parent.move_child(b, parent.get_child_count() - 1)
 
 
-# --- Tombol (terang + teks gelap, kayak Sample) ---
+# --- Tombol: flat warna asli + overlay frame putih ---
+# (StyleBoxTexture NGGAK punya modulate di Godot 4 — jadi state
+# dibedain via warna flat, frame-nya sama. Proven aman.)
 
-static func btn_normal() -> StyleBoxTexture:
-	return frame_box()
-
-static func btn_hover() -> StyleBoxTexture:
-	var s := frame_box()
-	s.modulate = BTN_HOVER_MOD
-	return s
-
-static func btn_pressed() -> StyleBoxTexture:
-	var s := frame_box()
-	s.modulate = BTN_PRESS_MOD
-	return s
-
-
-static func apply_button(btn: Button, font_size: int = 12) -> void:
+static func apply_button(btn: Button, font_size: int, normal_col: Color, hover_col: Color, font_col: Color) -> void:
 	if btn == null:
 		return
-	btn.add_theme_stylebox_override("normal", btn_normal())
-	btn.add_theme_stylebox_override("hover", btn_hover())
-	btn.add_theme_stylebox_override("pressed", btn_pressed())
+	var n := StyleBoxFlat.new()
+	n.bg_color = normal_col
+	n.set_corner_radius_all(4)
+	btn.add_theme_stylebox_override("normal", n)
+	var h := StyleBoxFlat.new()
+	h.bg_color = hover_col
+	h.set_corner_radius_all(4)
+	btn.add_theme_stylebox_override("hover", h)
 	btn.add_theme_font_size_override("font_size", font_size)
-	btn.add_theme_color_override("font_color", BTN_TEXT)
+	btn.add_theme_color_override("font_color", font_col)
+	frame(btn)
