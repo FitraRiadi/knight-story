@@ -371,15 +371,16 @@ func _ready() -> void:
 	_auto_detect_enemy_pool()
 	# Hide buttons dulu, nanti muncul setelah intro
 	_set_buttons_active(false, true)
-	# Intro: title HUD -> UI stagger satu-satu -> hands.
+	# Intro: title HUD -> player info slide -> hands.
 	# Musuh SELALU paling akhir (spawn di bawah habis intro kelar).
-	# WaveProgress ngumpet dari awal (jangan nongol default), pop sekali.
+	# WaveProgress + framebg ngumpet dari awal; reveal-nya BARENG
+	# spawn musuh (data wave beneran), bukan pas placeholder.
 	if wave_progress:
 		wave_progress.pivot_offset = wave_progress.size * 0.5
 		wave_progress.scale = Vector2.ZERO
+	_hide_framebg_instant()
 	await _play_battle_intro()
 	_animate_player_info_intro()
-	await _pop_wave_progress_intro()
 	await _animate_hands_intro()
 	
 	# Initialize wave system
@@ -3623,9 +3624,12 @@ func _animate_enemies_spawn() -> void:
 	var spawn_duration: float = 0.45 if first_spawn else 0.3
 	var stagger: float = 0.2 if first_spawn else 0.15
 
-	# Kalau first spawn, button muncul stagger smooth
+	# Kalau first spawn, button muncul stagger smooth + wave UI reveal
+	# (progress pop + framebg kanan-kiri) BARENG musuh nongol.
 	if first_spawn:
 		_set_buttons_active_staggered()
+		_pop_wave_progress_intro()
+		_animate_framebg_intro()
 	else:
 		_set_buttons_active(false)
 
@@ -4641,6 +4645,7 @@ func _play_battle_intro() -> void:
 
 
 func _pop_wave_progress_intro() -> void:
+	# Dipanggil pas first spawn (data wave BENERAN udah di-set).
 	if not wave_progress:
 		return
 	wave_progress.pivot_offset = wave_progress.size * 0.5
@@ -4648,6 +4653,38 @@ func _pop_wave_progress_intro() -> void:
 	var tw := create_tween()
 	tw.tween_property(wave_progress, "scale", Vector2.ONE, 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	await tw.finished
+
+
+# framebg (hiasan bar atas): slices ngumpet di awal, reveal stagger
+# KANAN -> KIRI bareng spawn musuh.
+func _hide_framebg_instant() -> void:
+	var framebg := get_node_or_null("bg/framebg") as TextureRect
+	if not framebg:
+		return
+	for c in framebg.get_children():
+		if c is CanvasItem:
+			(c as CanvasItem).modulate.a = 0.0
+
+
+func _animate_framebg_intro() -> void:
+	var framebg := get_node_or_null("bg/framebg") as TextureRect
+	if not framebg:
+		return
+	var slices: Array = []
+	for c in framebg.get_children():
+		if c is Control:
+			slices.append(c)
+	# Kanan -> kiri = x gede dulu
+	slices.sort_custom(func(a: Control, b: Control) -> bool: return a.position.x > b.position.x)
+	var i := 0
+	for s in slices:
+		var sc := s as Control
+		var orig_x := sc.position.x
+		sc.position.x = orig_x + 24.0
+		var tw := create_tween().set_parallel(true)
+		tw.tween_property(sc, "position:x", orig_x, 0.35).set_delay(i * 0.12).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+		tw.tween_property(sc, "modulate:a", 1.0, 0.3).set_delay(i * 0.12).set_trans(Tween.TRANS_SINE)
+		i += 1
 
 
 func _animate_player_info_intro() -> void:
