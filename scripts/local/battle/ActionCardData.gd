@@ -103,6 +103,24 @@ const RARITY_COLORS: Dictionary = {
 
 
 # ============================================================
+# RARITY FLAME (CardFlameLite) — makin tinggi rarity makin berani
+# apinya. Common dibikin kalem banget biar gak norak.
+# ============================================================
+
+const RARITY_FLAME: Dictionary = {
+	"Common": {"intensity": 0.15, "flame_size": 0.030, "speed": 1.2},
+	"Uncommon": {"intensity": 0.35, "flame_size": 0.040, "speed": 1.8},
+	"Rare": {"intensity": 0.60, "flame_size": 0.055, "speed": 2.8},
+	"Epic": {"intensity": 0.85, "flame_size": 0.070, "speed": 3.5},
+	"Legendary": {"intensity": 1.00, "flame_size": 0.085, "speed": 4.2},
+}
+
+
+func get_flame_params() -> Dictionary:
+	return RARITY_FLAME.get(rarity, RARITY_FLAME["Common"])
+
+
+# ============================================================
 # HELPER
 # ============================================================
 
