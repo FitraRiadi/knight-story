@@ -48,19 +48,17 @@ func _build_ui() -> void:
 	panel.position = Vector2(35, 21)
 	panel.size = Vector2(438, 280)
 
-	var panel_style = StyleBoxFlat.new()
-	panel_style.bg_color = PANEL_BG
-	panel.add_theme_stylebox_override("panel", panel_style)
+	panel.add_theme_stylebox_override("panel", UISkin.fill())
 	add_child(panel)
+	UISkin.frame(panel)
 
 	# Title bar
 	var title_bar = Panel.new()
 	title_bar.position = Vector2(0, 0)
 	title_bar.size = Vector2(438, 30)
-	var title_bar_style = StyleBoxFlat.new()
-	title_bar_style.bg_color = Color(0.317, 0.097, 0.125, 0.6)
-	title_bar.add_theme_stylebox_override("panel", title_bar_style)
+	title_bar.add_theme_stylebox_override("panel", UISkin.fill(Color(0.317, 0.097, 0.125, 0.6)))
 	panel.add_child(title_bar)
+	UISkin.frame(title_bar)
 
 	var title = Label.new()
 	title.text = "Sell Your Items"
@@ -114,20 +112,7 @@ func _build_ui() -> void:
 	close_btn.position = Vector2(405, 258)
 	close_btn.size = Vector2(28, 18)
 
-	var close_style = StyleBoxFlat.new()
-	close_style.bg_color = Color(0.317, 0.097, 0.125, 0.6)
-	close_style.corner_radius_top_left = 4
-	close_style.corner_radius_top_right = 4
-	close_style.corner_radius_bottom_left = 4
-	close_style.corner_radius_bottom_right = 4
-	close_btn.add_theme_stylebox_override("normal", close_style)
-
-	var close_hover = close_style.duplicate()
-	close_hover.bg_color = Color(0.4, 0.15, 0.18, 0.8)
-	close_btn.add_theme_stylebox_override("hover", close_hover)
-
-	close_btn.add_theme_font_size_override("font_size", 12)
-	close_btn.add_theme_color_override("font_color", TEXT_COLOR)
+	UISkin.apply_button(close_btn, 12, Color(0.317, 0.097, 0.125, 0.6), Color(0.4, 0.15, 0.18, 0.8), TEXT_COLOR)
 	close_btn.pressed.connect(_on_close_pressed)
 	panel.add_child(close_btn)
 
@@ -151,17 +136,7 @@ func _create_item_row(item_res: ItemData, inventory_index: int) -> PanelContaine
 	row.custom_minimum_size = Vector2(0, 55)
 	row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-	var row_style = StyleBoxFlat.new()
-	row_style.bg_color = Color(0.11, 0.067, 0.016, 0.5)
-	row_style.corner_radius_top_left = 4
-	row_style.corner_radius_top_right = 4
-	row_style.corner_radius_bottom_left = 4
-	row_style.corner_radius_bottom_right = 4
-	row_style.content_margin_top = 6
-	row_style.content_margin_bottom = 6
-	row_style.content_margin_left = 10
-	row_style.content_margin_right = 10
-	row.add_theme_stylebox_override("panel", row_style)
+	row.add_theme_stylebox_override("panel", UISkin.frame_box([10, 6, 10, 6]))
 
 	var hbox = HBoxContainer.new()
 	hbox.add_theme_constant_override("separation", 10)
@@ -210,20 +185,7 @@ func _create_item_row(item_res: ItemData, inventory_index: int) -> PanelContaine
 	sell_btn.text = "Sell"
 	sell_btn.custom_minimum_size = Vector2(50, 28)
 
-	var sell_style = StyleBoxFlat.new()
-	sell_style.bg_color = SELL_NORMAL
-	sell_style.corner_radius_top_left = 4
-	sell_style.corner_radius_top_right = 4
-	sell_style.corner_radius_bottom_left = 4
-	sell_style.corner_radius_bottom_right = 4
-	sell_btn.add_theme_stylebox_override("normal", sell_style)
-
-	var sell_hover = sell_style.duplicate()
-	sell_hover.bg_color = SELL_HOVER
-	sell_btn.add_theme_stylebox_override("hover", sell_hover)
-
-	sell_btn.add_theme_font_size_override("font_size", 12)
-	sell_btn.add_theme_color_override("font_color", TEXT_COLOR)
+	UISkin.apply_button(sell_btn, 12, SELL_NORMAL, SELL_HOVER, TEXT_COLOR)
 	sell_btn.pressed.connect(_on_sell_pressed.bind(item_res, inventory_index))
 	hbox.add_child(sell_btn)
 
@@ -257,22 +219,7 @@ func _show_sell_confirmation_popup(item_res: ItemData, inventory_index: int) -> 
 	popup_panel.name = "ConfirmSellPanel"
 	popup_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 
-	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.12, 0.12, 0.14, 0.95)
-	panel_style.border_width_left = 2
-	panel_style.border_width_top = 2
-	panel_style.border_width_right = 2
-	panel_style.border_width_bottom = 2
-	panel_style.border_color = Color(0.3, 0.3, 0.3, 1.0)
-	panel_style.corner_radius_top_left = 6
-	panel_style.corner_radius_top_right = 6
-	panel_style.corner_radius_bottom_left = 6
-	panel_style.corner_radius_bottom_right = 6
-	panel_style.content_margin_left = 16.0
-	panel_style.content_margin_right = 16.0
-	panel_style.content_margin_top = 14.0
-	panel_style.content_margin_bottom = 14.0
-	popup_panel.add_theme_stylebox_override("panel", panel_style)
+	popup_panel.add_theme_stylebox_override("panel", UISkin.frame_box([16, 14, 16, 14]))
 
 	var vbox := VBoxContainer.new()
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -286,16 +233,7 @@ func _show_sell_confirmation_popup(item_res: ItemData, inventory_index: int) -> 
 	popup_icon.custom_minimum_size = Vector2(64, 64)
 
 	# Style background untuk label
-	var label_bg_style := StyleBoxFlat.new()
-	label_bg_style.bg_color = Color(0.05, 0.05, 0.07, 0.65)
-	label_bg_style.corner_radius_top_left = 4
-	label_bg_style.corner_radius_top_right = 4
-	label_bg_style.corner_radius_bottom_left = 4
-	label_bg_style.corner_radius_bottom_right = 4
-	label_bg_style.content_margin_left = 10.0
-	label_bg_style.content_margin_right = 10.0
-	label_bg_style.content_margin_top = 4.0
-	label_bg_style.content_margin_bottom = 4.0
+	var label_bg_style := UISkin.frame_box([10, 4, 10, 4])
 
 	# 4. Item Name
 	var popup_name_label := Label.new()
@@ -315,21 +253,10 @@ func _show_sell_confirmation_popup(item_res: ItemData, inventory_index: int) -> 
 	popup_desc_label.add_theme_color_override("font_color", DESC_COLOR)
 
 	# 5. Confirm text + price + player gold
-	var confirm_info_style := StyleBoxFlat.new()
-	confirm_info_style.bg_color = Color(0.08, 0.06, 0.02, 0.7)
-	confirm_info_style.corner_radius_top_left = 4
-	confirm_info_style.corner_radius_top_right = 4
-	confirm_info_style.corner_radius_bottom_left = 4
-	confirm_info_style.corner_radius_bottom_right = 4
-	confirm_info_style.content_margin_left = 10.0
-	confirm_info_style.content_margin_right = 10.0
-	confirm_info_style.content_margin_top = 6.0
-	confirm_info_style.content_margin_bottom = 6.0
-
 	var confirm_vbox := VBoxContainer.new()
 	confirm_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
 	confirm_vbox.add_theme_constant_override("separation", 4)
-	confirm_vbox.add_theme_stylebox_override("panel", confirm_info_style)
+	confirm_vbox.add_theme_stylebox_override("panel", UISkin.frame_box([10, 6, 10, 6]))
 
 	var confirm_text := Label.new()
 	confirm_text.text = "Sell This Item?"
@@ -365,40 +292,14 @@ func _show_sell_confirmation_popup(item_res: ItemData, inventory_index: int) -> 
 	yes_btn.custom_minimum_size = Vector2(64, 28)
 	yes_btn.focus_mode = Control.FOCUS_NONE
 
-	var yes_style := StyleBoxFlat.new()
-	yes_style.bg_color = Color(0.11, 0.35, 0.08, 0.85)
-	yes_style.corner_radius_top_left = 4
-	yes_style.corner_radius_top_right = 4
-	yes_style.corner_radius_bottom_left = 4
-	yes_style.corner_radius_bottom_right = 4
-	yes_btn.add_theme_stylebox_override("normal", yes_style)
-
-	var yes_hover := yes_style.duplicate()
-	yes_hover.bg_color = Color(0.15, 0.45, 0.1, 1.0)
-	yes_btn.add_theme_stylebox_override("hover", yes_hover)
-
-	yes_btn.add_theme_font_size_override("font_size", 12)
-	yes_btn.add_theme_color_override("font_color", TEXT_COLOR)
+	UISkin.apply_button(yes_btn, 12, Color(0.11, 0.35, 0.08, 0.85), Color(0.15, 0.45, 0.1, 1.0), TEXT_COLOR)
 
 	var no_btn := Button.new()
 	no_btn.text = "No"
 	no_btn.custom_minimum_size = Vector2(64, 28)
 	no_btn.focus_mode = Control.FOCUS_NONE
 
-	var no_style := StyleBoxFlat.new()
-	no_style.bg_color = Color(0.317, 0.097, 0.125, 0.6)
-	no_style.corner_radius_top_left = 4
-	no_style.corner_radius_top_right = 4
-	no_style.corner_radius_bottom_left = 4
-	no_style.corner_radius_bottom_right = 4
-	no_btn.add_theme_stylebox_override("normal", no_style)
-
-	var no_hover := no_style.duplicate()
-	no_hover.bg_color = Color(0.4, 0.15, 0.18, 0.8)
-	no_btn.add_theme_stylebox_override("hover", no_hover)
-
-	no_btn.add_theme_font_size_override("font_size", 12)
-	no_btn.add_theme_color_override("font_color", TEXT_COLOR)
+	UISkin.apply_button(no_btn, 12, Color(0.317, 0.097, 0.125, 0.6), Color(0.4, 0.15, 0.18, 0.8), TEXT_COLOR)
 
 	hbox_btns.add_child(yes_btn)
 	hbox_btns.add_child(no_btn)
@@ -424,10 +325,25 @@ func _show_sell_confirmation_popup(item_res: ItemData, inventory_index: int) -> 
 	popup_panel.scale = Vector2(0.2, 0.2)
 	popup_panel.modulate.a = 0.0
 
+	# Alas gelap solid (frame transparan — tanpa ini popup tembus).
+	var popup_bg := ColorRect.new()
+	popup_bg.name = "SellPopupBG"
+	popup_bg.color = Color(0.07, 0.08, 0.12, 0.97)
+	popup_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	popup_bg.position = popup_panel.position
+	popup_bg.size = popup_panel.size
+	popup_bg.pivot_offset = popup_panel.size / 2.0
+	popup_bg.scale = Vector2(0.2, 0.2)
+	popup_bg.modulate.a = 0.0
+	popup_overlay.add_child(popup_bg)
+	popup_overlay.move_child(popup_bg, popup_panel.get_index())
+
 	# Animasi muncul
 	var tween := popup_panel.create_tween().set_parallel(true)
 	tween.tween_property(popup_panel, "scale", Vector2(1.0, 1.0), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(popup_panel, "modulate:a", 1.0, 0.15)
+	tween.tween_property(popup_bg, "scale", Vector2(1.0, 1.0), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(popup_bg, "modulate:a", 1.0, 0.15)
 
 	# Signal tombol
 	yes_btn.pressed.connect(_confirm_sell_item.bind(item_res, inventory_index, popup_overlay, popup_panel))
@@ -458,6 +374,10 @@ func _close_sell_popup(overlay_node: Node, popup_panel: Node) -> void:
 	var tween := popup_panel.create_tween().set_parallel(true)
 	tween.tween_property(popup_panel, "scale", Vector2(0.8, 0.8), 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	tween.tween_property(popup_panel, "modulate:a", 0.0, 0.15)
+	var popup_bg := overlay_node.get_node_or_null("SellPopupBG")
+	if popup_bg:
+		tween.tween_property(popup_bg, "scale", Vector2(0.8, 0.8), 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+		tween.tween_property(popup_bg, "modulate:a", 0.0, 0.15)
 	tween.chain().tween_callback(overlay_node.queue_free)
 
 
