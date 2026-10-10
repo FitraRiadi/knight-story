@@ -7,6 +7,7 @@ const QUEST_MENU_SCENE: PackedScene = preload("res://scenes/gui/popup/quest/ques
 @onready var go_black_smith: Button = $bg/goBlackSmith
 @onready var go_quest_board: Button = $bg/goQuestBoard
 @onready var go_tavern: Button = $bg/goTavern
+@onready var go_home: Button = $bg/goHome
 
 var active_quest_popup: Node = null
 
@@ -24,9 +25,57 @@ func _ready() -> void:
 	
 	MusicManager.play_music(LOTUS_VILLAGE_BGM)
 
-	# Arrival sinematik (cuma kunjungan pertama)
-	if not PlayerDataManager.has_visited("lotus_village"):
+	# Home selalu hidden sampai di-wire.
+	if go_home:
+		go_home.visible = false
+
+	# Reveal building bertahap: pengenalan (tavern) dulu, sisanya
+	# kebuka habis masuk tavern sekali.
+	var first_visit := not PlayerDataManager.has_visited("lotus_village")
+	if first_visit:
+		_hide_building(go_black_smith)
+		_hide_building(go_quest_board)
+		_hide_building(go_tavern)
+		# Arrival sinematik (cuma kunjungan pertama)
 		_play_arrival()
+	else:
+		_show_building_instant(go_tavern)
+		if PlayerDataManager.has_visited("lotus_village_tavern"):
+			_reveal_rest()
+
+# ============================================================
+# REVEAL BUILDING (stagger pop: fade + slide-up)
+# ============================================================
+
+func _hide_building(btn: Button) -> void:
+	if btn == null:
+		return
+	btn.visible = false
+	btn.modulate.a = 0.0
+
+func _show_building_instant(btn: Button) -> void:
+	if btn == null:
+		return
+	btn.visible = true
+	btn.modulate.a = 1.0
+
+func _pop_building(btn: Button, delay: float = 0.0) -> void:
+	if btn == null:
+		return
+	btn.visible = true
+	btn.modulate.a = 0.0
+	var base_y: float = btn.position.y
+	btn.position.y = base_y + 20.0
+	var tw := create_tween().set_parallel(true)
+	tw.tween_property(btn, "modulate:a", 1.0, 0.4).set_delay(delay).set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
+	tw.tween_property(btn, "position:y", base_y, 0.4).set_delay(delay).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+
+func _reveal_tavern() -> void:
+	_pop_building(go_tavern)
+
+func _reveal_rest() -> void:
+	_pop_building(go_black_smith, 0.0)
+	_pop_building(go_quest_board, 0.3)
 
 # ============================================================
 # ARRIVAL (kunjungan pertama): walk-in + teks, lalu bebas explore
@@ -74,6 +123,8 @@ func _on_arrival_done(_label, blocker: Control, dialog_label: Label) -> void:
 		blocker.queue_free()
 	if is_instance_valid(dialog_label):
 		dialog_label.queue_free()
+	# Reveal batch pengenalan: tavern dulu.
+	_reveal_tavern()
 
 # Fungsi untuk memunculkan pop-up Quest Menu (sejajar dengan gui-player-base)
 func show_quest_popup() -> void:
@@ -98,4 +149,6 @@ func _on_go_black_smith_pressed() -> void:
 	TransitionManager.pindah_scene_with_zoom("res://scenes/locations/room/blacksmith/blacksmith.tscn", go_black_smith)
 
 func _on_go_tavern_pressed() -> void:
+	# Flag visit: buka reveal batch berikutnya pas balik ke lotus.
+	PlayerDataManager.mark_visited("lotus_village_tavern")
 	TransitionManager.pindah_scene_with_zoom("res://scenes/locations/room/tavern/tavern.tscn", go_tavern)
