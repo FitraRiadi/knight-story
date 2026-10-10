@@ -278,6 +278,11 @@ func reset_data() -> void:
 	var dir = DirAccess.open(ProjectSettings.globalize_path("user://"))
 	if dir:
 		dir.remove_recursive(knight_dir)
+	# Reset quest state di memory juga (quests.json ikut kehapus di atas).
+	active_quest_id = ""
+	quest_progress = {}
+	displayed_quest_ids = []
+	completed_quest_ids = []
 	_init_save()
 
 

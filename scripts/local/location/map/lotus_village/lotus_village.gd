@@ -32,6 +32,8 @@ func _ready() -> void:
 	# Reveal building bertahap: pengenalan (tavern) dulu, sisanya
 	# kebuka habis masuk tavern sekali.
 	var first_visit := not PlayerDataManager.has_visited("lotus_village")
+	var tavern_done := PlayerDataManager.has_visited("lotus_village_tavern")
+	print("[Lotus] ready — first_visit=", first_visit, " tavern_done=", tavern_done)
 	if first_visit:
 		_hide_building(go_black_smith)
 		_hide_building(go_quest_board)
@@ -40,7 +42,8 @@ func _ready() -> void:
 		_play_arrival()
 	else:
 		_show_building_instant(go_tavern)
-		if PlayerDataManager.has_visited("lotus_village_tavern"):
+		if tavern_done:
+			print("[Lotus] return + tavern done — reveal rest")
 			_reveal_rest()
 
 # ============================================================
@@ -84,6 +87,7 @@ func _reveal_rest() -> void:
 const ARRIVAL_FONT := "res://assets/ui/fonts/Jersey15-Regular.ttf"
 
 func _play_arrival() -> void:
+	print("[Lotus] arrival start")
 	# Blocker input selama sinematik (tombol lokasi jangan bisa diklik).
 	var blocker := Control.new()
 	blocker.set_anchors_preset(Control.PRESET_FULL_RECT)
@@ -118,6 +122,7 @@ func _play_arrival() -> void:
 	tw.play()
 
 func _on_arrival_done(_label, blocker: Control, dialog_label: Label) -> void:
+	print("[Lotus] arrival done — reveal tavern")
 	PlayerDataManager.mark_visited("lotus_village")
 	if is_instance_valid(blocker):
 		blocker.queue_free()
