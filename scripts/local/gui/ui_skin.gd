@@ -15,7 +15,7 @@ extends RefCounted
 # Art: 48x48 white, margin NinePatch 12 (corner hias ~10px).
 # ============================================================
 
-const PANEL_ART := "res://assets/tilesets/kenney_fantasy-ui-borders/PNG/Default/Panel/panel-020.png"
+const PANEL_ART := "res://assets/tilesets/kenney_fantasy-ui-borders/PNG/Default/Border/panel-border-020.png"
 const TEX_MARGIN := 12.0
 
 # Palette (dark serious, ngikutin Sample).
