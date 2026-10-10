@@ -85,20 +85,18 @@ func _build_ui() -> void:
 	panel.position = Vector2(35, 21)
 	panel.size = Vector2(438, 280)
 
-	var panel_style = StyleBoxFlat.new()
-	panel_style.bg_color = PANEL_BG
-	panel.add_theme_stylebox_override("panel", panel_style)
+	panel.add_theme_stylebox_override("panel", UISkin.fill())
 	add_child(panel)
+	UISkin.frame(panel)
 
 	# Title bar
 	title_bar = Panel.new()
 	title_bar.position = Vector2(0, 0)
 	title_bar.size = Vector2(438, 30)
-	var title_bar_style = StyleBoxFlat.new()
-	title_bar_style.bg_color = Color(0.35, 0.22, 0.45, 0.85)
-	title_bar.add_theme_stylebox_override("panel", title_bar_style)
+	title_bar.add_theme_stylebox_override("panel", UISkin.fill(Color(0.35, 0.22, 0.45, 0.85)))
 	title_bar.modulate.a = 0.0
 	panel.add_child(title_bar)
+	UISkin.frame(title_bar)
 
 	var title = Label.new()
 	title.text = "Brew Challenge"
@@ -195,6 +193,7 @@ func _make_ingredient_button() -> Button:
 	btn_style.content_margin_top = 4
 	btn_style.content_margin_bottom = 4
 	btn.add_theme_stylebox_override("normal", btn_style)
+	UISkin.frame(btn)
 
 	var btn_hover = btn_style.duplicate()
 	btn_hover.bg_color = BTN_HOVER
@@ -492,22 +491,7 @@ func _show_play_again(was_win: bool) -> void:
 	var popup_panel := PanelContainer.new()
 	popup_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 
-	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.12, 0.12, 0.14, 0.95)
-	panel_style.border_width_left = 2
-	panel_style.border_width_top = 2
-	panel_style.border_width_right = 2
-	panel_style.border_width_bottom = 2
-	panel_style.border_color = Color(0.3, 0.3, 0.3, 1.0)
-	panel_style.corner_radius_top_left = 6
-	panel_style.corner_radius_top_right = 6
-	panel_style.corner_radius_bottom_left = 6
-	panel_style.corner_radius_bottom_right = 6
-	panel_style.content_margin_left = 20.0
-	panel_style.content_margin_right = 20.0
-	panel_style.content_margin_top = 14.0
-	panel_style.content_margin_bottom = 14.0
-	popup_panel.add_theme_stylebox_override("panel", panel_style)
+	popup_panel.add_theme_stylebox_override("panel", UISkin.frame_box([20, 14, 20, 14]))
 
 	var vbox := VBoxContainer.new()
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -547,40 +531,14 @@ func _show_play_again(was_win: bool) -> void:
 	yes_btn.custom_minimum_size = Vector2(80, 30)
 	yes_btn.focus_mode = Control.FOCUS_NONE
 
-	var yes_style := StyleBoxFlat.new()
-	yes_style.bg_color = Color(0.11, 0.35, 0.08, 0.85)
-	yes_style.corner_radius_top_left = 4
-	yes_style.corner_radius_top_right = 4
-	yes_style.corner_radius_bottom_left = 4
-	yes_style.corner_radius_bottom_right = 4
-	yes_btn.add_theme_stylebox_override("normal", yes_style)
-
-	var yes_hover := yes_style.duplicate()
-	yes_hover.bg_color = Color(0.15, 0.45, 0.1, 1.0)
-	yes_btn.add_theme_stylebox_override("hover", yes_hover)
-
-	yes_btn.add_theme_font_size_override("font_size", 13)
-	yes_btn.add_theme_color_override("font_color", TEXT_COLOR)
+	UISkin.apply_button(yes_btn, 13, Color(0.11, 0.35, 0.08, 0.85), Color(0.15, 0.45, 0.1, 1.0), TEXT_COLOR)
 
 	var no_btn := Button.new()
 	no_btn.text = "No"
 	no_btn.custom_minimum_size = Vector2(80, 30)
 	no_btn.focus_mode = Control.FOCUS_NONE
 
-	var no_style := StyleBoxFlat.new()
-	no_style.bg_color = Color(0.317, 0.097, 0.125, 0.6)
-	no_style.corner_radius_top_left = 4
-	no_style.corner_radius_top_right = 4
-	no_style.corner_radius_bottom_left = 4
-	no_style.corner_radius_bottom_right = 4
-	no_btn.add_theme_stylebox_override("normal", no_style)
-
-	var no_hover := no_style.duplicate()
-	no_hover.bg_color = Color(0.4, 0.15, 0.18, 0.8)
-	no_btn.add_theme_stylebox_override("hover", no_hover)
-
-	no_btn.add_theme_font_size_override("font_size", 13)
-	no_btn.add_theme_color_override("font_color", TEXT_COLOR)
+	UISkin.apply_button(no_btn, 13, Color(0.317, 0.097, 0.125, 0.6), Color(0.4, 0.15, 0.18, 0.8), TEXT_COLOR)
 
 	hbox_btns.add_child(yes_btn)
 	hbox_btns.add_child(no_btn)
@@ -599,9 +557,24 @@ func _show_play_again(was_win: bool) -> void:
 	popup_panel.scale = Vector2(0.2, 0.2)
 	popup_panel.modulate.a = 0.0
 
+	# Alas gelap solid (frame transparan — tanpa ini popup tembus).
+	var popup_bg := ColorRect.new()
+	popup_bg.name = "DrinkPopupBG"
+	popup_bg.color = Color(0.07, 0.08, 0.12, 0.97)
+	popup_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	popup_bg.position = popup_panel.position
+	popup_bg.size = popup_panel.size
+	popup_bg.pivot_offset = popup_panel.size / 2.0
+	popup_bg.scale = Vector2(0.2, 0.2)
+	popup_bg.modulate.a = 0.0
+	popup_overlay.add_child(popup_bg)
+	popup_overlay.move_child(popup_bg, popup_panel.get_index())
+
 	var tween := popup_panel.create_tween().set_parallel(true)
 	tween.tween_property(popup_panel, "scale", Vector2(1.0, 1.0), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(popup_panel, "modulate:a", 1.0, 0.15)
+	tween.tween_property(popup_bg, "scale", Vector2(1.0, 1.0), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(popup_bg, "modulate:a", 1.0, 0.15)
 
 	yes_btn.pressed.connect(_on_play_again.bind(popup_overlay))
 	no_btn.pressed.connect(_on_no_play_again.bind(popup_overlay))

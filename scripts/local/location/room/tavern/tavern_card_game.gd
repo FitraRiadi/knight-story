@@ -72,20 +72,18 @@ func _build_ui() -> void:
 	panel.position = Vector2(35, 21)
 	panel.size = Vector2(438, 280)
 
-	var panel_style = StyleBoxFlat.new()
-	panel_style.bg_color = PANEL_BG
-	panel.add_theme_stylebox_override("panel", panel_style)
+	panel.add_theme_stylebox_override("panel", UISkin.fill())
 	add_child(panel)
+	UISkin.frame(panel)
 
 	# Title bar
 	title_bar = Panel.new()
 	title_bar.position = Vector2(0, 0)
 	title_bar.size = Vector2(438, 30)
-	var title_bar_style = StyleBoxFlat.new()
-	title_bar_style.bg_color = Color(0.35, 0.22, 0.45, 0.85)
-	title_bar.add_theme_stylebox_override("panel", title_bar_style)
+	title_bar.add_theme_stylebox_override("panel", UISkin.fill(Color(0.35, 0.22, 0.45, 0.85)))
 	title_bar.modulate.a = 0.0
 	panel.add_child(title_bar)
+	UISkin.frame(title_bar)
 
 	title_label = Label.new()
 	title_label.text = "Find The Card"
@@ -205,19 +203,15 @@ func _create_card(index: int) -> Panel:
 	var card = Panel.new()
 	card.size = Vector2(CARD_WIDTH, CARD_HEIGHT)
 
-	# Card back style
+	# Card back style (frame Kenney + warna identitas dipertahankan)
 	var card_style = StyleBoxFlat.new()
 	card_style.bg_color = CARD_NORMAL_BG
-	card_style.border_width_top = 2
-	card_style.border_width_bottom = 2
-	card_style.border_width_left = 2
-	card_style.border_width_right = 2
-	card_style.border_color = CARD_NORMAL_BORDER
 	card_style.corner_radius_top_left = 6
 	card_style.corner_radius_top_right = 6
 	card_style.corner_radius_bottom_left = 6
 	card_style.corner_radius_bottom_right = 6
 	card.add_theme_stylebox_override("panel", card_style)
+	UISkin.frame(card)
 
 	# "?" pattern
 	var pattern_label = Label.new()
@@ -252,16 +246,12 @@ func _reveal_correct_card() -> void:
 
 	var reveal_style = StyleBoxFlat.new()
 	reveal_style.bg_color = CARD_REVEAL_BG
-	reveal_style.border_width_top = 3
-	reveal_style.border_width_bottom = 3
-	reveal_style.border_width_left = 3
-	reveal_style.border_width_right = 3
-	reveal_style.border_color = CARD_REVEAL_BORDER
 	reveal_style.corner_radius_top_left = 6
 	reveal_style.corner_radius_top_right = 6
 	reveal_style.corner_radius_bottom_left = 6
 	reveal_style.corner_radius_bottom_right = 6
 	correct_card.add_theme_stylebox_override("panel", reveal_style)
+	UISkin.frame(correct_card)
 
 	var card_idx = cards.find(correct_card)
 	if card_idx >= 0 and card_idx < card_icons.size():
@@ -288,11 +278,6 @@ func _reset_card_style(index: int) -> void:
 		return
 	var s = StyleBoxFlat.new()
 	s.bg_color = CARD_NORMAL_BG
-	s.border_width_top = 2
-	s.border_width_bottom = 2
-	s.border_width_left = 2
-	s.border_width_right = 2
-	s.border_color = CARD_NORMAL_BORDER
 	s.corner_radius_top_left = 6
 	s.corner_radius_top_right = 6
 	s.corner_radius_bottom_left = 6
@@ -391,12 +376,8 @@ func _on_card_input(event: InputEvent, card: Panel) -> void:
 func _reveal_choice(chosen_card: Panel) -> void:
 	var is_correct = (chosen_card == correct_card)
 
-	# Style chosen card
+	# Style chosen card (warna state = feedback gameplay, dipertahankan)
 	var s = StyleBoxFlat.new()
-	s.border_width_top = 3
-	s.border_width_bottom = 3
-	s.border_width_left = 3
-	s.border_width_right = 3
 	s.corner_radius_top_left = 6
 	s.corner_radius_top_right = 6
 	s.corner_radius_bottom_left = 6
@@ -404,21 +385,14 @@ func _reveal_choice(chosen_card: Panel) -> void:
 
 	if is_correct:
 		s.bg_color = CARD_CORRECT_BG
-		s.border_color = CARD_REVEAL_BORDER
 	else:
 		s.bg_color = CARD_WRONG_BG
-		s.border_color = Color(1, 0.3, 0.2, 1.0)
 	chosen_card.add_theme_stylebox_override("panel", s)
 
 	# Reveal correct card if wrong
 	if not is_correct:
 		var cs = StyleBoxFlat.new()
 		cs.bg_color = CARD_CORRECT_BG
-		cs.border_width_top = 3
-		cs.border_width_bottom = 3
-		cs.border_width_left = 3
-		cs.border_width_right = 3
-		cs.border_color = CARD_REVEAL_BORDER
 		cs.corner_radius_top_left = 6
 		cs.corner_radius_top_right = 6
 		cs.corner_radius_bottom_left = 6
@@ -456,23 +430,7 @@ func _show_play_again(was_win: bool) -> void:
 
 	var popup_panel := PanelContainer.new()
 	popup_panel.mouse_filter = Control.MOUSE_FILTER_STOP
-
-	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.12, 0.12, 0.14, 0.95)
-	panel_style.border_width_left = 2
-	panel_style.border_width_top = 2
-	panel_style.border_width_right = 2
-	panel_style.border_width_bottom = 2
-	panel_style.border_color = Color(0.3, 0.3, 0.3, 1.0)
-	panel_style.corner_radius_top_left = 6
-	panel_style.corner_radius_top_right = 6
-	panel_style.corner_radius_bottom_left = 6
-	panel_style.corner_radius_bottom_right = 6
-	panel_style.content_margin_left = 20.0
-	panel_style.content_margin_right = 20.0
-	panel_style.content_margin_top = 14.0
-	panel_style.content_margin_bottom = 14.0
-	popup_panel.add_theme_stylebox_override("panel", panel_style)
+	popup_panel.add_theme_stylebox_override("panel", UISkin.frame_box([20, 14, 20, 14]))
 
 	var vbox := VBoxContainer.new()
 	vbox.alignment = BoxContainer.ALIGNMENT_CENTER
@@ -512,40 +470,14 @@ func _show_play_again(was_win: bool) -> void:
 	yes_btn.custom_minimum_size = Vector2(80, 30)
 	yes_btn.focus_mode = Control.FOCUS_NONE
 
-	var yes_style := StyleBoxFlat.new()
-	yes_style.bg_color = Color(0.11, 0.35, 0.08, 0.85)
-	yes_style.corner_radius_top_left = 4
-	yes_style.corner_radius_top_right = 4
-	yes_style.corner_radius_bottom_left = 4
-	yes_style.corner_radius_bottom_right = 4
-	yes_btn.add_theme_stylebox_override("normal", yes_style)
-
-	var yes_hover := yes_style.duplicate()
-	yes_hover.bg_color = Color(0.15, 0.45, 0.1, 1.0)
-	yes_btn.add_theme_stylebox_override("hover", yes_hover)
-
-	yes_btn.add_theme_font_size_override("font_size", 13)
-	yes_btn.add_theme_color_override("font_color", TEXT_COLOR)
+	UISkin.apply_button(yes_btn, 13, Color(0.11, 0.35, 0.08, 0.85), Color(0.15, 0.45, 0.1, 1.0), TEXT_COLOR)
 
 	var no_btn := Button.new()
 	no_btn.text = "No"
 	no_btn.custom_minimum_size = Vector2(80, 30)
 	no_btn.focus_mode = Control.FOCUS_NONE
 
-	var no_style := StyleBoxFlat.new()
-	no_style.bg_color = Color(0.317, 0.097, 0.125, 0.6)
-	no_style.corner_radius_top_left = 4
-	no_style.corner_radius_top_right = 4
-	no_style.corner_radius_bottom_left = 4
-	no_style.corner_radius_bottom_right = 4
-	no_btn.add_theme_stylebox_override("normal", no_style)
-
-	var no_hover := no_style.duplicate()
-	no_hover.bg_color = Color(0.4, 0.15, 0.18, 0.8)
-	no_btn.add_theme_stylebox_override("hover", no_hover)
-
-	no_btn.add_theme_font_size_override("font_size", 13)
-	no_btn.add_theme_color_override("font_color", TEXT_COLOR)
+	UISkin.apply_button(no_btn, 13, Color(0.317, 0.097, 0.125, 0.6), Color(0.4, 0.15, 0.18, 0.8), TEXT_COLOR)
 
 	hbox_btns.add_child(yes_btn)
 	hbox_btns.add_child(no_btn)
