@@ -12,15 +12,17 @@ extends Node
 #   add_child(ambush)
 #   ambush.play({
 #       "root": self,         # Control pemanggil (overlay ditempel di sini)
+#       "bg": $bg,           # opsional: di-zoom pelan selama dread
 #       "warning_text": "Something moved behind the trees.",
-#   })
+#       "leave_dark": true,   # layar DIBIARKAN hitam pas finished
+#   })                        # (buat cut invisible via change_scene, tanpa curtain)
 #   await ambush.finished
 #   ambush.queue_free()
-#   TransitionManager.pindah_scene("...", "Ambush")
+#   get_tree().change_scene_to_file("...")
 #
 # Visual: SILENT DREAD — tanpa hit, tanpa shape, tanpa SFX keras.
-# Dialog selesai -> hening (teks warning muncul pelan) -> layar
-# turun ke near-black pelan -> tahan -> curtain -> battle.
+# Dialog selesai -> zoom pelan + hening (teks warning muncul pelan)
+# -> layar turun ke near-black pelan -> full hitam + tahan -> cut.
 # Penyerang TIDAK ditampilin (misterius).
 #
 # AmbushPlayer CUMA urus drama. Habis ini ke mana = urusan
@@ -33,7 +35,10 @@ signal finished
 const SILENCE_SEC := 2.0
 const DARKEN_SEC := 2.5
 const DARK_TARGET_A := 0.85
-const HOLD_SEC := 0.5
+const BLACKOUT_SEC := 0.4
+const HOLD_SEC := 0.3
+# Zoom pelan selama dread (push-in halus, total SILENCE + DARKEN).
+const ZOOM_ADD := Vector2(0.06, 0.06)
 
 const FONT_PATH := "res://assets/ui/fonts/alagard.ttf"
 
@@ -49,7 +54,9 @@ func play(cfg: Dictionary) -> void:
 	_running = true
 
 	var root: Control = cfg.get("root")
+	var bg: TextureRect = cfg.get("bg")
 	var warn_text: String = cfg.get("warning_text", "Something moved behind the trees.")
+	var leave_dark: bool = cfg.get("leave_dark", false)
 
 	if root == null or not is_instance_valid(root):
 		push_error("[AmbushPlayer] cfg['root'] invalid!")
@@ -58,14 +65,15 @@ func play(cfg: Dictionary) -> void:
 		return
 
 	_build_overlays(root)
+	_start_slow_zoom(bg)
 	await _beat_silence(warn_text)
 	if not _alive():
 		return
 	await _beat_darken()
 	if not _alive():
 		return
-	await _beat_hold()
-	_cleanup()
+	await _beat_blackout()
+	_cleanup(leave_dark)
 	_running = false
 	finished.emit()
 
@@ -98,12 +106,30 @@ func _build_overlays(root: Control) -> void:
 	root.add_child(_warn_label)
 
 
-func _cleanup() -> void:
-	for n in [_darken, _warn_label]:
+func _cleanup(leave_dark: bool = false) -> void:
+	# leave_dark: _darken SENGAJA tidak di-free — jaga layar tetap hitam
+	# pas cut (change_scene tanpa curtain). Mati bareng scene lama.
+	# Default false (aman buat caller yang lanjut di scene sama).
+	for n in [_warn_label]:
 		if is_instance_valid(n):
 			n.queue_free()
-	_darken = null
 	_warn_label = null
+	if leave_dark:
+		_darken = null
+		return
+	if is_instance_valid(_darken):
+		_darken.queue_free()
+	_darken = null
+
+
+# Zoom pelan selama dread (background process, nggak di-await).
+# Bound ke self — auto-mati kalau AmbushPlayer di-free.
+func _start_slow_zoom(bg: TextureRect) -> void:
+	if bg == null or not is_instance_valid(bg):
+		return
+	var target: Vector2 = bg.scale + ZOOM_ADD
+	var tw := create_tween()
+	tw.tween_property(bg, "scale", target, SILENCE_SEC + DARKEN_SEC).set_trans(Tween.TRANS_SINE)
 
 
 # ============================================================
@@ -134,6 +160,13 @@ func _beat_darken() -> void:
 	await tw.finished
 
 
-# Beat 3 — HOLD: gelap + hening, baru curtain.
-func _beat_hold() -> void:
+# Beat 3 — BLACKOUT: near-black -> FULL hitam + tahan.
+# Layar sudah full hitam pas finished -> caller bisa cut invisible
+# via change_scene_to_file (tanpa curtain).
+func _beat_blackout() -> void:
+	if not is_instance_valid(_darken):
+		return
+	var tw := create_tween()
+	tw.tween_property(_darken, "color:a", 1.0, BLACKOUT_SEC).set_trans(Tween.TRANS_SINE)
+	await tw.finished
 	await get_tree().create_timer(HOLD_SEC).timeout

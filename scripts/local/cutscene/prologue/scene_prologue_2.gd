@@ -27,14 +27,17 @@ func _ready() -> void:
 	tw.play()
 
 func _on_dialog_done(_label) -> void:
-	# 3. AMBUSH — via komponen reusable, lalu masuk battle tutorial
+	# 3. AMBUSH — via komponen reusable, lalu masuk battle tutorial.
+	# Layar sudah full hitam pas finished (leave_dark) -> cut invisible
+	# via change_scene, tanpa curtain. Tutorial fade-in dari hitam.
 	var ambush := AmbushPlayer.new()
 	add_child(ambush)
 	ambush.play({
 		"root": self,
+		"bg": bg,
 		"warning_text": "Something moved behind the trees.",
+		"leave_dark": true,
 	})
 	await ambush.finished
 	ambush.queue_free()
-	TransitionManager.pindah_scene(
-		"res://scenes/battle/battle_gameplay_tutorial.tscn", "Ambush")
+	get_tree().change_scene_to_file("res://scenes/battle/battle_gameplay_tutorial.tscn")

@@ -45,14 +45,18 @@ enum Step {
 	WELCOME,
 	TARGET_ACT,
 	ATTACK_ACT,
+	DECK_INTRO,
+	CARD_INTRO,
+	BASIC_COST,
+	BASIC_INFO,
 	BASIC_PICK,
 	QTE_DO,
 	QTE_RESULT,
+	HIT_FOE,
+	HIT_COST,
 	TURN_EXPLAIN,
 	PARRY_HINT,
 	QTE_MISS,
-	HIT_FOE,
-	HIT_COST,
 	PARRY_WAIT,
 	PARRY_DRILL,
 	PARRY_MISS,
@@ -62,7 +66,12 @@ enum Step {
 	DEFEND_ACT,
 	STAMINA_BACK,
 	SKILL_ACT,
+	SKILL_DECK,
+	SKILL_CARD,
+	SKILL_COST,
+	SKILL_INFO,
 	SKILL_PICK,
+	SKILL_EFFECT,
 	CHARGE_PICK_WAIT,
 	CHARGE_PICK,
 	CHARGE_DO,
@@ -128,6 +137,9 @@ var _drill_armed := false
 # Tahan enemy turn pasca-QTE (jangan auto-start), mulai manual
 # habis beat PARRY_WAIT. Cegah balapan: drill dadakan pas baca hasil.
 var _hold_enemy_turn := false
+# Tahan turn musuh selama penjelasan efek poison (SKILL_EFFECT).
+# Dirilis pas panel di-tap -> turn jalan manual -> idle -> charge.
+var _hold_skill_turn := false
 # Timestamp mulai beat PARRY_WAIT (msec) + turn udah distart manual?
 var _parry_wait_since := 0
 var _turn_started := false
@@ -149,6 +161,10 @@ var _skill_ui_ref: ActionCardUI = null
 
 
 func _ready() -> void:
+	# Fade-in dari hitam (pasangan cut invisible prologue_2 -> sini).
+	modulate.a = 0.0
+	var _tut_fade := create_tween()
+	_tut_fade.tween_property(self, "modulate:a", 1.0, 1.2).set_trans(Tween.TRANS_SINE)
 	_wave_index = 0
 	_tutorial_active = true
 	super._ready()
@@ -225,6 +241,29 @@ func _on_tutorial_tapped() -> void:
 			_begin_step(Step.FINISH_ACT)
 		Step.LOOT_DONE:
 			_begin_step(Step.PACK_ACT)
+		Step.BASIC_COST:
+			_begin_step(Step.BASIC_INFO)
+		Step.BASIC_INFO:
+			_begin_step(Step.BASIC_PICK)
+		Step.DECK_INTRO:
+			_begin_step(Step.CARD_INTRO)
+		Step.CARD_INTRO:
+			_begin_step(Step.BASIC_COST)
+		Step.SKILL_DECK:
+			_begin_step(Step.SKILL_CARD)
+		Step.SKILL_CARD:
+			_begin_step(Step.SKILL_COST)
+		Step.SKILL_COST:
+			_begin_step(Step.SKILL_INFO)
+		Step.SKILL_INFO:
+			_begin_step(Step.SKILL_PICK)
+		Step.SKILL_EFFECT:
+			_ui_hide()
+			# Penjelasan kelar -> BARU turn musuh jalan (poison ngetick
+			# di sana). Tanpa ini musuh udah nyerang selagi panel tampil.
+			_hold_skill_turn = false
+			_start_enemies_turn()
+			_wait_for_idle_then(Step.CHARGE_PICK_WAIT)
 		Step.PACK_VIEW:
 			_begin_step(Step.PACK_CLOSE)
 		Step.POTION_INFO:
@@ -283,6 +322,56 @@ func _attack_index_of(attack_type: String) -> int:
 		if c and c.attack_type == attack_type:
 			return i
 	return -1
+
+
+func _basic_attack_data() -> AttackCardData:
+	var idx := _attack_index_of("Basic")
+	if idx >= 0 and idx < attack_hand.size():
+		return attack_hand[idx]
+	return null
+
+
+func _enemy_effect_box() -> Control:
+	var e := _enemy_ref()
+	if e == null or not is_instance_valid(e):
+		return null
+	var box = e.get("enemy_effect_container") as Control
+	if box == null or not is_instance_valid(box):
+		return null
+	return box
+
+
+# Beat anatomi kartu (attack + skill). Non-smooth: kunci + hide + 0.8 dtk
+# (deck lagi spawn), cocok buat beat PERTAMA yang nempel ke kartu.
+# Smooth: tanpa hide/tunggu/stagger — teks ganti di tempat, spotlight
+# glide mulus antar bagian (cost -> desc). Read dismissable jadi gak bisa
+# softlock walau node-nya null.
+func _card_part_setup(part: String, title: String, body: String, is_skill := false, smooth := false) -> void:
+	if not smooth:
+		_lock_all_except([])
+		_ui_hide()
+		await get_tree().create_timer(0.8).timeout
+		if not is_instance_valid(self) or not _tutorial_active:
+			return
+	var node: Control = null
+	if is_skill:
+		var scard := _skill_card_node(0)
+		if scard and part != "":
+			node = scard.get_node_or_null(part) as Control
+		elif scard:
+			node = scard
+	else:
+		var idx := _attack_index_of("Basic")
+		var card := _attack_card_node(idx)
+		if card and part != "":
+			node = card.get_node_or_null(part) as Control
+		elif card:
+			node = card
+	_lock_all_except([])
+	if smooth:
+		_soft(title, body, node)
+	else:
+		_show(title, body, TutorialUI.Zone.BOTTOM_LEFT, node, true)
 
 
 # Deck W3 dipaksa BASIC only biar mekaniknya pasti QTE.
@@ -785,7 +874,7 @@ func _on_attack_pressed() -> void:
 		super._on_attack_pressed()
 		return
 	if _step == Step.ATTACK_ACT:
-		_try_open_attack_deck(Step.BASIC_PICK)
+		_try_open_attack_deck(Step.DECK_INTRO)
 	elif _step == Step.CHARGE_PICK_WAIT:
 		_try_open_attack_deck(Step.CHARGE_PICK)
 	elif _step == Step.RAPID_PICK_WAIT:
@@ -980,7 +1069,7 @@ func _on_skill_pressed() -> void:
 	if not is_card_ui_open:
 		return  # deck gagal kebuka — tap lagi nanti
 	_skill_ui_ref = null
-	_begin_step(Step.SKILL_PICK)
+	_begin_step(Step.SKILL_DECK)
 
 
 func _on_action_card_selected(index: int) -> void:
@@ -994,12 +1083,29 @@ func _on_action_card_selected(index: int) -> void:
 	if index < 0 or index >= action_cards.size():
 		return
 	_refill_stamina()
+	# Deck bakal ketutup sendiri -> close-nya mau auto-start enemy turn.
+	# TAHAN dulu: penjelasan efek poison (SKILL_EFFECT) harus kelar dulu.
+	_hold_skill_turn = true
 	super._on_action_card_selected(index)
-	_live("SKILL USED!", "Effect applied. Enemy turn...", TutorialUI.Zone.BOTTOM_LEFT, null)
-	_wait_for_idle_then(Step.CHARGE_PICK_WAIT)
+	_begin_step(Step.SKILL_EFFECT)
 
 
 func _on_action_card_closed() -> void:
+	if not _tutorial_active:
+		super._on_action_card_closed()
+		_skill_ui_ref = null
+		return
+	if _step == Step.SKILL_EFFECT and _hold_skill_turn:
+		# TAHAN: cleanup doang (deck tutup, kamera balik), turn musuh
+		# DISTART MANUAL pas panel SEFF di-tap. Biar penjelasan efek
+		# poison kebaca dulu sebelum musuh gerak.
+		is_card_ui_open = false
+		_reset_hand_to_original(0.4)
+		_reset_camera_to_default()
+		is_player_turn = false
+		_apply_button_gating(false)
+		_skill_ui_ref = null
+		return
 	super._on_action_card_closed()
 	_skill_ui_ref = null
 
@@ -1138,6 +1244,27 @@ func _begin_step(step: Step) -> void:
 		Step.ATTACK_ACT:
 			_show_only([atk_btn], [atk_btn])
 			_act("TAP ATTACK", "This button opens your attack cards. Tap it.", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
+		Step.DECK_INTRO:
+			# Deck baru kebuka: jelasin DULU konsepnya, tanpa spotlight.
+			_lock_all_except([])
+			_read("YOUR ATTACK DECK", "These cards are your moves. Each card is one attack, and playing it costs stamina. Tap to continue.", TutorialUI.Zone.TOP_CENTER, null)
+		Step.CARD_INTRO:
+			# Baru spotlight ke kartunya UTUH + jelasin kartunya.
+			_card_part_setup("", "BASIC ATTACK", "Your bread-and-butter: cheap, reliable, no frills. Every card works like this one. Tap to continue.")
+		Step.BASIC_COST:
+			var bcost := _basic_attack_data()
+			var cost_txt := "Playing it costs stamina."
+			if bcost:
+				cost_txt = "Playing it costs %d stamina." % int(bcost.stamina_cost)
+			# Smooth: panel anteng, spotlight glide dari kartu ke cost.
+			_card_part_setup("staminaCost", "CARD COST", cost_txt, false, true)
+		Step.BASIC_INFO:
+			var binfo := _basic_attack_data()
+			var desc := "Attack card."
+			if binfo and binfo.description != "":
+				desc = binfo.description
+			# Smooth: glide cost -> desc, panel gak kedip.
+			_card_part_setup("Label", "CARD INFO", desc, false, true)
 		Step.BASIC_PICK:
 			_pick_setup(false, "Basic", "BASIC CARD", "Tap the glowing BASIC card.")
 		Step.QTE_DO:
@@ -1184,8 +1311,34 @@ func _begin_step(step: Step) -> void:
 		Step.SKILL_ACT:
 			_show_only([skill_btn], [skill_btn])
 			_act("TAP SKILL", "SKILL opens special cards: poison, stun, bleed.", TutorialUI.Zone.BOTTOM_LEFT, skill_btn)
+		Step.SKILL_DECK:
+			# Sama kayak deck attack: jelasin konsepnya dulu, tanpa spot.
+			_lock_all_except([])
+			_read("YOUR SKILL DECK", "Skills are special tricks — poison, stun, bleed. They cost stamina too. Tap to continue.", TutorialUI.Zone.BOTTOM_LEFT, null)
+		Step.SKILL_CARD:
+			var vnm := "Venom"
+			if action_cards.size() > 0 and action_cards[0]:
+				vnm = action_cards[0].card_name
+			_card_part_setup("", "SKILL CARD", "This one is %s. Same anatomy as attack cards. Tap to continue." % vnm, true)
+		Step.SKILL_COST:
+			var sc := 0
+			if action_cards.size() > 0 and action_cards[0]:
+				sc = int(action_cards[0].stamina_cost)
+			_card_part_setup("CostContainer", "SKILL COST", "Playing it costs %d stamina, like any card." % sc, true, true)
+		Step.SKILL_INFO:
+			var sdesc := "Skill card."
+			if action_cards.size() > 0 and action_cards[0] and action_cards[0].description != "":
+				sdesc = action_cards[0].description
+			_card_part_setup("DescLabel", "SKILL INFO", sdesc, true, true)
 		Step.SKILL_PICK:
 			_pick_setup(true, "", "SKILL CARD", "Tap the glowing SKILL card.")
+		Step.SKILL_EFFECT:
+			var box := _enemy_effect_box()
+			var nm := "Venom"
+			if action_cards.size() > 0 and action_cards[0]:
+				nm = action_cards[0].card_name
+			_lock_all_except([])
+			_show("POISONED!", "%s poisons the foe — it takes damage every turn. Tap to continue." % nm, TutorialUI.Zone.BOTTOM_LEFT, box, true)
 		Step.CHARGE_PICK_WAIT:
 			_show_only([atk_btn], [atk_btn])
 			_lock_all_except([atk_btn])
@@ -1363,6 +1516,14 @@ func _show(title: String, body: String, zone: TutorialUI.Zone, spot: Node, dismi
 	if _tutorial_ui:
 		_tutorial_ui.set_spotlight_target(spot)
 		_tutorial_ui.show_step(_step_no(), _step_total(), title, body, zone, true, dismissable)
+
+
+# Update panel di tempat (zona sama, tanpa stagger/sfx): spotlight glide
+# mulus antar bagian kartu. Panel HARUS udah tampil di zona yang sama.
+func _soft(title: String, body: String, spot: Node) -> void:
+	if _tutorial_ui:
+		_tutorial_ui.set_spotlight_target(spot)
+		_tutorial_ui.soft_update(_step_no(), _step_total(), title, body)
 
 
 func _qte_title() -> String:
