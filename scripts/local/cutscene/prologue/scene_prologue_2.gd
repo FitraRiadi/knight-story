@@ -32,8 +32,7 @@ func _on_dialog_done(_label) -> void:
 	add_child(ambush)
 	ambush.play({
 		"root": self,
-		"bg": bg,
-		"warning_text": "Something moved behind the trees!",
+		"warning_text": "Something moved behind the trees.",
 	})
 	await ambush.finished
 	ambush.queue_free()
