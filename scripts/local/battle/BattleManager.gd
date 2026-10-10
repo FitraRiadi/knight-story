@@ -376,6 +376,12 @@ func _ready() -> void:
 	# Musuh SELALU paling akhir (spawn di bawah habis intro kelar).
 	# WaveProgress + framebg + player_info ngumpet dari FRAME PERTAMA
 	# (jangan nongol di posisi ready dulu baru loncat).
+	# BG fade smooth PALING AWAL (jalan di bawah semua, fire & forget).
+	var bg_node := get_node_or_null("bg") as CanvasItem
+	if bg_node:
+		bg_node.modulate.a = 0.0
+		var bg_tw := create_tween()
+		bg_tw.tween_property(bg_node, "modulate:a", 1.0, 1.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	if wave_progress:
 		wave_progress.pivot_offset = wave_progress.size * 0.5
 		wave_progress.scale = Vector2.ZERO
