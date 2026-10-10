@@ -39,7 +39,6 @@ const REJECT_SFX_PATH: String = "uid://dl4yf4hktppo5"
 const CARD_SCENE: PackedScene = preload("res://scenes/battle/action_card.tscn")
 const ATTACK_CARD_SCENE: PackedScene = preload("res://scenes/battle/attack_card.tscn")
 const CARD_FLAME_SHADER: Shader = preload("res://shaders/CardFlameLite.gdshader")
-const CARD_HALO_SHADER: Shader = preload("res://shaders/CardFlameHalo.gdshader")
 
 
 # ============================================================
@@ -130,15 +129,15 @@ func _build_ui() -> void:
 		card_nodes.append(card)
 
 
-# Api rarity di kartu, dua lapis (prosedural, NOL texture fetch):
-# 1) Frame-nya sendiri ketint di pita border (CardFlameLite). Jendela art
-#    di tengah steril.
-# 2) Halo underlay (CardFlameHalo): ColorRect child paling belakang, rect
-#    lebih gede dari kartu biar api luar gak kepotong tepi. Klik tembus
-#    (IGNORE) jadi gak ganggu input.
+# Api rarity di frame kartu (CardFlame = FlameShader 1:1 + gate jendela).
+# Warna = rarity color (Common silver-putih biar keliatan), param api =
+# RARITY_FLAME. shrink 1.0 (frame jangan menciut, label misah node).
 # Material unik per kartu (uniform beda), Shader-nya share.
 func _apply_card_flame(card: Control, frame_node_name: String, data: ActionCardData) -> void:
-	if data == null:
+	if CARD_FLAME_SHADER == null or data == null:
+		return
+	var frame: TextureRect = card.get_node_or_null(frame_node_name) as TextureRect
+	if frame == null:
 		return
 	var rc: Color = data.get_rarity_color()
 	if str(data.rarity) == "Common":
@@ -146,45 +145,16 @@ func _apply_card_flame(card: Control, frame_node_name: String, data: ActionCardD
 		# kalem tapi keliatan.
 		rc = Color(0.82, 0.85, 0.95)
 	var fp: Dictionary = data.get_flame_params()
-	var inten := float(fp.get("intensity", 0.3))
-	var fsize := float(fp.get("flame_size", 0.08))
-	var spd := float(fp.get("speed", 2.5))
-	if CARD_FLAME_SHADER != null:
-		var frame: TextureRect = card.get_node_or_null(frame_node_name) as TextureRect
-		if frame != null:
-			var mat := ShaderMaterial.new()
-			mat.shader = CARD_FLAME_SHADER
-			mat.set_shader_parameter("flame_color", rc)
-			mat.set_shader_parameter("intensity", inten)
-			mat.set_shader_parameter("transition", 1.0)
-			mat.set_shader_parameter("flame_size", fsize)
-			mat.set_shader_parameter("speed", spd)
-			frame.material = mat
-	if CARD_HALO_SHADER == null:
-		return
-	var card_px := Vector2(CARD_WIDTH, CARD_HEIGHT)
-	var margin := int(fsize * card_px.y) + 6
-	var halo := ColorRect.new()
-	halo.name = "FlameHalo"
-	halo.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	halo.position = Vector2(-margin, -margin)
-	halo.size = card_px + Vector2(margin * 2, margin * 2)
-	var hmat := ShaderMaterial.new()
-	hmat.shader = CARD_HALO_SHADER
-	hmat.set_shader_parameter("flame_color", rc)
-	hmat.set_shader_parameter("outline_color", rc.darkened(0.65))
-	hmat.set_shader_parameter("intensity", inten)
-	hmat.set_shader_parameter("transition", 1.0)
-	hmat.set_shader_parameter("speed", spd)
-	var fx0 := float(margin) / halo.size.x
-	var fy0 := float(margin) / halo.size.y
-	hmat.set_shader_parameter("inner_rect", Vector4(fx0, fy0, 1.0 - fx0, 1.0 - fy0))
-	hmat.set_shader_parameter("card_px", card_px)
-	hmat.set_shader_parameter("corner_px", 8.0)
-	hmat.set_shader_parameter("reach_px", fsize * card_px.y)
-	halo.material = hmat
-	card.add_child(halo)
-	card.move_child(halo, 0)
+	var mat := ShaderMaterial.new()
+	mat.shader = CARD_FLAME_SHADER
+	mat.set_shader_parameter("flame_color", rc)
+	mat.set_shader_parameter("outline_color", rc.darkened(0.65))
+	mat.set_shader_parameter("transition", 1.0)
+	mat.set_shader_parameter("flame_size", float(fp.get("flame_size", 0.08)))
+	mat.set_shader_parameter("speed", float(fp.get("speed", 2.5)))
+	mat.set_shader_parameter("shrink_factor", 1.0)
+	mat.set_shader_parameter("card_px", Vector2(CARD_WIDTH, CARD_HEIGHT))
+	frame.material = mat
 
 
 func _create_card(data: ActionCardData, index: int, has_stamina: bool, is_on_cooldown: bool, cooldown_remaining: int) -> Control:
