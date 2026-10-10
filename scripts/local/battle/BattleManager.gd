@@ -4651,7 +4651,7 @@ func _play_battle_intro() -> void:
 		return
 	map_title.modulate.a = 0.0
 	var tw := create_tween()
-	tw.tween_property(map_title, "modulate:a", 1.0, 2.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tw.tween_property(map_title, "modulate:a", 1.0, 1.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	await tw.finished
 
 
@@ -4682,9 +4682,12 @@ func _animate_framebg_intro() -> void:
 	var framebg := get_node_or_null("bg/framebg") as TextureRect
 	if not framebg:
 		return
-	var tw0 := create_tween()
-	tw0.tween_property(framebg, "modulate:a", 1.0, 0.3).set_trans(Tween.TRANS_SINE)
-	await tw0.finished
+	# Induk ikut jalan (kanan -> kiri), bukan fade diem. Bareng slices.
+	var pox := framebg.position.x
+	framebg.position.x = pox + 200.0
+	var twp := create_tween().set_parallel(true)
+	twp.tween_property(framebg, "position:x", pox, 0.5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	twp.tween_property(framebg, "modulate:a", 1.0, 0.4).set_trans(Tween.TRANS_SINE)
 	var slices: Array = []
 	for c in framebg.get_children():
 		if c is Control:
@@ -4718,7 +4721,7 @@ func _animate_player_info_intro() -> void:
 	player_info.position.x = -player_info.size.x - 400.0
 
 	var tw := create_tween()
-	tw.tween_property(player_info, "position:x", orig_x, 0.7).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tw.tween_property(player_info, "position:x", orig_x, 0.5).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 # ============================================================
