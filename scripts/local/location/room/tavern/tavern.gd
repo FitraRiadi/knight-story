@@ -15,6 +15,7 @@ extends Control
 @onready var bar_bartender_btn: Button = $bar/bartender
 @onready var bar_back_btn: Button = $bar/backHall
 @onready var feature: Control = $bar/feature
+@onready var feature_container: Panel = $bar/feature/container
 @onready var feature_exit_btn: Button = $bar/feature/exit
 @onready var buy_item_btn: Button = $bar/feature/BuyItemBtn
 @onready var tavern_btn: Button = $bar/feature/TavernBtn
@@ -30,6 +31,11 @@ var is_switching: bool = false
 var is_returning_to_menu: bool = false
 
 const TAVERN_BGM = "res://assets/audio/bgm/lotusVillage/lotus_village_bgm.mp3"
+
+# Palette skin (fill gelap + frame putih UISkin)
+const TAKE_COLOR := Color(0.22, 0.14, 0.07, 0.9)   # tombol aksi (kayu gelap)
+const EXIT_COLOR := Color(0.317, 0.097, 0.125, 0.6) # tombol keluar (merah gelap)
+const GAMES_TITLE_COLOR := Color(0.245, 0.169, 0.321, 0.6)
 
 
 func _ready() -> void:
@@ -59,6 +65,33 @@ func _ready() -> void:
 
 	_create_gold_display()
 	gold_display.visible = false
+
+	_apply_tavern_skin()
+
+
+# ============================================================
+# SKIN — Kenney UI borders (fill gelap + frame putih)
+# ============================================================
+
+func _apply_tavern_skin() -> void:
+	# Beranda: panel + tombol
+	if feature_container:
+		feature_container.add_theme_stylebox_override("panel", UISkin.fill())
+		UISkin.frame(feature_container)
+	_apply_tavern_button(buy_item_btn, TAKE_COLOR, Color(0.32, 0.21, 0.11, 0.95))
+	_apply_tavern_button(selling_btn, TAKE_COLOR, Color(0.32, 0.21, 0.11, 0.95))
+	_apply_tavern_button(tavern_btn, TAKE_COLOR, Color(0.32, 0.21, 0.11, 0.95))
+	_apply_tavern_button(quest_btn, TAKE_COLOR, Color(0.32, 0.21, 0.11, 0.95))
+	_apply_tavern_button(announcement_btn, TAKE_COLOR, Color(0.32, 0.21, 0.11, 0.95))
+	_apply_tavern_button(feature_exit_btn, EXIT_COLOR, Color(0.4, 0.15, 0.18, 0.8))
+	if gold_display:
+		UISkin.frame(gold_display)
+
+
+func _apply_tavern_button(btn: Button, normal: Color, hover: Color) -> void:
+	if btn == null:
+		return
+	UISkin.apply_button(btn, 12, normal, hover, Color(1, 0.95, 0.8))
 
 
 # ============================================================
@@ -328,19 +361,17 @@ func _create_game_selection_menu() -> Control:
 	sel_panel.position = Vector2(35, 21)
 	sel_panel.size = Vector2(438, 280)
 
-	var panel_style = StyleBoxFlat.new()
-	panel_style.bg_color = Color(0, 0, 0, 0.56)
-	sel_panel.add_theme_stylebox_override("panel", panel_style)
+	sel_panel.add_theme_stylebox_override("panel", UISkin.fill())
 	menu.add_child(sel_panel)
+	UISkin.frame(sel_panel)
 
 	# Title bar
 	var title_bar = Panel.new()
 	title_bar.position = Vector2(0, 0)
 	title_bar.size = Vector2(438, 30)
-	var title_bar_style = StyleBoxFlat.new()
-	title_bar_style.bg_color = Color(0.245, 0.169, 0.321, 0.5)
-	title_bar.add_theme_stylebox_override("panel", title_bar_style)
+	title_bar.add_theme_stylebox_override("panel", UISkin.fill(GAMES_TITLE_COLOR))
 	sel_panel.add_child(title_bar)
+	UISkin.frame(title_bar)
 
 	var title = Label.new()
 	title.text = "Tavern Games"
@@ -401,20 +432,7 @@ func _create_game_selection_menu() -> Control:
 	close_btn.position = Vector2(370, 248)
 	close_btn.size = Vector2(58, 20)
 
-	var close_style = StyleBoxFlat.new()
-	close_style.bg_color = Color(0.317, 0.097, 0.125, 0.6)
-	close_style.corner_radius_top_left = 4
-	close_style.corner_radius_top_right = 4
-	close_style.corner_radius_bottom_left = 4
-	close_style.corner_radius_bottom_right = 4
-	close_btn.add_theme_stylebox_override("normal", close_style)
-
-	var close_hover = close_style.duplicate()
-	close_hover.bg_color = Color(0.4, 0.15, 0.18, 0.8)
-	close_btn.add_theme_stylebox_override("hover", close_hover)
-
-	close_btn.add_theme_font_size_override("font_size", 12)
-	close_btn.add_theme_color_override("font_color", Color(1, 0.95, 0.8))
+	UISkin.apply_button(close_btn, 12, EXIT_COLOR, Color(0.4, 0.15, 0.18, 0.8), Color(1, 0.95, 0.8))
 	close_btn.pressed.connect(_on_game_menu_close.bind(menu))
 	sel_panel.add_child(close_btn)
 
@@ -428,6 +446,7 @@ func _create_game_card(game_title: String, subtitle: String, icon_path: String, 
 	var btn = Button.new()
 	btn.text = ""
 
+	# Warna identitas per-game dipertahankan + frame Kenney di atasnya.
 	var btn_style = StyleBoxFlat.new()
 	btn_style.bg_color = bg_color
 	btn_style.corner_radius_top_left = 6
@@ -442,6 +461,8 @@ func _create_game_card(game_title: String, subtitle: String, icon_path: String, 
 	var btn_hover = btn_style.duplicate()
 	btn_hover.bg_color = bg_color.lightened(0.12)
 	btn.add_theme_stylebox_override("hover", btn_hover)
+
+	UISkin.frame(btn)
 
 	# Icon (top center)
 	var icon = TextureRect.new()
@@ -514,6 +535,8 @@ func _create_game_card_wide(game_title: String, subtitle: String, icon_path: Str
 	var btn_hover = btn_style.duplicate()
 	btn_hover.bg_color = bg_color.lightened(0.12)
 	btn.add_theme_stylebox_override("hover", btn_hover)
+
+	UISkin.frame(btn)
 
 	# Icon (left)
 	var icon = TextureRect.new()
