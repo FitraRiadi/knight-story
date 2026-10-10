@@ -108,6 +108,8 @@ enum Step {
 	WAVE3_AFTER,
 	WAVE3_DONE,
 	COMPLETE,
+	FINALE_FIGHT,
+	OUTRO,
 }
 
 # --- State runtime ---
@@ -140,6 +142,8 @@ var _hold_enemy_turn := false
 # Tahan turn musuh selama penjelasan efek poison (SKILL_EFFECT).
 # Dirilis pas panel di-tap -> turn jalan manual -> idle -> charge.
 var _hold_skill_turn := false
+# Finale: kapan enemies pertama terpantau kosong (dwell sblm outro).
+var _finale_empty_since := -1
 # Timestamp mulai beat PARRY_WAIT (msec) + turn udah distart manual?
 var _parry_wait_since := 0
 var _turn_started := false
@@ -293,17 +297,9 @@ func _on_tutorial_tapped() -> void:
 func _on_tutorial_finished() -> void:
 	if not _tutorial_active:
 		return
-	_tutorial_active = false
-	_pending_idle_step = Step.IDLE
-	_unlock_all()
-	# Battle balik normal: lepas semua armor latihan.
-	_set_training_armor_all(false)
-	_tut_revealed = [atk_btn, defend_btn, backpack_btn, run_btn, skill_btn]
-	_tut_enabled = [atk_btn, defend_btn, backpack_btn, run_btn, skill_btn]
-	_apply_button_gating(true)
-	_set_enemy_clickable_all(true)
-	tutorial_finished.emit()
-	tutorial_complete.emit()
+	# Continue di panel COMPLETE = duel final lawan Grimward, BUKAN kelar.
+	# (Unlock + exit pindah ke OUTRO; RUN gak pernah ikut.)
+	_begin_step(Step.FINALE_FIGHT)
 
 
 # ============================================================
@@ -672,6 +668,14 @@ func _on_drop_collect_finished(_item: ItemData) -> void:
 	_loot_collected = true
 
 
+# Scoreboard parent JANGAN pernah nongol selama tutorial (termasuk
+# jalur rapid-kill di finale). Tutorial punya outro sendiri.
+func _show_scoreboard() -> void:
+	if _tutorial_active:
+		return
+	super._show_scoreboard()
+
+
 func _find_timer_recursive(node: Node) -> Timer:
 	for c in node.get_children():
 		if c is Timer:
@@ -705,12 +709,21 @@ func apply_damage(event: DamageEvent) -> void:
 		_begin_step(Step.PARRY_MISS)
 		return
 	# Hurt wave-2: damage serangan di-script mendarat PAS di 25%.
+	# Flag dicatat dulu: klem -1 di bawah di-SKIP buat hit scripted ini.
+	var was_scripted := _pending_scripted_damage
 	if _pending_scripted_damage:
 		_pending_scripted_damage = false
 		var target_hp: float = max_hp * HP_FLOOR_PCT
 		var needed: float = max(0.0, current_hp - target_hp) + player_durability
 		event.base_damage = needed
+	var hp_before := current_hp
 	super.apply_damage(event)
+	# Pukul rata: damage musuh yang kena selalu 1 (parry/block/dodge
+	# = 0 tetap 0). Pengecualian SATU-SATUNYA: hit scripted 25%.
+	if not was_scripted and event.final_damage > 0.0:
+		current_hp = maxf(max_hp * HP_FLOOR_PCT, hp_before - 1.0)
+		if hp_bar:
+			_update_player_ui_instant()
 	# HP floor: jangan pernah di bawah 25%.
 	if current_hp < max_hp * HP_FLOOR_PCT:
 		current_hp = max_hp * HP_FLOOR_PCT
@@ -803,6 +816,16 @@ func _process(_delta: float) -> void:
 		Step.WAVE3_AFTER:
 			if _is_player_idle() and _is_camera_settled() and total_attacks > _w3_baseline_attacks:
 				_begin_step(Step.WAVE3_DONE)
+		Step.FINALE_FIGHT:
+			# Grimward mati (normal/rapid) -> tunggu anim + kamera settle
+			# -> outro. Scoreboard parent gak pernah nongol (lihat
+			# _show_scoreboard override).
+			if enemies.is_empty() and _is_camera_settled():
+				if _finale_empty_since < 0:
+					_finale_empty_since = Time.get_ticks_msec()
+				elif Time.get_ticks_msec() - _finale_empty_since >= 1200:
+					_finale_empty_since = -1
+					_begin_step(Step.OUTRO)
 
 
 func _is_player_idle() -> bool:
@@ -898,6 +921,9 @@ func _on_attack_pressed() -> void:
 		_try_open_attack_deck(Step.WAVE2_PICK)
 	elif _step == Step.WAVE3_FIGHT:
 		_try_open_attack_deck(Step.WAVE3_PICK)
+	elif _step == Step.FINALE_FIGHT:
+		# Duel bebas: full parent flow (deck -> QTE -> damage -> turn).
+		super._on_attack_pressed()
 
 
 # Buka deck attack + pindah step HANYA kalau deck beneran kebuka.
@@ -918,6 +944,9 @@ func _on_attack_card_selected(index: int) -> void:
 		super._on_attack_card_selected(index)
 		return
 	var expected := ""
+	if _step == Step.FINALE_FIGHT:
+		super._on_attack_card_selected(index)
+		return
 	match _step:
 		Step.BASIC_PICK:
 			expected = "Basic"
@@ -1056,6 +1085,9 @@ func _on_defend_pressed() -> void:
 	if not _tutorial_active:
 		super._on_defend_pressed()
 		return
+	if _step == Step.FINALE_FIGHT:
+		super._on_defend_pressed()
+		return
 	if _step != Step.DEFEND_ACT:
 		return
 	if not is_player_turn:
@@ -1069,6 +1101,9 @@ func _on_skill_pressed() -> void:
 	if not _tutorial_active:
 		super._on_skill_pressed()
 		return
+	if _step == Step.FINALE_FIGHT:
+		super._on_skill_pressed()
+		return
 	if _step != Step.SKILL_ACT:
 		return
 	super._on_skill_pressed()
@@ -1080,6 +1115,9 @@ func _on_skill_pressed() -> void:
 
 func _on_action_card_selected(index: int) -> void:
 	if not _tutorial_active:
+		super._on_action_card_selected(index)
+		return
+	if _step == Step.FINALE_FIGHT:
 		super._on_action_card_selected(index)
 		return
 	if _step != Step.SKILL_PICK:
@@ -1140,6 +1178,9 @@ func _on_charge_complete(multiplier: float) -> void:
 	if not _tutorial_active:
 		super._on_charge_complete(multiplier)
 		return
+	if _step == Step.FINALE_FIGHT:
+		super._on_charge_complete(multiplier)
+		return
 	if _step != Step.CHARGE_DO:
 		return
 	super._on_charge_complete(multiplier)
@@ -1168,6 +1209,9 @@ func _on_backpack_pressed() -> void:
 			return
 		_potion_index = _find_potion_slot()
 		_begin_step(Step.POTION_SLOT)
+	else:
+		# Finale (dan step bebas lain): inventory parent normal.
+		super._on_backpack_pressed()
 
 
 func _on_item_used_in_battle(item: ItemData) -> void:
@@ -1487,7 +1531,35 @@ func _begin_step(step: Step) -> void:
 			_read("WELL FOUGHT!", "You survived a counter-attacker. Tap to finish.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.COMPLETE:
 			_lock_all_except([])
-			_ui_show_final("TRAINING COMPLETE\nYou know: target, attack, cards, timing, parry, defend, skills, charge, rapid, loot, backpack, potions. Good luck, Knight!")
+			_ui_show_final("TRAINING COMPLETE\nYou know: target, attack, cards, timing, parry, defend, skills, charge, rapid, loot, backpack, potions. Now finish the Grimward!")
+		Step.FINALE_FIGHT:
+			# Duel beneran: armor lepas, deck trio balik, SEMUA tombol
+			# kecuali RUN (RUN gak pernah nongol di tutorial). Bebas total.
+			_finale_empty_since = -1
+			_set_training_armor_all(false)
+			_load_attack_cards()
+			_refill_stamina()
+			is_player_turn = true
+			_tut_revealed = [atk_btn, defend_btn, backpack_btn, skill_btn]
+			_tut_enabled = [atk_btn, defend_btn, backpack_btn, skill_btn]
+			_apply_button_gating(true)
+			_set_enemy_clickable_all(true)
+			_update_target_selection()
+			_live("FINISH THE GRIMWARD!", "No more lessons — finish it for real!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
+			await get_tree().create_timer(2.5).timeout
+			if is_instance_valid(self) and _tutorial_active and _step == Step.FINALE_FIGHT:
+				_ui_hide()
+		Step.OUTRO:
+			_lock_all_except([])
+			_ui_hide()
+			_apply_button_gating(false)
+			_reset_camera_to_default()
+			is_player_turn = false
+			_tutorial_active = false
+			tutorial_finished.emit()
+			tutorial_complete.emit()
+			await _play_outro_cinematic()
+			TransitionManager.pindah_scene("res://scenes/locations/maps/lotus_village/lotus_village.tscn", "Lotus Village")
 
 
 # Step BACA: panel muncul, player tap panel buat lanjut.
@@ -1510,12 +1582,62 @@ func _live(title: String, body: String, zone: TutorialUI.Zone, spot: Node) -> vo
 	_show(title, body, zone, spot, false)
 
 
+# Outro sinematik: KEBALIKAN intro (wave -> hands -> player ->
+# title -> framebg -> bg fade). Terakhir pindah ke lotus village.
+# Dipanggil dari Step.OUTRO (Grimward mati, tutorial masih aktif ->
+# scoreboard parent gak pernah nongol).
+func _play_outro_cinematic() -> void:
+	if wave_progress:
+		wave_progress.pivot_offset = wave_progress.size * 0.5
+		var wtw := create_tween()
+		wtw.tween_property(wave_progress, "scale", Vector2.ZERO, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+		await wtw.finished
+	var htw := create_tween().set_parallel(true)
+	if hand_right:
+		htw.tween_property(hand_right, "modulate:a", 0.0, 0.4).set_trans(Tween.TRANS_SINE)
+	if hand_left:
+		htw.parallel().tween_property(hand_left, "modulate:a", 0.0, 0.4).set_trans(Tween.TRANS_SINE)
+	if player_info:
+		htw.parallel().tween_property(player_info, "position:x", -player_info.size.x - 400.0, 0.5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	await htw.finished
+	if map_title:
+		var ttw := create_tween()
+		ttw.tween_property(map_title, "modulate:a", 0.0, 0.8).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+		await ttw.finished
+	var framebg := get_node_or_null("bg/framebg") as TextureRect
+	if framebg:
+		var outs: Array = []
+		for c in framebg.get_children():
+			if c is Control:
+				outs.append(c)
+		# Kebalikan intro: kiri -> kanan = x kecil dulu
+		outs.sort_custom(func(a: Control, b: Control) -> bool: return a.position.x < b.position.x)
+		var last_tw: Tween = null
+		var i := 0
+		for s in outs:
+			var sc := s as Control
+			var tw := create_tween().set_parallel(true)
+			tw.tween_property(sc, "position:x", sc.position.x + 200.0, 0.45).set_delay(i * 0.12).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+			tw.tween_property(sc, "modulate:a", 0.0, 0.35).set_delay(i * 0.12).set_trans(Tween.TRANS_SINE)
+			last_tw = tw
+			i += 1
+		var btw := create_tween()
+		btw.tween_property(framebg, "modulate:a", 0.0, 0.4).set_trans(Tween.TRANS_SINE)
+		if last_tw:
+			await last_tw.finished
+	var bg_node := get_node_or_null("bg") as CanvasItem
+	if bg_node:
+		var btw2 := create_tween()
+		btw2.tween_property(bg_node, "modulate:a", 0.0, 1.0).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+		await btw2.finished
+
+
 func _step_no() -> int:
 	return int(_step)
 
 
 func _step_total() -> int:
-	return int(Step.COMPLETE)
+	return int(Step.OUTRO)
 
 
 func _show(title: String, body: String, zone: TutorialUI.Zone, spot: Node, dismissable: bool) -> void:
