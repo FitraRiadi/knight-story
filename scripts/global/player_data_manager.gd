@@ -273,17 +273,33 @@ func swap_between_inventories(
 
 
 func reset_data() -> void:
-	# Hapus seluruh folder .knight
-	var knight_dir = ProjectSettings.globalize_path("user://.knight/")
-	var dir = DirAccess.open(ProjectSettings.globalize_path("user://"))
-	if dir:
-		dir.remove_recursive(knight_dir)
+	# Hapus seluruh folder .knight (rekursif manual — Godot 4
+	# DirAccess nggak punya remove_recursive).
+	_remove_dir_recursive(ProjectSettings.globalize_path("user://.knight"))
 	# Reset quest state di memory juga (quests.json ikut kehapus di atas).
 	active_quest_id = ""
 	quest_progress = {}
 	displayed_quest_ids = []
 	completed_quest_ids = []
 	_init_save()
+
+
+static func _remove_dir_recursive(abs_path: String) -> void:
+	var dir := DirAccess.open(abs_path)
+	if dir == null:
+		return
+	dir.list_dir_begin()
+	var fname := dir.get_next()
+	while fname != "":
+		if fname != "." and fname != "..":
+			var full: String = abs_path.path_join(fname)
+			if dir.current_is_dir():
+				_remove_dir_recursive(full)
+			else:
+				DirAccess.remove_absolute(full)
+		fname = dir.get_next()
+	dir.list_dir_end()
+	DirAccess.remove_absolute(abs_path)
 
 
 # ============================================================
