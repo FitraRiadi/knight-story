@@ -108,11 +108,11 @@ const RARITY_COLORS: Dictionary = {
 # ============================================================
 
 const RARITY_FLAME: Dictionary = {
-	"Common": {"intensity": 0.25, "flame_size": 0.030, "speed": 1.2},
-	"Uncommon": {"intensity": 0.35, "flame_size": 0.040, "speed": 1.8},
-	"Rare": {"intensity": 0.60, "flame_size": 0.055, "speed": 2.8},
-	"Epic": {"intensity": 0.85, "flame_size": 0.070, "speed": 3.5},
-	"Legendary": {"intensity": 1.00, "flame_size": 0.085, "speed": 4.2},
+	"Common": {"intensity": 0.30, "flame_size": 0.050, "speed": 1.2},
+	"Uncommon": {"intensity": 0.40, "flame_size": 0.065, "speed": 1.8},
+	"Rare": {"intensity": 0.65, "flame_size": 0.085, "speed": 2.8},
+	"Epic": {"intensity": 0.85, "flame_size": 0.105, "speed": 3.5},
+	"Legendary": {"intensity": 1.00, "flame_size": 0.125, "speed": 4.2},
 }
 
 

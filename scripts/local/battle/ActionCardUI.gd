@@ -141,6 +141,10 @@ func _apply_card_flame(card: Control, frame_node_name: String, data: ActionCardD
 	var mat := ShaderMaterial.new()
 	mat.shader = CARD_FLAME_SHADER
 	var rc: Color = data.get_rarity_color()
+	if str(data.rarity) == "Common":
+		# Abu di atas frame abu = ilang. Common pake silver-putih aja:
+		# kalem tapi keliatan.
+		rc = Color(0.82, 0.85, 0.95)
 	mat.set_shader_parameter("flame_color", rc)
 	mat.set_shader_parameter("outline_color", rc.darkened(0.65))
 	var fp: Dictionary = data.get_flame_params()
