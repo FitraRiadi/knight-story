@@ -177,16 +177,16 @@ func _fill_new_quests() -> void:
 
 func _create_quest_row(quest: QuestData, active_id: String) -> PanelContainer:
 	var row = PanelContainer.new()
-	row.custom_minimum_size = Vector2(0, 86)
+	row.custom_minimum_size = Vector2(0, 94)
 
 	# Warna identitas (active = biru, normal = coklat) dipertahankan.
 	var row_color := Color(0.08, 0.12, 0.22, 0.55) if active_id == quest.quest_id else Color(0.11, 0.067, 0.016, 0.5)
 	var row_style = StyleBoxFlat.new()
 	row_style.bg_color = row_color
-	row_style.content_margin_left = 10
-	row_style.content_margin_right = 10
-	row_style.content_margin_top = 6
-	row_style.content_margin_bottom = 6
+	row_style.content_margin_left = 14
+	row_style.content_margin_right = 14
+	row_style.content_margin_top = 10
+	row_style.content_margin_bottom = 10
 	row.add_theme_stylebox_override("panel", row_style)
 	UISkin.frame(row)
 

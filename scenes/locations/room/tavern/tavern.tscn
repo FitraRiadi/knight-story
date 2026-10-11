@@ -317,14 +317,6 @@ text = "Selling Your Item"
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="exit" type="Button" parent="bar/feature" unique_id=910802179]
-layout_mode = 0
-offset_left = 370.0
-offset_top = 248.0
-offset_right = 428.0
-offset_bottom = 268.0
-text = "Back"
-
 [node name="container4" type="Button" parent="bar/feature" unique_id=1762677275]
 layout_mode = 1
 anchors_preset = 15
@@ -385,6 +377,14 @@ offset_top = 96.0
 offset_right = 150.0
 offset_bottom = 111.0
 text = "Announcement"
+
+[node name="exit" type="Button" parent="bar/feature" unique_id=910802179]
+layout_mode = 0
+offset_left = 370.0
+offset_top = 248.0
+offset_right = 428.0
+offset_bottom = 268.0
+text = "Back"
 
 [node name="backHall" type="Button" parent="bar" unique_id=986912114]
 layout_mode = 0
