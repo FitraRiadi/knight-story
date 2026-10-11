@@ -318,27 +318,12 @@ horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="exit" type="Button" parent="bar/feature" unique_id=910802179]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 379.0
-offset_right = -1.0
-offset_bottom = -152.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_styles/normal = SubResource("StyleBoxFlat_mnmqb")
-theme_override_styles/hover = SubResource("StyleBoxEmpty_l843g")
-
-[node name="Label" type="Label" parent="bar/feature/exit" unique_id=375047977]
 layout_mode = 0
-offset_left = 18.0
-offset_top = 94.0
-offset_right = 70.0
-offset_bottom = 119.0
-rotation = -1.5729856
-theme_override_font_sizes/font_size = 26
-text = "Exit"
+offset_left = 370.0
+offset_top = 248.0
+offset_right = 428.0
+offset_bottom = 268.0
+text = "Back"
 
 [node name="container4" type="Button" parent="bar/feature" unique_id=1762677275]
 layout_mode = 1

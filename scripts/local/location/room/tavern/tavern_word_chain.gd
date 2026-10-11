@@ -34,7 +34,7 @@ const OPTION_NORMAL := Color(0.11, 0.067, 0.016, 0.6)
 const OPTION_HOVER := Color(0.18, 0.12, 0.03, 0.8)
 const OPTION_CORRECT := Color(0.1, 0.35, 0.1, 1.0)
 const OPTION_WRONG := Color(0.35, 0.08, 0.08, 1.0)
-const OPTION_REVEAL := Color(0.15, 0.4, 0.15, 1.0)
+const OPTION_REVEAL := Color(0.08, 0.55, 0.12, 1.0)
 
 const GOLD_REWARD: int = 5
 
@@ -411,6 +411,7 @@ func _on_option_pressed(index: int) -> void:
 	reveal_style.content_margin_top = 6
 	reveal_style.content_margin_bottom = 6
 	option_buttons[roberts_pick].add_theme_stylebox_override("normal", reveal_style)
+	UISkin.frame(option_buttons[roberts_pick])
 
 	# Style chosen button
 	if is_correct:

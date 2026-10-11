@@ -496,9 +496,24 @@ func _show_play_again(was_win: bool) -> void:
 	popup_panel.scale = Vector2(0.2, 0.2)
 	popup_panel.modulate.a = 0.0
 
+	# Alas gelap solid (frame transparan — tanpa ini popup tembus).
+	var popup_bg := ColorRect.new()
+	popup_bg.name = "CardPopupBG"
+	popup_bg.color = Color(0.07, 0.08, 0.12, 0.97)
+	popup_bg.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	popup_bg.position = popup_panel.position
+	popup_bg.size = popup_panel.size
+	popup_bg.pivot_offset = popup_panel.size / 2.0
+	popup_bg.scale = Vector2(0.2, 0.2)
+	popup_bg.modulate.a = 0.0
+	popup_overlay.add_child(popup_bg)
+	popup_overlay.move_child(popup_bg, popup_panel.get_index())
+
 	var tween := popup_panel.create_tween().set_parallel(true)
 	tween.tween_property(popup_panel, "scale", Vector2(1.0, 1.0), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(popup_panel, "modulate:a", 1.0, 0.15)
+	tween.tween_property(popup_bg, "scale", Vector2(1.0, 1.0), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(popup_bg, "modulate:a", 1.0, 0.15)
 
 	yes_btn.pressed.connect(_on_play_again.bind(popup_overlay))
 	no_btn.pressed.connect(_on_no_play_again.bind(popup_overlay))

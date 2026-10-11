@@ -24,8 +24,6 @@ extends Control
 @onready var announcement_btn: Button = $bar/feature/container7
 @onready var dialog_label: Label = $bar/introDialog/dialog
 
-var gold_label: Label
-var gold_display: Panel
 var active_panel: Control = null
 var is_switching: bool = false
 var is_returning_to_menu: bool = false
@@ -63,9 +61,6 @@ func _ready() -> void:
 	quest_btn.pressed.connect(_on_quest_pressed)
 	announcement_btn.pressed.connect(_on_announcement_pressed)
 
-	_create_gold_display()
-	gold_display.visible = false
-
 	_apply_tavern_skin()
 
 
@@ -84,8 +79,6 @@ func _apply_tavern_skin() -> void:
 	_apply_tavern_button(quest_btn, TAKE_COLOR, Color(0.32, 0.21, 0.11, 0.95))
 	_apply_tavern_button(announcement_btn, TAKE_COLOR, Color(0.32, 0.21, 0.11, 0.95))
 	_apply_tavern_button(feature_exit_btn, EXIT_COLOR, Color(0.4, 0.15, 0.18, 0.8))
-	if gold_display:
-		UISkin.frame(gold_display)
 
 
 func _apply_tavern_button(btn: Button, normal: Color, hover: Color) -> void:
@@ -179,11 +172,9 @@ func _on_feature_exit_pressed() -> void:
 	# Slide feature keluar ke kiri
 	var tween = create_tween().set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_IN)
 	tween.tween_property(feature, "position:x", feature.position.x - 800, 0.4)
-	tween.tween_property(gold_display, "modulate:a", 0.0, 0.3)
 	await tween.finished
 
 	feature.visible = false
-	gold_display.visible = false
 
 	# Tampilkan lagi tombol Robert + Back
 	bar_bartender_btn.visible = true
@@ -207,67 +198,21 @@ func _set_hall_buttons_enabled(enabled: bool) -> void:
 
 
 # ============================================================
-# GOLD DISPLAY
-# ============================================================
-
-func _create_gold_display() -> void:
-	gold_display = Panel.new()
-	gold_display.name = "GoldDisplay"
-	gold_display.position = Vector2(585, 5)
-	gold_display.size = Vector2(140, 25)
-
-	var gold_bg_style = StyleBoxFlat.new()
-	gold_bg_style.bg_color = Color(0.1, 0.07, 0.03, 0.85)
-	gold_bg_style.border_width_top = 1
-	gold_bg_style.border_width_bottom = 1
-	gold_bg_style.border_width_left = 1
-	gold_bg_style.border_width_right = 1
-	gold_bg_style.border_color = Color(0.5, 0.35, 0.15, 0.7)
-	gold_bg_style.corner_radius_top_left = 6
-	gold_bg_style.corner_radius_top_right = 6
-	gold_bg_style.corner_radius_bottom_left = 6
-	gold_bg_style.corner_radius_bottom_right = 6
-	gold_bg_style.content_margin_left = 10
-	gold_bg_style.content_margin_right = 10
-	gold_display.add_theme_stylebox_override("panel", gold_bg_style)
-	add_child(gold_display)
-
-	gold_label = Label.new()
-	gold_label.name = "GoldLabel"
-	gold_label.set_anchors_preset(Control.PRESET_FULL_RECT)
-	gold_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	gold_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	gold_label.add_theme_font_size_override("font_size", 14)
-	gold_label.add_theme_color_override("font_color", Color(1, 0.9, 0.3))
-	gold_label.text = str(PlayerDataManager.get_gold()) + " G"
-	gold_display.add_child(gold_label)
-
-
-func _update_gold_display() -> void:
-	if gold_label:
-		gold_label.text = str(PlayerDataManager.get_gold()) + " G"
-
-
-# ============================================================
 # FEATURE PANEL SHOW / HIDE
 # ============================================================
 
 func _hide_feature() -> void:
 	feature.visible = false
-	gold_display.visible = false
 
 
 func _show_feature() -> void:
 	feature.visible = true
-	gold_display.visible = true
 
 
 func _show_feature_slide_in() -> void:
 	# Reset feature posisi ke kiri (off-screen)
 	feature.visible = true
 	feature.position.x = 35.0 - 800.0
-	gold_display.visible = true
-	gold_display.modulate.a = 1.0
 
 	# Slide feature dari kiri ke kanan
 	var tween = create_tween().set_trans(Tween.TRANS_CIRC).set_ease(Tween.EASE_OUT)
@@ -606,7 +551,6 @@ func _on_card_game_selected(game_menu: Control) -> void:
 		return
 
 	PlayerDataManager.spend_gold(3)
-	_update_gold_display()
 
 	if game_menu and is_instance_valid(game_menu):
 		_play_panel_outro(game_menu)
@@ -630,7 +574,6 @@ func _on_word_chain_selected(game_menu: Control) -> void:
 		return
 
 	PlayerDataManager.spend_gold(3)
-	_update_gold_display()
 
 	if game_menu and is_instance_valid(game_menu):
 		_play_panel_outro(game_menu)
@@ -654,7 +597,6 @@ func _on_drink_mix_selected(game_menu: Control) -> void:
 		return
 
 	PlayerDataManager.spend_gold(3)
-	_update_gold_display()
 
 	if game_menu and is_instance_valid(game_menu):
 		_play_panel_outro(game_menu)
@@ -798,7 +740,6 @@ func _on_panel_closed() -> void:
 	if not is_returning_to_menu:
 		_show_feature()
 	is_returning_to_menu = false
-	_update_gold_display()
 
 
 # ============================================================

@@ -39,15 +39,23 @@ static func fill(color: Color = FILL_MAIN) -> StyleBoxFlat:
 	return s
 
 
-# StyleBoxTexture 9-slice putih (frame). content_* opsional biar
-# layout lama nggak geser.
-static func frame_box(content_ltrb: Array = []) -> StyleBoxTexture:
-	var s := StyleBoxTexture.new()
-	s.texture = _art()
-	s.texture_margin_left = TEX_MARGIN
-	s.texture_margin_right = TEX_MARGIN
-	s.texture_margin_top = TEX_MARGIN
-	s.texture_margin_bottom = TEX_MARGIN
+# Warna border SOLID (vector, nggak mungkin gradient/blur).
+const BORDER_COLOR := Color(0.80, 0.70, 0.52)
+const BORDER_WIDTH := 2
+
+
+# StyleBox FLAT: tengah transparan + border solid. content_*
+# opsional biar layout lama nggak geser. Dipakai sebagai style
+# utama (row, popup, label) ATAU via frame() sebagai overlay.
+static func frame_box(content_ltrb: Array = []) -> StyleBoxFlat:
+	var s := StyleBoxFlat.new()
+	s.bg_color = Color(0, 0, 0, 0)
+	s.border_width_left = BORDER_WIDTH
+	s.border_width_top = BORDER_WIDTH
+	s.border_width_right = BORDER_WIDTH
+	s.border_width_bottom = BORDER_WIDTH
+	s.border_color = BORDER_COLOR
+	s.set_corner_radius_all(6)
 	if content_ltrb.size() == 4:
 		s.content_margin_left = content_ltrb[0]
 		s.content_margin_top = content_ltrb[1]
@@ -62,7 +70,11 @@ static func frame_box(content_ltrb: Array = []) -> StyleBoxTexture:
 static func frame(parent: Control) -> void:
 	if parent == null:
 		return
+	# Idempotent: jangan tumpuk overlay kalau udah ada (mis. reveal tiap ronde).
+	if parent.get_node_or_null("UISkinFrame") != null:
+		return
 	var b := Panel.new()
+	b.name = "UISkinFrame"
 	b.set_anchors_preset(Control.PRESET_FULL_RECT)
 	b.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	b.add_theme_stylebox_override("panel", frame_box())

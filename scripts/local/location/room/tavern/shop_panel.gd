@@ -97,9 +97,9 @@ func _build_ui() -> void:
 
 	# Close button (bottom-right, same style as exit button area)
 	var close_btn = Button.new()
-	close_btn.text = "X"
-	close_btn.position = Vector2(405, 258)
-	close_btn.size = Vector2(28, 18)
+	close_btn.text = "Back"
+	close_btn.position = Vector2(370, 248)
+	close_btn.size = Vector2(58, 20)
 
 	UISkin.apply_button(close_btn, 12, Color(0.317, 0.097, 0.125, 0.6), Color(0.4, 0.15, 0.18, 0.8), TEXT_COLOR)
 	close_btn.pressed.connect(_on_close_pressed)
