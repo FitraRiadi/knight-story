@@ -10,4 +10,6 @@ description = "The Battleborn Threat has been on the edge, help eliminate them"
 quest_type = 2
 target_count = 5
 kill_target = "skeleton:Skeleton"
+reward_gold = 70
+reward_exp = 90
 reward_item_id = "None"
