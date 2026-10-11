@@ -101,7 +101,7 @@ func _build_ui() -> void:
 
 	quest_container = VBoxContainer.new()
 	quest_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	quest_container.add_theme_constant_override("separation", 14)
+	quest_container.add_theme_constant_override("separation", 6)
 	scroll.add_child(quest_container)
 
 	var close_btn = Button.new()
