@@ -191,7 +191,7 @@ func _create_quest_row(quest: QuestData, active_id: String) -> PanelContainer:
 	UISkin.frame(row)
 
 	var hbox = HBoxContainer.new()
-	hbox.add_theme_constant_override("separation", 10)
+	hbox.add_theme_constant_override("separation", 14)
 	row.add_child(hbox)
 
 	# Left side (info)
@@ -211,6 +211,7 @@ func _create_quest_row(quest: QuestData, active_id: String) -> PanelContainer:
 	# Quest name
 	var name_label = Label.new()
 	name_label.text = quest.quest_name
+	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	name_label.add_theme_font_size_override("font_size", 14)
 	name_label.add_theme_color_override("font_color", TITLE_COLOR if not is_completed else Color(0.5, 0.5, 0.5))
 	info_vbox.add_child(name_label)
@@ -218,6 +219,7 @@ func _create_quest_row(quest: QuestData, active_id: String) -> PanelContainer:
 	# Quest type + objective
 	var type_label = Label.new()
 	type_label.text = quest.get_type_display() + " — " + quest.get_target_display()
+	type_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	type_label.add_theme_font_size_override("font_size", 10)
 	type_label.add_theme_color_override("font_color", DESC_COLOR if not is_completed else Color(0.45, 0.42, 0.38))
 	info_vbox.add_child(type_label)
@@ -230,6 +232,7 @@ func _create_quest_row(quest: QuestData, active_id: String) -> PanelContainer:
 
 	var info_label = Label.new()
 	info_label.text = progress_text + "  |  " + reward_text
+	info_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	info_label.add_theme_font_size_override("font_size", 10)
 	info_label.add_theme_color_override("font_color", PROGRESS_COLOR if not is_completed else Color(0.4, 0.5, 0.6))
 	info_vbox.add_child(info_label)
