@@ -15,7 +15,6 @@ extends Control
 @onready var bar_bartender_btn: Button = $bar/bartender
 @onready var bar_back_btn: Button = $bar/backHall
 @onready var feature: Control = $bar/feature
-@onready var feature_container: Panel = $bar/feature/container
 @onready var feature_exit_btn: Button = $bar/feature/exit
 @onready var buy_item_btn: Button = $bar/feature/BuyItemBtn
 @onready var tavern_btn: Button = $bar/feature/TavernBtn
@@ -30,8 +29,7 @@ var is_returning_to_menu: bool = false
 
 const TAVERN_BGM = "res://assets/audio/bgm/lotusVillage/lotus_village_bgm.mp3"
 
-# Palette skin (fill gelap + frame putih UISkin)
-const TAKE_COLOR := Color(0.22, 0.14, 0.07, 0.9)   # tombol aksi (kayu gelap)
+# Palette skin (game menu code-built; beranda sekarang art gui2 di .tscn)
 const EXIT_COLOR := Color(0.317, 0.097, 0.125, 0.6) # tombol keluar (merah gelap)
 const GAMES_TITLE_COLOR := Color(0.245, 0.169, 0.321, 0.6)
 
@@ -61,25 +59,10 @@ func _ready() -> void:
 	quest_btn.pressed.connect(_on_quest_pressed)
 	announcement_btn.pressed.connect(_on_announcement_pressed)
 
-	_apply_tavern_skin()
-
 
 # ============================================================
-# SKIN — Kenney UI borders (fill gelap + frame putih)
+# SKIN — game menu code-built (beranda sekarang art gui2 di .tscn)
 # ============================================================
-
-func _apply_tavern_skin() -> void:
-	# Beranda: panel + tombol
-	if feature_container:
-		feature_container.add_theme_stylebox_override("panel", UISkin.fill())
-		UISkin.frame(feature_container)
-	_apply_tavern_button(buy_item_btn, TAKE_COLOR, Color(0.32, 0.21, 0.11, 0.95))
-	_apply_tavern_button(selling_btn, TAKE_COLOR, Color(0.32, 0.21, 0.11, 0.95))
-	_apply_tavern_button(tavern_btn, TAKE_COLOR, Color(0.32, 0.21, 0.11, 0.95))
-	_apply_tavern_button(quest_btn, TAKE_COLOR, Color(0.32, 0.21, 0.11, 0.95))
-	_apply_tavern_button(announcement_btn, TAKE_COLOR, Color(0.32, 0.21, 0.11, 0.95))
-	_apply_tavern_button(feature_exit_btn, EXIT_COLOR, Color(0.4, 0.15, 0.18, 0.8))
-
 
 func _apply_tavern_button(btn: Button, normal: Color, hover: Color) -> void:
 	if btn == null:
