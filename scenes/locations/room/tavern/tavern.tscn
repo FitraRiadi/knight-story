@@ -10,69 +10,6 @@
 [ext_resource type="Texture2D" uid="uid://c3wjbqxsjgaga" path="res://assets/art/items/weapons/iron_sword.png" id="9_ppr7d"]
 [ext_resource type="Texture2D" uid="uid://boqc5sesqvj8w" path="res://assets/art/items/materials/inkwell_01.png" id="11_gto35"]
 [ext_resource type="Texture2D" uid="uid://d0onxdco3dyx1" path="res://assets/art/items/materials/tome_01.png" id="12_ex6xx"]
-[ext_resource type="Texture2D" path="res://assets/tilesets/gui2/Buttons.png" id="gui2_buttons"]
-[ext_resource type="Texture2D" path="res://assets/tilesets/gui2/Main_tiles.png" id="gui2_maintiles"]
-[ext_resource type="Texture2D" path="res://assets/tilesets/gui2/Icons.png" id="gui2_icons"]
-
-[sub_resource type="AtlasTexture" id="AtlasGui2_Fill"]
-atlas = ExtResource("gui2_maintiles")
-region = Rect2(56, 256, 16, 16)
-
-[sub_resource type="AtlasTexture" id="AtlasGui2_Btn"]
-atlas = ExtResource("gui2_buttons")
-region = Rect2(3, 96, 42, 32)
-
-[sub_resource type="AtlasTexture" id="AtlasGui2_IconBuy"]
-atlas = ExtResource("gui2_icons")
-region = Rect2(28, 1, 24, 15)
-
-[sub_resource type="AtlasTexture" id="AtlasGui2_IconSell"]
-atlas = ExtResource("gui2_icons")
-region = Rect2(68, 180, 22, 16)
-
-[sub_resource type="AtlasTexture" id="AtlasGui2_IconGames"]
-atlas = ExtResource("gui2_icons")
-region = Rect2(15, 45, 20, 20)
-
-[sub_resource type="AtlasTexture" id="AtlasGui2_IconQuest"]
-atlas = ExtResource("gui2_icons")
-region = Rect2(15, 62, 16, 18)
-
-[sub_resource type="AtlasTexture" id="AtlasGui2_IconAnnounce"]
-atlas = ExtResource("gui2_icons")
-region = Rect2(45, 80, 19, 25)
-
-[sub_resource type="AtlasTexture" id="AtlasGui2_IconExit"]
-atlas = ExtResource("gui2_icons")
-region = Rect2(77, 61, 16, 14)
-
-[sub_resource type="StyleBoxTexture" id="SBGui2_Panel"]
-texture = SubResource("AtlasGui2_Fill")
-texture_margin_left = 4.0
-texture_margin_top = 4.0
-texture_margin_right = 4.0
-texture_margin_bottom = 4.0
-
-[sub_resource type="StyleBoxTexture" id="SBGui2_BtnN"]
-texture = SubResource("AtlasGui2_Btn")
-texture_margin_left = 8.0
-texture_margin_top = 8.0
-texture_margin_right = 8.0
-texture_margin_bottom = 8.0
-
-[sub_resource type="StyleBoxTexture" id="SBGui2_BtnH"]
-texture = SubResource("AtlasGui2_Btn")
-texture_margin_left = 8.0
-texture_margin_top = 8.0
-texture_margin_right = 8.0
-texture_margin_bottom = 8.0
-
-[sub_resource type="StyleBoxTexture" id="SBGui2_BtnP"]
-texture = SubResource("AtlasGui2_Btn")
-texture_margin_left = 8.0
-texture_margin_top = 8.0
-texture_margin_right = 8.0
-texture_margin_bottom = 8.0
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_moojr"]
 animations = [{
@@ -287,161 +224,166 @@ anchor_bottom = 1.0
 offset_bottom = -21.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_styles/panel = SubResource("SBGui2_Panel")
+theme_override_styles/panel = SubResource("StyleBoxFlat_0t5g7")
 
 [node name="BuyItemBtn" type="Button" parent="bar/feature" unique_id=1904119812]
-layout_mode = 0
-offset_left = 10.0
-offset_top = 10.0
-offset_right = 214.0
-offset_bottom = 78.0
-theme_override_styles/normal = SubResource("SBGui2_BtnN")
-theme_override_styles/hover = SubResource("SBGui2_BtnH")
-theme_override_styles/pressed = SubResource("SBGui2_BtnP")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -304.0
+offset_bottom = -151.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_dt4my")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_ioold")
 
 [node name="TextureRect" type="TextureRect" parent="bar/feature/BuyItemBtn" unique_id=522013124]
 texture_filter = 1
 layout_mode = 0
-offset_left = 14.0
-offset_top = 10.0
-offset_right = 62.0
-offset_bottom = 58.0
-texture = SubResource("AtlasGui2_IconBuy")
+offset_left = 18.0
+offset_top = 13.0
+offset_right = 117.0
+offset_bottom = 101.0
+texture = ExtResource("8_5u3he")
 
 [node name="Label" type="Label" parent="bar/feature/BuyItemBtn" unique_id=779835069]
 layout_mode = 0
-offset_left = 70.0
-offset_top = 12.0
-offset_right = 194.0
-offset_bottom = 56.0
-theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
+offset_left = 39.0
+offset_top = 107.0
+offset_right = 103.0
+offset_bottom = 122.0
 text = "Buy Item"
 
 [node name="TavernBtn" type="Button" parent="bar/feature" unique_id=1807390888]
-layout_mode = 0
-offset_left = 224.0
-offset_top = 10.0
-offset_right = 428.0
-offset_bottom = 78.0
-theme_override_styles/normal = SubResource("SBGui2_BtnN")
-theme_override_styles/hover = SubResource("SBGui2_BtnH")
-theme_override_styles/pressed = SubResource("SBGui2_BtnP")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 135.0
+offset_right = -62.0
+offset_bottom = -151.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_jncy7")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_0qvnb")
 
 [node name="TextureRect" type="TextureRect" parent="bar/feature/TavernBtn" unique_id=653934868]
 texture_filter = 1
 layout_mode = 0
-offset_left = 14.0
-offset_top = 10.0
-offset_right = 62.0
-offset_bottom = 58.0
-texture = SubResource("AtlasGui2_IconGames")
+offset_left = 73.0
+offset_top = 13.0
+offset_right = 172.0
+offset_bottom = 101.0
+texture = ExtResource("9_ppr7d")
 
 [node name="Label" type="Label" parent="bar/feature/TavernBtn" unique_id=748679934]
 layout_mode = 0
 offset_left = 70.0
-offset_top = 12.0
-offset_right = 194.0
-offset_bottom = 56.0
-theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
+offset_top = 100.0
+offset_right = 174.0
+offset_bottom = 115.0
 text = "Tavern Games"
 
 [node name="SellingItemBtn" type="Button" parent="bar/feature" unique_id=1435223237]
-layout_mode = 0
-offset_left = 10.0
-offset_top = 98.0
-offset_right = 214.0
-offset_bottom = 166.0
-theme_override_styles/normal = SubResource("SBGui2_BtnN")
-theme_override_styles/hover = SubResource("SBGui2_BtnH")
-theme_override_styles/pressed = SubResource("SBGui2_BtnP")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 130.0
+offset_right = -304.0
+offset_bottom = -21.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_xncs8")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_iyfge")
 
 [node name="TextureRect" type="TextureRect" parent="bar/feature/SellingItemBtn" unique_id=772516289]
 texture_filter = 1
 layout_mode = 0
-offset_left = 14.0
-offset_top = 10.0
-offset_right = 62.0
-offset_bottom = 58.0
-texture = SubResource("AtlasGui2_IconSell")
+offset_left = 20.0
+offset_top = 9.0
+offset_right = 112.0
+offset_bottom = 88.0
+texture = ExtResource("7_8lml3")
 
 [node name="Label" type="Label" parent="bar/feature/SellingItemBtn" unique_id=2057822427]
 layout_mode = 0
-offset_left = 70.0
-offset_top = 12.0
-offset_right = 194.0
-offset_bottom = 56.0
-theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
+offset_left = 12.0
+offset_top = 90.0
+offset_right = 126.0
+offset_bottom = 123.0
 text = "Selling Your Item"
 horizontal_alignment = 1
 autowrap_mode = 3
 
 [node name="container4" type="Button" parent="bar/feature" unique_id=1762677275]
-layout_mode = 0
-offset_left = 224.0
-offset_top = 98.0
-offset_right = 428.0
-offset_bottom = 166.0
-theme_override_styles/normal = SubResource("SBGui2_BtnN")
-theme_override_styles/hover = SubResource("SBGui2_BtnH")
-theme_override_styles/pressed = SubResource("SBGui2_BtnP")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 135.0
+offset_top = 130.0
+offset_right = -186.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_2l1gk")
 
 [node name="Label" type="Label" parent="bar/feature/container4" unique_id=1398651049]
 layout_mode = 0
-offset_left = 70.0
-offset_top = 12.0
-offset_right = 194.0
-offset_bottom = 56.0
-theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
+offset_left = 37.0
+offset_top = 96.0
+offset_right = 78.0
+offset_bottom = 111.0
 text = "Quest"
 
 [node name="TextureRect" type="TextureRect" parent="bar/feature/container4" unique_id=1213461507]
-texture_filter = 1
 layout_mode = 0
-offset_left = 14.0
-offset_top = 10.0
-offset_right = 62.0
-offset_bottom = 58.0
-texture = SubResource("AtlasGui2_IconQuest")
+offset_left = 20.0
+offset_top = 14.0
+offset_right = 92.0
+offset_bottom = 86.0
+texture = ExtResource("11_gto35")
 expand_mode = 1
 
 [node name="container7" type="Button" parent="bar/feature" unique_id=368502916]
-layout_mode = 0
-offset_left = 10.0
-offset_top = 186.0
-offset_right = 214.0
-offset_bottom = 254.0
-theme_override_styles/normal = SubResource("SBGui2_BtnN")
-theme_override_styles/hover = SubResource("SBGui2_BtnH")
-theme_override_styles/pressed = SubResource("SBGui2_BtnP")
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 252.0
+offset_top = 130.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/normal = SubResource("StyleBoxFlat_kylmi")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_fbpj2")
 
 [node name="TextureRect" type="TextureRect" parent="bar/feature/container7" unique_id=732996581]
-texture_filter = 1
 layout_mode = 0
-offset_left = 14.0
-offset_top = 10.0
-offset_right = 62.0
-offset_bottom = 58.0
-texture = SubResource("AtlasGui2_IconAnnounce")
+offset_left = 55.0
+offset_top = 17.0
+offset_right = 130.0
+offset_bottom = 82.0
+texture = ExtResource("12_ex6xx")
 expand_mode = 1
 
 [node name="Label" type="Label" parent="bar/feature/container7" unique_id=1475494195]
 layout_mode = 0
-offset_left = 70.0
-offset_top = 12.0
-offset_right = 194.0
-offset_bottom = 56.0
-theme_override_colors/font_color = Color(0.15, 0.1, 0.05, 1)
+offset_left = 40.0
+offset_top = 96.0
+offset_right = 150.0
+offset_bottom = 111.0
 text = "Announcement"
 
 [node name="exit" type="Button" parent="bar/feature" unique_id=910802179]
 layout_mode = 0
-offset_left = 224.0
-offset_top = 186.0
-offset_right = 428.0
-offset_bottom = 254.0
-theme_override_styles/normal = SubResource("SBGui2_BtnN")
-theme_override_styles/hover = SubResource("SBGui2_BtnH")
-theme_override_styles/pressed = SubResource("SBGui2_BtnP")
+offset_left = 379.0
+offset_top = 0.0
+offset_right = 437.0
+offset_bottom = 128.0
 text = "Back"
 
 [node name="backHall" type="Button" parent="bar" unique_id=986912114]
