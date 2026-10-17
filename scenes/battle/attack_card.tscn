@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://pbxnv4qxuej"]
 
 [ext_resource type="Texture2D" uid="uid://be1xxtp13rlac" path="res://assets/art/card/poisonCard.jpg" id="1_gy83j"]
-[ext_resource type="Texture2D" uid="uid://ctu0rgm3jod6i" path="res://assets/art/card/attackCard/attackCard_placeholder.png" id="1_x1cis"]
+[ext_resource type="Texture2D" uid="uid://ctu0rgm3jod6i" path="res://assets/art/card/attack_styles/attackCard_placeholder.png" id="1_x1cis"]
 [ext_resource type="Texture2D" uid="uid://8wnjfir75c50" path="res://assets/ui/buttons/wood-button.png" id="3_6lapk"]
 
 [sub_resource type="StyleBoxTexture" id="StyleBoxTexture_moojr"]

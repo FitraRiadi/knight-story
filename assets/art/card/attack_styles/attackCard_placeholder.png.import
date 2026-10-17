@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cmn5ook6mgn0t"
-path="res://.godot/imported/charge_attack.jpg-f6d9d4843420bebfe7d648db4514fa37.ctex"
+uid="uid://ctu0rgm3jod6i"
+path="res://.godot/imported/attackCard_placeholder.png-16cfc6ff244b53cf785378639b08756f.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/art/card/attackCard/charge_attack.jpg"
-dest_files=["res://.godot/imported/charge_attack.jpg-f6d9d4843420bebfe7d648db4514fa37.ctex"]
+source_file="res://assets/art/card/attack_styles/attackCard_placeholder.png"
+dest_files=["res://.godot/imported/attackCard_placeholder.png-16cfc6ff244b53cf785378639b08756f.ctex"]
 
 [params]
 

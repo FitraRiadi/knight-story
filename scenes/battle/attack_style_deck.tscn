@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://db2befrjyhk6p"]
 
+[ext_resource type="Script" path="res://scripts/local/battle/AttackStyleDeckUI.gd" id="1_deckui"]
 [ext_resource type="PackedScene" uid="uid://0hjhmhcxn0cg" path="res://scenes/battle/attack_style.tscn" id="1_4wwb8"]
 [ext_resource type="Texture2D" uid="uid://bpwn4panxo0jk" path="res://assets/art/attackStyle/chargeAttack.png" id="2_h01qc"]
 [ext_resource type="Texture2D" uid="uid://cpihv07phljx4" path="res://assets/art/attackStyle/executeAttack.png" id="2_sfgky"]
@@ -9,6 +10,7 @@
 bg_color = Color(0.04864873, 0.04864873, 0.04864873, 0.44705883)
 
 [node name="attackDeck" type="Node2D" unique_id=2086633350]
+script = ExtResource("1_deckui")
 
 [node name="attackStyle" parent="." unique_id=657159994 instance=ExtResource("1_4wwb8")]
 position = Vector2(83, 247)

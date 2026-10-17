@@ -88,7 +88,6 @@ var current_hp: float
 
 var max_stamina: float
 var current_stamina: float
-var attack_stamina_cost: float
 
 var max_morale: float
 var current_morale: float
@@ -258,13 +257,9 @@ var action_card_cooldowns: Array[int] = []
 var is_card_ui_open: bool = false
 var card_used_this_session: bool = false
 
-# ATTACK CARD SYSTEM
-var attack_hand: Array[ActionCardData] = []
-var attack_discard: Array[ActionCardData] = []
-var attack_card_ui: ActionCardUI = null
-var attack_card_used_this_session: bool = false
+# ATTACK STYLE DECK (attack_style_deck.tscn + AttackStyleDeckUI)
+var attack_deck: AttackStyleDeckUI = null
 var _is_scoreboard_hiding: bool = false
-const MAX_ATTACK_HAND: int = 5
 # Preload langsung biar gak tergantung cache global class editor
 const ProbGen = preload("res://scripts/global/probability_generator.gd")
 
@@ -354,7 +349,10 @@ func _ready() -> void:
 	_load_player_data()
 	_update_player_ui_instant()
 	_setup_scoreboard()
-	
+
+	# attackDeck spawn lazily via AttackStyleDeckUI.spawn_into()
+	# pas atkBtn pertama ditekan (pola skill deck) — gak ada node di scene.
+
 	if atk_btn: atk_btn.pressed.connect(_on_attack_pressed)
 	if defend_btn: defend_btn.pressed.connect(_on_defend_pressed)
 	if backpack_btn: backpack_btn.pressed.connect(_on_backpack_pressed)
@@ -454,7 +452,6 @@ func _load_player_data() -> void:
 
 	max_stamina = pd.max_stamina
 	current_stamina = pd.max_stamina
-	attack_stamina_cost = pd.attack_stamina_cost
 
 	max_morale = pd.max_morale
 	current_morale = pd.max_morale * 0.5
@@ -1080,38 +1077,16 @@ func _load_action_cards() -> void:
 			action_card_cooldowns.append(0)
 
 
-func _load_attack_cards() -> void:
-	attack_hand.clear()
-	attack_discard.clear()
-
-	# Random deck 5 kartu dari bobot spawn_probability masing-masing tipe.
-	# allow_multiple = true (boleh kembar) karena tipe baru 3 vs deck 5.
-	var card_paths: Array[String] = [
-		"res://data/action_cards/attack_cards/basic_attack.tres",
-		"res://data/action_cards/attack_cards/charge_attack.tres",
-		"res://data/action_cards/attack_cards/rapid_attack.tres",
-	]
-	var datas: Array[AttackCardData] = []
-	var weights: Array = []
-	for path in card_paths:
-		var data: AttackCardData = load(path) as AttackCardData
-		if data:
-			datas.append(data)
-			weights.append(data.spawn_probability)
-	if datas.is_empty():
-		return
-
-	var picks: Array[int] = ProbGen.roll_multi(weights, 5, true)
-	for idx in picks:
-		attack_hand.append(datas[idx].duplicate())
-
-
-func open_attack_card_ui() -> void:
+func open_attack_deck() -> void:
 	if is_card_ui_open:
 		return
-
-	if attack_hand.is_empty():
-		_load_attack_cards()
+	# Spawn lazily (pola skill deck): CanvasLayer 250 top-layer
+	# + bg overlay gelap, sekali per battle.
+	if not attack_deck:
+		attack_deck = AttackStyleDeckUI.spawn_into(self)
+		attack_deck.use_style_requested.connect(_on_use_style_requested)
+		attack_deck.style_selected.connect(_on_style_selected)
+		attack_deck.deck_dismissed.connect(_on_deck_dismissed)
 
 	is_card_ui_open = true
 	is_player_turn = false
@@ -1119,47 +1094,52 @@ func open_attack_card_ui() -> void:
 	_pull_hand_to_corner(0.4)
 	_zoom_camera_to_selected_slight()
 
-	attack_card_ui = ActionCardUI.new()
-	attack_card_ui.setup_attack_mode(attack_hand, current_stamina)
-	add_child(attack_card_ui)
-
-	if attack_card_ui.has_signal("card_selected"):
-		attack_card_ui.card_selected.connect(_on_attack_card_selected)
-	if attack_card_ui.has_signal("card_closed"):
-		attack_card_ui.card_closed.connect(_on_attack_card_closed)
-
-	attack_card_ui.open()
+	attack_deck.open(current_stamina)
 
 
-func _on_attack_card_selected(index: int) -> void:
-	if index < 0 or index >= attack_hand.size():
+func _cancel_attack_deck() -> void:
+	"""Tutup deck tanpa memakai style → balik ke giliran player."""
+	if attack_deck:
+		attack_deck.close()
+	is_card_ui_open = false
+	_reset_hand_to_original(0.4)
+	_reset_camera_to_default()
+	is_player_turn = true
+	_set_buttons_active(true)
+
+
+func _on_deck_dismissed() -> void:
+	"""Klik bg overlay (di luar deck) → cancel. Tutorial override."""
+	if not is_card_ui_open:
+		return
+	_cancel_attack_deck()
+
+
+func _on_use_style_requested(style: AttackStyleData) -> void:
+	"""Dipanggil dari AttackStyleDeckUI pas tombol USE STYLE ditekan."""
+	if not is_card_ui_open:
 		return
 
-	var card: ActionCardData = attack_hand[index]
-
-	# Cek stamina
-	if current_stamina < card.stamina_cost:
+	# Cek stamina (tombol USE harusnya udah ke-disable, ini double guard)
+	if current_stamina < style.stamina_cost:
 		return
 
-	# Apply effect ke enemy yang udah di-select
+	# Cek target valid
 	if selected_enemy_index < 0 or selected_enemy_index >= enemies.size():
 		return
 
-	# Hapus card dari hand → masuk discard
-	attack_hand.remove_at(index)
-	attack_discard.append(card)
-
-	# Kurangi stamina
-	current_stamina = maxf(0.0, current_stamina - card.stamina_cost)
+	# Kurangi stamina - CUMA di sini (sekali, gak dobel)
+	current_stamina = maxf(0.0, current_stamina - style.stamina_cost)
 	_animate_stamina_change()
 
-	# Tandai card sudah dipakai
-	attack_card_used_this_session = true
+	# Mode indicator: art style terpilih ditarik ke pojok kiri atas
+	# selama mechanic. is_card_ui_open TETAP true sampai turn beres
+	# (blokir open/toggle ulang selama mechanic jalan).
+	if attack_deck:
+		attack_deck.enter_indicator()
 
-	# Trigger attack mechanic berdasarkan tipe
-	var attack_type: String = card.get("attack_type") if card.has_method("get") else "Basic"
-	match attack_type:
-		"Basic":
+	match style.attack_type:
+		"Execute":
 			_start_attack_qte()
 		"Charge":
 			_start_attack_charge()
@@ -1167,30 +1147,22 @@ func _on_attack_card_selected(index: int) -> void:
 			_start_attack_raptive()
 
 
-func _on_attack_mechanic_done() -> void:
-	"""Dipanggil setelah attack mechanic (QTE) selesai"""
-	if attack_card_ui:
-		attack_card_ui.finish_attack_indicator()
+func _on_style_selected(style: AttackStyleData) -> void:
+	"""Base: style dipilih di deck (klik kartu). Tutorial override buat beat-nya."""
+	pass
 
 
-func _on_attack_card_closed() -> void:
+func _end_player_attack_turn() -> void:
+	"""Akhiri giliran player setelah attack mechanic selesai → musuh menyerang."""
+	if attack_deck and attack_deck.is_open:
+		attack_deck.close()
 	is_card_ui_open = false
-	attack_card_ui = null
 	_reset_hand_to_original(0.4)
 	_reset_camera_to_default()
-
-	if attack_card_used_this_session:
-		# Card dipakai → enemy turn (skip kalau rapid masih aktif)
-		attack_card_used_this_session = false
-		if not _is_rapid_active:
-			is_player_turn = false
-			_set_buttons_active(false)
-			await get_tree().create_timer(0.3).timeout
-			_start_enemies_turn()
-	else:
-		# Cancel → balik ke player turn
-		is_player_turn = true
-		_set_buttons_active(true)
+	is_player_turn = false
+	_set_buttons_active(false)
+	await get_tree().create_timer(0.3).timeout
+	_start_enemies_turn()
 
 
 func _on_skill_pressed() -> void:
@@ -1955,12 +1927,7 @@ func _apply_hit_stop(duration: float) -> void:
 
 func _execute_actual_attack(result: AttackResult, is_charge_attack: bool = false, charge_multiplier: float = 1.0) -> void:
 	_play_juicy_hand_attack_animation()
-	
-	# Stamina sudah di-deduct oleh attack card system, skip kalau ada attack_card_ui
-	if not attack_card_ui:
-		current_stamina = max(0.0, current_stamina - attack_stamina_cost)
-		_animate_stamina_change()
-	
+
 	for enemy in enemies:
 		if enemy.enemy_collision:
 			enemy.enemy_collision.disabled = true
@@ -2034,11 +2001,8 @@ func _execute_actual_attack(result: AttackResult, is_charge_attack: bool = false
 		# Balikin z_index
 		target_enemy.z_index = old_z
 
-	# Attack card: fade indicator, enemy turn mulai dari _on_attack_card_closed
-	if attack_card_ui:
-		_on_attack_mechanic_done()
-	else:
-		_start_enemies_turn()
+	# Attack selesai → tutup state player, musuh menyerang
+	await _end_player_attack_turn()
 
 
 func _setup_parry_qte_ui() -> void:
@@ -2313,12 +2277,12 @@ func _on_parry_button_clicked() -> void:
 
 func _start_attack_raptive() -> void:
 	if enemies.is_empty() or selected_enemy_index >= enemies.size():
-		_on_attack_mechanic_done()
+		await _end_player_attack_turn()
 		return
 
 	_rapid_current_enemy = enemies[selected_enemy_index]
 	if not is_instance_valid(_rapid_current_enemy) or _rapid_current_enemy.current_hp <= 0:
-		_on_attack_mechanic_done()
+		await _end_player_attack_turn()
 		return
 
 	_is_rapid_active = true
@@ -2982,12 +2946,9 @@ func _finish_raptive() -> void:
 			await _wait_for_dialogs_done()
 			spawn_random_enemies(1, enemies_per_wave, 1, 5)
 			# Cleanup visual state rapid mode
-			attack_card_used_this_session = false  # Reset SEBELUM finish supaya signal gak trigger enemy turn
-			if attack_card_ui:
-				attack_card_ui.finish_attack_indicator()
-				await get_tree().create_timer(0.4).timeout
+			if attack_deck and attack_deck.is_open:
+				attack_deck.close()
 			is_card_ui_open = false
-			attack_card_ui = null
 			_reset_hand_to_original(0.4)
 			is_player_turn = true
 			_set_buttons_active(true)
@@ -2996,22 +2957,14 @@ func _finish_raptive() -> void:
 			await get_tree().create_timer(0.5).timeout
 			_show_scoreboard()
 			# Cleanup visual state rapid mode
-			attack_card_used_this_session = false  # Reset SEBELUM finish supaya signal gak trigger enemy turn
-			if attack_card_ui:
-				attack_card_ui.finish_attack_indicator()
-				await get_tree().create_timer(0.4).timeout
+			if attack_deck and attack_deck.is_open:
+				attack_deck.close()
 			is_card_ui_open = false
-			attack_card_ui = null
 			_reset_hand_to_original(0.4)
 			return
 
 	# Trigger enemy turn
-	if attack_card_ui:
-		_on_attack_mechanic_done()
-	else:
-		is_player_turn = false
-		_set_buttons_active(false)
-		_start_enemies_turn()
+	await _end_player_attack_turn()
 
 
 func _setup_hand_layer() -> void:
@@ -4472,14 +4425,15 @@ func _update_target_selection() -> void:
 
 
 func _on_attack_pressed() -> void:
+	# Toggle: tekan atkBtn lagi saat deck kebuka = cancel
+	if is_card_ui_open and attack_deck and attack_deck.is_open:
+		_cancel_attack_deck()
+		return
+
 	if not is_player_turn or enemies.size() == 0:
 		return
-	if attack_hand.is_empty():
-		_load_attack_cards()
-	if attack_hand.is_empty():
-		return  # gak ada card tersisa
 
-	open_attack_card_ui()
+	open_attack_deck()
 
 
 func _on_defend_pressed() -> void:

@@ -12,7 +12,8 @@ class_name TutorialGameplayManager
 #    + JUDUL + isi, spotlight gelap ke target, yang lain dikunci
 #  - Tombol action MUNCUL SATU-SATU sesuai kebutuhan (reveal
 #    bertahap), bukan sekaligus di awal
-#  - Deck attack tutorial itu FIX: [Basic, Charge, Rapid]
+#  - Deck attack tutorial itu FIX: [Execute, Rapid, Charge] —
+#    style gak pernah habis dipakai (cuma kena cost stamina)
 #  - Skeleton wave-1 pakai "training armor" (damage ~1) biar gak
 #    mati sebelum semua gerakan kelar diajarin
 #  - Wave 2: HP ke 25% lewat serangan skeleton BENERAN (damage
@@ -35,9 +36,6 @@ const TUTORIAL_DROP_ID := "health_potion"
 const TRAINING_DEFENSE := 9999.0
 const IDLE_DWELL_MS := 1200
 const IDLE_FALLBACK_MS := 4000
-const BASIC_PATH := "res://data/action_cards/attack_cards/basic_attack.tres"
-const CHARGE_PATH := "res://data/action_cards/attack_cards/charge_attack.tres"
-const RAPID_PATH := "res://data/action_cards/attack_cards/rapid_attack.tres"
 
 # --- Step (URUT = urutan main; nomor STEP di panel dari sini) ---
 enum Step {
@@ -46,10 +44,10 @@ enum Step {
 	TARGET_ACT,
 	ATTACK_ACT,
 	DECK_INTRO,
-	CARD_INTRO,
-	BASIC_COST,
-	BASIC_INFO,
-	BASIC_PICK,
+	STYLE_INTRO,
+	EXECUTE_COST,
+	EXECUTE_INFO,
+	EXECUTE_PICK,
 	QTE_DO,
 	QTE_RESULT,
 	HIT_FOE,
@@ -161,6 +159,7 @@ var _wave2_cleared_at: int = -1
 const WAVE_CLEAR_BEAT_MS := 2500
 var _pick_expected := ""
 var _pick_is_skill := false
+var _use_pending := false
 var _skill_ui_ref: ActionCardUI = null
 
 
@@ -251,14 +250,14 @@ func _on_tutorial_tapped() -> void:
 			_begin_step(Step.FINISH_ACT)
 		Step.LOOT_DONE:
 			_begin_step(Step.PACK_ACT)
-		Step.BASIC_COST:
-			_begin_step(Step.BASIC_INFO)
-		Step.BASIC_INFO:
-			_begin_step(Step.BASIC_PICK)
+		Step.EXECUTE_COST:
+			_begin_step(Step.EXECUTE_INFO)
+		Step.EXECUTE_INFO:
+			_begin_step(Step.EXECUTE_PICK)
 		Step.DECK_INTRO:
-			_begin_step(Step.CARD_INTRO)
-		Step.CARD_INTRO:
-			_begin_step(Step.BASIC_COST)
+			_begin_step(Step.STYLE_INTRO)
+		Step.STYLE_INTRO:
+			_begin_step(Step.EXECUTE_COST)
 		Step.SKILL_DECK:
 			_begin_step(Step.SKILL_CARD)
 		Step.SKILL_CARD:
@@ -303,33 +302,21 @@ func _on_tutorial_finished() -> void:
 
 
 # ============================================================
-# OVERRIDE: DECK — tutorial pakai deck FIX
+# OVERRIDE: DECK — tutorial pakai deck FIX (3 style, gak pernah habis)
 # ============================================================
 
-func _load_attack_cards() -> void:
-	if not _tutorial_active:
-		super._load_attack_cards()
-		return
-	attack_hand.clear()
-	attack_discard.clear()
-	for path in [BASIC_PATH, CHARGE_PATH, RAPID_PATH]:
-		var data: AttackCardData = load(path) as AttackCardData
-		if data:
-			attack_hand.append(data.duplicate())
-
-
 func _attack_index_of(attack_type: String) -> int:
-	for i in range(attack_hand.size()):
-		var c: AttackCardData = attack_hand[i]
-		if c and c.attack_type == attack_type:
-			return i
-	return -1
+	if not attack_deck:
+		return -1
+	return attack_deck.index_of_type(attack_type)
 
 
-func _basic_attack_data() -> AttackCardData:
-	var idx := _attack_index_of("Basic")
-	if idx >= 0 and idx < attack_hand.size():
-		return attack_hand[idx]
+func _execute_style_data() -> AttackStyleData:
+	if not attack_deck:
+		return null
+	var idx := attack_deck.index_of_type("Execute")
+	if idx >= 0:
+		return attack_deck.get_style_data(idx)
 	return null
 
 
@@ -343,8 +330,8 @@ func _enemy_effect_box() -> Control:
 	return box
 
 
-# Beat anatomi kartu (attack + skill). Non-smooth: kunci + hide + 0.8 dtk
-# (deck lagi spawn), cocok buat beat PERTAMA yang nempel ke kartu.
+# Beat anatomi kartu/style (attack style + skill). Non-smooth: kunci + hide
+# + 0.8 dtk (deck lagi spawn), cocok buat beat PERTAMA yang nempel ke kartu.
 # Smooth: tanpa hide/tunggu/stagger — teks ganti di tempat, spotlight
 # glide mulus antar bagian (cost -> desc). Read dismissable jadi gak bisa
 # softlock walau node-nya null.
@@ -363,26 +350,20 @@ func _card_part_setup(part: String, title: String, body: String, is_skill := fal
 		elif scard:
 			node = scard
 	else:
-		var idx := _attack_index_of("Basic")
-		var card := _attack_card_node(idx)
-		if card and part != "":
-			node = card.get_node_or_null(part) as Control
+		var idx := _attack_index_of("Execute")
+		var card := _attack_style_node(idx)
+		if card and part != "" and attack_deck:
+			# Part style gak nempel di slot-nya — cost/info ada di
+			# informationPanel milik attackStyle.
+			var part_path := "cost" if part == "staminaCost" else "info"
+			node = attack_deck.get_node_or_null("attackStyle/informationPanel/" + part_path) as Control
 		elif card:
 			node = card
-	_lock_all_except([])
+		_lock_all_except([])
 	if smooth:
 		_soft(title, body, node)
 	else:
 		_show(title, body, TutorialUI.Zone.BOTTOM_LEFT, node, true)
-
-
-# Deck W3 dipaksa BASIC only biar mekaniknya pasti QTE.
-func _force_basic_hand() -> void:
-	attack_hand.clear()
-	attack_discard.clear()
-	var data: AttackCardData = load(BASIC_PATH) as AttackCardData
-	if data:
-		attack_hand.append(data.duplicate())
 
 
 # ============================================================
@@ -909,15 +890,8 @@ func _on_attack_pressed() -> void:
 	elif _step == Step.RAPID_PICK_WAIT:
 		_try_open_attack_deck(Step.RAPID_PICK)
 	elif _step == Step.FINISH_ACT:
-		# Retry MISS menghabiskan Basic (hand sisa [Charge, Rapid]) ->
-		# reload trio biar finisher selalu ada. Tanpa ini PICK stuck
-		# tanpa kartu Basic dan player gak bisa lanjut.
-		if _attack_index_of("Basic") == -1:
-			_load_attack_cards()
 		_try_open_attack_deck(Step.FINISH_PICK)
 	elif _step == Step.WAVE2_FIGHT:
-		if _attack_index_of("Basic") == -1:
-			_load_attack_cards()
 		_try_open_attack_deck(Step.WAVE2_PICK)
 	elif _step == Step.WAVE3_FIGHT:
 		_try_open_attack_deck(Step.WAVE3_PICK)
@@ -939,43 +913,65 @@ func _try_open_attack_deck(next: Step) -> void:
 	_begin_step(next)
 
 
-func _on_attack_card_selected(index: int) -> void:
-	if not _tutorial_active:
-		super._on_attack_card_selected(index)
+func _on_style_selected(style: AttackStyleData) -> void:
+	if not _tutorial_active or _step == Step.FINALE_FIGHT:
+		super._on_style_selected(style)
 		return
 	var expected := ""
-	if _step == Step.FINALE_FIGHT:
-		super._on_attack_card_selected(index)
-		return
 	match _step:
-		Step.BASIC_PICK:
-			expected = "Basic"
+		Step.EXECUTE_PICK:
+			expected = "Execute"
 		Step.CHARGE_PICK:
 			expected = "Charge"
 		Step.RAPID_PICK:
 			expected = "Rapid"
-		Step.FINISH_PICK:
-			expected = "Basic"
-		Step.WAVE2_PICK:
-			expected = "Basic"
-		Step.WAVE3_PICK:
-			expected = "Basic"
-		_:
-			return
-	var card: AttackCardData = attack_hand[index] if index >= 0 and index < attack_hand.size() else null
-	if card == null:
+		Step.FINISH_PICK, Step.WAVE2_PICK, Step.WAVE3_PICK:
+			expected = "Execute"
+	if expected != "" and style.attack_type != expected:
 		return
-	if expected != "" and card.attack_type != expected:
-		return
-	if current_stamina < card.stamina_cost:
+	if current_stamina < style.stamina_cost:
 		_refill_stamina()
-	# Parry lesson: enemy turn MULAI otomatis habis deck ditutup
-	# (parent chain). Flag forced harus ke-set SEBELUM itu.
-	if _step == Step.BASIC_PICK:
+		if attack_deck:
+			attack_deck.set_stamina(current_stamina)
+	# Parry lesson: flag forced ke-set SEBELUM mechanic jalan
+	# (enemy turn distart manual habis beat PARRY_WAIT).
+	if _step == Step.EXECUTE_PICK:
 		_force_parry_turn = true
-	super._on_attack_card_selected(index)
+	_use_pending = true
+	# Style dipilih -> buka tombol USE + jelasin cara mainnya.
+	if attack_deck:
+		var idx := attack_deck.index_of_type(style.attack_type)
+		_lock_all_except([
+			attack_deck.get_style_rect(idx),
+			attack_deck.get_click_area(idx),
+			attack_deck.get_use_button(),
+		])
+		_live("USE STYLE", "Tap USE STYLE to play this style.", TutorialUI.Zone.BOTTOM_LEFT, attack_deck.get_use_button())
+
+
+func _on_deck_dismissed() -> void:
+	"""Klik bg overlay (di luar deck). Tutorial: JANGAN cancel pas step
+	PICK — beat nunggu style_selected, deck nutup = soft-lock.
+	Finale duel bebas boleh cancel (free flow)."""
+	if not _tutorial_active or _step == Step.FINALE_FIGHT:
+		super._on_deck_dismissed()
+
+
+func _on_use_style_requested(style: AttackStyleData) -> void:
+	if not _tutorial_active or _step == Step.FINALE_FIGHT:
+		super._on_use_style_requested(style)
+		return
+	if not _use_pending:
+		return
+	_use_pending = false
+	if current_stamina < style.stamina_cost:
+		_refill_stamina()
+		if attack_deck:
+			attack_deck.set_stamina(current_stamina)
+	# Super: deduct + enter_indicator + start mechanic.
+	super._on_use_style_requested(style)
 	match _step:
-		Step.BASIC_PICK:
+		Step.EXECUTE_PICK:
 			_begin_step(Step.QTE_DO)
 		Step.CHARGE_PICK:
 			_begin_step(Step.CHARGE_DO)
@@ -1002,15 +998,12 @@ func _check_attack_qte_result() -> void:
 		return  # resolve basi (QTE udah gak aktif) — jangan pindah step
 	match _step:
 		Step.QTE_DO:
-			# Miss = total_miss nambah. Miss -> kartu basic dibalikin,
-			# flag parry + used dimatiin (JANGAN enemy turn dulu),
-			# retry sampai QTE-nya berhasil.
+			# Miss = total_miss nambah. Flag parry dimatiin (JANGAN
+			# enemy turn dulu), retry sampai QTE-nya berhasil. Style
+			# gak dibuang — deck tetap penuh; tutup indicator + balikin
+			# giliran beres di _end_player_attack_turn (step QTE_MISS).
 			if total_miss > miss_before:
 				_force_parry_turn = false
-				attack_card_used_this_session = false
-				var basic: AttackCardData = load(BASIC_PATH) as AttackCardData
-				if basic:
-					attack_hand.append(basic.duplicate())
 				_step = Step.QTE_MISS
 				_read("MISSED!", "Watch the runner — TAP TO TRY AGAIN.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 			else:
@@ -1154,23 +1147,38 @@ func _on_action_card_closed() -> void:
 	_skill_ui_ref = null
 
 
-func _on_attack_card_closed() -> void:
-	if not _tutorial_active:
-		super._on_attack_card_closed()
+# Cleanup turn player setiap attack mechanic beres (parent selalu
+# panggil ini sesudah resolve — hit ATAU miss). Di sistem baru deck
+# ditutup DI SINI; pas USE cuma masuk mode indicator.
+# QTE_MISS: restore giliran player tanpa enemy turn (biar retry).
+# Step lesson (QTE_RESULT..PARRY_WAIT): cleanup doang, turn musuh
+# distart MANUAL dari beat berikutnya.
+func _end_player_attack_turn() -> void:
+	if not _tutorial_active or _step == Step.FINALE_FIGHT:
+		await super._end_player_attack_turn()
+		return
+	if _step == Step.QTE_MISS:
+		if attack_deck and attack_deck.is_open:
+			attack_deck.close()
+		is_card_ui_open = false
+		_reset_hand_to_original(0.4)
+		_reset_camera_to_default()
+		is_player_turn = true
+		_apply_button_gating(true)
 		return
 	if _hold_enemy_turn and (_step == Step.QTE_RESULT or _step == Step.HIT_FOE or _step == Step.HIT_COST or _step == Step.TURN_EXPLAIN or _step == Step.PARRY_HINT or _step == Step.PARRY_WAIT):
 		# TAHAN: cleanup doang (deck tutup, kamera balik, tombol
 		# ngumpet), turn DISTART MANUAL dari PARRY_WAIT. Cek WAIT juga:
 		# tap cepat bisa bikin close jalan SESUDAH masuk WAIT.
-		attack_card_used_this_session = false
+		if attack_deck and attack_deck.is_open:
+			attack_deck.close()
 		is_card_ui_open = false
-		attack_card_ui = null
 		_reset_hand_to_original(0.4)
 		_reset_camera_to_default()
 		is_player_turn = false
 		_apply_button_gating(false)
 		return
-	super._on_attack_card_closed()
+	await super._end_player_attack_turn()
 	_skill_ui_ref = null
 
 
@@ -1293,30 +1301,30 @@ func _begin_step(step: Step) -> void:
 			_act("SELECT TARGET", "Tap the Skeleton to lock it as your target.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.ATTACK_ACT:
 			_show_only([atk_btn], [atk_btn])
-			_act("TAP ATTACK", "This button opens your attack cards. Tap it.", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
+			_act("TAP ATTACK", "This button opens your attack styles. Tap it.", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
 		Step.DECK_INTRO:
 			# Deck baru kebuka: jelasin DULU konsepnya, tanpa spotlight.
 			_lock_all_except([])
-			_read("YOUR ATTACK DECK", "These cards are your moves. Each card is one attack, and playing it costs stamina. Tap to continue.", TutorialUI.Zone.TOP_CENTER, null)
-		Step.CARD_INTRO:
-			# Baru spotlight ke kartunya UTUH + jelasin kartunya.
-			_card_part_setup("", "BASIC ATTACK", "Your bread-and-butter: cheap, reliable, no frills. Every card works like this one. Tap to continue.")
-		Step.BASIC_COST:
-			var bcost := _basic_attack_data()
+			_read("YOUR ATTACK DECK", "These styles are your moves. Each style is one attack, and playing it costs stamina. Tap to continue.", TutorialUI.Zone.TOP_CENTER, null)
+		Step.STYLE_INTRO:
+			# Baru spotlight ke stylenya UTUH + jelasin stylenya.
+			_card_part_setup("", "EXECUTE ATTACK", "Your bread-and-butter: cheap, reliable, no frills. Every style works like this one. Tap to continue.")
+		Step.EXECUTE_COST:
+			var ecost := _execute_style_data()
 			var cost_txt := "Playing it costs stamina."
-			if bcost:
-				cost_txt = "Playing it costs %d stamina." % int(bcost.stamina_cost)
+			if ecost:
+				cost_txt = "Playing it costs %d stamina." % int(ecost.stamina_cost)
 			# Smooth: panel anteng, spotlight glide dari kartu ke cost.
-			_card_part_setup("staminaCost", "CARD COST", cost_txt, false, true)
-		Step.BASIC_INFO:
-			var binfo := _basic_attack_data()
-			var desc := "Attack card."
-			if binfo and binfo.description != "":
-				desc = binfo.description
+			_card_part_setup("staminaCost", "STYLE COST", cost_txt, false, true)
+		Step.EXECUTE_INFO:
+			var einfo := _execute_style_data()
+			var desc := "Attack style."
+			if einfo and einfo.description != "":
+				desc = einfo.description
 			# Smooth: glide cost -> desc, panel gak kedip.
-			_card_part_setup("Label", "CARD INFO", desc, false, true)
-		Step.BASIC_PICK:
-			_pick_setup(false, "Basic", "BASIC CARD", "Tap the glowing BASIC card.")
+			_card_part_setup("Label", "STYLE INFO", desc, false, true)
+		Step.EXECUTE_PICK:
+			_pick_setup(false, "Execute", "EXECUTE STYLE", "Tap the glowing EXECUTE style.")
 		Step.QTE_DO:
 			_lock_all_except([attack_qte_node, reset_target_btn])
 			_live("TIMING BAR", "Tap ANYWHERE when the runner hits GOLD!", TutorialUI.Zone.BOTTOM_LEFT, attack_qte_node)
@@ -1369,7 +1377,7 @@ func _begin_step(step: Step) -> void:
 			var vnm := "Venom"
 			if action_cards.size() > 0 and action_cards[0]:
 				vnm = action_cards[0].card_name
-			_card_part_setup("", "SKILL CARD", "This one is %s. Same anatomy as attack cards. Tap to continue." % vnm, true)
+			_card_part_setup("", "SKILL CARD", "This one is %s. Same anatomy as attack styles. Tap to continue." % vnm, true)
 		Step.SKILL_COST:
 			var sc := 0
 			if action_cards.size() > 0 and action_cards[0]:
@@ -1393,9 +1401,9 @@ func _begin_step(step: Step) -> void:
 			_show_only([atk_btn], [atk_btn])
 			_lock_all_except([atk_btn])
 			_allow_interaction(atk_btn)
-			_live("ATTACK AGAIN", "New card type: CHARGE. Tap ATTACK.", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
+			_live("ATTACK AGAIN", "New style: CHARGE. Tap ATTACK.", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
 		Step.CHARGE_PICK:
-			_pick_setup(false, "Charge", "CHARGE CARD", "Tap the glowing CHARGE card.")
+			_pick_setup(false, "Charge", "CHARGE STYLE", "Tap the glowing CHARGE style.")
 		Step.CHARGE_DO:
 			var cb := _charge_button()
 			_lock_all_except([cb] if cb else [])
@@ -1411,7 +1419,7 @@ func _begin_step(step: Step) -> void:
 			_allow_interaction(atk_btn)
 			_live("ONE MORE TYPE", "Last one: RAPID. Tap ATTACK.", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
 		Step.RAPID_PICK:
-			_pick_setup(false, "Rapid", "RAPID CARD", "Tap the glowing RAPID card.")
+			_pick_setup(false, "Rapid", "RAPID STYLE", "Tap the glowing RAPID style.")
 		Step.RAPID_DO:
 			_lock_all_except([rapid_btn])
 			_allow_interaction(rapid_btn)
@@ -1422,7 +1430,7 @@ func _begin_step(step: Step) -> void:
 			_show_only([atk_btn], [atk_btn])
 			_act("FINISH IT", "Tap ATTACK for the final blow.", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
 		Step.FINISH_PICK:
-			_pick_setup(false, "Basic", "FINAL BLOW", "Tap BASIC to finish the Skeleton.")
+			_pick_setup(false, "Execute", "FINAL BLOW", "Tap EXECUTE to finish the Skeleton.")
 		Step.FINISH_QTE:
 			_lock_all_except([attack_qte_node, reset_target_btn])
 			_live("FINISH!", "Tap when the runner hits GOLD!", TutorialUI.Zone.BOTTOM_LEFT, attack_qte_node)
@@ -1501,11 +1509,10 @@ func _begin_step(step: Step) -> void:
 			# keliatan utuh.
 			_read("HEALED!", "Now finish the weakened Skeleton!", TutorialUI.Zone.TOP_CENTER, null)
 		Step.WAVE2_FIGHT:
-			_force_basic_hand()
 			_show_only([atk_btn], [atk_btn])
 			_live("YOUR MOVE", "Finish the Skeleton — tap ATTACK!", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
 		Step.WAVE2_PICK:
-			_pick_setup(false, "Basic", "PICK A CARD", "Tap the glowing BASIC card.")
+			_pick_setup(false, "Execute", "PICK A STYLE", "Tap the glowing EXECUTE style.")
 		Step.WAVE2_QTE:
 			_lock_all_except([attack_qte_node, reset_target_btn])
 			_live("TIMING!", "Tap when the runner hits GOLD!", TutorialUI.Zone.BOTTOM_LEFT, attack_qte_node)
@@ -1514,14 +1521,13 @@ func _begin_step(step: Step) -> void:
 		Step.WAVE3_INTRO:
 			_read("WAVE 3: GRIMWARD", "Tougher. It COUNTERS when struck — watch closely!", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.WAVE3_FIGHT:
-			_force_basic_hand()
 			_show_only([atk_btn], [atk_btn])
 			# Chain tutup-deck pasca-kill wave-2 bisa telat nimpa turn.
 			# Restore di sini (user-paced, chain udah kelar) biar aman.
 			is_player_turn = true
 			_live("YOUR MOVE", "Attack the Grimward — watch for counters!", TutorialUI.Zone.BOTTOM_LEFT, atk_btn)
 		Step.WAVE3_PICK:
-			_pick_setup(false, "Basic", "PICK A CARD", "Tap the glowing BASIC card.")
+			_pick_setup(false, "Execute", "PICK A STYLE", "Tap the glowing EXECUTE style.")
 		Step.WAVE3_QTE:
 			_lock_all_except([attack_qte_node, reset_target_btn])
 			_live("TIMING!", "Tap when the runner hits GOLD!", TutorialUI.Zone.BOTTOM_LEFT, attack_qte_node)
@@ -1531,14 +1537,15 @@ func _begin_step(step: Step) -> void:
 			_read("WELL FOUGHT!", "You survived a counter-attacker. Tap to finish.", TutorialUI.Zone.BOTTOM_LEFT, _enemy_ref())
 		Step.COMPLETE:
 			_lock_all_except([])
-			_ui_show_final("TRAINING COMPLETE\nYou know: target, attack, cards, timing, parry, defend, skills, charge, rapid, loot, backpack, potions. Now finish the Grimward!")
+			_ui_show_final("TRAINING COMPLETE\nYou know: target, attack styles, timing, parry, defend, skills, charge, rapid, loot, backpack, potions. Now finish the Grimward!")
 		Step.FINALE_FIGHT:
-			# Duel beneran: armor lepas, deck trio balik, SEMUA tombol
-			# kecuali RUN (RUN gak pernah nongol di tutorial). Bebas total.
+			# Duel beneran: armor lepas, SEMUA tombol kecuali RUN
+			# (RUN gak pernah nongol di tutorial). Bebas total.
 			_finale_empty_since = -1
 			_set_training_armor_all(false)
-			_load_attack_cards()
 			_refill_stamina()
+			if attack_deck:
+				attack_deck.set_stamina(current_stamina)
 			is_player_turn = true
 			_tut_revealed = [atk_btn, defend_btn, backpack_btn, skill_btn]
 			_tut_enabled = [atk_btn, defend_btn, backpack_btn, skill_btn]
@@ -1690,9 +1697,9 @@ func _charge_button() -> Button:
 	return null
 
 
-func _attack_card_node(i: int) -> Control:
-	if attack_card_ui and i >= 0 and i < attack_card_ui.card_nodes.size():
-		return attack_card_ui.card_nodes[i]
+func _attack_style_node(i: int) -> Control:
+	if attack_deck and i >= 0 and i < attack_deck.style_count():
+		return attack_deck.get_style_rect(i)
 	return null
 
 
@@ -1700,7 +1707,7 @@ func _find_skill_ui() -> ActionCardUI:
 	if _skill_ui_ref and is_instance_valid(_skill_ui_ref) and _skill_ui_ref.is_open:
 		return _skill_ui_ref
 	for c in get_children():
-		if c is ActionCardUI and c != attack_card_ui:
+		if c is ActionCardUI:
 			var ui := c as ActionCardUI
 			if ui.is_open and ui.card_nodes.size() > 0:
 				_skill_ui_ref = ui
@@ -1715,42 +1722,44 @@ func _skill_card_node(i: int) -> Control:
 	return null
 
 
-# Setup pick kartu: kunci semua dulu (deck lagi spawn animation),
-# habis 0.8 dtk baru spotlight + panel ke kartu target.
+# Setup pick style: kunci semua dulu (deck lagi spawn animation),
+# habis 0.8 dtk baru spotlight + panel ke style target. Skill tetap
+# pakai kartu ability (bukan deck).
 func _pick_setup(is_skill: bool, expected: String, title: String, body: String) -> void:
 	_pick_expected = expected
 	_pick_is_skill = is_skill
 	_refill_stamina()
+	if attack_deck:
+		attack_deck.set_stamina(current_stamina)
 	_lock_all_except([])
 	_ui_hide()
 	await get_tree().create_timer(0.8).timeout
 	if not is_instance_valid(self) or not _tutorial_active:
 		return
 	var card: Control = null
+	var allowed: Array = []
 	if is_skill:
 		card = _skill_card_node(0)
 	else:
 		var idx := _attack_index_of(expected) if expected != "" else 0
-		card = _attack_card_node(idx)
-		if card == null and expected == "":
-			for i in range(attack_card_ui.card_nodes.size() if attack_card_ui else 0):
-				card = _attack_card_node(i)
-				if card:
-					break
+		card = _attack_style_node(idx)
+		if card and attack_deck and idx >= 0:
+			allowed = [card, attack_deck.get_click_area(idx)]
 	if card == null:
 		return
-	_lock_all_except([card])
-	_allow_interaction(card)
+	if allowed.is_empty():
+		allowed = [card]
+	_lock_all_except(allowed)
 	_lock_card_bg()
 	_show(title, body, TutorialUI.Zone.BOTTOM_LEFT, card, false)
 
 
 func _lock_card_bg() -> void:
-	for ui in [attack_card_ui, _find_skill_ui()]:
-		if ui and is_instance_valid(ui):
-			var bg = ui.get("bg_overlay")
-			if bg is Control:
-				(bg as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var ui := _find_skill_ui()
+	if ui and is_instance_valid(ui):
+		var bg = ui.get("bg_overlay")
+		if bg is Control:
+			(bg as Control).mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 # (Pause dihapus total dari tutorial: semua step jalan live.

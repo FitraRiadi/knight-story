@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="AttackStyleData" format=3 uid="uid://bjdiq0cjlpgg2"]
+
+[ext_resource type="Script" uid="uid://dhkk2y75k2045" path="res://scripts/local/battle/AttackStyleData.gd" id="1_card"]
+[ext_resource type="Texture2D" uid="uid://c45vp673xn8ki" path="res://assets/art/card/attack_styles/execute_attack.jpg" id="1_s47mj"]
+
+[resource]
+script = ExtResource("1_card")
+spawn_probability = 70.0
+card_name = "Execute Attack"
+description = "Execute QTE attack to single target"
+card_art = ExtResource("1_s47mj")
+stamina_cost = 20.0
+cooldown = 0
