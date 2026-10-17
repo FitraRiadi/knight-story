@@ -16,6 +16,12 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_sfgky"]
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
 [node name="attackStyle" type="Node2D" unique_id=657159994]
 
 [node name="art" type="TextureRect" parent="." unique_id=1295047183]
@@ -107,4 +113,6 @@ offset_left = 33.0
 offset_top = 93.0
 offset_right = 190.0
 offset_bottom = 118.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_sfgky")
 text = "USE STYLE"
