@@ -24,6 +24,7 @@
 [ext_resource type="Texture2D" uid="uid://cy20qwgr1tmah" path="res://assets/art/sprites/enemy/banditRaider/idle1.png" id="25_gw8qx"]
 [ext_resource type="Texture2D" uid="uid://dhn3tjtrwp4vt" path="res://assets/art/sprites/enemy/banditRaider/idle2.png" id="26_344p7"]
 [ext_resource type="Texture2D" uid="uid://osri2skp6y4m" path="res://assets/art/ability/active/battlecry.jpg" id="27_344p7"]
+[ext_resource type="PackedScene" uid="uid://db2befrjyhk6p" path="res://scenes/battle/attack_deck.tscn" id="28_ix6kw"]
 [ext_resource type="Script" uid="uid://djbf4rxh2wv3a" path="res://scripts/local/battle/ChargeAttack.gd" id="charge_attack"]
 [ext_resource type="Script" uid="uid://s4io6fpyf4d8" path="res://scripts/local/battle/ItemDropVisual.gd" id="item_drop"]
 [ext_resource type="Script" uid="uid://dalxm83qgh3oh" path="res://scripts/local/battle/WaveProgress.gd" id="wave_progress"]
@@ -554,14 +555,15 @@ vertical_alignment = 1
 position = Vector2(370, 170)
 
 [node name="wave" type="Label" parent="Camera2D" unique_id=1419385249]
-offset_left = -38.0
-offset_top = 110.0
-offset_right = 73.0
-offset_bottom = 141.0
+offset_left = -45.0
+offset_top = -163.0
+offset_right = 66.0
+offset_bottom = -132.0
 theme_override_colors/font_color = Color(1, 1, 0, 1)
 theme_override_font_sizes/font_size = 30
 text = "Wave 1"
 horizontal_alignment = 1
+uppercase = true
 
 [node name="information" type="Label" parent="Camera2D/wave" unique_id=962325317]
 layout_mode = 0
@@ -2280,3 +2282,7 @@ offset_top = 110.0
 offset_right = 290.0
 offset_bottom = 124.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_7d6yc")
+
+[node name="attackDeck" parent="." unique_id=2086633350 instance=ExtResource("28_ix6kw")]
+visible = false
+position = Vector2(-2, -10)

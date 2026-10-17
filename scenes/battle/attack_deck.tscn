@@ -1,0 +1,98 @@
+[gd_scene format=3 uid="uid://db2befrjyhk6p"]
+
+[ext_resource type="PackedScene" uid="uid://0hjhmhcxn0cg" path="res://scenes/battle/attack_style.tscn" id="1_4wwb8"]
+[ext_resource type="Texture2D" uid="uid://bpwn4panxo0jk" path="res://assets/art/attackStyle/chargeAttack.png" id="2_h01qc"]
+[ext_resource type="Texture2D" uid="uid://cpihv07phljx4" path="res://assets/art/attackStyle/executeAttack.png" id="2_sfgky"]
+[ext_resource type="Texture2D" uid="uid://dqprpjt232nf2" path="res://assets/art/attackStyle/rapidAttack.png" id="3_bd5jb"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_moojr"]
+bg_color = Color(0.04864873, 0.04864873, 0.04864873, 0.44705883)
+
+[node name="attackDeck" type="Node2D" unique_id=2086633350]
+
+[node name="attackStyle" parent="." unique_id=657159994 instance=ExtResource("1_4wwb8")]
+position = Vector2(83, 247)
+
+[node name="attack1" type="TextureRect" parent="." unique_id=152248209]
+offset_left = 389.0
+offset_top = 157.0
+offset_right = 889.0
+offset_bottom = 657.0
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("2_sfgky")
+
+[node name="name" type="Label" parent="attack1" unique_id=343012321]
+layout_mode = 0
+offset_left = 116.666626
+offset_top = 490.0
+offset_right = 205.66663
+offset_bottom = 506.0
+scale = Vector2(3, 3)
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
+text = "EXECUTE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="clickArea" type="TextureButton" parent="attack1" unique_id=1475779458]
+layout_mode = 0
+offset_left = 106.66659
+offset_top = 9.999979
+offset_right = 393.33334
+offset_bottom = 536.6667
+
+[node name="attack2" type="TextureRect" parent="." unique_id=755924650]
+offset_left = 491.0
+offset_top = 138.0
+offset_right = 991.0
+offset_bottom = 638.0
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("3_bd5jb")
+
+[node name="name" type="Label" parent="attack2" unique_id=220445200]
+layout_mode = 0
+offset_left = 116.666626
+offset_top = 490.0
+offset_right = 205.66663
+offset_bottom = 506.0
+scale = Vector2(3, 3)
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
+text = "RAPID"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="clickArea" type="TextureButton" parent="attack2" unique_id=394649183]
+layout_mode = 0
+offset_left = 106.66659
+offset_top = 9.999979
+offset_right = 393.33334
+offset_bottom = 536.6667
+
+[node name="attack3" type="TextureRect" parent="." unique_id=94934787]
+offset_left = 591.0
+offset_top = 110.0
+offset_right = 1091.0
+offset_bottom = 610.0
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("2_h01qc")
+
+[node name="name" type="Label" parent="attack3" unique_id=568621503]
+layout_mode = 0
+offset_left = 116.666626
+offset_top = 490.0
+offset_right = 205.66663
+offset_bottom = 506.0
+scale = Vector2(3, 3)
+theme_override_font_sizes/font_size = 15
+theme_override_styles/normal = SubResource("StyleBoxFlat_moojr")
+text = "CHARGE"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="clickArea" type="TextureButton" parent="attack3" unique_id=902393747]
+layout_mode = 0
+offset_left = 106.66659
+offset_top = 9.999979
+offset_right = 393.33334
+offset_bottom = 536.6667

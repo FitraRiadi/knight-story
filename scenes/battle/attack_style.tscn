@@ -1,0 +1,110 @@
+[gd_scene format=3 uid="uid://0hjhmhcxn0cg"]
+
+[ext_resource type="Texture2D" uid="uid://cpihv07phljx4" path="res://assets/art/attackStyle/executeAttack.png" id="1_hcrqd"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kylmi"]
+bg_color = Color(1, 1, 1, 0.7176471)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_m4t1l"]
+bg_color = Color(1, 1, 1, 0.7176471)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="attackStyle" type="Node2D" unique_id=657159994]
+
+[node name="art" type="TextureRect" parent="." unique_id=1295047183]
+offset_left = -75.0
+offset_top = -77.0
+offset_right = 425.0
+offset_bottom = 423.0
+scale = Vector2(0.3, 0.3)
+texture = ExtResource("1_hcrqd")
+
+[node name="informationPanel" type="Control" parent="." unique_id=1363396350]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 57.0
+offset_top = -71.0
+offset_right = 57.0
+offset_bottom = -71.0
+
+[node name="bg" type="Panel" parent="informationPanel" unique_id=409252709]
+layout_mode = 0
+offset_left = -3.0
+offset_top = -18.0
+offset_right = 234.0
+offset_bottom = 81.0
+
+[node name="nameStyle" type="Label" parent="informationPanel" unique_id=171980383]
+layout_mode = 0
+offset_left = 28.0
+offset_top = -25.0
+offset_right = 207.0
+offset_bottom = -8.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_kylmi")
+text = "Execute Attack"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="rarity" type="Label" parent="informationPanel" unique_id=193463369]
+layout_mode = 0
+offset_left = -2.0
+offset_top = 69.0
+offset_right = 87.0
+offset_bottom = 86.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_kylmi")
+text = "Common"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="type" type="Label" parent="informationPanel" unique_id=1430829974]
+layout_mode = 0
+offset_left = 91.0
+offset_top = 69.0
+offset_right = 180.0
+offset_bottom = 86.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_m4t1l")
+text = "Single Target"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="cost" type="Label" parent="informationPanel" unique_id=1956137501]
+layout_mode = 0
+offset_left = 182.0
+offset_top = 69.0
+offset_right = 232.0
+offset_bottom = 86.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_m4t1l")
+text = "STA 50"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="info" type="Label" parent="informationPanel" unique_id=1532954329]
+layout_mode = 0
+offset_left = 17.0
+offset_top = 2.0
+offset_right = 213.0
+offset_bottom = 61.0
+text = "Basic QTE attack to single target"
+autowrap_mode = 3
+
+[node name="btnUse" type="Button" parent="informationPanel" unique_id=31854644]
+layout_mode = 0
+offset_left = 33.0
+offset_top = 93.0
+offset_right = 190.0
+offset_bottom = 118.0
+text = "USE STYLE"
