@@ -69,6 +69,9 @@ var _panel_tween: Tween
 var _bg_tween: Tween
 var _indicator := false
 var _deck_pos := Vector2.ZERO
+var _art_tween: Tween
+var _art_base_scale := Vector2.ONE
+var _art_base_pos := Vector2.ZERO
 
 var _layer: CanvasLayer = null
 var _bg: ColorRect = null
@@ -143,6 +146,16 @@ func _ready() -> void:
 		n.pivot_offset = n.size * 0.5
 		_panel_parts.append({"key": key, "node": n, "pos": n.position, "scale": n.scale})
 	_panel.visible = false
+
+	# Art (ilustrasi sebelah informationPanel) disembunyiin dulu —
+	# baru pop juicy pas style di-click, sama kayak panel.
+	_art_base_scale = _art.scale
+	_art.pivot_offset = _art.size * 0.5
+	# Kompensasi posisi biar pivot pindah ke center tapi hasil render
+	# tetap sama: pos' = pos - (1 - scale) * center.
+	_art_base_pos = _art.position - (Vector2.ONE - _art_base_scale) * _art.pivot_offset
+	_art.position = _art_base_pos
+	_art.visible = false
 
 
 # ============================================================
@@ -222,11 +235,21 @@ func _reset_panel() -> void:
 	if _panel_tween:
 		_panel_tween.kill()
 	_panel.visible = false
+	# enter_indicator nge-fade alpha _panel ke 0 → WAJIB di-reset balik,
+	# kalau gak panel gak bakal keliatan lagi walau visible=true.
+	_panel.modulate = Color.WHITE
 	for part in _panel_parts:
 		var n: Control = part["node"]
 		n.position = part["pos"]
 		n.scale = part["scale"]
 		n.modulate = Color.WHITE
+	# Art ikut di-reset: hilang lagi sampai style berikutnya di-click
+	if _art_tween and _art_tween.is_valid():
+		_art_tween.kill()
+	_art.visible = false
+	_art.scale = _art_base_scale
+	_art.position = _art_base_pos
+	_art.modulate = Color.WHITE
 
 
 # ============================================================
@@ -338,8 +361,9 @@ func _select_style(i: int, animate: bool = true) -> void:
 	_info.text = style.description
 	_apply_highlight(i, animate)
 	_refresh_use_button()
-	# Panel muncul dengan stagger juicy SETIAP style di-click
+	# Panel + art muncul dengan intro juicy SETIAP style di-click
 	if animate:
+		_animate_art_in()
 		_animate_panel_in()
 
 
@@ -365,6 +389,30 @@ func _apply_highlight(i: int, animate: bool) -> void:
 
 
 # ============================================================
+# ANIMASI ART — POP JUICY
+# Ilustrasi sebelah informationPanel: nge-pop dari kecil + fade +
+# slide dari bawah, TRANS_BACK overshoot biar berasa "meletus".
+# Pivot center (posisi dikompensasi) biar pop-nya dari tengah art.
+# Re-trigger tiap kali style di-click.
+# ============================================================
+
+func _animate_art_in() -> void:
+	if _art_tween and _art_tween.is_valid():
+		_art_tween.kill()
+	_art.visible = true
+	# Mulai kecil + fade + geser dari bawah → nge-pop (TRANS_BACK overshoot)
+	_art.scale = _art_base_scale * 0.2
+	_art.position = _art_base_pos + Vector2(0, 16)
+	_art.modulate = Color(1, 1, 1, 0)
+	_art_tween = create_tween().set_parallel(true)
+	_art_tween.tween_property(_art, "scale", _art_base_scale, 0.36)\
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_art_tween.tween_property(_art, "position", _art_base_pos, 0.32)\
+		.set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_art_tween.tween_property(_art, "modulate:a", 1.0, 0.14)
+
+
+# ============================================================
 # ANIMASI INFORMATION PANEL — STAGGER JUICY
 # Tiap elemen muncul berurutan: bg pop → name slide dari kiri →
 # info slide dari bawah → rarity/type/cost pop → USE bounce.
@@ -375,6 +423,8 @@ func _animate_panel_in() -> void:
 	if _panel_tween:
 		_panel_tween.kill()
 	_panel.visible = true
+	# Pastiin alpha container = 1 (jaga-jaga kalau ke-fade 0 sama indicator)
+	_panel.modulate = Color.WHITE
 	_panel_tween = create_tween().set_parallel(true)
 	for part in _panel_parts:
 		var key: String = part["key"]
