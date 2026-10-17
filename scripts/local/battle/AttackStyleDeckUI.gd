@@ -172,7 +172,10 @@ func open(stamina: float) -> void:
 	set_stamina(stamina)
 	# Panel SENGAJA disembunyiin — baru muncul saat style di-click
 	_reset_panel()
-	_select_style(0, false)
+	# SEMUA slot dulu mode "belum pilih" (normal, gak ada yang ke-highlight).
+	# Jangan auto-select index 0 — nanti attack1 keburu keliatan "active"
+	# padahal user belum klik apa-apa.
+	_clear_selection()
 
 	# BG overlay fade in
 	if _bg:
@@ -409,6 +412,19 @@ func _on_style_pressed(i: int) -> void:
 	style_selected.emit(_styles[i]["data"])
 
 
+# Reset ke state "belum pilih apa-apa": semua slot normal (base scale +
+# putih), selected_index = -1. Highlight baru muncul setelah user klik
+# style lewat _select_style / _apply_highlight.
+func _clear_selection() -> void:
+	selected_index = -1
+	_kill_slot_tweens()
+	for s in _styles:
+		var r: TextureRect = s["rect"]
+		r.scale = (_slot_base[r]["scale"] as Vector2)
+		r.modulate = Color.WHITE
+		(s["label"] as Label).modulate = Color.WHITE
+
+
 func _select_style(i: int, animate: bool = true) -> void:
 	if i < 0 or i >= _styles.size():
 		return
@@ -543,6 +559,7 @@ func set_stamina(v: float) -> void:
 
 func _refresh_use_button() -> void:
 	if selected_index < 0:
+		_btn_use.disabled = true
 		return
 	var style: AttackStyleData = _styles[selected_index]["data"]
 	var cukup: bool = _stamina >= style.stamina_cost
