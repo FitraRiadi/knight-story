@@ -211,9 +211,63 @@ func close() -> void:
 		_bg_tween.tween_property(_bg, "modulate:a", 0.0, 0.15)
 	if _tween:
 		_tween.kill()
+	if _indicator:
+		# MODE INDICATOR: art corner (slot terpilih) dianimasikan dulu,
+		# baru _finish_close. chain() = callback jalan SETELAH kelompok
+		# parallel kelar (dulu callback-nya ke-trigger di t=0 → ujug-ujug).
+		_animate_indicator_out()
+	else:
+		# NORMAL: fade dulu, baru _finish_close (sequential default —
+		# pola sama kayak ActionCardUI close_tw, BUKAN set_parallel(true)).
+		_tween = create_tween()
+		_tween.tween_property(self, "modulate", Color(1, 1, 1, 0), 0.15)
+		_tween.tween_callback(_finish_close)
+
+
+# ============================================================
+# KELUAR INDIKATOR — ART POJOK KIRI ATAS: POP → MENCIUT (STAGGER)
+# Dipanggil close() pas mode indicator: art style yang nempel di
+# pojok kiri atas gak ilang ujug-ujug — nge-pop dikit dulu (meletus),
+# terus menciut + pudar. Label nama ilang lebih awal = stagger.
+# 2 fase pake tween TERPISAH biar gak ada 2 tween nembak properti
+# yang sama di satu kelompok parallel (bakal berebut/nge-jitter).
+# ============================================================
+
+func _animate_indicator_out() -> void:
+	var sel := selected_index
+	if sel < 0 or sel >= _styles.size():
+		_finish_close()
+		return
+	var r: TextureRect = _styles[sel]["rect"]
+	if _slot_tweens[sel] and _slot_tweens[sel].is_valid():
+		_slot_tweens[sel].kill()
+		_slot_tweens[sel] = null
+	var base: Vector2 = (_slot_base[r]["scale"] as Vector2)
+	var lbl: Label = _styles[sel]["label"]
+	r.visible = true
+	r.modulate = Color.WHITE
+	lbl.modulate = Color.WHITE
+	# FASE 1 — POP: art ngegede dikit (meletus), label pudar duluan (stagger)
 	_tween = create_tween().set_parallel(true)
-	_tween.tween_property(self, "modulate", Color(1, 1, 1, 0), 0.12)
-	_tween.tween_callback(_finish_close)
+	_tween.tween_property(r, "scale", base * 1.16, 0.1)\
+		.set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_tween.tween_property(lbl, "modulate:a", 0.0, 0.12)
+	_tween.chain().tween_callback(_indicator_shrink)
+
+
+func _indicator_shrink() -> void:
+	# FASE 2 — MENCIUT + FADE (abis pop), terus _finish_close
+	var sel := selected_index
+	if sel < 0 or sel >= _styles.size():
+		_finish_close()
+		return
+	var r: TextureRect = _styles[sel]["rect"]
+	var base: Vector2 = (_slot_base[r]["scale"] as Vector2)
+	_tween = create_tween().set_parallel(true)
+	_tween.tween_property(r, "scale", base * 0.08, 0.2)\
+		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	_tween.tween_property(r, "modulate:a", 0.0, 0.18).set_delay(0.03)
+	_tween.chain().tween_callback(_finish_close)
 
 
 func _finish_close() -> void:
@@ -227,6 +281,8 @@ func _finish_close() -> void:
 		var r: TextureRect = s["rect"]
 		r.visible = true
 		r.modulate = Color.WHITE
+		# Label nama ikut di-reset — animasi exit indicator nge-fade dia
+		(s["label"] as Label).modulate = Color.WHITE
 	_kill_slot_tweens()
 	_reset_panel()
 
@@ -284,7 +340,8 @@ func _kill_slot_tweens() -> void:
 # selama mechanic (pola lama card → Vector2(10,10)).
 # Layer 250 = screen space → indicator selalu top-left layar,
 # gak ikut kamera zoom ke enemy.
-# is_open sengaja tetap true biar open()/toggle gak nabrak.
+# is_open sengaja tetep true biar open()/toggle gak nabrak.
+# Keluarnya lewat close() → _animate_indicator_out() (pop → menciut).
 # ============================================================
 
 func enter_indicator() -> void:
@@ -321,6 +378,10 @@ func enter_indicator() -> void:
 	_tween.tween_property(self, "position", target, 0.22)\
 		.set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 
+
+# ============================================================
+# CEK MODE INDICATOR
+# ============================================================
 
 func is_indicator() -> bool:
 	return _indicator
@@ -373,6 +434,9 @@ func _apply_highlight(i: int, animate: bool) -> void:
 		var base: Vector2 = (_slot_base[r]["scale"] as Vector2)
 		var target_scale: Vector2 = base * (1.12 if j == i else 0.92)
 		var col := Color.WHITE if j == i else Color(0.6, 0.6, 0.6, 1)
+		# Safety: animasi exit indicator nge-fade alpha label → dipulungin
+		# tiap open/select biar label gak ketahan transparan.
+		(_styles[j]["label"] as Label).modulate = Color.WHITE
 		var idx := j
 		if _slot_tweens[idx]:
 			_slot_tweens[idx].kill()
